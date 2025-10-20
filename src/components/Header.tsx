@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 
 const navItems = [
   { name: "Home", href: "#home" },
-  { name: "Contacto", href: "#contacto" },
   { name: "On Demand", href: "#on-demand" },
-  { name: "Programas", href: "#programas" },
-  { name: "Short", href: "#short" },
+  { name: "Circuito", href: "#circuito" },
   { name: "Quiénes Somos", href: "#quienes-somos" },
+  { name: "Asociate", href: "#asociate" },
+  { name: "Open Source", href: "#open-source" },
 ];
 
 export const Header = () => {

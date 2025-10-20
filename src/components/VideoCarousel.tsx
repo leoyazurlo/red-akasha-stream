@@ -39,11 +39,11 @@ export const VideoCarousel = ({ title, videos, sectionId }: VideoCarouselProps) 
     <section className="py-8" id={sectionId}>
       <div className="container mx-auto px-4">
         {/* Section Title */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+        <div className="relative mb-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground text-center">
             {title}
           </h2>
-          <div className="flex gap-2">
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 flex gap-2">
             <Button
               variant="ghost"
               size="icon"

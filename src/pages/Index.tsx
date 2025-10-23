@@ -2,6 +2,7 @@ import { Header } from "@/components/Header";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { VideoCarousel } from "@/components/VideoCarousel";
 import { Footer } from "@/components/Footer";
+import akashaBg from "@/assets/akasha-bg.png";
 
 // Mock data for video carousels
 const programasVideos = [
@@ -105,8 +106,20 @@ const destacadosVideos = [
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <div className="min-h-screen bg-background relative">
+      {/* Background pattern with soft opacity */}
+      <div 
+        className="fixed inset-0 opacity-[0.03] pointer-events-none z-0"
+        style={{
+          backgroundImage: `url(${akashaBg})`,
+          backgroundSize: '800px 800px',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'repeat',
+        }}
+      />
+      
+      <div className="relative z-10">
+        <Header />
       
       <main>
         <VideoPlayer />
@@ -132,7 +145,8 @@ const Index = () => {
         </div>
       </main>
 
-      <Footer />
+        <Footer />
+      </div>
     </div>
   );
 };

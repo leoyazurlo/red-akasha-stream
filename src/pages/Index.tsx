@@ -109,7 +109,7 @@ const Index = () => {
     <div className="min-h-screen bg-background relative">
       {/* Background pattern with soft opacity */}
       <div 
-        className="fixed inset-0 opacity-[0.10] pointer-events-none z-0"
+        className="fixed inset-0 opacity-0 pointer-events-none z-0"
         style={{
           backgroundImage: `url(${akashaBg})`,
           backgroundSize: '800px 800px',

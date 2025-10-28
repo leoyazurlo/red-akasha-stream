@@ -15,7 +15,7 @@ export const VideoPlayer = () => {
         {/* Video Player */}
         <div className="relative aspect-video bg-card rounded-2xl overflow-hidden shadow-glow border border-border group mx-[25px]">
           {/* Placeholder for video player */}
-          <div className="absolute inset-0 bg-gradient-dark flex items-center justify-center mx-[150px] my-[30px] px-[150px] py-[30px]">
+          <div className="absolute inset-0 bg-gradient-dark flex items-center justify-center mx-[80px] my-[20px] px-[80px] py-[20px]">
             <div className="text-center space-y-4">
               <div className="w-20 h-20 mx-auto bg-primary/20 rounded-full flex items-center justify-center group-hover:bg-primary/30 transition-all duration-300">
                 <Play className="w-10 h-10 text-primary fill-primary" />

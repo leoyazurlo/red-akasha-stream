@@ -21,7 +21,7 @@ export const Header = () => {
           {/* Logo */}
           <a href="#home" className="flex items-center space-x-2">
             <div className="flex items-center">
-              <span className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+              <span className="text-2xl font-light tracking-wider bg-gradient-primary bg-clip-text text-transparent">
                 RED AKASHA
               </span>
             </div>
@@ -33,7 +33,7 @@ export const Header = () => {
               <a
                 key={item.name}
                 href={item.href}
-                className="px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors rounded-lg hover:bg-secondary"
+                className="px-4 py-2 text-sm font-light text-foreground hover:text-primary transition-colors rounded-lg hover:bg-secondary"
               >
                 {item.name}
               </a>
@@ -63,7 +63,7 @@ export const Header = () => {
                 key={item.name}
                 href={item.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-4 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors rounded-lg hover:bg-secondary"
+                className="block px-4 py-2 text-sm font-light text-foreground hover:text-primary transition-colors rounded-lg hover:bg-secondary"
               >
                 {item.name}
               </a>

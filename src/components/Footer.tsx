@@ -43,11 +43,11 @@ export const Footer = () => {
                 href={action.href}
                 className="group"
               >
-                <div className="flex flex-col items-center gap-3 p-6 bg-secondary rounded-xl border border-border hover:border-primary transition-all duration-300 hover:shadow-glow">
-                  <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center group-hover:bg-primary/30 transition-colors">
+                <div className="flex flex-col items-center gap-3 p-6 bg-secondary rounded-xl border border-border hover:border-primary transition-all duration-300 hover:shadow-glow hover:scale-105">
+                  <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center group-hover:bg-primary/30 transition-all duration-300 group-hover:animate-float">
                     <Icon className="w-6 h-6 text-primary" />
                   </div>
-                  <span className="text-sm font-medium text-center text-foreground group-hover:text-primary transition-colors">
+                  <span className="text-sm font-light text-center text-foreground group-hover:text-primary transition-colors">
                     {action.label}
                   </span>
                 </div>
@@ -60,16 +60,16 @@ export const Footer = () => {
         <div className="border-t border-border pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-center md:text-left">
-              <h3 className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-2">
+              <h3 className="text-xl font-light tracking-wider bg-gradient-primary bg-clip-text text-transparent mb-2">
                 RED AKASHA
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-light text-muted-foreground">
                 Plataforma colaborativa para artistas y productores
               </p>
             </div>
 
             <div className="text-center md:text-right">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm font-light text-muted-foreground">
                 © 2024 Red Akasha. Todos los derechos reservados.
               </p>
             </div>

@@ -6,7 +6,7 @@ export const VideoPlayer = () => {
         <div className="flex items-center justify-center mb-4 gap-2">
           <div className="flex items-center gap-2 px-4 py-2 bg-primary/20 border border-primary rounded-full animate-pulse-glow">
             <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-            <span className="text-primary font-semibold text-sm uppercase tracking-wider">
+            <span className="text-primary font-light text-sm uppercase tracking-wider">
               En Vivo 24/7
             </span>
           </div>
@@ -17,12 +17,12 @@ export const VideoPlayer = () => {
           {/* Placeholder for video player */}
           <div className="absolute inset-0 bg-gradient-dark flex items-center justify-center mx-[50px] my-[15px] px-[50px] py-[15px]">
             <div className="text-center space-y-4">
-              <div className="w-20 h-20 mx-auto bg-primary/20 rounded-full flex items-center justify-center group-hover:bg-primary/30 transition-all duration-300">
+              <div className="w-20 h-20 mx-auto bg-primary/20 rounded-full flex items-center justify-center group-hover:bg-primary/30 transition-all duration-300 group-hover:animate-float">
                 <Play className="w-10 h-10 text-primary fill-primary" />
               </div>
               <div>
-                <p className="text-xl font-bold text-foreground">Transmisión en Vivo</p>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-xl font-light text-foreground">Transmisión en Vivo</p>
+                <p className="text-sm font-light text-muted-foreground mt-1">
                   Contenido exclusivo las 24 horas
                 </p>
               </div>
@@ -35,7 +35,7 @@ export const VideoPlayer = () => {
 
         {/* Info Text */}
         <div className="mt-6 text-center">
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-sm font-light tracking-wide">
             Plataforma colaborativa para artistas y productores del medio artístico
           </p>
         </div>

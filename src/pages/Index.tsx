@@ -1,6 +1,7 @@
 import { Header } from "@/components/Header";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { VideoCarousel } from "@/components/VideoCarousel";
+import { VideoRanking } from "@/components/VideoRanking";
 import { Footer } from "@/components/Footer";
 import akashaBg from "@/assets/akasha-bg.png";
 
@@ -104,6 +105,86 @@ const destacadosVideos = [
   },
 ];
 
+const rankingVideos = [
+  {
+    id: "r1",
+    rank: 1,
+    thumbnail: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=225&fit=crop",
+    artist: "Los Nocheros del Sur",
+    genre: "Folklore Urbano",
+    country: "Argentina",
+    countryFlag: "🇦🇷",
+    rating: 4.8,
+    totalVotes: 342,
+  },
+  {
+    id: "r2",
+    rank: 2,
+    thumbnail: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=225&fit=crop",
+    artist: "María Paz & Banda",
+    genre: "Rock Alternativo",
+    country: "México",
+    countryFlag: "🇲🇽",
+    rating: 4.7,
+    totalVotes: 298,
+  },
+  {
+    id: "r3",
+    rank: 3,
+    thumbnail: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=225&fit=crop",
+    artist: "Daniela Soares",
+    genre: "Bossa Nova Fusion",
+    country: "Brasil",
+    countryFlag: "🇧🇷",
+    rating: 4.6,
+    totalVotes: 275,
+  },
+  {
+    id: "r4",
+    rank: 4,
+    thumbnail: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=400&h=225&fit=crop",
+    artist: "Colectivo Raíz",
+    genre: "Cumbia Experimental",
+    country: "Colombia",
+    countryFlag: "🇨🇴",
+    rating: 4.5,
+    totalVotes: 261,
+  },
+  {
+    id: "r5",
+    rank: 5,
+    thumbnail: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=400&h=225&fit=crop",
+    artist: "Inti Wayra",
+    genre: "Andino Contemporáneo",
+    country: "Perú",
+    countryFlag: "🇵🇪",
+    rating: 4.4,
+    totalVotes: 247,
+  },
+  {
+    id: "r6",
+    rank: 6,
+    thumbnail: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=400&h=225&fit=crop",
+    artist: "Pablo Montero Trío",
+    genre: "Jazz Latino",
+    country: "España",
+    countryFlag: "🇪🇸",
+    rating: 4.3,
+    totalVotes: 233,
+  },
+  {
+    id: "r7",
+    rank: 7,
+    thumbnail: "https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=400&h=225&fit=crop",
+    artist: "Electro Mapuche",
+    genre: "Electrónica Ancestral",
+    country: "Chile",
+    countryFlag: "🇨🇱",
+    rating: 4.2,
+    totalVotes: 219,
+  },
+];
+
 const Index = () => {
   return (
     <div className="min-h-screen bg-background relative">
@@ -142,6 +223,8 @@ const Index = () => {
             videos={destacadosVideos}
             sectionId="destacados"
           />
+
+          <VideoRanking videos={rankingVideos} />
         </div>
       </main>
 

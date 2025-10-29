@@ -21,7 +21,7 @@ export const VideoCarousel = ({ title, videos, sectionId }: VideoCarouselProps) 
   const scroll = (direction: "left" | "right") => {
     const container = document.getElementById(`carousel-${sectionId}`);
     if (container) {
-      const scrollAmount = 280;
+      const scrollAmount = 240;
       const newPosition =
         direction === "left"
           ? Math.max(0, scrollPosition - scrollAmount)
@@ -79,7 +79,7 @@ export const VideoCarousel = ({ title, videos, sectionId }: VideoCarouselProps) 
               {videos.map((video, index) => (
                 <div
                   key={video.id}
-                  className="flex-none w-64 group cursor-pointer animate-slide-in"
+                  className="flex-none w-56 group cursor-pointer animate-slide-in"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <div className="relative aspect-video bg-card rounded-xl overflow-hidden border border-border hover:border-primary transition-all duration-300 hover:shadow-glow hover:scale-105">

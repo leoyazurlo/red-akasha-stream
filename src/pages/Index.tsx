@@ -212,11 +212,11 @@ const Index = () => {
             sectionId="programas"
           />
           
-          <VideoCarousel
-            title="Short"
-            videos={shortVideos}
-            sectionId="short"
-          />
+      <VideoCarousel 
+        title="Shorts" 
+        videos={shortVideos} 
+        sectionId="short"
+      />
           
           <VideoCarousel
             title="Destacados"

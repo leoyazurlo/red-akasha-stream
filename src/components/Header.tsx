@@ -27,8 +27,8 @@ export const Header = () => {
             <img 
               src={logoAkasha} 
               alt="Logo Akasha" 
-              className="h-10 w-10"
-              style={{ filter: 'brightness(0) saturate(100%) invert(70%) sepia(100%) saturate(2000%) hue-rotate(160deg) brightness(110%) contrast(105%)' }}
+              className="h-12 w-12"
+              style={{ filter: 'brightness(0) saturate(100%) invert(70%) sepia(100%) saturate(2500%) hue-rotate(160deg) brightness(120%) contrast(110%)' }}
             />
           </a>
 

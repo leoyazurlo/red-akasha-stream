@@ -28,6 +28,7 @@ export const Header = () => {
               src={logoAkasha} 
               alt="Logo Akasha" 
               className="h-10 w-10"
+              style={{ filter: 'brightness(0) saturate(100%) invert(62%) sepia(93%) saturate(3547%) hue-rotate(158deg) brightness(95%) contrast(95%)' }}
             />
           </a>
 

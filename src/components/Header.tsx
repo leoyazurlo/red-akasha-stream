@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import logoAkasha from "@/assets/logo-akasha.png";
 
 const navItems = [
   { name: "Home", href: "#home" },
@@ -19,12 +20,16 @@ export const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <a href="#home" className="flex items-center space-x-2">
-            <div className="flex items-center">
-              <span className="text-2xl font-light tracking-wider bg-gradient-primary bg-clip-text text-transparent">
-                RED AKASHA
-              </span>
-            </div>
+          <a href="#home" className="flex items-center space-x-3">
+            <img 
+              src={logoAkasha} 
+              alt="Logo Akasha" 
+              className="h-10 w-10 brightness-0 invert"
+              style={{ filter: 'brightness(0) saturate(100%) invert(62%) sepia(93%) saturate(3547%) hue-rotate(158deg) brightness(95%) contrast(95%)' }}
+            />
+            <span className="text-2xl font-light tracking-wider bg-gradient-primary bg-clip-text text-transparent">
+              RED AKASHA
+            </span>
           </a>
 
           {/* Desktop Navigation */}

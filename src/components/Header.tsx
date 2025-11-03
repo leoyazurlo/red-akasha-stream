@@ -10,6 +10,7 @@ const navItems = [
   { name: "Circuito", href: "#circuito" },
   { name: "Asociate", href: "#asociate" },
   { name: "Subir Contenido", href: "#subir-contenido" },
+  { name: "Foro", href: "#foro" },
 ];
 
 export const Header = () => {

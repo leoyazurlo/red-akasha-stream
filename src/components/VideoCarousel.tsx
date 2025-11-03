@@ -41,7 +41,7 @@ export const VideoCarousel = ({ title, videos, sectionId }: VideoCarouselProps) 
         {/* Section Title with Glow Effect */}
         <div className="relative mb-8">
           <div className="absolute inset-0 bg-gradient-glow opacity-20 blur-3xl" />
-          <h2 className="text-2xl md:text-3xl font-light tracking-wide text-foreground text-center relative animate-slide-in">
+          <h2 className="text-2xl md:text-3xl font-montserrat font-medium tracking-wide text-foreground text-center relative animate-slide-in">
             {title}
           </h2>
           <div className="absolute right-0 top-1/2 -translate-y-1/2 flex gap-2 z-10">

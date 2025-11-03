@@ -6,10 +6,10 @@ import logoAkasha from "@/assets/logo-akasha-cyan.png";
 const navItems = [
   { name: "Home", href: "#home" },
   { name: "On Demand", href: "#on-demand" },
+  { name: "Artistas", href: "#artistas" },
   { name: "Circuito", href: "#circuito" },
-  { name: "Quiénes Somos", href: "#quienes-somos" },
   { name: "Asociate", href: "#asociate" },
-  { name: "Open Source", href: "#open-source" },
+  { name: "Subir Contenido", href: "#subir-contenido" },
 ];
 
 export const Header = () => {

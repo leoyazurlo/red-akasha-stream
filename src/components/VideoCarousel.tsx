@@ -51,7 +51,7 @@ export const VideoCarousel = ({ title, videos, sectionId }: VideoCarouselProps) 
               onClick={() => scroll("left")}
               className="hover:bg-secondary hover:scale-110 transition-all duration-300"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft className="h-5 w-5 text-primary" />
             </Button>
             <Button
               variant="ghost"
@@ -59,7 +59,7 @@ export const VideoCarousel = ({ title, videos, sectionId }: VideoCarouselProps) 
               onClick={() => scroll("right")}
               className="hover:bg-secondary hover:scale-110 transition-all duration-300"
             >
-              <ChevronRight className="h-5 w-5" />
+              <ChevronRight className="h-5 w-5 text-primary" />
             </Button>
           </div>
         </div>

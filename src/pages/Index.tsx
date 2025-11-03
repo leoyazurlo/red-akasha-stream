@@ -3,6 +3,7 @@ import { VideoPlayer } from "@/components/VideoPlayer";
 import { VideoCarousel } from "@/components/VideoCarousel";
 import { VideoRanking } from "@/components/VideoRanking";
 import { Footer } from "@/components/Footer";
+import { CosmicBackground } from "@/components/CosmicBackground";
 import akashaBg from "@/assets/akasha-bg.png";
 
 // Mock data for video carousels
@@ -188,6 +189,9 @@ const rankingVideos = [
 const Index = () => {
   return (
     <div className="min-h-screen bg-background relative">
+      {/* Cosmic background */}
+      <CosmicBackground />
+      
       {/* Background pattern with soft opacity */}
       <div 
         className="fixed inset-0 opacity-0 pointer-events-none z-0"

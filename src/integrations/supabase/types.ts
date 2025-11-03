@@ -14,16 +14,550 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      forum_badges: {
+        Row: {
+          badge_type: Database["public"]["Enums"]["badge_type"]
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          requirement_description: string | null
+        }
+        Insert: {
+          badge_type: Database["public"]["Enums"]["badge_type"]
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          requirement_description?: string | null
+        }
+        Update: {
+          badge_type?: Database["public"]["Enums"]["badge_type"]
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          requirement_description?: string | null
+        }
+        Relationships: []
+      }
+      forum_categories: {
+        Row: {
+          created_at: string | null
+          descripcion: string | null
+          icono: string | null
+          id: string
+          nombre: string
+          orden: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          descripcion?: string | null
+          icono?: string | null
+          id?: string
+          nombre: string
+          orden?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          descripcion?: string | null
+          icono?: string | null
+          id?: string
+          nombre?: string
+          orden?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      forum_posts: {
+        Row: {
+          approved: boolean | null
+          author_id: string
+          content: string
+          created_at: string | null
+          id: string
+          is_best_answer: boolean | null
+          parent_post_id: string | null
+          thread_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          approved?: boolean | null
+          author_id: string
+          content: string
+          created_at?: string | null
+          id?: string
+          is_best_answer?: boolean | null
+          parent_post_id?: string | null
+          thread_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          approved?: boolean | null
+          author_id?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_best_answer?: boolean | null
+          parent_post_id?: string | null
+          thread_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_posts_parent_post_id_fkey"
+            columns: ["parent_post_id"]
+            isOneToOne: false
+            referencedRelation: "forum_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_posts_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "forum_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_reports: {
+        Row: {
+          created_at: string | null
+          id: string
+          post_id: string | null
+          reason: string
+          reported_content_type: string | null
+          reporter_id: string
+          resolution_notes: string | null
+          resolved_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["report_status"] | null
+          thread_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          post_id?: string | null
+          reason: string
+          reported_content_type?: string | null
+          reporter_id: string
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["report_status"] | null
+          thread_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          post_id?: string | null
+          reason?: string
+          reported_content_type?: string | null
+          reporter_id?: string
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["report_status"] | null
+          thread_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_reports_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "forum_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_reports_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_reports_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "forum_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_sanctions: {
+        Row: {
+          appeal_status: string | null
+          appeal_text: string | null
+          created_at: string | null
+          duration_days: number | null
+          end_date: string | null
+          id: string
+          is_active: boolean | null
+          reason: string
+          sanction_type: Database["public"]["Enums"]["sanction_type"]
+          sanctioned_by: string
+          start_date: string | null
+          user_id: string
+        }
+        Insert: {
+          appeal_status?: string | null
+          appeal_text?: string | null
+          created_at?: string | null
+          duration_days?: number | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          reason: string
+          sanction_type: Database["public"]["Enums"]["sanction_type"]
+          sanctioned_by: string
+          start_date?: string | null
+          user_id: string
+        }
+        Update: {
+          appeal_status?: string | null
+          appeal_text?: string | null
+          created_at?: string | null
+          duration_days?: number | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          reason?: string
+          sanction_type?: Database["public"]["Enums"]["sanction_type"]
+          sanctioned_by?: string
+          start_date?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_sanctions_sanctioned_by_fkey"
+            columns: ["sanctioned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_sanctions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_subforos: {
+        Row: {
+          category_id: string
+          created_at: string | null
+          descripcion: string | null
+          id: string
+          nombre: string
+          orden: number | null
+          requires_approval: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          category_id: string
+          created_at?: string | null
+          descripcion?: string | null
+          id?: string
+          nombre: string
+          orden?: number | null
+          requires_approval?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          category_id?: string
+          created_at?: string | null
+          descripcion?: string | null
+          id?: string
+          nombre?: string
+          orden?: number | null
+          requires_approval?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_subforos_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "forum_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_threads: {
+        Row: {
+          approved: boolean | null
+          approved_by: string | null
+          author_id: string
+          content: string
+          created_at: string | null
+          id: string
+          is_closed: boolean | null
+          is_pinned: boolean | null
+          requires_approval: boolean | null
+          subforo_id: string
+          thread_type: Database["public"]["Enums"]["thread_type"] | null
+          title: string
+          updated_at: string | null
+          views_count: number | null
+        }
+        Insert: {
+          approved?: boolean | null
+          approved_by?: string | null
+          author_id: string
+          content: string
+          created_at?: string | null
+          id?: string
+          is_closed?: boolean | null
+          is_pinned?: boolean | null
+          requires_approval?: boolean | null
+          subforo_id: string
+          thread_type?: Database["public"]["Enums"]["thread_type"] | null
+          title: string
+          updated_at?: string | null
+          views_count?: number | null
+        }
+        Update: {
+          approved?: boolean | null
+          approved_by?: string | null
+          author_id?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_closed?: boolean | null
+          is_pinned?: boolean | null
+          requires_approval?: boolean | null
+          subforo_id?: string
+          thread_type?: Database["public"]["Enums"]["thread_type"] | null
+          title?: string
+          updated_at?: string | null
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_threads_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_threads_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_threads_subforo_id_fkey"
+            columns: ["subforo_id"]
+            isOneToOne: false
+            referencedRelation: "forum_subforos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_votes: {
+        Row: {
+          created_at: string | null
+          id: string
+          post_id: string | null
+          thread_id: string | null
+          user_id: string
+          vote_value: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          post_id?: string | null
+          thread_id?: string | null
+          user_id: string
+          vote_value?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          post_id?: string | null
+          thread_id?: string | null
+          user_id?: string
+          vote_value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_votes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "forum_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_votes_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "forum_threads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "forum_votes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string
+          reputation_points: number | null
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id: string
+          reputation_points?: number | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string
+          reputation_points?: number | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
+      user_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "forum_badges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_badges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user" | "verified" | "guest"
+      badge_type: "bronze" | "silver" | "gold" | "special" | "merit"
+      report_status: "pending" | "reviewing" | "resolved" | "dismissed"
+      sanction_type: "warning" | "temporary_suspension" | "permanent_ban"
+      thread_type:
+        | "debate_abierto"
+        | "pregunta_encuesta"
+        | "debate_moderado"
+        | "hilo_recursos"
+        | "anuncio"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +684,18 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user", "verified", "guest"],
+      badge_type: ["bronze", "silver", "gold", "special", "merit"],
+      report_status: ["pending", "reviewing", "resolved", "dismissed"],
+      sanction_type: ["warning", "temporary_suspension", "permanent_ban"],
+      thread_type: [
+        "debate_abierto",
+        "pregunta_encuesta",
+        "debate_moderado",
+        "hilo_recursos",
+        "anuncio",
+      ],
+    },
   },
 } as const

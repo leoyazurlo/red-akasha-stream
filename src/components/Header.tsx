@@ -1,20 +1,22 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link, useLocation } from "react-router-dom";
 import logoAkasha from "@/assets/logo-akasha-cyan.png";
 
 const navItems = [
-  { name: "Home", href: "#home" },
-  { name: "On Demand", href: "#on-demand" },
-  { name: "Artistas", href: "#artistas" },
-  { name: "Circuito", href: "#circuito" },
-  { name: "Asociate", href: "#asociate" },
-  { name: "Subir Contenido", href: "#subir-contenido" },
-  { name: "Foro", href: "#foro" },
+  { name: "Home", href: "#home", isRoute: false },
+  { name: "On Demand", href: "#on-demand", isRoute: false },
+  { name: "Artistas", href: "#artistas", isRoute: false },
+  { name: "Circuito", href: "#circuito", isRoute: false },
+  { name: "Asociate", href: "#asociate", isRoute: false },
+  { name: "Subir Contenido", href: "#subir-contenido", isRoute: false },
+  { name: "Foro", href: "/foro", isRoute: true },
 ];
 
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/95 backdrop-blur-md">
@@ -36,13 +38,23 @@ export const Header = () => {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-1">
             {navItems.map((item) => (
-              <a
-                key={item.name}
-                href={item.href}
-                className="px-4 py-2 text-sm font-light text-foreground hover:text-primary transition-colors rounded-lg hover:bg-secondary"
-              >
-                {item.name}
-              </a>
+              item.isRoute ? (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className="px-4 py-2 text-sm font-light text-foreground hover:text-primary transition-colors rounded-lg hover:bg-secondary"
+                >
+                  {item.name}
+                </Link>
+              ) : (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  className="px-4 py-2 text-sm font-light text-foreground hover:text-primary transition-colors rounded-lg hover:bg-secondary"
+                >
+                  {item.name}
+                </a>
+              )
             ))}
           </nav>
 
@@ -65,14 +77,25 @@ export const Header = () => {
         {mobileMenuOpen && (
           <nav className="md:hidden py-4 space-y-2 animate-slide-in">
             {navItems.map((item) => (
-              <a
-                key={item.name}
-                href={item.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-4 py-2 text-sm font-light text-foreground hover:text-primary transition-colors rounded-lg hover:bg-secondary"
-              >
-                {item.name}
-              </a>
+              item.isRoute ? (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-4 py-2 text-sm font-light text-foreground hover:text-primary transition-colors rounded-lg hover:bg-secondary"
+                >
+                  {item.name}
+                </Link>
+              ) : (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-4 py-2 text-sm font-light text-foreground hover:text-primary transition-colors rounded-lg hover:bg-secondary"
+                >
+                  {item.name}
+                </a>
+              )
             ))}
           </nav>
         )}

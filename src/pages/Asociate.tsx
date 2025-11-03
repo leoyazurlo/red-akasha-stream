@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { useToast } from "@/hooks/use-toast";
@@ -21,8 +22,32 @@ const Asociate = () => {
     telefono: "",
     ciudad: "",
     motivacion: "",
-    intereses: "",
+    areasInteres: [] as string[],
+    queBuscas: [] as string[],
+    perfil: [] as string[],
   });
+
+  const areasInteresOptions = [
+    "Música",
+    "Arte Digital",
+    "Fotografía",
+    "Video",
+    "Podcasts"
+  ];
+
+  const queBuscasOptions = [
+    "Contacto con productores de mi país",
+    "Contacto con salas de grabación",
+    "Contacto con venues o salas de concierto",
+    "Conocer nuevos artistas"
+  ];
+
+  const perfilOptions = [
+    "Soy músico",
+    "Soy productor",
+    "Soy sala de ensayo",
+    "Soy sala de concierto"
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +79,20 @@ const Asociate = () => {
       ...prev,
       [e.target.name]: e.target.value
     }));
+  };
+
+  const handleCheckboxChange = (category: 'areasInteres' | 'queBuscas' | 'perfil', value: string) => {
+    setFormData(prev => {
+      const currentArray = prev[category];
+      const newArray = currentArray.includes(value)
+        ? currentArray.filter(item => item !== value)
+        : [...currentArray, value];
+      
+      return {
+        ...prev,
+        [category]: newArray
+      };
+    });
   };
 
   const benefits = [
@@ -186,15 +225,67 @@ const Asociate = () => {
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="intereses">Áreas de Interés</Label>
-                      <Input
-                        id="intereses"
-                        name="intereses"
-                        value={formData.intereses}
-                        onChange={handleChange}
-                        placeholder="Música, Arte Digital, Fotografía..."
-                      />
+                    <div className="space-y-4">
+                      <Label className="text-base font-semibold">Áreas de Interés</Label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {areasInteresOptions.map((option) => (
+                          <div key={option} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`area-${option}`}
+                              checked={formData.areasInteres.includes(option)}
+                              onCheckedChange={() => handleCheckboxChange('areasInteres', option)}
+                            />
+                            <Label
+                              htmlFor={`area-${option}`}
+                              className="text-sm font-normal cursor-pointer"
+                            >
+                              {option}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <Label className="text-base font-semibold">¿Qué buscas en la plataforma?</Label>
+                      <div className="grid grid-cols-1 gap-3">
+                        {queBuscasOptions.map((option) => (
+                          <div key={option} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`busca-${option}`}
+                              checked={formData.queBuscas.includes(option)}
+                              onCheckedChange={() => handleCheckboxChange('queBuscas', option)}
+                            />
+                            <Label
+                              htmlFor={`busca-${option}`}
+                              className="text-sm font-normal cursor-pointer"
+                            >
+                              {option}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <Label className="text-base font-semibold">Tu perfil</Label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {perfilOptions.map((option) => (
+                          <div key={option} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`perfil-${option}`}
+                              checked={formData.perfil.includes(option)}
+                              onCheckedChange={() => handleCheckboxChange('perfil', option)}
+                            />
+                            <Label
+                              htmlFor={`perfil-${option}`}
+                              className="text-sm font-normal cursor-pointer"
+                            >
+                              {option}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
                     </div>
 
                     <div className="space-y-2">

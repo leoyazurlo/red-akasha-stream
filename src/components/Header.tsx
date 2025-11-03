@@ -9,7 +9,7 @@ const navItems = [
   { name: "On Demand", href: "#on-demand", isRoute: false },
   { name: "Artistas", href: "#artistas", isRoute: false },
   { name: "Circuito", href: "#circuito", isRoute: false },
-  { name: "Asociate", href: "#asociate", isRoute: false },
+  { name: "Asociate", href: "/asociate", isRoute: true },
   { name: "Subir Contenido", href: "#subir-contenido", isRoute: false },
   { name: "Foro", href: "/foro", isRoute: true },
 ];

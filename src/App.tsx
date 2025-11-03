@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Forum from "./pages/Forum";
 import Admin from "./pages/Admin";
 import AdminCategories from "./pages/admin/Categories";
+import Asociate from "./pages/Asociate";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/foro" element={<Forum />} />
+          <Route path="/asociate" element={<Asociate />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/categories" element={<AdminCategories />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

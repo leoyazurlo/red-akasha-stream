@@ -1,6 +1,8 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
+import { ForumCategories } from "@/components/forum/ForumCategories";
+import { ForumStats } from "@/components/forum/ForumStats";
 
 const Forum = () => {
   return (
@@ -14,18 +16,18 @@ const Forum = () => {
           <div className="relative mb-12">
             <div className="absolute inset-0 bg-gradient-glow opacity-20 blur-3xl" />
             <h1 className="text-4xl md:text-5xl font-poppins font-medium tracking-wide text-foreground text-center relative animate-slide-in">
-              Foro de debates para la reforma y armado de la plataforma
+              Foro Red Akasha
             </h1>
+            <p className="text-muted-foreground text-center mt-4 text-lg">
+              Espacio de debate y colaboración para la comunidad
+            </p>
           </div>
 
-          {/* Content Section */}
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-card/50 backdrop-blur-sm border border-border rounded-lg p-8 shadow-card">
-              <p className="text-muted-foreground text-center text-lg">
-                Próximamente: Espacio de debate y colaboración para la comunidad
-              </p>
-            </div>
-          </div>
+          {/* Stats Section */}
+          <ForumStats />
+
+          {/* Categories Section */}
+          <ForumCategories />
         </div>
       </main>
 

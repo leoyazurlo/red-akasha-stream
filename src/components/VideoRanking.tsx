@@ -32,7 +32,7 @@ export const VideoRanking = ({ videos }: VideoRankingProps) => {
       <div className="container mx-auto px-4">
         <div className="relative mb-8">
           <div className="absolute inset-0 bg-gradient-glow opacity-20 blur-3xl" />
-          <h2 className="text-3xl md:text-4xl font-light tracking-wide text-foreground text-center relative animate-slide-in">
+          <h2 className="text-3xl md:text-4xl font-poppins font-medium tracking-wide text-foreground text-center relative animate-slide-in">
             Rankings de Videos
           </h2>
         </div>

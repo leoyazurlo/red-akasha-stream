@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 
 const latinAmericanCountries = [
-  { name: "Argentina", flag: "🇦🇷", code: "AR", cities: ["Buenos Aires", "Córdoba", "Rosario", "Mendoza", "La Plata", "Mar del Plata", "Salta", "Tucumán"] },
+  { name: "Argentina", flag: "🇦🇷", code: "AR", cities: ["Buenos Aires", "Córdoba", "Rosario", "Mendoza", "La Plata", "Mar del Plata", "Salta", "Tucumán", "San Miguel de Tucumán", "Santa Fe", "San Juan", "Resistencia", "Neuquén", "Corrientes", "Posadas", "Bahía Blanca", "Paraná", "San Salvador de Jujuy", "Santiago del Estero", "San Fernando del Valle de Catamarca", "Formosa", "San Luis", "La Rioja", "Río Cuarto", "Comodoro Rivadavia", "San Nicolás", "Quilmes", "Lanús", "Banfield", "Lomas de Zamora", "San Isidro", "Avellaneda", "San Martín"] },
   { name: "Bolivia", flag: "🇧🇴", code: "BO", cities: ["La Paz", "Santa Cruz", "Cochabamba", "Sucre", "Oruro", "Potosí"] },
   { name: "Brasil", flag: "🇧🇷", code: "BR", cities: ["São Paulo", "Rio de Janeiro", "Brasília", "Salvador", "Fortaleza", "Belo Horizonte", "Curitiba", "Recife"] },
   { name: "Chile", flag: "🇨🇱", code: "CL", cities: ["Santiago", "Valparaíso", "Concepción", "Viña del Mar", "Antofagasta", "Temuco"] },

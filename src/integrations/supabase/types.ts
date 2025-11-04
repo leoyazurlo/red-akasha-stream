@@ -660,6 +660,7 @@ export type Database = {
           nombre: string
           pais: string | null
           perfil: string[] | null
+          provincia: string | null
           que_buscas: string[] | null
           status: string
           telefono: string | null
@@ -676,6 +677,7 @@ export type Database = {
           nombre: string
           pais?: string | null
           perfil?: string[] | null
+          provincia?: string | null
           que_buscas?: string[] | null
           status?: string
           telefono?: string | null
@@ -692,6 +694,7 @@ export type Database = {
           nombre?: string
           pais?: string | null
           perfil?: string[] | null
+          provincia?: string | null
           que_buscas?: string[] | null
           status?: string
           telefono?: string | null

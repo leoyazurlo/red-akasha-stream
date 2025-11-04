@@ -19,8 +19,35 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+const argentinaProvincias = [
+  { name: "Buenos Aires", cities: ["La Plata", "Mar del Plata", "Bahía Blanca", "Quilmes", "Lanús", "Banfield", "Lomas de Zamora", "San Isidro", "Avellaneda", "San Martín", "Tandil", "Olavarría", "Azul", "Necochea", "Pergamino"] },
+  { name: "Ciudad Autónoma de Buenos Aires", cities: ["CABA"] },
+  { name: "Catamarca", cities: ["San Fernando del Valle de Catamarca", "Andalgalá", "Belén", "Tinogasta"] },
+  { name: "Chaco", cities: ["Resistencia", "Presidencia Roque Sáenz Peña", "Villa Ángela", "Barranqueras"] },
+  { name: "Chubut", cities: ["Comodoro Rivadavia", "Trelew", "Puerto Madryn", "Esquel", "Rawson"] },
+  { name: "Córdoba", cities: ["Córdoba", "Río Cuarto", "Villa María", "San Francisco", "Villa Carlos Paz", "Alta Gracia", "Bell Ville"] },
+  { name: "Corrientes", cities: ["Corrientes", "Goya", "Paso de los Libres", "Curuzú Cuatiá", "Mercedes"] },
+  { name: "Entre Ríos", cities: ["Paraná", "Concordia", "Gualeguaychú", "Concepción del Uruguay", "Victoria"] },
+  { name: "Formosa", cities: ["Formosa", "Clorinda", "Pirané", "El Colorado"] },
+  { name: "Jujuy", cities: ["San Salvador de Jujuy", "San Pedro de Jujuy", "Libertador General San Martín", "Perico", "Humahuaca"] },
+  { name: "La Pampa", cities: ["Santa Rosa", "General Pico", "General Acha", "Realicó"] },
+  { name: "La Rioja", cities: ["La Rioja", "Chilecito", "Chamical", "Aimogasta"] },
+  { name: "Mendoza", cities: ["Mendoza", "San Rafael", "Godoy Cruz", "Maipú", "Luján de Cuyo", "San Martín", "Tunuyán"] },
+  { name: "Misiones", cities: ["Posadas", "Oberá", "Eldorado", "Puerto Iguazú", "Apóstoles", "Leandro N. Alem"] },
+  { name: "Neuquén", cities: ["Neuquén", "San Martín de los Andes", "Zapala", "Cutral-Có", "Villa La Angostura", "Centenario"] },
+  { name: "Río Negro", cities: ["Viedma", "San Carlos de Bariloche", "General Roca", "Cipolletti", "Villa Regina"] },
+  { name: "Salta", cities: ["Salta", "San Ramón de la Nueva Orán", "Tartagal", "Metán", "Cafayate"] },
+  { name: "San Juan", cities: ["San Juan", "Rawson", "Chimbas", "Pocito", "Caucete", "Rivadavia"] },
+  { name: "San Luis", cities: ["San Luis", "Villa Mercedes", "La Punta", "Merlo", "Justo Daract"] },
+  { name: "Santa Cruz", cities: ["Río Gallegos", "Caleta Olivia", "Pico Truncado", "Puerto Deseado", "El Calafate"] },
+  { name: "Santa Fe", cities: ["Rosario", "Santa Fe", "Rafaela", "Venado Tuerto", "Reconquista", "San Lorenzo"] },
+  { name: "Santiago del Estero", cities: ["Santiago del Estero", "La Banda", "Termas de Río Hondo", "Frías", "Añatuya"] },
+  { name: "Tierra del Fuego", cities: ["Ushuaia", "Río Grande", "Tolhuin"] },
+  { name: "Tucumán", cities: ["San Miguel de Tucumán", "Yerba Buena", "Tafí Viejo", "Concepción", "Aguilares", "Monteros"] }
+];
+
 const latinAmericanCountries = [
-  { name: "Argentina", flag: "🇦🇷", code: "AR", cities: ["Buenos Aires", "Córdoba", "Rosario", "Mendoza", "La Plata", "Mar del Plata", "Salta", "Tucumán", "San Miguel de Tucumán", "Santa Fe", "San Juan", "Resistencia", "Neuquén", "Corrientes", "Posadas", "Bahía Blanca", "Paraná", "San Salvador de Jujuy", "Santiago del Estero", "San Fernando del Valle de Catamarca", "Formosa", "San Luis", "La Rioja", "Río Cuarto", "Comodoro Rivadavia", "San Nicolás", "Quilmes", "Lanús", "Banfield", "Lomas de Zamora", "San Isidro", "Avellaneda", "San Martín"] },
+  { name: "Argentina", flag: "🇦🇷", code: "AR" },
   { name: "Bolivia", flag: "🇧🇴", code: "BO", cities: ["La Paz", "Santa Cruz", "Cochabamba", "Sucre", "Oruro", "Potosí"] },
   { name: "Brasil", flag: "🇧🇷", code: "BR", cities: ["São Paulo", "Rio de Janeiro", "Brasília", "Salvador", "Fortaleza", "Belo Horizonte", "Curitiba", "Recife"] },
   { name: "Chile", flag: "🇨🇱", code: "CL", cities: ["Santiago", "Valparaíso", "Concepción", "Viña del Mar", "Antofagasta", "Temuco"] },
@@ -50,6 +77,7 @@ const Asociate = () => {
     email: "",
     telefono: "",
     pais: "",
+    provincia: "",
     ciudad: "",
     motivacion: "",
     areasInteres: [] as string[],
@@ -96,6 +124,7 @@ const Asociate = () => {
           nombre: formData.nombre,
           telefono: formData.telefono || null,
           pais: formData.pais,
+          provincia: formData.provincia || null,
           ciudad: formData.ciudad,
           motivacion: formData.motivacion,
           areas_interes: formData.areasInteres,
@@ -266,7 +295,7 @@ const Asociate = () => {
                       <Label htmlFor="pais">País *</Label>
                       <Select
                         value={formData.pais}
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, pais: value, ciudad: "" }))}
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, pais: value, provincia: "", ciudad: "" }))}
                         required
                       >
                         <SelectTrigger>
@@ -285,7 +314,29 @@ const Asociate = () => {
                       </Select>
                     </div>
 
-                    {formData.pais && (
+                    {formData.pais === "Argentina" && (
+                      <div className="space-y-2">
+                        <Label htmlFor="provincia">Provincia *</Label>
+                        <Select
+                          value={formData.provincia}
+                          onValueChange={(value) => setFormData(prev => ({ ...prev, provincia: value, ciudad: "" }))}
+                          required
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona tu provincia" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {argentinaProvincias.map((provincia) => (
+                              <SelectItem key={provincia.name} value={provincia.name}>
+                                {provincia.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    {formData.pais && (formData.pais !== "Argentina" || formData.provincia) && (
                       <div className="space-y-2">
                         <Label htmlFor="ciudad">Ciudad *</Label>
                         <Select
@@ -297,13 +348,22 @@ const Asociate = () => {
                             <SelectValue placeholder="Selecciona tu ciudad" />
                           </SelectTrigger>
                           <SelectContent>
-                            {latinAmericanCountries
-                              .find(c => c.name === formData.pais)
-                              ?.cities.map((city) => (
-                                <SelectItem key={city} value={city}>
-                                  {city}
-                                </SelectItem>
-                              ))}
+                            {formData.pais === "Argentina" 
+                              ? argentinaProvincias
+                                  .find(p => p.name === formData.provincia)
+                                  ?.cities.map((city) => (
+                                    <SelectItem key={city} value={city}>
+                                      {city}
+                                    </SelectItem>
+                                  ))
+                              : latinAmericanCountries
+                                  .find(c => c.name === formData.pais)
+                                  ?.cities?.map((city) => (
+                                    <SelectItem key={city} value={city}>
+                                      {city}
+                                    </SelectItem>
+                                  ))
+                            }
                           </SelectContent>
                         </Select>
                       </div>

@@ -43,6 +43,7 @@ interface RegistrationRequest {
   telefono: string | null;
   ciudad: string;
   pais: string | null;
+  provincia: string | null;
   areas_interes: string[] | null;
   que_buscas: string[] | null;
   perfil: string[] | null;
@@ -190,7 +191,14 @@ const Circuito = () => {
                         <Card key={usuario.id} className="border-border bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-all">
                           <CardHeader>
                             <CardTitle className="flex items-start justify-between">
-                              <span>{usuario.nombre}</span>
+                              <div>
+                                <span className="block">{usuario.nombre}</span>
+                                {usuario.provincia && (
+                                  <span className="text-sm text-muted-foreground font-normal">
+                                    {usuario.provincia}
+                                  </span>
+                                )}
+                              </div>
                               {usuario.perfil && usuario.perfil.length > 0 && (
                                 <Users className="w-5 h-5 text-primary flex-shrink-0 ml-2" />
                               )}

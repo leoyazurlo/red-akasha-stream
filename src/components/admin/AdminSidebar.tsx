@@ -1,4 +1,4 @@
-import { LayoutDashboard, FolderTree, Users, Flag, ShieldAlert, Award } from "lucide-react";
+import { LayoutDashboard, FolderTree, Users, Flag, ShieldAlert, Award, Radio, Film, Headphones, Calendar } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -12,8 +12,17 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-const items = [
+const generalItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
+];
+
+const streamingItems = [
+  { title: "Streams en Vivo", url: "/admin/streams", icon: Radio },
+  { title: "Videos (VOD)", url: "/admin/vod", icon: Film },
+  { title: "Podcasts", url: "/admin/podcasts", icon: Headphones },
+];
+
+const forumItems = [
   { title: "Categorías", url: "/admin/categories", icon: FolderTree },
   { title: "Usuarios y Roles", url: "/admin/users", icon: Users },
   { title: "Reportes", url: "/admin/reports", icon: Flag },
@@ -23,19 +32,67 @@ const items = [
 
 export function AdminSidebar() {
   const { open } = useSidebar();
-  const location = useLocation();
-  const currentPath = location.pathname;
-
-  const isActive = (path: string) => currentPath === path;
 
   return (
     <Sidebar className={!open ? "w-14" : "w-60"} collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Panel de Administración</SidebarGroupLabel>
+          <SidebarGroupLabel>General</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
+              {generalItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
+                      end
+                      className={({ isActive }) =>
+                        isActive
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "hover:bg-muted/50"
+                      }
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {open && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Streaming</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {streamingItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
+                      end
+                      className={({ isActive }) =>
+                        isActive
+                          ? "bg-primary/10 text-primary font-medium"
+                          : "hover:bg-muted/50"
+                      }
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {open && <span>{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Foro</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {forumItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink

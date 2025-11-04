@@ -31,7 +31,9 @@ export default function AdminCategories() {
         <div className="flex w-full pt-14">
           <AdminSidebar />
           <main className="flex-1 p-6">
-            <CategoriesManager />
+            <div className="max-w-6xl mx-auto">
+              <CategoriesManager />
+            </div>
           </main>
         </div>
       </div>

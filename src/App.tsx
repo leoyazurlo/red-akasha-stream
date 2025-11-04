@@ -11,6 +11,7 @@ import AdminStreams from "./pages/admin/Streams";
 import AdminVOD from "./pages/admin/VOD";
 import AdminPodcasts from "./pages/admin/Podcasts";
 import Asociate from "./pages/Asociate";
+import Circuito from "./pages/Circuito";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/foro" element={<Forum />} />
           <Route path="/asociate" element={<Asociate />} />
+          <Route path="/circuito" element={<Circuito />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/categories" element={<AdminCategories />} />

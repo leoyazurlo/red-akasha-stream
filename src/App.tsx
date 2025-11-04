@@ -13,6 +13,7 @@ import AdminPodcasts from "./pages/admin/Podcasts";
 import Asociate from "./pages/Asociate";
 import Circuito from "./pages/Circuito";
 import Auth from "./pages/Auth";
+import UploadContent from "./pages/UploadContent";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/asociate" element={<Asociate />} />
           <Route path="/circuito" element={<Circuito />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/subir-contenido" element={<UploadContent />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/categories" element={<AdminCategories />} />
           <Route path="/admin/streams" element={<AdminStreams />} />

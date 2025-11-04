@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      audio_playlist: {
+        Row: {
+          audio_url: string
+          created_at: string | null
+          duration: number | null
+          id: string
+          order_index: number | null
+          profile_id: string
+          title: string
+        }
+        Insert: {
+          audio_url: string
+          created_at?: string | null
+          duration?: number | null
+          id?: string
+          order_index?: number | null
+          profile_id: string
+          title: string
+        }
+        Update: {
+          audio_url?: string
+          created_at?: string | null
+          duration?: number | null
+          id?: string
+          order_index?: number | null
+          profile_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audio_playlist_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profile_details"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           created_at: string | null
@@ -60,6 +98,81 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      content_uploads: {
+        Row: {
+          audio_url: string | null
+          band_name: string | null
+          content_type: Database["public"]["Enums"]["content_type"]
+          created_at: string | null
+          description: string | null
+          duration: number | null
+          id: string
+          podcast_category:
+            | Database["public"]["Enums"]["podcast_category"]
+            | null
+          producer_name: string | null
+          promoter_name: string | null
+          recording_studio: string | null
+          status: string | null
+          tags: string[] | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string | null
+          uploader_id: string
+          venue_name: string | null
+          video_url: string | null
+          views_count: number | null
+        }
+        Insert: {
+          audio_url?: string | null
+          band_name?: string | null
+          content_type: Database["public"]["Enums"]["content_type"]
+          created_at?: string | null
+          description?: string | null
+          duration?: number | null
+          id?: string
+          podcast_category?:
+            | Database["public"]["Enums"]["podcast_category"]
+            | null
+          producer_name?: string | null
+          promoter_name?: string | null
+          recording_studio?: string | null
+          status?: string | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string | null
+          uploader_id: string
+          venue_name?: string | null
+          video_url?: string | null
+          views_count?: number | null
+        }
+        Update: {
+          audio_url?: string | null
+          band_name?: string | null
+          content_type?: Database["public"]["Enums"]["content_type"]
+          created_at?: string | null
+          description?: string | null
+          duration?: number | null
+          id?: string
+          podcast_category?:
+            | Database["public"]["Enums"]["podcast_category"]
+            | null
+          producer_name?: string | null
+          promoter_name?: string | null
+          recording_studio?: string | null
+          status?: string | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string | null
+          uploader_id?: string
+          venue_name?: string | null
+          video_url?: string | null
+          views_count?: number | null
+        }
+        Relationships: []
       }
       donations: {
         Row: {
@@ -615,6 +728,134 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      profile_details: {
+        Row: {
+          bio: string | null
+          capacity: number | null
+          ciudad: string
+          created_at: string | null
+          display_name: string
+          email: string | null
+          facebook: string | null
+          formation_date: string | null
+          genre: Database["public"]["Enums"]["music_genre"] | null
+          id: string
+          instagram: string | null
+          linkedin: string | null
+          map_location: string | null
+          members: Json | null
+          pais: string
+          produced_artists: Json | null
+          producer_instagram: string | null
+          profile_type: Database["public"]["Enums"]["profile_type"]
+          recorded_at: string | null
+          technical_specs: Json | null
+          telefono: string | null
+          updated_at: string | null
+          user_id: string
+          venue_type: Database["public"]["Enums"]["sala_type"] | null
+          venues_produced: Json | null
+          whatsapp: string | null
+        }
+        Insert: {
+          bio?: string | null
+          capacity?: number | null
+          ciudad: string
+          created_at?: string | null
+          display_name: string
+          email?: string | null
+          facebook?: string | null
+          formation_date?: string | null
+          genre?: Database["public"]["Enums"]["music_genre"] | null
+          id?: string
+          instagram?: string | null
+          linkedin?: string | null
+          map_location?: string | null
+          members?: Json | null
+          pais: string
+          produced_artists?: Json | null
+          producer_instagram?: string | null
+          profile_type: Database["public"]["Enums"]["profile_type"]
+          recorded_at?: string | null
+          technical_specs?: Json | null
+          telefono?: string | null
+          updated_at?: string | null
+          user_id: string
+          venue_type?: Database["public"]["Enums"]["sala_type"] | null
+          venues_produced?: Json | null
+          whatsapp?: string | null
+        }
+        Update: {
+          bio?: string | null
+          capacity?: number | null
+          ciudad?: string
+          created_at?: string | null
+          display_name?: string
+          email?: string | null
+          facebook?: string | null
+          formation_date?: string | null
+          genre?: Database["public"]["Enums"]["music_genre"] | null
+          id?: string
+          instagram?: string | null
+          linkedin?: string | null
+          map_location?: string | null
+          members?: Json | null
+          pais?: string
+          produced_artists?: Json | null
+          producer_instagram?: string | null
+          profile_type?: Database["public"]["Enums"]["profile_type"]
+          recorded_at?: string | null
+          technical_specs?: Json | null
+          telefono?: string | null
+          updated_at?: string | null
+          user_id?: string
+          venue_type?: Database["public"]["Enums"]["sala_type"] | null
+          venues_produced?: Json | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      profile_galleries: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          media_type: string
+          order_index: number | null
+          profile_id: string
+          title: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          media_type: string
+          order_index?: number | null
+          profile_id: string
+          title?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          media_type?: string
+          order_index?: number | null
+          profile_id?: string
+          title?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_galleries_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profile_details"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -1275,8 +1516,71 @@ export type Database = {
         | "producer"
         | "streamer"
       badge_type: "bronze" | "silver" | "gold" | "special" | "merit"
+      content_type:
+        | "video_musical_vivo"
+        | "video_clip"
+        | "podcast"
+        | "documental"
+        | "corto"
+        | "pelicula"
+      music_genre:
+        | "rock"
+        | "pop"
+        | "jazz"
+        | "blues"
+        | "reggae"
+        | "hip_hop"
+        | "rap"
+        | "electronica"
+        | "house"
+        | "techno"
+        | "trance"
+        | "country"
+        | "folk"
+        | "soul"
+        | "funk"
+        | "rnb"
+        | "metal"
+        | "punk"
+        | "ska"
+        | "clasica"
+        | "opera"
+        | "flamenco"
+        | "tango"
+        | "salsa"
+        | "merengue"
+        | "cumbia"
+        | "bachata"
+        | "kpop"
+        | "jpop"
+        | "andina"
+        | "celta"
+        | "gospel"
+        | "arabe"
+        | "africana"
+        | "india"
       payment_status: "pending" | "completed" | "failed" | "refunded"
+      podcast_category:
+        | "produccion"
+        | "marketing_digital"
+        | "derecho_autor"
+        | "management"
+        | "composicion"
+      profile_type:
+        | "disfruto_musica"
+        | "productor_artistico"
+        | "estudio_grabacion"
+        | "promotor_artistico"
+        | "sala_concierto"
+        | "agrupacion_musical"
       report_status: "pending" | "reviewing" | "resolved" | "dismissed"
+      sala_type:
+        | "teatro"
+        | "auditorio"
+        | "discoteque"
+        | "club"
+        | "bar"
+        | "anfiteatro"
       sanction_type: "warning" | "temporary_suspension" | "permanent_ban"
       stream_quality:
         | "source"
@@ -1431,8 +1735,76 @@ export const Constants = {
         "streamer",
       ],
       badge_type: ["bronze", "silver", "gold", "special", "merit"],
+      content_type: [
+        "video_musical_vivo",
+        "video_clip",
+        "podcast",
+        "documental",
+        "corto",
+        "pelicula",
+      ],
+      music_genre: [
+        "rock",
+        "pop",
+        "jazz",
+        "blues",
+        "reggae",
+        "hip_hop",
+        "rap",
+        "electronica",
+        "house",
+        "techno",
+        "trance",
+        "country",
+        "folk",
+        "soul",
+        "funk",
+        "rnb",
+        "metal",
+        "punk",
+        "ska",
+        "clasica",
+        "opera",
+        "flamenco",
+        "tango",
+        "salsa",
+        "merengue",
+        "cumbia",
+        "bachata",
+        "kpop",
+        "jpop",
+        "andina",
+        "celta",
+        "gospel",
+        "arabe",
+        "africana",
+        "india",
+      ],
       payment_status: ["pending", "completed", "failed", "refunded"],
+      podcast_category: [
+        "produccion",
+        "marketing_digital",
+        "derecho_autor",
+        "management",
+        "composicion",
+      ],
+      profile_type: [
+        "disfruto_musica",
+        "productor_artistico",
+        "estudio_grabacion",
+        "promotor_artistico",
+        "sala_concierto",
+        "agrupacion_musical",
+      ],
       report_status: ["pending", "reviewing", "resolved", "dismissed"],
+      sala_type: [
+        "teatro",
+        "auditorio",
+        "discoteque",
+        "club",
+        "bar",
+        "anfiteatro",
+      ],
       sanction_type: ["warning", "temporary_suspension", "permanent_ban"],
       stream_quality: ["source", "1080p", "720p", "480p", "360p", "audio_only"],
       stream_status: ["scheduled", "live", "ended", "cancelled"],

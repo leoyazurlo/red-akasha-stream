@@ -4,8 +4,6 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +16,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { MusicLoverForm } from "@/components/profile-forms/MusicLoverForm";
+import { RecordingStudioForm } from "@/components/profile-forms/RecordingStudioForm";
+import { VenueForm } from "@/components/profile-forms/VenueForm";
+import { ProducerForm } from "@/components/profile-forms/ProducerForm";
+import { PromoterForm } from "@/components/profile-forms/PromoterForm";
+import { BandForm } from "@/components/profile-forms/BandForm";
 
 const argentinaProvincias = [
   { name: "Buenos Aires", cities: ["La Plata", "Mar del Plata", "Bahía Blanca", "Quilmes", "Lanús", "Banfield", "Lomas de Zamora", "San Isidro", "Avellaneda", "San Martín", "Tandil", "Olavarría", "Azul", "Necochea", "Pergamino"] },
@@ -72,6 +76,7 @@ const Asociate = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [selectedProfile, setSelectedProfile] = useState<string>("");
   const [formData, setFormData] = useState({
     nombre: "",
     email: "",
@@ -79,78 +84,115 @@ const Asociate = () => {
     pais: "",
     provincia: "",
     ciudad: "",
-    motivacion: "",
-    areasInteres: [] as string[],
-    queBuscas: [] as string[],
-    perfil: [] as string[],
+    // Campos del perfil específico
+    display_name: "",
+    bio: "",
+    instagram: "",
+    facebook: "",
+    linkedin: "",
+    whatsapp: "",
+    technical_specs: "",
+    map_location: "",
+    venue_type: "",
+    capacity: "",
+    genre: "",
+    formation_date: "",
+    producer_instagram: "",
+    recorded_at: "",
   });
 
   const perfilOptions = [
-    "Disfruto de la música",
-    "Productor artístico",
-    "Estudio de grabación",
-    "Promotor artístico",
-    "Sala de concierto",
-    "Agrupación musical"
+    { value: "disfruto_musica", label: "Disfruto de la música" },
+    { value: "productor_artistico", label: "Productor artístico" },
+    { value: "estudio_grabacion", label: "Estudio de grabación" },
+    { value: "promotor_artistico", label: "Promotor artístico" },
+    { value: "sala_concierto", label: "Sala de concierto" },
+    { value: "agrupacion_musical", label: "Agrupación musical" }
   ];
 
-  const areasInteresOptions = [
-    "Música",
-    "Video",
-    "Programas",
-    "Cine",
-    "Podcasts",
-    "Arte digital",
-    "Fotografía"
-  ];
-
-  const queBuscasOptions = [
-    "Contacto con productores",
-    "Contacto con promotores locales",
-    "Contacto con venues o salas de conciertos",
-    "Conocer nuevos artistas",
-    "Aprender sobre producción",
-    "Soy entusiasta del arte"
-  ];
+  const profileTypeMap: Record<string, string> = {
+    "disfruto_musica": "disfruto_musica",
+    "productor_artistico": "productor_artistico",
+    "estudio_grabacion": "estudio_grabacion",
+    "promotor_artistico": "promotor_artistico",
+    "sala_concierto": "sala_concierto",
+    "agrupacion_musical": "agrupacion_musical"
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!selectedProfile) {
+      toast({
+        title: "Error",
+        description: "Por favor selecciona un tipo de perfil",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Obtener el usuario actual si está autenticado
+      // Obtener el usuario actual
       const { data: { user } } = await supabase.auth.getUser();
-
-      // Guardar en la tabla de solicitudes de registro
-      const { error } = await supabase
-        .from('registration_requests')
-        .insert({
-          user_id: user?.id || null,
-          email: formData.email,
-          nombre: formData.nombre,
-          telefono: formData.telefono || null,
-          pais: formData.pais,
-          provincia: formData.provincia || null,
-          ciudad: formData.ciudad,
-          motivacion: formData.motivacion,
-          areas_interes: formData.areasInteres,
-          que_buscas: formData.queBuscas,
-          perfil: formData.perfil,
-          status: 'pending'
+      
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "Debes iniciar sesión para completar el registro",
+          variant: "destructive",
         });
+        return;
+      }
+
+      // Preparar datos específicos del perfil
+      const profileData: any = {
+        user_id: user.id,
+        profile_type: profileTypeMap[selectedProfile],
+        display_name: formData.display_name || formData.nombre,
+        bio: formData.bio || null,
+        pais: formData.pais,
+        ciudad: formData.ciudad,
+        instagram: formData.instagram || null,
+        facebook: formData.facebook || null,
+        linkedin: formData.linkedin || null,
+        email: formData.email || user.email,
+        telefono: formData.telefono || null,
+        whatsapp: formData.whatsapp || null,
+      };
+
+      // Agregar campos específicos según el tipo de perfil
+      if (selectedProfile === "estudio_grabacion") {
+        profileData.technical_specs = formData.technical_specs ? JSON.stringify({ description: formData.technical_specs }) : null;
+        profileData.map_location = formData.map_location || null;
+      } else if (selectedProfile === "sala_concierto") {
+        profileData.venue_type = formData.venue_type || null;
+        profileData.capacity = formData.capacity ? parseInt(formData.capacity) : null;
+      } else if (selectedProfile === "agrupacion_musical") {
+        profileData.genre = formData.genre || null;
+        profileData.formation_date = formData.formation_date || null;
+        profileData.producer_instagram = formData.producer_instagram || null;
+        profileData.recorded_at = formData.recorded_at || null;
+      }
+
+      // Guardar en profile_details
+      const { error } = await supabase
+        .from('profile_details')
+        .insert(profileData);
 
       if (error) throw error;
       
       setSubmitted(true);
       toast({
-        title: "¡Solicitud enviada!",
-        description: "Pronto nos pondremos en contacto contigo.",
+        title: "¡Perfil creado exitosamente!",
+        description: "Ahora puedes subir contenido y completar tu perfil.",
       });
-    } catch (error) {
-      console.error('Error al enviar solicitud:', error);
+    } catch (error: any) {
+      console.error('Error al crear perfil:', error);
       toast({
         title: "Error",
-        description: "Hubo un problema al enviar tu solicitud. Intenta de nuevo.",
+        description: error.message || "Hubo un problema al crear tu perfil. Intenta de nuevo.",
         variant: "destructive",
       });
     } finally {
@@ -165,18 +207,30 @@ const Asociate = () => {
     }));
   };
 
-  const handleCheckboxChange = (category: 'areasInteres' | 'queBuscas' | 'perfil', value: string) => {
-    setFormData(prev => {
-      const currentArray = prev[category];
-      const newArray = currentArray.includes(value)
-        ? currentArray.filter(item => item !== value)
-        : [...currentArray, value];
-      
-      return {
-        ...prev,
-        [category]: newArray
-      };
-    });
+  const handleProfileFieldChange = (field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const renderProfileForm = () => {
+    switch (selectedProfile) {
+      case "disfruto_musica":
+        return <MusicLoverForm formData={formData} onChange={handleProfileFieldChange} />;
+      case "estudio_grabacion":
+        return <RecordingStudioForm formData={formData} onChange={handleProfileFieldChange} />;
+      case "sala_concierto":
+        return <VenueForm formData={formData} onChange={handleProfileFieldChange} />;
+      case "productor_artistico":
+        return <ProducerForm formData={formData} onChange={handleProfileFieldChange} />;
+      case "promotor_artistico":
+        return <PromoterForm formData={formData} onChange={handleProfileFieldChange} />;
+      case "agrupacion_musical":
+        return <BandForm formData={formData} onChange={handleProfileFieldChange} />;
+      default:
+        return null;
+    }
   };
 
   const benefits = [
@@ -373,83 +427,33 @@ const Asociate = () => {
                           </SelectContent>
                         </Select>
                       </div>
-                    )}
+                     )}
 
-                    <div className="space-y-4">
-                      <Label className="text-base font-semibold">Elige tu perfil</Label>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {perfilOptions.map((option) => (
-                          <div key={option} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`perfil-${option}`}
-                              checked={formData.perfil.includes(option)}
-                              onCheckedChange={() => handleCheckboxChange('perfil', option)}
-                            />
-                            <Label
-                              htmlFor={`perfil-${option}`}
-                              className="text-sm font-normal cursor-pointer"
-                            >
-                              {option}
-                            </Label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                     <div className="space-y-2">
+                       <Label htmlFor="profileType">Selecciona tu perfil *</Label>
+                       <Select
+                         value={selectedProfile}
+                         onValueChange={(value) => setSelectedProfile(value)}
+                         required
+                       >
+                         <SelectTrigger>
+                           <SelectValue placeholder="¿Cuál es tu perfil?" />
+                         </SelectTrigger>
+                         <SelectContent>
+                           {perfilOptions.map((option) => (
+                             <SelectItem key={option.value} value={option.value}>
+                               {option.label}
+                             </SelectItem>
+                           ))}
+                         </SelectContent>
+                       </Select>
+                     </div>
 
-                    <div className="space-y-4">
-                      <Label className="text-base font-semibold">Áreas de interés</Label>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {areasInteresOptions.map((option) => (
-                          <div key={option} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`area-${option}`}
-                              checked={formData.areasInteres.includes(option)}
-                              onCheckedChange={() => handleCheckboxChange('areasInteres', option)}
-                            />
-                            <Label
-                              htmlFor={`area-${option}`}
-                              className="text-sm font-normal cursor-pointer"
-                            >
-                              {option}
-                            </Label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <Label className="text-base font-semibold">Tus intereses en la plataforma:</Label>
-                      <div className="grid grid-cols-1 gap-3">
-                        {queBuscasOptions.map((option) => (
-                          <div key={option} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`busca-${option}`}
-                              checked={formData.queBuscas.includes(option)}
-                              onCheckedChange={() => handleCheckboxChange('queBuscas', option)}
-                            />
-                            <Label
-                              htmlFor={`busca-${option}`}
-                              className="text-sm font-normal cursor-pointer"
-                            >
-                              {option}
-                            </Label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="motivacion">¿Por qué quieres unirte a Red Akasha? *</Label>
-                      <Textarea
-                        id="motivacion"
-                        name="motivacion"
-                        required
-                        value={formData.motivacion}
-                        onChange={handleChange}
-                        placeholder="Cuéntanos sobre tus motivaciones y expectativas..."
-                        className="min-h-32"
-                      />
-                    </div>
+                     {selectedProfile && (
+                       <div className="border-t pt-6">
+                         {renderProfileForm()}
+                       </div>
+                     )}
 
                     <Button 
                       type="submit" 

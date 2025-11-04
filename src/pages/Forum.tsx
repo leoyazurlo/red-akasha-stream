@@ -4,11 +4,10 @@ import { CosmicBackground } from "@/components/CosmicBackground";
 import { ForumCategories } from "@/components/forum/ForumCategories";
 import { ForumStats } from "@/components/forum/ForumStats";
 import { useAuth } from "@/hooks/useAuth";
-import { Navigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 
 const Forum = () => {
-  const { user, loading } = useAuth(true);
+  const { user, loading } = useAuth(false);
 
   if (loading) {
     return (
@@ -16,10 +15,6 @@ const Forum = () => {
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
-  }
-
-  if (!user) {
-    return <Navigate to="/auth" replace />;
   }
 
   return (

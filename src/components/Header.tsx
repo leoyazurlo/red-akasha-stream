@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const navItems = [
-  { name: "Home", href: "#home", isRoute: false },
+  { name: "Home", href: "/", isRoute: true },
   { name: "On Demand", href: "#on-demand", isRoute: false },
   { name: "Artistas", href: "#artistas", isRoute: false },
   { name: "Circuito", href: "/circuito", isRoute: true },
@@ -35,7 +35,7 @@ export const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <a href="#home" className="flex items-center space-x-3">
+          <Link to="/" className="flex items-center space-x-3">
             <span className="text-2xl font-light tracking-wider bg-gradient-primary bg-clip-text text-transparent">
               RED AKASHA
             </span>
@@ -45,7 +45,7 @@ export const Header = () => {
               className="h-12 w-12"
               style={{ filter: 'brightness(0) saturate(100%) invert(70%) sepia(100%) saturate(2500%) hue-rotate(160deg) brightness(120%) contrast(110%)' }}
             />
-          </a>
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-1">

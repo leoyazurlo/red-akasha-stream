@@ -19,7 +19,7 @@ const navItems = [
   { name: "Artistas", href: "#artistas", isRoute: false },
   { name: "Circuito", href: "/circuito", isRoute: true },
   { name: "Asociate", href: "/asociate", isRoute: true },
-  { name: "Subir Contenido", href: "#subir-contenido", isRoute: false },
+  { name: "Subir Contenido", href: "/subir-contenido", isRoute: true },
   { name: "Foro", href: "/foro", isRoute: true },
 ];
 

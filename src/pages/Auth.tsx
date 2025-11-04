@@ -98,7 +98,7 @@ const Auth = () => {
 
       if (error) {
         toast({
-          title: "Error al registrarse",
+          title: "Error al asociarse",
           description: error.message,
           variant: "destructive",
         });
@@ -122,7 +122,7 @@ const Auth = () => {
       } else {
         toast({
           title: "Error",
-          description: "Hubo un problema al registrarse.",
+          description: "Hubo un problema al asociarse.",
           variant: "destructive",
         });
       }
@@ -154,7 +154,7 @@ const Auth = () => {
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="login">Iniciar Sesión</TabsTrigger>
-                <TabsTrigger value="signup">Registrarse</TabsTrigger>
+                <TabsTrigger value="signup">Asociarse</TabsTrigger>
               </TabsList>
 
               <TabsContent value="login">
@@ -238,10 +238,10 @@ const Auth = () => {
                     {loading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Registrando...
+                        Asociándose...
                       </>
                     ) : (
-                      "Crear Cuenta"
+                      "Asociarse"
                     )}
                   </Button>
                 </form>

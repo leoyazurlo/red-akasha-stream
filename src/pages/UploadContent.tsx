@@ -32,6 +32,7 @@ const UploadContent = () => {
     description: "",
     video_url: "",
     audio_url: "",
+    photo_url: "",
     podcast_category: "",
     band_name: "",
     producer_name: "",
@@ -113,6 +114,7 @@ const UploadContent = () => {
         description: formData.description || null,
         video_url: formData.video_url || null,
         audio_url: formData.audio_url || null,
+        photo_url: formData.photo_url || null,
         status: 'pending'
       };
 
@@ -146,6 +148,7 @@ const UploadContent = () => {
         description: "",
         video_url: "",
         audio_url: "",
+        photo_url: "",
         podcast_category: "",
         band_name: "",
         producer_name: "",
@@ -233,7 +236,7 @@ const UploadContent = () => {
               <CardHeader>
                 <CardTitle className="text-2xl">Subir Contenido</CardTitle>
                 <CardDescription>
-                  Comparte tu contenido con la comunidad
+                  Comparte tus videos y fotografías con la comunidad de Red Akasha
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -304,30 +307,72 @@ const UploadContent = () => {
                     />
                   </div>
 
+                  {/* Sección de Video */}
                   {formData.content_type !== 'podcast' && (
-                    <div className="space-y-2">
-                      <Label htmlFor="video_url">URL del video</Label>
-                      <Input
-                        id="video_url"
-                        name="video_url"
-                        value={formData.video_url}
-                        onChange={handleChange}
-                        placeholder="https://youtube.com/watch?v=..."
-                      />
+                    <div className="border-t pt-6 space-y-4">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-2">Video</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Comparte tu video musical, video clip, documental o contenido audiovisual
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="video_url">URL del video</Label>
+                        <Input
+                          id="video_url"
+                          name="video_url"
+                          value={formData.video_url}
+                          onChange={handleChange}
+                          placeholder="https://youtube.com/watch?v=... o URL de tu video"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Sección de Fotografía */}
+                  {formData.content_type !== 'podcast' && (
+                    <div className="border-t pt-6 space-y-4">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-2">Fotografía</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Sube fotografías de conciertos, sesiones de grabación o material gráfico relacionado
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="photo_url">URL de la fotografía</Label>
+                        <Input
+                          id="photo_url"
+                          name="photo_url"
+                          value={formData.photo_url}
+                          onChange={handleChange}
+                          placeholder="https://... o URL de tu fotografía"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Puedes compartir imágenes de eventos, backstage, portadas de discos, etc.
+                        </p>
+                      </div>
                     </div>
                   )}
 
                   {formData.content_type === 'podcast' && (
-                    <div className="space-y-2">
-                      <Label htmlFor="audio_url">URL del audio *</Label>
-                      <Input
-                        id="audio_url"
-                        name="audio_url"
-                        required
-                        value={formData.audio_url}
-                        onChange={handleChange}
-                        placeholder="URL del archivo de audio"
-                      />
+                    <div className="border-t pt-6 space-y-4">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-2">Audio</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Comparte tu podcast sobre producción, marketing, derecho de autor y más
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="audio_url">URL del audio *</Label>
+                        <Input
+                          id="audio_url"
+                          name="audio_url"
+                          required
+                          value={formData.audio_url}
+                          onChange={handleChange}
+                          placeholder="URL del archivo de audio"
+                        />
+                      </div>
                     </div>
                   )}
 

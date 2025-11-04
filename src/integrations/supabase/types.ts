@@ -108,6 +108,7 @@ export type Database = {
           description: string | null
           duration: number | null
           id: string
+          photo_url: string | null
           podcast_category:
             | Database["public"]["Enums"]["podcast_category"]
             | null
@@ -132,6 +133,7 @@ export type Database = {
           description?: string | null
           duration?: number | null
           id?: string
+          photo_url?: string | null
           podcast_category?:
             | Database["public"]["Enums"]["podcast_category"]
             | null
@@ -156,6 +158,7 @@ export type Database = {
           description?: string | null
           duration?: number | null
           id?: string
+          photo_url?: string | null
           podcast_category?:
             | Database["public"]["Enums"]["podcast_category"]
             | null

@@ -28,7 +28,7 @@ export const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/95 backdrop-blur-md">
@@ -78,6 +78,11 @@ export const Header = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate("/admin")}>
+                      Panel de Control
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem
                     onClick={async () => {
                       await supabase.auth.signOut();
@@ -147,22 +152,36 @@ export const Header = () => {
             
             {/* Mobile Auth Section */}
             {user ? (
-              <Button
-                variant="ghost"
-                className="w-full justify-start"
-                onClick={async () => {
-                  await supabase.auth.signOut();
-                  toast({
-                    title: "Sesión cerrada",
-                    description: "Has cerrado sesión correctamente.",
-                  });
-                  setMobileMenuOpen(false);
-                  navigate("/");
-                }}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Cerrar Sesión
-              </Button>
+              <>
+                {isAdmin && (
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      navigate("/admin");
+                    }}
+                  >
+                    Panel de Control
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    toast({
+                      title: "Sesión cerrada",
+                      description: "Has cerrado sesión correctamente.",
+                    });
+                    setMobileMenuOpen(false);
+                    navigate("/");
+                  }}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Cerrar Sesión
+                </Button>
+              </>
             ) : (
               <Button
                 variant="default"

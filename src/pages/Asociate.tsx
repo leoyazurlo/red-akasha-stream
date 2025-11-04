@@ -86,12 +86,12 @@ const Asociate = () => {
   });
 
   const perfilOptions = [
-    "Soy consumidor de música",
-    "Soy músico",
-    "Soy productor",
-    "Soy sala de grabación",
-    "Soy un espacio cultural",
-    "Soy una sala de conciertos"
+    "Disfruto de la música",
+    "Productor artístico",
+    "Estudio de grabación",
+    "Promotor artístico",
+    "Sala de concierto",
+    "Agrupación musical"
   ];
 
   const areasInteresOptions = [

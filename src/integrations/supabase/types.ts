@@ -14,6 +14,109 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_messages: {
+        Row: {
+          created_at: string | null
+          deleted_at: string | null
+          deleted_by: string | null
+          id: string
+          is_deleted: boolean | null
+          is_moderator_message: boolean | null
+          is_pinned: boolean | null
+          message: string
+          stream_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          id?: string
+          is_deleted?: boolean | null
+          is_moderator_message?: boolean | null
+          is_pinned?: boolean | null
+          message: string
+          stream_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          deleted_at?: string | null
+          deleted_by?: string | null
+          id?: string
+          is_deleted?: boolean | null
+          is_moderator_message?: boolean | null
+          is_pinned?: boolean | null
+          message?: string
+          stream_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "streams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      donations: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          display_name: string | null
+          donor_id: string | null
+          id: string
+          is_anonymous: boolean | null
+          message: string | null
+          payment_status: Database["public"]["Enums"]["payment_status"] | null
+          show_on_stream: boolean | null
+          shown_at: string | null
+          stream_id: string
+          stripe_payment_intent_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          display_name?: string | null
+          donor_id?: string | null
+          id?: string
+          is_anonymous?: boolean | null
+          message?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"] | null
+          show_on_stream?: boolean | null
+          shown_at?: string | null
+          stream_id: string
+          stripe_payment_intent_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          display_name?: string | null
+          donor_id?: string | null
+          id?: string
+          is_anonymous?: boolean | null
+          message?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"] | null
+          show_on_stream?: boolean | null
+          shown_at?: string | null
+          stream_id?: string
+          stripe_payment_intent_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donations_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "streams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       forum_badges: {
         Row: {
           badge_type: Database["public"]["Enums"]["badge_type"]
@@ -426,6 +529,93 @@ export type Database = {
           },
         ]
       }
+      podcast_episodes: {
+        Row: {
+          apple_podcasts_url: string | null
+          audio_file_size: number | null
+          audio_file_url: string
+          category: string | null
+          chapters: Json | null
+          created_at: string | null
+          creator_id: string
+          description: string | null
+          download_count: number | null
+          duration: unknown
+          episode_number: number | null
+          explicit_content: boolean | null
+          google_podcasts_url: string | null
+          guid: string | null
+          id: string
+          play_count: number | null
+          podcast_name: string
+          published_at: string | null
+          season_number: number | null
+          spotify_url: string | null
+          tags: string[] | null
+          title: string
+          transcript_status: string | null
+          transcript_text: string | null
+          transcript_url: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          apple_podcasts_url?: string | null
+          audio_file_size?: number | null
+          audio_file_url: string
+          category?: string | null
+          chapters?: Json | null
+          created_at?: string | null
+          creator_id: string
+          description?: string | null
+          download_count?: number | null
+          duration?: unknown
+          episode_number?: number | null
+          explicit_content?: boolean | null
+          google_podcasts_url?: string | null
+          guid?: string | null
+          id?: string
+          play_count?: number | null
+          podcast_name: string
+          published_at?: string | null
+          season_number?: number | null
+          spotify_url?: string | null
+          tags?: string[] | null
+          title: string
+          transcript_status?: string | null
+          transcript_text?: string | null
+          transcript_url?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          apple_podcasts_url?: string | null
+          audio_file_size?: number | null
+          audio_file_url?: string
+          category?: string | null
+          chapters?: Json | null
+          created_at?: string | null
+          creator_id?: string
+          description?: string | null
+          download_count?: number | null
+          duration?: unknown
+          episode_number?: number | null
+          explicit_content?: boolean | null
+          google_podcasts_url?: string | null
+          guid?: string | null
+          id?: string
+          play_count?: number | null
+          podcast_name?: string
+          published_at?: string | null
+          season_number?: number | null
+          spotify_url?: string | null
+          tags?: string[] | null
+          title?: string
+          transcript_status?: string | null
+          transcript_text?: string | null
+          transcript_url?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -507,6 +697,302 @@ export type Database = {
         }
         Relationships: []
       }
+      stream_overlays: {
+        Row: {
+          config: Json
+          created_at: string | null
+          css_styles: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          name: string
+          overlay_type: string
+          owner_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          config?: Json
+          created_at?: string | null
+          css_styles?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name: string
+          overlay_type: string
+          owner_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          config?: Json
+          created_at?: string | null
+          css_styles?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string
+          overlay_type?: string
+          owner_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      stream_quality_presets: {
+        Row: {
+          audio_bitrate: number
+          audio_codec: string | null
+          audio_sample_rate: number | null
+          created_at: string | null
+          framerate: number | null
+          id: string
+          is_default: boolean | null
+          keyframe_interval: number | null
+          name: string
+          owner_id: string
+          profile: string | null
+          resolution_height: number
+          resolution_width: number
+          video_bitrate: number
+          video_codec: string | null
+        }
+        Insert: {
+          audio_bitrate: number
+          audio_codec?: string | null
+          audio_sample_rate?: number | null
+          created_at?: string | null
+          framerate?: number | null
+          id?: string
+          is_default?: boolean | null
+          keyframe_interval?: number | null
+          name: string
+          owner_id: string
+          profile?: string | null
+          resolution_height: number
+          resolution_width: number
+          video_bitrate: number
+          video_codec?: string | null
+        }
+        Update: {
+          audio_bitrate?: number
+          audio_codec?: string | null
+          audio_sample_rate?: number | null
+          created_at?: string | null
+          framerate?: number | null
+          id?: string
+          is_default?: boolean | null
+          keyframe_interval?: number | null
+          name?: string
+          owner_id?: string
+          profile?: string | null
+          resolution_height?: number
+          resolution_width?: number
+          video_bitrate?: number
+          video_codec?: string | null
+        }
+        Relationships: []
+      }
+      stream_schedule: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          estimated_duration: unknown
+          id: string
+          is_recurring: boolean | null
+          notification_sent: boolean | null
+          overlay_config: Json | null
+          recurrence_rule: string | null
+          scheduled_start: string
+          send_notifications: boolean | null
+          stream_id: string | null
+          streamer_id: string
+          thumbnail_url: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          estimated_duration?: unknown
+          id?: string
+          is_recurring?: boolean | null
+          notification_sent?: boolean | null
+          overlay_config?: Json | null
+          recurrence_rule?: string | null
+          scheduled_start: string
+          send_notifications?: boolean | null
+          stream_id?: string | null
+          streamer_id: string
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          estimated_duration?: unknown
+          id?: string
+          is_recurring?: boolean | null
+          notification_sent?: boolean | null
+          overlay_config?: Json | null
+          recurrence_rule?: string | null
+          scheduled_start?: string
+          send_notifications?: boolean | null
+          stream_id?: string | null
+          streamer_id?: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stream_schedule_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "streams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      streams: {
+        Row: {
+          actual_start_time: string | null
+          auto_post_to_social: boolean | null
+          average_watch_time: unknown
+          category: string | null
+          created_at: string | null
+          description: string | null
+          enable_chat: boolean | null
+          enable_donations: boolean | null
+          enable_recording: boolean | null
+          enable_transcoding: boolean | null
+          end_time: string | null
+          id: string
+          ingest_url: string | null
+          is_paid_event: boolean | null
+          peak_viewers: number | null
+          playback_url: string | null
+          rtmp_key: string | null
+          scheduled_start_time: string | null
+          social_platforms: string[] | null
+          status: Database["public"]["Enums"]["stream_status"] | null
+          stream_key_expires_at: string | null
+          streamer_id: string
+          tags: string[] | null
+          thumbnail_url: string | null
+          ticket_price: number | null
+          title: string
+          total_views: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          actual_start_time?: string | null
+          auto_post_to_social?: boolean | null
+          average_watch_time?: unknown
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          enable_chat?: boolean | null
+          enable_donations?: boolean | null
+          enable_recording?: boolean | null
+          enable_transcoding?: boolean | null
+          end_time?: string | null
+          id?: string
+          ingest_url?: string | null
+          is_paid_event?: boolean | null
+          peak_viewers?: number | null
+          playback_url?: string | null
+          rtmp_key?: string | null
+          scheduled_start_time?: string | null
+          social_platforms?: string[] | null
+          status?: Database["public"]["Enums"]["stream_status"] | null
+          stream_key_expires_at?: string | null
+          streamer_id: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          ticket_price?: number | null
+          title: string
+          total_views?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          actual_start_time?: string | null
+          auto_post_to_social?: boolean | null
+          average_watch_time?: unknown
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          enable_chat?: boolean | null
+          enable_donations?: boolean | null
+          enable_recording?: boolean | null
+          enable_transcoding?: boolean | null
+          end_time?: string | null
+          id?: string
+          ingest_url?: string | null
+          is_paid_event?: boolean | null
+          peak_viewers?: number | null
+          playback_url?: string | null
+          rtmp_key?: string | null
+          scheduled_start_time?: string | null
+          social_platforms?: string[] | null
+          status?: Database["public"]["Enums"]["stream_status"] | null
+          stream_key_expires_at?: string | null
+          streamer_id?: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          ticket_price?: number | null
+          title?: string
+          total_views?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          created_at: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          is_active: boolean | null
+          max_concurrent_viewers: number | null
+          max_storage_gb: number | null
+          max_streaming_hours: number | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          tier: Database["public"]["Enums"]["subscription_tier"] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_concurrent_viewers?: number | null
+          max_storage_gb?: number | null
+          max_streaming_hours?: number | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tier?: Database["public"]["Enums"]["subscription_tier"] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_concurrent_viewers?: number | null
+          max_storage_gb?: number | null
+          max_streaming_hours?: number | null
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tier?: Database["public"]["Enums"]["subscription_tier"] | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_id: string
@@ -582,11 +1068,189 @@ export type Database = {
           },
         ]
       }
+      viewer_analytics: {
+        Row: {
+          average_bitrate: number | null
+          browser: string | null
+          buffer_count: number | null
+          city: string | null
+          country_code: string | null
+          created_at: string | null
+          device_type: string | null
+          error_count: number | null
+          id: string
+          joined_at: string | null
+          left_at: string | null
+          os: string | null
+          quality_level: Database["public"]["Enums"]["stream_quality"] | null
+          session_id: string
+          stream_id: string | null
+          viewer_id: string | null
+          vod_id: string | null
+          watch_duration: unknown
+        }
+        Insert: {
+          average_bitrate?: number | null
+          browser?: string | null
+          buffer_count?: number | null
+          city?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          device_type?: string | null
+          error_count?: number | null
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          os?: string | null
+          quality_level?: Database["public"]["Enums"]["stream_quality"] | null
+          session_id: string
+          stream_id?: string | null
+          viewer_id?: string | null
+          vod_id?: string | null
+          watch_duration?: unknown
+        }
+        Update: {
+          average_bitrate?: number | null
+          browser?: string | null
+          buffer_count?: number | null
+          city?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          device_type?: string | null
+          error_count?: number | null
+          id?: string
+          joined_at?: string | null
+          left_at?: string | null
+          os?: string | null
+          quality_level?: Database["public"]["Enums"]["stream_quality"] | null
+          session_id?: string
+          stream_id?: string | null
+          viewer_id?: string | null
+          vod_id?: string | null
+          watch_duration?: unknown
+        }
+        Relationships: [
+          {
+            foreignKeyName: "viewer_analytics_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "streams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viewer_analytics_vod_id_fkey"
+            columns: ["vod_id"]
+            isOneToOne: false
+            referencedRelation: "vod_videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vod_videos: {
+        Row: {
+          audio_tracks: Json | null
+          average_rating: number | null
+          category: string | null
+          created_at: string | null
+          dash_manifest_url: string | null
+          description: string | null
+          duration: unknown
+          episode_number: number | null
+          hls_manifest_url: string | null
+          id: string
+          is_premium: boolean | null
+          language: string | null
+          preview_url: string | null
+          price: number | null
+          release_date: string | null
+          season_number: number | null
+          seo_description: string | null
+          seo_title: string | null
+          series_name: string | null
+          source_file_size: number | null
+          source_file_url: string | null
+          status: Database["public"]["Enums"]["vod_status"] | null
+          subtitle_tracks: Json | null
+          tags: string[] | null
+          thumbnail_url: string | null
+          title: string
+          total_ratings: number | null
+          total_views: number | null
+          updated_at: string | null
+          uploader_id: string
+        }
+        Insert: {
+          audio_tracks?: Json | null
+          average_rating?: number | null
+          category?: string | null
+          created_at?: string | null
+          dash_manifest_url?: string | null
+          description?: string | null
+          duration?: unknown
+          episode_number?: number | null
+          hls_manifest_url?: string | null
+          id?: string
+          is_premium?: boolean | null
+          language?: string | null
+          preview_url?: string | null
+          price?: number | null
+          release_date?: string | null
+          season_number?: number | null
+          seo_description?: string | null
+          seo_title?: string | null
+          series_name?: string | null
+          source_file_size?: number | null
+          source_file_url?: string | null
+          status?: Database["public"]["Enums"]["vod_status"] | null
+          subtitle_tracks?: Json | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title: string
+          total_ratings?: number | null
+          total_views?: number | null
+          updated_at?: string | null
+          uploader_id: string
+        }
+        Update: {
+          audio_tracks?: Json | null
+          average_rating?: number | null
+          category?: string | null
+          created_at?: string | null
+          dash_manifest_url?: string | null
+          description?: string | null
+          duration?: unknown
+          episode_number?: number | null
+          hls_manifest_url?: string | null
+          id?: string
+          is_premium?: boolean | null
+          language?: string | null
+          preview_url?: string | null
+          price?: number | null
+          release_date?: string | null
+          season_number?: number | null
+          seo_description?: string | null
+          seo_title?: string | null
+          series_name?: string | null
+          source_file_size?: number | null
+          source_file_url?: string | null
+          status?: Database["public"]["Enums"]["vod_status"] | null
+          subtitle_tracks?: Json | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title?: string
+          total_ratings?: number | null
+          total_views?: number | null
+          updated_at?: string | null
+          uploader_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      generate_rtmp_key: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -605,14 +1269,25 @@ export type Database = {
         | "producer"
         | "streamer"
       badge_type: "bronze" | "silver" | "gold" | "special" | "merit"
+      payment_status: "pending" | "completed" | "failed" | "refunded"
       report_status: "pending" | "reviewing" | "resolved" | "dismissed"
       sanction_type: "warning" | "temporary_suspension" | "permanent_ban"
+      stream_quality:
+        | "source"
+        | "1080p"
+        | "720p"
+        | "480p"
+        | "360p"
+        | "audio_only"
+      stream_status: "scheduled" | "live" | "ended" | "cancelled"
+      subscription_tier: "free" | "basic" | "premium" | "enterprise"
       thread_type:
         | "debate_abierto"
         | "pregunta_encuesta"
         | "debate_moderado"
         | "hilo_recursos"
         | "anuncio"
+      vod_status: "processing" | "ready" | "failed" | "archived"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -750,8 +1425,12 @@ export const Constants = {
         "streamer",
       ],
       badge_type: ["bronze", "silver", "gold", "special", "merit"],
+      payment_status: ["pending", "completed", "failed", "refunded"],
       report_status: ["pending", "reviewing", "resolved", "dismissed"],
       sanction_type: ["warning", "temporary_suspension", "permanent_ban"],
+      stream_quality: ["source", "1080p", "720p", "480p", "360p", "audio_only"],
+      stream_status: ["scheduled", "live", "ended", "cancelled"],
+      subscription_tier: ["free", "basic", "premium", "enterprise"],
       thread_type: [
         "debate_abierto",
         "pregunta_encuesta",
@@ -759,6 +1438,7 @@ export const Constants = {
         "hilo_recursos",
         "anuncio",
       ],
+      vod_status: ["processing", "ready", "failed", "archived"],
     },
   },
 } as const

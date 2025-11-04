@@ -4,8 +4,8 @@ export const VideoPlayer = () => {
       <div className="max-w-3xl mx-auto">
         {/* Live Badge */}
         <div className="flex items-center justify-center mb-4 gap-2">
-          <div className="flex items-center gap-2 px-4 py-2 bg-primary/20 border border-primary rounded-full animate-pulse-glow">
-            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+          <div className="flex items-center gap-2 px-4 py-2 bg-primary/20 border border-primary rounded-full">
+            <div className="w-2 h-2 bg-primary rounded-full" />
             <span className="text-primary font-light text-sm uppercase tracking-wider">
               En Vivo 24/7
             </span>

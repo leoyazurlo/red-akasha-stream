@@ -197,54 +197,26 @@ const Auth = () => {
               </TabsContent>
 
               <TabsContent value="signup">
-                <form onSubmit={handleSignup} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-username">Nombre de usuario</Label>
-                    <Input
-                      id="signup-username"
-                      type="text"
-                      required
-                      value={signupData.username}
-                      onChange={(e) => setSignupData({ ...signupData, username: e.target.value })}
-                      placeholder="usuario123"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      required
-                      value={signupData.email}
-                      onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
-                      placeholder="tu@email.com"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Contraseña</Label>
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      required
-                      value={signupData.password}
-                      onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
-                      placeholder="••••••"
-                    />
-                  </div>
-
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Asociándose...
-                      </>
-                    ) : (
-                      "Asociarse"
-                    )}
+                <div className="space-y-4 py-4">
+                  <p className="text-muted-foreground leading-relaxed">
+                    Red Akasha es una comunidad global de artistas y creadores. 
+                    Al <a 
+                      href="/asociate" 
+                      className="text-primary hover:underline font-medium"
+                    >
+                      asociarte
+                    </a>, tendrás acceso a recursos exclusivos, podrás conectar 
+                    con otros artistas y formar parte de una red que impulsa el 
+                    arte y la cultura independiente.
+                  </p>
+                  
+                  <Button 
+                    className="w-full" 
+                    onClick={() => navigate("/asociate")}
+                  >
+                    Ir a Formulario de Asociación
                   </Button>
-                </form>
+                </div>
               </TabsContent>
             </Tabs>
           </CardContent>

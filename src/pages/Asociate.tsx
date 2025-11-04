@@ -85,26 +85,32 @@ const Asociate = () => {
     perfil: [] as string[],
   });
 
+  const perfilOptions = [
+    "Soy consumidor de música",
+    "Soy músico",
+    "Soy productor",
+    "Soy sala de grabación",
+    "Soy un espacio cultural",
+    "Soy una sala de conciertos"
+  ];
+
   const areasInteresOptions = [
     "Música",
-    "Arte Digital",
-    "Fotografía",
     "Video",
-    "Podcasts"
+    "Programas",
+    "Cine",
+    "Podcasts",
+    "Arte digital",
+    "Fotografía"
   ];
 
   const queBuscasOptions = [
-    "Contacto con productores de mi país",
-    "Contacto con salas de grabación",
-    "Contacto con venues o salas de concierto",
-    "Conocer nuevos artistas"
-  ];
-
-  const perfilOptions = [
-    "Soy músico",
-    "Soy productor",
-    "Soy sala de ensayo",
-    "Soy sala de concierto"
+    "Contacto con productores",
+    "Contacto con promotores locales",
+    "Contacto con venues o salas de conciertos",
+    "Conocer nuevos artistas",
+    "Aprender sobre producción",
+    "Soy entusiasta del arte"
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -370,7 +376,28 @@ const Asociate = () => {
                     )}
 
                     <div className="space-y-4">
-                      <Label className="text-base font-semibold">Áreas de Interés</Label>
+                      <Label className="text-base font-semibold">Elige tu perfil</Label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {perfilOptions.map((option) => (
+                          <div key={option} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`perfil-${option}`}
+                              checked={formData.perfil.includes(option)}
+                              onCheckedChange={() => handleCheckboxChange('perfil', option)}
+                            />
+                            <Label
+                              htmlFor={`perfil-${option}`}
+                              className="text-sm font-normal cursor-pointer"
+                            >
+                              {option}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <Label className="text-base font-semibold">Áreas de interés</Label>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {areasInteresOptions.map((option) => (
                           <div key={option} className="flex items-center space-x-2">
@@ -391,7 +418,7 @@ const Asociate = () => {
                     </div>
 
                     <div className="space-y-4">
-                      <Label className="text-base font-semibold">¿Qué buscas en la plataforma?</Label>
+                      <Label className="text-base font-semibold">Tus intereses en la plataforma:</Label>
                       <div className="grid grid-cols-1 gap-3">
                         {queBuscasOptions.map((option) => (
                           <div key={option} className="flex items-center space-x-2">
@@ -402,27 +429,6 @@ const Asociate = () => {
                             />
                             <Label
                               htmlFor={`busca-${option}`}
-                              className="text-sm font-normal cursor-pointer"
-                            >
-                              {option}
-                            </Label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <Label className="text-base font-semibold">Tu perfil</Label>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {perfilOptions.map((option) => (
-                          <div key={option} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`perfil-${option}`}
-                              checked={formData.perfil.includes(option)}
-                              onCheckedChange={() => handleCheckboxChange('perfil', option)}
-                            />
-                            <Label
-                              htmlFor={`perfil-${option}`}
                               className="text-sm font-normal cursor-pointer"
                             >
                               {option}

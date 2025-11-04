@@ -1,6 +1,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
+import { CircuitMap } from "@/components/CircuitMap";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,9 +10,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Mail, Phone, MapPin, Users } from "lucide-react";
+import { ChevronDown, Mail, Phone, MapPin, Users, Instagram, Facebook, Linkedin, ExternalLink } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 
 const latinAmericanCountries = [
@@ -36,61 +38,95 @@ const latinAmericanCountries = [
   { name: "Venezuela", flag: "🇻🇪", code: "VE" },
 ];
 
-interface RegistrationRequest {
+interface ProfileDetail {
   id: string;
-  nombre: string;
-  email: string;
-  telefono: string | null;
+  display_name: string;
+  avatar_url: string | null;
+  profile_type: string;
+  pais: string;
   ciudad: string;
-  pais: string | null;
   provincia: string | null;
-  areas_interes: string[] | null;
-  que_buscas: string[] | null;
-  perfil: string[] | null;
-  motivacion: string;
-  created_at: string;
+  bio: string | null;
+  instagram: string | null;
+  facebook: string | null;
+  linkedin: string | null;
+  email: string | null;
+  telefono: string | null;
+  whatsapp: string | null;
+  map_location: string | null;
+  venue_type: string | null;
+  capacity: number | null;
+  genre: string | null;
+  technical_specs: any;
+}
+
+interface LocationGroup {
+  provincia: string;
+  cities: CityGroup[];
 }
 
 interface CityGroup {
   ciudad: string;
-  usuarios: RegistrationRequest[];
+  profiles: ProfileDetail[];
 }
+
+const profileTypeLabels: Record<string, string> = {
+  band: "Banda",
+  venue: "Sala de concierto",
+  recording_studio: "Estudio de grabación",
+  producer: "Productor",
+  promoter: "Promotor",
+  music_lover: "Disfruto de la música"
+};
 
 const Circuito = () => {
   const [selectedCountry, setSelectedCountry] = useState(latinAmericanCountries[0]);
-  const [cityGroups, setCityGroups] = useState<CityGroup[]>([]);
+  const [locationGroups, setLocationGroups] = useState<LocationGroup[]>([]);
+  const [allProfiles, setAllProfiles] = useState<ProfileDetail[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchRegistrations();
+    fetchProfiles();
   }, [selectedCountry]);
 
-  const fetchRegistrations = async () => {
+  const fetchProfiles = async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('registration_requests')
+        .from('profile_details')
         .select('*')
-        .eq('status', 'approved')
         .eq('pais', selectedCountry.name)
+        .neq('profile_type', 'music_lover')
+        .order('provincia', { ascending: true })
         .order('ciudad', { ascending: true });
 
       if (error) throw error;
 
-      // Agrupar por ciudad
-      const grouped = (data || []).reduce((acc: CityGroup[], curr: RegistrationRequest) => {
-        const cityGroup = acc.find(g => g.ciudad === curr.ciudad);
-        if (cityGroup) {
-          cityGroup.usuarios.push(curr);
-        } else {
-          acc.push({ ciudad: curr.ciudad, usuarios: [curr] });
+      setAllProfiles(data || []);
+
+      // Agrupar por provincia y ciudad
+      const grouped = (data || []).reduce((acc: LocationGroup[], curr: ProfileDetail) => {
+        const provincia = curr.provincia || 'Sin provincia';
+        let provinciaGroup = acc.find(g => g.provincia === provincia);
+        
+        if (!provinciaGroup) {
+          provinciaGroup = { provincia, cities: [] };
+          acc.push(provinciaGroup);
         }
+
+        let cityGroup = provinciaGroup.cities.find(c => c.ciudad === curr.ciudad);
+        if (!cityGroup) {
+          cityGroup = { ciudad: curr.ciudad, profiles: [] };
+          provinciaGroup.cities.push(cityGroup);
+        }
+
+        cityGroup.profiles.push(curr);
         return acc;
       }, []);
 
-      setCityGroups(grouped);
+      setLocationGroups(grouped);
     } catch (error) {
-      console.error('Error fetching registrations:', error);
+      console.error('Error fetching profiles:', error);
     } finally {
       setLoading(false);
     }
@@ -143,20 +179,28 @@ const Circuito = () => {
             </div>
           </section>
 
+          {/* Map Section */}
+          {!loading && allProfiles.length > 0 && (
+            <section className="max-w-6xl mx-auto mb-12">
+              <h2 className="text-2xl font-bold mb-4 text-center">Mapa de Colaboradores</h2>
+              <CircuitMap profiles={allProfiles} />
+            </section>
+          )}
+
           {/* Content Section */}
           <section className="max-w-6xl mx-auto">
             {loading ? (
               <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-                <p className="text-muted-foreground mt-4">Cargando colaboradores...</p>
+                <p className="text-muted-foreground mt-4">Cargando fichas técnicas...</p>
               </div>
-            ) : cityGroups.length === 0 ? (
+            ) : locationGroups.length === 0 ? (
               <div className="bg-card/50 backdrop-blur-sm rounded-lg border border-border p-8 text-center">
                 <h2 className="text-2xl font-bold mb-4 text-primary">
                   {selectedCountry.name} {selectedCountry.flag}
                 </h2>
                 <p className="text-muted-foreground mb-6">
-                  Aún no hay colaboradores registrados en {selectedCountry.name}.
+                  Aún no hay perfiles registrados en {selectedCountry.name}.
                 </p>
                 <div className="p-6 bg-secondary/30 rounded-lg border border-border inline-block">
                   <h3 className="text-xl font-semibold mb-2">¿Quieres ser el primero?</h3>
@@ -166,97 +210,142 @@ const Circuito = () => {
                 </div>
               </div>
             ) : (
-              <div className="space-y-8">
+              <div className="space-y-12">
                 <div className="text-center mb-8">
                   <h2 className="text-3xl font-bold mb-2 text-primary">
-                    Colaboradores en {selectedCountry.name} {selectedCountry.flag}
+                    Fichas Técnicas - {selectedCountry.name} {selectedCountry.flag}
                   </h2>
                   <p className="text-muted-foreground">
-                    Encuentra espacios culturales, salas de grabación, músicos y más
+                    Encuentra espacios culturales, salas de grabación, bandas, productores y más
                   </p>
                 </div>
 
-                {cityGroups.map((cityGroup) => (
-                  <div key={cityGroup.ciudad} className="space-y-4">
-                    <div className="flex items-center gap-2 mb-4">
-                      <MapPin className="w-5 h-5 text-primary" />
-                      <h3 className="text-2xl font-bold text-foreground">{cityGroup.ciudad}</h3>
-                      <Badge variant="secondary" className="ml-2">
-                        {cityGroup.usuarios.length} {cityGroup.usuarios.length === 1 ? 'colaborador' : 'colaboradores'}
-                      </Badge>
+                {locationGroups.map((locationGroup) => (
+                  <div key={locationGroup.provincia} className="space-y-8">
+                    <div className="border-b border-border pb-2">
+                      <h3 className="text-2xl font-bold text-primary">{locationGroup.provincia}</h3>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-4">
-                      {cityGroup.usuarios.map((usuario) => (
-                        <Card key={usuario.id} className="border-border bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-all">
-                          <CardHeader>
-                            <CardTitle className="flex items-start justify-between">
-                              <div>
-                                <span className="block">{usuario.nombre}</span>
-                                {usuario.provincia && (
-                                  <span className="text-sm text-muted-foreground font-normal">
-                                    {usuario.provincia}
-                                  </span>
-                                )}
-                              </div>
-                              {usuario.perfil && usuario.perfil.length > 0 && (
-                                <Users className="w-5 h-5 text-primary flex-shrink-0 ml-2" />
-                              )}
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="space-y-3">
-                            {usuario.perfil && usuario.perfil.length > 0 && (
-                              <div className="flex flex-wrap gap-2">
-                                {usuario.perfil.map((perfil, idx) => (
-                                  <Badge key={idx} variant="outline">
-                                    {perfil}
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
+                    {locationGroup.cities.map((cityGroup) => (
+                      <div key={cityGroup.ciudad} className="space-y-4">
+                        <div className="flex items-center gap-2 mb-4">
+                          <MapPin className="w-5 h-5 text-primary" />
+                          <h4 className="text-xl font-bold text-foreground">{cityGroup.ciudad}</h4>
+                          <Badge variant="secondary" className="ml-2">
+                            {cityGroup.profiles.length} {cityGroup.profiles.length === 1 ? 'perfil' : 'perfiles'}
+                          </Badge>
+                        </div>
 
-                            {usuario.areas_interes && usuario.areas_interes.length > 0 && (
-                              <div>
-                                <p className="text-sm font-semibold text-muted-foreground mb-1">Áreas:</p>
-                                <div className="flex flex-wrap gap-1">
-                                  {usuario.areas_interes.map((area, idx) => (
-                                    <Badge key={idx} variant="secondary" className="text-xs">
-                                      {area}
+                        <div className="grid md:grid-cols-2 gap-6">
+                          {cityGroup.profiles.map((profile) => (
+                            <Card key={profile.id} className="border-border bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-all">
+                              <CardHeader>
+                                <div className="flex items-start gap-4">
+                                  <Avatar className="w-16 h-16 border-2 border-primary">
+                                    <AvatarImage src={profile.avatar_url || ''} alt={profile.display_name} />
+                                    <AvatarFallback className="bg-primary/10 text-primary text-xl">
+                                      {profile.display_name.charAt(0).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex-1 min-w-0">
+                                    <CardTitle className="text-lg mb-1">{profile.display_name}</CardTitle>
+                                    <Badge variant="outline" className="mb-2">
+                                      {profileTypeLabels[profile.profile_type] || profile.profile_type}
                                     </Badge>
-                                  ))}
+                                    {profile.venue_type && (
+                                      <p className="text-sm text-muted-foreground capitalize">
+                                        {profile.venue_type}
+                                      </p>
+                                    )}
+                                    {profile.genre && (
+                                      <p className="text-sm text-muted-foreground">
+                                        Género: {profile.genre}
+                                      </p>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            )}
+                              </CardHeader>
+                              <CardContent className="space-y-4">
+                                {profile.bio && (
+                                  <p className="text-sm text-muted-foreground">{profile.bio}</p>
+                                )}
 
-                            <div className="space-y-2 text-sm">
-                              <div className="flex items-center gap-2 text-muted-foreground">
-                                <Mail className="w-4 h-4" />
-                                <a href={`mailto:${usuario.email}`} className="hover:text-primary transition-colors">
-                                  {usuario.email}
-                                </a>
-                              </div>
-                              {usuario.telefono && (
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                  <Phone className="w-4 h-4" />
-                                  <a href={`tel:${usuario.telefono}`} className="hover:text-primary transition-colors">
-                                    {usuario.telefono}
-                                  </a>
+                                {profile.capacity && (
+                                  <div className="flex items-center gap-2 text-sm">
+                                    <Users className="w-4 h-4 text-primary" />
+                                    <span>Capacidad: {profile.capacity} personas</span>
+                                  </div>
+                                )}
+
+                                {profile.technical_specs && (
+                                  <div className="bg-secondary/20 p-3 rounded-md">
+                                    <p className="text-xs font-semibold text-muted-foreground mb-1">Ficha Técnica:</p>
+                                    <p className="text-sm whitespace-pre-wrap">{JSON.stringify(profile.technical_specs, null, 2)}</p>
+                                  </div>
+                                )}
+
+                                {/* Contact Info */}
+                                <div className="space-y-2 text-sm border-t border-border pt-3">
+                                  {profile.email && (
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                      <Mail className="w-4 h-4" />
+                                      <a href={`mailto:${profile.email}`} className="hover:text-primary transition-colors truncate">
+                                        {profile.email}
+                                      </a>
+                                    </div>
+                                  )}
+                                  {profile.telefono && (
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                      <Phone className="w-4 h-4" />
+                                      <a href={`tel:${profile.telefono}`} className="hover:text-primary transition-colors">
+                                        {profile.telefono}
+                                      </a>
+                                    </div>
+                                  )}
+                                  {profile.whatsapp && (
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                      <Phone className="w-4 h-4" />
+                                      <a href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                                        WhatsApp: {profile.whatsapp}
+                                      </a>
+                                    </div>
+                                  )}
+                                  {profile.map_location && (
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                      <MapPin className="w-4 h-4" />
+                                      <a href={profile.map_location} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-1">
+                                        Ver ubicación <ExternalLink className="w-3 h-3" />
+                                      </a>
+                                    </div>
+                                  )}
                                 </div>
-                              )}
-                            </div>
 
-                            {usuario.que_buscas && usuario.que_buscas.length > 0 && (
-                              <div>
-                                <p className="text-sm font-semibold text-muted-foreground mb-1">Busca:</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {usuario.que_buscas.join(', ')}
-                                </p>
-                              </div>
-                            )}
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
+                                {/* Social Media */}
+                                {(profile.instagram || profile.facebook || profile.linkedin) && (
+                                  <div className="flex gap-3 pt-2 border-t border-border">
+                                    {profile.instagram && (
+                                      <a href={`https://instagram.com/${profile.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                                        <Instagram className="w-5 h-5" />
+                                      </a>
+                                    )}
+                                    {profile.facebook && (
+                                      <a href={profile.facebook.startsWith('http') ? profile.facebook : `https://facebook.com/${profile.facebook}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                                        <Facebook className="w-5 h-5" />
+                                      </a>
+                                    )}
+                                    {profile.linkedin && (
+                                      <a href={profile.linkedin.startsWith('http') ? profile.linkedin : `https://linkedin.com/in/${profile.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                                        <Linkedin className="w-5 h-5" />
+                                      </a>
+                                    )}
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ))}
               </div>

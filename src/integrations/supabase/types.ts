@@ -596,7 +596,14 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user" | "verified" | "guest"
+      app_role:
+        | "admin"
+        | "moderator"
+        | "user"
+        | "verified"
+        | "guest"
+        | "producer"
+        | "streamer"
       badge_type: "bronze" | "silver" | "gold" | "special" | "merit"
       report_status: "pending" | "reviewing" | "resolved" | "dismissed"
       sanction_type: "warning" | "temporary_suspension" | "permanent_ban"
@@ -733,7 +740,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user", "verified", "guest"],
+      app_role: [
+        "admin",
+        "moderator",
+        "user",
+        "verified",
+        "guest",
+        "producer",
+        "streamer",
+      ],
       badge_type: ["bronze", "silver", "gold", "special", "merit"],
       report_status: ["pending", "reviewing", "resolved", "dismissed"],
       sanction_type: ["warning", "temporary_suspension", "permanent_ban"],

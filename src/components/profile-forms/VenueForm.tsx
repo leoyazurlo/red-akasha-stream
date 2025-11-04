@@ -1,6 +1,7 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ImageUpload } from "@/components/ImageUpload";
 
 interface VenueFormProps {
   formData: any;
@@ -21,17 +22,13 @@ export const VenueForm = ({ formData, onChange }: VenueFormProps) => {
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Información de la sala de concierto</h3>
       
-      <div className="space-y-2">
-        <Label htmlFor="avatar_url">Foto de perfil (cuadrada) *</Label>
-        <Input
-          id="avatar_url"
-          value={formData.avatar_url || ""}
-          onChange={(e) => onChange("avatar_url", e.target.value)}
-          placeholder="URL de la imagen"
-          required
-        />
-        <p className="text-xs text-muted-foreground">Sube una imagen cuadrada de la sala</p>
-      </div>
+      <ImageUpload
+        label="Foto de perfil (cuadrada)"
+        value={formData.avatar_url || ""}
+        onChange={(url) => onChange("avatar_url", url)}
+        required
+        description="Sube una imagen cuadrada de la sala (formato recomendado: 400x400px)"
+      />
 
       <div className="space-y-2">
         <Label htmlFor="venueName">Nombre de la sala *</Label>

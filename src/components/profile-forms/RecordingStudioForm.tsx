@@ -1,6 +1,7 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageUpload } from "@/components/ImageUpload";
 
 interface RecordingStudioFormProps {
   formData: any;
@@ -12,17 +13,13 @@ export const RecordingStudioForm = ({ formData, onChange }: RecordingStudioFormP
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Información del estudio de grabación</h3>
       
-      <div className="space-y-2">
-        <Label htmlFor="avatar_url">Foto de perfil (cuadrada) *</Label>
-        <Input
-          id="avatar_url"
-          value={formData.avatar_url || ""}
-          onChange={(e) => onChange("avatar_url", e.target.value)}
-          placeholder="URL de la imagen"
-          required
-        />
-        <p className="text-xs text-muted-foreground">Sube una imagen cuadrada para el estudio</p>
-      </div>
+      <ImageUpload
+        label="Foto de perfil (cuadrada)"
+        value={formData.avatar_url || ""}
+        onChange={(url) => onChange("avatar_url", url)}
+        required
+        description="Sube una imagen cuadrada del estudio (formato recomendado: 400x400px)"
+      />
 
       <div className="space-y-2">
         <Label htmlFor="studioName">Nombre del estudio *</Label>

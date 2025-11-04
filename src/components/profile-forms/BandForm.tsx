@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { ImageUpload } from "@/components/ImageUpload";
 
 interface BandFormProps {
   formData: any;
@@ -28,17 +29,13 @@ export const BandForm = ({ formData, onChange }: BandFormProps) => {
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Información de la agrupación musical</h3>
       
-      <div className="space-y-2">
-        <Label htmlFor="avatar_url">Foto de perfil (cuadrada) *</Label>
-        <Input
-          id="avatar_url"
-          value={formData.avatar_url || ""}
-          onChange={(e) => onChange("avatar_url", e.target.value)}
-          placeholder="URL de la imagen"
-          required
-        />
-        <p className="text-xs text-muted-foreground">Sube una imagen cuadrada de la banda</p>
-      </div>
+      <ImageUpload
+        label="Foto de perfil (cuadrada)"
+        value={formData.avatar_url || ""}
+        onChange={(url) => onChange("avatar_url", url)}
+        required
+        description="Sube una imagen cuadrada de la banda (formato recomendado: 400x400px)"
+      />
 
       <div className="space-y-2">
         <Label htmlFor="bandName">Nombre de la banda *</Label>

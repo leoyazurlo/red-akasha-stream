@@ -11,6 +11,18 @@ export const MusicLoverForm = ({ formData, onChange }: MusicLoverFormProps) => {
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Información de usuario</h3>
       
+      <div className="space-y-2">
+        <Label htmlFor="avatar_url">Foto de perfil (cuadrada) *</Label>
+        <Input
+          id="avatar_url"
+          value={formData.avatar_url || ""}
+          onChange={(e) => onChange("avatar_url", e.target.value)}
+          placeholder="URL de la imagen"
+          required
+        />
+        <p className="text-xs text-muted-foreground">Sube una imagen cuadrada para tu perfil</p>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="instagram">Instagram</Label>

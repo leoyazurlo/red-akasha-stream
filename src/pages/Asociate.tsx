@@ -85,6 +85,7 @@ const Asociate = () => {
     provincia: "",
     ciudad: "",
     // Campos del perfil específico
+    avatar_url: "",
     display_name: "",
     bio: "",
     instagram: "",
@@ -150,6 +151,7 @@ const Asociate = () => {
       const profileData: any = {
         user_id: user.id,
         profile_type: profileTypeMap[selectedProfile],
+        avatar_url: formData.avatar_url,
         display_name: formData.display_name || formData.nombre,
         bio: formData.bio || null,
         pais: formData.pais,

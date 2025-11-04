@@ -12,6 +12,18 @@ export const PromoterForm = ({ formData, onChange }: PromoterFormProps) => {
       <h3 className="text-lg font-semibold">Información del promotor artístico</h3>
       
       <div className="space-y-2">
+        <Label htmlFor="avatar_url">Foto de perfil (cuadrada) *</Label>
+        <Input
+          id="avatar_url"
+          value={formData.avatar_url || ""}
+          onChange={(e) => onChange("avatar_url", e.target.value)}
+          placeholder="URL de la imagen"
+          required
+        />
+        <p className="text-xs text-muted-foreground">Sube una imagen cuadrada para tu perfil</p>
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="promoterName">Nombre y apellido *</Label>
         <Input
           id="promoterName"

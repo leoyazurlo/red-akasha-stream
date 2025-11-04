@@ -1,8 +1,17 @@
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import logoAkasha from "@/assets/logo-akasha-cyan.png";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const navItems = [
   { name: "Home", href: "#home", isRoute: false },
@@ -17,6 +26,9 @@ const navItems = [
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { user } = useAuth();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/95 backdrop-blur-md">
@@ -56,6 +68,41 @@ export const Header = () => {
                 </a>
               )
             ))}
+
+            {/* Auth Section */}
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="ml-2">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      await supabase.auth.signOut();
+                      toast({
+                        title: "Sesión cerrada",
+                        description: "Has cerrado sesión correctamente.",
+                      });
+                      navigate("/");
+                    }}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Cerrar Sesión
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                variant="default"
+                size="sm"
+                className="ml-2"
+                onClick={() => navigate("/auth")}
+              >
+                Iniciar Sesión
+              </Button>
+            )}
           </nav>
 
           {/* Mobile Menu Button */}
@@ -97,6 +144,37 @@ export const Header = () => {
                 </a>
               )
             ))}
+            
+            {/* Mobile Auth Section */}
+            {user ? (
+              <Button
+                variant="ghost"
+                className="w-full justify-start"
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  toast({
+                    title: "Sesión cerrada",
+                    description: "Has cerrado sesión correctamente.",
+                  });
+                  setMobileMenuOpen(false);
+                  navigate("/");
+                }}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Cerrar Sesión
+              </Button>
+            ) : (
+              <Button
+                variant="default"
+                className="w-full"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  navigate("/auth");
+                }}
+              >
+                Iniciar Sesión
+              </Button>
+            )}
           </nav>
         )}
       </div>

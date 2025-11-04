@@ -54,9 +54,26 @@ const Asociate = () => {
     setLoading(true);
 
     try {
-      // Aquí se puede guardar en una tabla de registros o enviar por email
-      // Por ahora solo mostramos un mensaje de éxito
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simular envío
+      // Obtener el usuario actual si está autenticado
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // Guardar en la tabla de solicitudes de registro
+      const { error } = await supabase
+        .from('registration_requests')
+        .insert({
+          user_id: user?.id || null,
+          email: formData.email,
+          nombre: formData.nombre,
+          telefono: formData.telefono || null,
+          ciudad: formData.ciudad,
+          motivacion: formData.motivacion,
+          areas_interes: formData.areasInteres,
+          que_buscas: formData.queBuscas,
+          perfil: formData.perfil,
+          status: 'pending'
+        });
+
+      if (error) throw error;
       
       setSubmitted(true);
       toast({
@@ -64,6 +81,7 @@ const Asociate = () => {
         description: "Pronto nos pondremos en contacto contigo.",
       });
     } catch (error) {
+      console.error('Error al enviar solicitud:', error);
       toast({
         title: "Error",
         description: "Hubo un problema al enviar tu solicitud. Intenta de nuevo.",

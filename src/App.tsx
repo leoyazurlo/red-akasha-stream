@@ -8,6 +8,7 @@ import Forum from "./pages/Forum";
 import Admin from "./pages/Admin";
 import AdminCategories from "./pages/admin/Categories";
 import Asociate from "./pages/Asociate";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/foro" element={<Forum />} />
           <Route path="/asociate" element={<Asociate />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/categories" element={<AdminCategories />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

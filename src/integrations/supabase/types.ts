@@ -459,6 +459,54 @@ export type Database = {
         }
         Relationships: []
       }
+      registration_requests: {
+        Row: {
+          areas_interes: string[] | null
+          ciudad: string
+          created_at: string
+          email: string
+          id: string
+          motivacion: string
+          nombre: string
+          perfil: string[] | null
+          que_buscas: string[] | null
+          status: string
+          telefono: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          areas_interes?: string[] | null
+          ciudad: string
+          created_at?: string
+          email: string
+          id?: string
+          motivacion: string
+          nombre: string
+          perfil?: string[] | null
+          que_buscas?: string[] | null
+          status?: string
+          telefono?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          areas_interes?: string[] | null
+          ciudad?: string
+          created_at?: string
+          email?: string
+          id?: string
+          motivacion?: string
+          nombre?: string
+          perfil?: string[] | null
+          que_buscas?: string[] | null
+          status?: string
+          telefono?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           badge_id: string

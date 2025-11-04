@@ -3,8 +3,25 @@ import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { ForumCategories } from "@/components/forum/ForumCategories";
 import { ForumStats } from "@/components/forum/ForumStats";
+import { useAuth } from "@/hooks/useAuth";
+import { Navigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 
 const Forum = () => {
+  const { user, loading } = useAuth(true);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
       <CosmicBackground />

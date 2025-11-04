@@ -20,25 +20,25 @@ import {
 } from "@/components/ui/select";
 
 const latinAmericanCountries = [
-  { name: "Argentina", code: "AR" },
-  { name: "Bolivia", code: "BO" },
-  { name: "Brasil", code: "BR" },
-  { name: "Chile", code: "CL" },
-  { name: "Colombia", code: "CO" },
-  { name: "Costa Rica", code: "CR" },
-  { name: "Cuba", code: "CU" },
-  { name: "Ecuador", code: "EC" },
-  { name: "El Salvador", code: "SV" },
-  { name: "Guatemala", code: "GT" },
-  { name: "Honduras", code: "HN" },
-  { name: "México", code: "MX" },
-  { name: "Nicaragua", code: "NI" },
-  { name: "Panamá", code: "PA" },
-  { name: "Paraguay", code: "PY" },
-  { name: "Perú", code: "PE" },
-  { name: "República Dominicana", code: "DO" },
-  { name: "Uruguay", code: "UY" },
-  { name: "Venezuela", code: "VE" },
+  { name: "Argentina", flag: "🇦🇷", code: "AR", cities: ["Buenos Aires", "Córdoba", "Rosario", "Mendoza", "La Plata", "Mar del Plata", "Salta", "Tucumán"] },
+  { name: "Bolivia", flag: "🇧🇴", code: "BO", cities: ["La Paz", "Santa Cruz", "Cochabamba", "Sucre", "Oruro", "Potosí"] },
+  { name: "Brasil", flag: "🇧🇷", code: "BR", cities: ["São Paulo", "Rio de Janeiro", "Brasília", "Salvador", "Fortaleza", "Belo Horizonte", "Curitiba", "Recife"] },
+  { name: "Chile", flag: "🇨🇱", code: "CL", cities: ["Santiago", "Valparaíso", "Concepción", "Viña del Mar", "Antofagasta", "Temuco"] },
+  { name: "Colombia", flag: "🇨🇴", code: "CO", cities: ["Bogotá", "Medellín", "Cali", "Barranquilla", "Cartagena", "Bucaramanga", "Pereira"] },
+  { name: "Costa Rica", flag: "🇨🇷", code: "CR", cities: ["San José", "Alajuela", "Cartago", "Heredia", "Limón", "Puntarenas"] },
+  { name: "Cuba", flag: "🇨🇺", code: "CU", cities: ["La Habana", "Santiago de Cuba", "Camagüey", "Holguín", "Santa Clara"] },
+  { name: "Ecuador", flag: "🇪🇨", code: "EC", cities: ["Quito", "Guayaquil", "Cuenca", "Ambato", "Manta", "Machala"] },
+  { name: "El Salvador", flag: "🇸🇻", code: "SV", cities: ["San Salvador", "Santa Ana", "San Miguel", "Soyapango"] },
+  { name: "Guatemala", flag: "🇬🇹", code: "GT", cities: ["Ciudad de Guatemala", "Mixco", "Villa Nueva", "Quetzaltenango"] },
+  { name: "Honduras", flag: "🇭🇳", code: "HN", cities: ["Tegucigalpa", "San Pedro Sula", "La Ceiba", "Choloma"] },
+  { name: "México", flag: "🇲🇽", code: "MX", cities: ["Ciudad de México", "Guadalajara", "Monterrey", "Puebla", "Tijuana", "León", "Cancún"] },
+  { name: "Nicaragua", flag: "🇳🇮", code: "NI", cities: ["Managua", "León", "Granada", "Masaya", "Matagalpa"] },
+  { name: "Panamá", flag: "🇵🇦", code: "PA", cities: ["Ciudad de Panamá", "Colón", "David", "Santiago"] },
+  { name: "Paraguay", flag: "🇵🇾", code: "PY", cities: ["Asunción", "Ciudad del Este", "San Lorenzo", "Luque", "Encarnación"] },
+  { name: "Perú", flag: "🇵🇪", code: "PE", cities: ["Lima", "Arequipa", "Trujillo", "Chiclayo", "Cusco", "Piura"] },
+  { name: "República Dominicana", flag: "🇩🇴", code: "DO", cities: ["Santo Domingo", "Santiago", "La Romana", "San Pedro de Macorís"] },
+  { name: "Uruguay", flag: "🇺🇾", code: "UY", cities: ["Montevideo", "Salto", "Paysandú", "Maldonado", "Rivera"] },
+  { name: "Venezuela", flag: "🇻🇪", code: "VE", cities: ["Caracas", "Maracaibo", "Valencia", "Barquisimeto", "Maracay"] },
 ];
 
 const Asociate = () => {
@@ -266,7 +266,7 @@ const Asociate = () => {
                       <Label htmlFor="pais">País *</Label>
                       <Select
                         value={formData.pais}
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, pais: value }))}
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, pais: value, ciudad: "" }))}
                         required
                       >
                         <SelectTrigger>
@@ -275,24 +275,39 @@ const Asociate = () => {
                         <SelectContent>
                           {latinAmericanCountries.map((country) => (
                             <SelectItem key={country.code} value={country.name}>
-                              {country.name}
+                              <span className="flex items-center gap-2">
+                                <span className="text-xl">{country.flag}</span>
+                                {country.name}
+                              </span>
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="ciudad">Ciudad *</Label>
-                      <Input
-                        id="ciudad"
-                        name="ciudad"
-                        required
-                        value={formData.ciudad}
-                        onChange={handleChange}
-                        placeholder="Buenos Aires"
-                      />
-                    </div>
+                    {formData.pais && (
+                      <div className="space-y-2">
+                        <Label htmlFor="ciudad">Ciudad *</Label>
+                        <Select
+                          value={formData.ciudad}
+                          onValueChange={(value) => setFormData(prev => ({ ...prev, ciudad: value }))}
+                          required
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona tu ciudad" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {latinAmericanCountries
+                              .find(c => c.name === formData.pais)
+                              ?.cities.map((city) => (
+                                <SelectItem key={city} value={city}>
+                                  {city}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
 
                     <div className="space-y-4">
                       <Label className="text-base font-semibold">Áreas de Interés</Label>

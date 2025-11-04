@@ -1,7 +1,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,7 +9,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Mail, Phone, MapPin, Users } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
 
 const latinAmericanCountries = [
   { name: "Argentina", flag: "🇦🇷", code: "AR" },
@@ -33,8 +36,64 @@ const latinAmericanCountries = [
   { name: "Venezuela", flag: "🇻🇪", code: "VE" },
 ];
 
+interface RegistrationRequest {
+  id: string;
+  nombre: string;
+  email: string;
+  telefono: string | null;
+  ciudad: string;
+  pais: string | null;
+  areas_interes: string[] | null;
+  que_buscas: string[] | null;
+  perfil: string[] | null;
+  motivacion: string;
+  created_at: string;
+}
+
+interface CityGroup {
+  ciudad: string;
+  usuarios: RegistrationRequest[];
+}
+
 const Circuito = () => {
   const [selectedCountry, setSelectedCountry] = useState(latinAmericanCountries[0]);
+  const [cityGroups, setCityGroups] = useState<CityGroup[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchRegistrations();
+  }, [selectedCountry]);
+
+  const fetchRegistrations = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('registration_requests')
+        .select('*')
+        .eq('status', 'approved')
+        .eq('pais', selectedCountry.name)
+        .order('ciudad', { ascending: true });
+
+      if (error) throw error;
+
+      // Agrupar por ciudad
+      const grouped = (data || []).reduce((acc: CityGroup[], curr: RegistrationRequest) => {
+        const cityGroup = acc.find(g => g.ciudad === curr.ciudad);
+        if (cityGroup) {
+          cityGroup.usuarios.push(curr);
+        } else {
+          acc.push({ ciudad: curr.ciudad, usuarios: [curr] });
+        }
+        return acc;
+      }, []);
+
+      setCityGroups(grouped);
+    } catch (error) {
+      console.error('Error fetching registrations:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen relative">
@@ -84,25 +143,116 @@ const Circuito = () => {
           </section>
 
           {/* Content Section */}
-          <section className="max-w-4xl mx-auto">
-            <div className="bg-card/50 backdrop-blur-sm rounded-lg border border-border p-8">
-              <h2 className="text-3xl font-bold mb-4 text-primary">
-                Eventos en {selectedCountry.name} {selectedCountry.flag}
-              </h2>
-              <p className="text-muted-foreground mb-6">
-                Próximamente encontrarás aquí todos los eventos, talleres y actividades 
-                de Red Akasha en {selectedCountry.name}.
-              </p>
-              
-              <div className="grid gap-4 mt-8">
-                <div className="p-6 bg-secondary/30 rounded-lg border border-border">
-                  <h3 className="text-xl font-semibold mb-2">¿Eres organizador?</h3>
+          <section className="max-w-6xl mx-auto">
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                <p className="text-muted-foreground mt-4">Cargando colaboradores...</p>
+              </div>
+            ) : cityGroups.length === 0 ? (
+              <div className="bg-card/50 backdrop-blur-sm rounded-lg border border-border p-8 text-center">
+                <h2 className="text-2xl font-bold mb-4 text-primary">
+                  {selectedCountry.name} {selectedCountry.flag}
+                </h2>
+                <p className="text-muted-foreground mb-6">
+                  Aún no hay colaboradores registrados en {selectedCountry.name}.
+                </p>
+                <div className="p-6 bg-secondary/30 rounded-lg border border-border inline-block">
+                  <h3 className="text-xl font-semibold mb-2">¿Quieres ser el primero?</h3>
                   <p className="text-muted-foreground">
-                    Contacta con nosotros para incluir tus eventos en el circuito de Red Akasha.
+                    Únete a la Red Akasha y aparece en el circuito de tu país.
                   </p>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="space-y-8">
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl font-bold mb-2 text-primary">
+                    Colaboradores en {selectedCountry.name} {selectedCountry.flag}
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Encuentra espacios culturales, salas de grabación, músicos y más
+                  </p>
+                </div>
+
+                {cityGroups.map((cityGroup) => (
+                  <div key={cityGroup.ciudad} className="space-y-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <MapPin className="w-5 h-5 text-primary" />
+                      <h3 className="text-2xl font-bold text-foreground">{cityGroup.ciudad}</h3>
+                      <Badge variant="secondary" className="ml-2">
+                        {cityGroup.usuarios.length} {cityGroup.usuarios.length === 1 ? 'colaborador' : 'colaboradores'}
+                      </Badge>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {cityGroup.usuarios.map((usuario) => (
+                        <Card key={usuario.id} className="border-border bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-all">
+                          <CardHeader>
+                            <CardTitle className="flex items-start justify-between">
+                              <span>{usuario.nombre}</span>
+                              {usuario.perfil && usuario.perfil.length > 0 && (
+                                <Users className="w-5 h-5 text-primary flex-shrink-0 ml-2" />
+                              )}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            {usuario.perfil && usuario.perfil.length > 0 && (
+                              <div className="flex flex-wrap gap-2">
+                                {usuario.perfil.map((perfil, idx) => (
+                                  <Badge key={idx} variant="outline">
+                                    {perfil}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+
+                            {usuario.areas_interes && usuario.areas_interes.length > 0 && (
+                              <div>
+                                <p className="text-sm font-semibold text-muted-foreground mb-1">Áreas:</p>
+                                <div className="flex flex-wrap gap-1">
+                                  {usuario.areas_interes.map((area, idx) => (
+                                    <Badge key={idx} variant="secondary" className="text-xs">
+                                      {area}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="space-y-2 text-sm">
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <Mail className="w-4 h-4" />
+                                <a href={`mailto:${usuario.email}`} className="hover:text-primary transition-colors">
+                                  {usuario.email}
+                                </a>
+                              </div>
+                              {usuario.telefono && (
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <Phone className="w-4 h-4" />
+                                  <a href={`tel:${usuario.telefono}`} className="hover:text-primary transition-colors">
+                                    {usuario.telefono}
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+
+                            {usuario.que_buscas && usuario.que_buscas.length > 0 && (
+                              <div>
+                                <p className="text-sm font-semibold text-muted-foreground mb-1">Busca:</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {usuario.que_buscas.join(', ')}
+                                </p>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
         </div>
       </main>

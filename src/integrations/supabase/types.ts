@@ -658,6 +658,7 @@ export type Database = {
           id: string
           motivacion: string
           nombre: string
+          pais: string | null
           perfil: string[] | null
           que_buscas: string[] | null
           status: string
@@ -673,6 +674,7 @@ export type Database = {
           id?: string
           motivacion: string
           nombre: string
+          pais?: string | null
           perfil?: string[] | null
           que_buscas?: string[] | null
           status?: string
@@ -688,6 +690,7 @@ export type Database = {
           id?: string
           motivacion?: string
           nombre?: string
+          pais?: string | null
           perfil?: string[] | null
           que_buscas?: string[] | null
           status?: string

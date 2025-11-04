@@ -11,6 +11,35 @@ import { CosmicBackground } from "@/components/CosmicBackground";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, CheckCircle2, Users, Zap, Globe, Award } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const latinAmericanCountries = [
+  { name: "Argentina", code: "AR" },
+  { name: "Bolivia", code: "BO" },
+  { name: "Brasil", code: "BR" },
+  { name: "Chile", code: "CL" },
+  { name: "Colombia", code: "CO" },
+  { name: "Costa Rica", code: "CR" },
+  { name: "Cuba", code: "CU" },
+  { name: "Ecuador", code: "EC" },
+  { name: "El Salvador", code: "SV" },
+  { name: "Guatemala", code: "GT" },
+  { name: "Honduras", code: "HN" },
+  { name: "México", code: "MX" },
+  { name: "Nicaragua", code: "NI" },
+  { name: "Panamá", code: "PA" },
+  { name: "Paraguay", code: "PY" },
+  { name: "Perú", code: "PE" },
+  { name: "República Dominicana", code: "DO" },
+  { name: "Uruguay", code: "UY" },
+  { name: "Venezuela", code: "VE" },
+];
 
 const Asociate = () => {
   const { toast } = useToast();
@@ -20,6 +49,7 @@ const Asociate = () => {
     nombre: "",
     email: "",
     telefono: "",
+    pais: "",
     ciudad: "",
     motivacion: "",
     areasInteres: [] as string[],
@@ -65,6 +95,7 @@ const Asociate = () => {
           email: formData.email,
           nombre: formData.nombre,
           telefono: formData.telefono || null,
+          pais: formData.pais,
           ciudad: formData.ciudad,
           motivacion: formData.motivacion,
           areas_interes: formData.areasInteres,
@@ -232,14 +263,34 @@ const Asociate = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="ciudad">Ciudad/País *</Label>
+                      <Label htmlFor="pais">País *</Label>
+                      <Select
+                        value={formData.pais}
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, pais: value }))}
+                        required
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona tu país" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {latinAmericanCountries.map((country) => (
+                            <SelectItem key={country.code} value={country.name}>
+                              {country.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="ciudad">Ciudad *</Label>
                       <Input
                         id="ciudad"
                         name="ciudad"
                         required
                         value={formData.ciudad}
                         onChange={handleChange}
-                        placeholder="Buenos Aires, Argentina"
+                        placeholder="Buenos Aires"
                       />
                     </div>
 

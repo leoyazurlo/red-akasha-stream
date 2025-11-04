@@ -49,12 +49,15 @@ export const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-1">
-            {navItems.map((item) => (
-              item.isRoute ? (
+            {navItems.map((item) => {
+              const isActive = item.isRoute && location.pathname === item.href;
+              return item.isRoute ? (
                 <Link
                   key={item.name}
                   to={item.href}
-                  className="px-4 py-2 text-sm font-light text-foreground hover:text-primary transition-colors rounded-lg hover:bg-secondary"
+                  className={`px-4 py-2 text-sm font-light transition-colors rounded-lg hover:bg-secondary ${
+                    isActive ? 'text-primary' : 'text-foreground hover:text-primary'
+                  }`}
                 >
                   {item.name}
                 </Link>
@@ -66,8 +69,8 @@ export const Header = () => {
                 >
                   {item.name}
                 </a>
-              )
-            ))}
+              );
+            })}
 
             {/* Auth Section */}
             {user ? (
@@ -128,13 +131,16 @@ export const Header = () => {
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <nav className="md:hidden py-4 space-y-2 animate-slide-in">
-            {navItems.map((item) => (
-              item.isRoute ? (
+            {navItems.map((item) => {
+              const isActive = item.isRoute && location.pathname === item.href;
+              return item.isRoute ? (
                 <Link
                   key={item.name}
                   to={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-2 text-sm font-light text-foreground hover:text-primary transition-colors rounded-lg hover:bg-secondary"
+                  className={`block px-4 py-2 text-sm font-light transition-colors rounded-lg hover:bg-secondary ${
+                    isActive ? 'text-primary' : 'text-foreground hover:text-primary'
+                  }`}
                 >
                   {item.name}
                 </Link>
@@ -147,8 +153,8 @@ export const Header = () => {
                 >
                   {item.name}
                 </a>
-              )
-            ))}
+              );
+            })}
             
             {/* Mobile Auth Section */}
             {user ? (

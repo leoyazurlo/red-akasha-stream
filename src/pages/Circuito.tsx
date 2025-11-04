@@ -71,12 +71,12 @@ interface CityGroup {
 }
 
 const profileTypeLabels: Record<string, string> = {
-  band: "Banda",
-  venue: "Sala de concierto",
-  recording_studio: "Estudio de grabación",
-  producer: "Productor",
-  promoter: "Promotor",
-  music_lover: "Disfruto de la música"
+  agrupacion_musical: "Banda",
+  sala_concierto: "Sala de concierto",
+  estudio_grabacion: "Estudio de grabación",
+  productor_artistico: "Productor",
+  promotor_artistico: "Promotor",
+  disfruto_musica: "Disfruto de la música"
 };
 
 const Circuito = () => {
@@ -96,17 +96,16 @@ const Circuito = () => {
         .from('profile_details')
         .select('*')
         .eq('pais', selectedCountry.name)
-        .neq('profile_type', 'music_lover')
-        .order('provincia', { ascending: true })
+        .neq('profile_type', 'disfruto_musica')
         .order('ciudad', { ascending: true });
 
       if (error) throw error;
 
-      setAllProfiles(data || []);
+      setAllProfiles((data || []).map(d => ({ ...d, provincia: 'General' })));
 
-      // Agrupar por provincia y ciudad
-      const grouped = (data || []).reduce((acc: LocationGroup[], curr: ProfileDetail) => {
-        const provincia = curr.provincia || 'Sin provincia';
+      // Agrupar por ciudad solamente (sin provincia por ahora)
+      const grouped = (data || []).reduce((acc: LocationGroup[], curr: any) => {
+        const provincia = 'General';
         let provinciaGroup = acc.find(g => g.provincia === provincia);
         
         if (!provinciaGroup) {
@@ -120,7 +119,7 @@ const Circuito = () => {
           provinciaGroup.cities.push(cityGroup);
         }
 
-        cityGroup.profiles.push(curr);
+        cityGroup.profiles.push({ ...curr, provincia: 'General' });
         return acc;
       }, []);
 
@@ -141,11 +140,8 @@ const Circuito = () => {
         <div className="container mx-auto px-4">
           {/* Hero Section */}
           <section className="text-center mb-16">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent">
-              Circuito Red Akasha
-            </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-              Descubre eventos y actividades de Red Akasha en toda Latinoamérica
+              En esta sección podrás acceder a la base de datos y conocimiento del circuito de producción de la industria
             </p>
 
             {/* Country Selector */}

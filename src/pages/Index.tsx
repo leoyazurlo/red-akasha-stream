@@ -206,7 +206,7 @@ const Index = () => {
       <div className="relative z-10">
         <Header />
       
-      <main>
+      <main className="pt-16">
         <VideoPlayer />
         
         <div className="space-y-8 pb-8">

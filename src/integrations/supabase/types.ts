@@ -753,6 +753,7 @@ export type Database = {
           produced_artists: Json | null
           producer_instagram: string | null
           profile_type: Database["public"]["Enums"]["profile_type"]
+          provincia: string | null
           recorded_at: string | null
           technical_specs: Json | null
           telefono: string | null
@@ -782,6 +783,7 @@ export type Database = {
           produced_artists?: Json | null
           producer_instagram?: string | null
           profile_type: Database["public"]["Enums"]["profile_type"]
+          provincia?: string | null
           recorded_at?: string | null
           technical_specs?: Json | null
           telefono?: string | null
@@ -811,6 +813,7 @@ export type Database = {
           produced_artists?: Json | null
           producer_instagram?: string | null
           profile_type?: Database["public"]["Enums"]["profile_type"]
+          provincia?: string | null
           recorded_at?: string | null
           technical_specs?: Json | null
           telefono?: string | null

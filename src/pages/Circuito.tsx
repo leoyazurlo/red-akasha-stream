@@ -97,15 +97,16 @@ const Circuito = () => {
         .select('*')
         .eq('pais', selectedCountry.name)
         .neq('profile_type', 'disfruto_musica')
+        .order('provincia', { ascending: true })
         .order('ciudad', { ascending: true });
 
       if (error) throw error;
 
-      setAllProfiles((data || []).map(d => ({ ...d, provincia: 'General' })));
+      setAllProfiles(data || []);
 
-      // Agrupar por ciudad solamente (sin provincia por ahora)
-      const grouped = (data || []).reduce((acc: LocationGroup[], curr: any) => {
-        const provincia = 'General';
+      // Agrupar por provincia y ciudad
+      const grouped = (data || []).reduce((acc: LocationGroup[], curr: ProfileDetail) => {
+        const provincia = curr.provincia || 'Sin provincia';
         let provinciaGroup = acc.find(g => g.provincia === provincia);
         
         if (!provinciaGroup) {
@@ -119,7 +120,7 @@ const Circuito = () => {
           provinciaGroup.cities.push(cityGroup);
         }
 
-        cityGroup.profiles.push({ ...curr, provincia: 'General' });
+        cityGroup.profiles.push(curr);
         return acc;
       }, []);
 

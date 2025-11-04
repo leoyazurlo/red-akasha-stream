@@ -155,6 +155,7 @@ const Asociate = () => {
         display_name: formData.display_name || formData.nombre,
         bio: formData.bio || null,
         pais: formData.pais,
+        provincia: formData.provincia || null,
         ciudad: formData.ciudad,
         instagram: formData.instagram || null,
         facebook: formData.facebook || null,

@@ -248,9 +248,9 @@ const Asociate = () => {
           <div className="max-w-2xl mx-auto">
             <Card className="border-border bg-card/50 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-2xl">Solicitud de Inscripción</CardTitle>
+                <CardTitle className="text-2xl">Inscripción Asociados</CardTitle>
                 <CardDescription>
-                  Completa el formulario y nos pondremos en contacto contigo
+                  En esta plataforma vas a poder colaborar con otros socios, de los cuales esperamos que interactúes.
                 </CardDescription>
               </CardHeader>
               <CardContent>

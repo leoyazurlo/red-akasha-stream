@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuditLog } from "@/hooks/useAuditLog";
 
 interface RegistrationRequest {
   id: string;
@@ -30,6 +31,7 @@ interface RegistrationRequest {
 export default function AdminRegistrationRequests() {
   const { user, loading: authLoading, isAdmin } = useAuth(true);
   const { toast } = useToast();
+  const { logAction } = useAuditLog();
   const [requests, setRequests] = useState<RegistrationRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
@@ -64,6 +66,8 @@ export default function AdminRegistrationRequests() {
 
   const updateRequestStatus = async (id: string, newStatus: 'approved' | 'rejected') => {
     try {
+      const request = requests.find(r => r.id === id);
+      
       const { error } = await supabase
         .from('registration_requests')
         .update({ 
@@ -73,6 +77,19 @@ export default function AdminRegistrationRequests() {
         .eq('id', id);
 
       if (error) throw error;
+
+      // Registrar en el log de auditoría
+      await logAction({
+        action: newStatus === 'approved' ? 'approve_request' : 'reject_request',
+        targetType: 'registration_request',
+        targetId: id,
+        details: {
+          nombre: request?.nombre,
+          email: request?.email,
+          pais: request?.pais,
+          status: newStatus,
+        },
+      });
 
       toast({
         title: newStatus === 'approved' ? "Solicitud aprobada" : "Solicitud rechazada",

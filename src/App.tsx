@@ -13,6 +13,7 @@ import AdminPodcasts from "./pages/admin/Podcasts";
 import AdminUsers from "./pages/admin/Users";
 import AdminContentModeration from "./pages/admin/ContentModeration";
 import AdminRegistrationRequests from "./pages/admin/RegistrationRequests";
+import AdminAuditLogs from "./pages/admin/AuditLogs";
 import Asociate from "./pages/Asociate";
 import Circuito from "./pages/Circuito";
 import Auth from "./pages/Auth";
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/content" element={<AdminContentModeration />} />
           <Route path="/admin/requests" element={<AdminRegistrationRequests />} />
+          <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

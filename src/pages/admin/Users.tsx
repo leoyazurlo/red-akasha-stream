@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { useAuditLog } from "@/hooks/useAuditLog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +35,7 @@ interface UserProfile {
 export default function AdminUsers() {
   const { user, loading: authLoading, isAdmin } = useAuth(true);
   const { toast } = useToast();
+  const { logAction } = useAuditLog();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -78,8 +80,17 @@ export default function AdminUsers() {
 
       if (profileError) throw profileError;
 
-      // Eliminar el usuario de auth (esto se hace a través de la API de admin de Supabase)
-      // Por ahora solo eliminamos el perfil, el usuario auth se puede eliminar manualmente si es necesario
+      // Registrar en el log de auditoría
+      await logAction({
+        action: 'delete_user',
+        targetType: 'user',
+        targetId: selectedUser.user_id,
+        details: {
+          display_name: selectedUser.display_name,
+          email: selectedUser.email,
+          profile_type: selectedUser.profile_type,
+        },
+      });
       
       toast({
         title: "Usuario eliminado",

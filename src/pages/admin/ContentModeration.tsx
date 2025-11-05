@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuditLog } from "@/hooks/useAuditLog";
 
 interface ContentItem {
   id: string;
@@ -32,6 +33,7 @@ interface ContentItem {
 export default function AdminContentModeration() {
   const { user, loading: authLoading, isAdmin } = useAuth(true);
   const { toast } = useToast();
+  const { logAction } = useAuditLog();
   const [content, setContent] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
@@ -66,12 +68,26 @@ export default function AdminContentModeration() {
 
   const updateContentStatus = async (id: string, newStatus: 'approved' | 'rejected') => {
     try {
+      const contentItem = content.find(c => c.id === id);
+      
       const { error } = await supabase
         .from('content_uploads')
         .update({ status: newStatus })
         .eq('id', id);
 
       if (error) throw error;
+
+      // Registrar en el log de auditoría
+      await logAction({
+        action: newStatus === 'approved' ? 'approve_content' : 'reject_content',
+        targetType: 'content',
+        targetId: id,
+        details: {
+          title: contentItem?.title,
+          content_type: contentItem?.content_type,
+          status: newStatus,
+        },
+      });
 
       toast({
         title: newStatus === 'approved' ? "Contenido aprobado" : "Contenido rechazado",

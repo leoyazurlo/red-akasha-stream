@@ -1,4 +1,4 @@
-import { LayoutDashboard, FolderTree, Users, Flag, ShieldAlert, Award, Radio, Film, Headphones, Calendar, FileText, UserCheck } from "lucide-react";
+import { LayoutDashboard, FolderTree, Users, Flag, ShieldAlert, Award, Radio, Film, Headphones, Calendar, FileText, UserCheck, ScrollText } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -17,6 +17,7 @@ const generalItems = [
   { title: "Usuarios", url: "/admin/users", icon: Users },
   { title: "Solicitudes", url: "/admin/requests", icon: UserCheck },
   { title: "Curaduría", url: "/admin/content", icon: FileText },
+  { title: "Auditoría", url: "/admin/audit-logs", icon: ScrollText },
 ];
 
 const streamingItems = [

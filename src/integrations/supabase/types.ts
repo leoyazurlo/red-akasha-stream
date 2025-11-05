@@ -1576,7 +1576,7 @@ export type Database = {
         | "management"
         | "composicion"
       profile_type:
-        | "disfruto_musica"
+        | "productor_audiovisual"
         | "productor_artistico"
         | "estudio_grabacion"
         | "promotor_artistico"
@@ -1798,7 +1798,7 @@ export const Constants = {
         "composicion",
       ],
       profile_type: [
-        "disfruto_musica",
+        "productor_audiovisual",
         "productor_artistico",
         "estudio_grabacion",
         "promotor_artistico",

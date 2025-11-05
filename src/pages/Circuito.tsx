@@ -71,11 +71,11 @@ interface CityGroup {
 }
 
 const profileTypeLabels: Record<string, string> = {
-  agrupacion_musical: "Banda",
-  sala_concierto: "Sala de concierto",
-  estudio_grabacion: "Estudio de grabación",
-  productor_artistico: "Productor",
-  promotor_artistico: "Promotor",
+  agrupacion_musical: "Agrupación Musical",
+  sala_concierto: "Sala de Concierto",
+  estudio_grabacion: "Estudio de Grabación",
+  productor_artistico: "Productor Artístico",
+  promotor_artistico: "Promotor Artístico",
   productor_audiovisual: "Productor Audiovisual"
 };
 

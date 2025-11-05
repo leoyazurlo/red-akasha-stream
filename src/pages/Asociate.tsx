@@ -84,6 +84,8 @@ const Asociate = () => {
     pais: "",
     provincia: "",
     ciudad: "",
+    password: "",
+    confirmPassword: "",
     // Campos del perfil específico
     avatar_url: "",
     display_name: "",
@@ -132,24 +134,48 @@ const Asociate = () => {
       return;
     }
 
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Las contraseñas no coinciden",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast({
+        title: "Error",
+        description: "La contraseña debe tener al menos 6 caracteres",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Obtener el usuario actual
-      const { data: { user } } = await supabase.auth.getUser();
+      // Paso 1: Crear cuenta de usuario
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: formData.nombre,
+          }
+        }
+      });
+
+      if (signUpError) throw signUpError;
       
-      if (!user) {
-        toast({
-          title: "Error",
-          description: "Debes iniciar sesión para completar el registro",
-          variant: "destructive",
-        });
-        return;
+      if (!authData.user) {
+        throw new Error("No se pudo crear la cuenta");
       }
 
-      // Preparar datos específicos del perfil
+      // Paso 2: Preparar datos del perfil
       const profileData: any = {
-        user_id: user.id,
+        user_id: authData.user.id,
         profile_type: profileTypeMap[selectedProfile],
         avatar_url: formData.avatar_url,
         display_name: formData.display_name || formData.nombre,
@@ -160,7 +186,7 @@ const Asociate = () => {
         instagram: formData.instagram || null,
         facebook: formData.facebook || null,
         linkedin: formData.linkedin || null,
-        email: formData.email || user.email,
+        email: formData.email,
         telefono: formData.telefono || null,
         whatsapp: formData.whatsapp || null,
       };
@@ -179,23 +205,23 @@ const Asociate = () => {
         profileData.recorded_at = formData.recorded_at || null;
       }
 
-      // Guardar en profile_details
-      const { error } = await supabase
+      // Paso 3: Guardar perfil en profile_details
+      const { error: profileError } = await supabase
         .from('profile_details')
         .insert(profileData);
 
-      if (error) throw error;
+      if (profileError) throw profileError;
       
       setSubmitted(true);
       toast({
-        title: "¡Perfil creado exitosamente!",
-        description: "Ahora puedes subir contenido y completar tu perfil.",
+        title: "¡Cuenta creada exitosamente!",
+        description: "Revisa tu email para confirmar tu cuenta. Ya puedes iniciar sesión.",
       });
     } catch (error: any) {
-      console.error('Error al crear perfil:', error);
+      console.error('Error al crear cuenta:', error);
       toast({
         title: "Error",
-        description: error.message || "Hubo un problema al crear tu perfil. Intenta de nuevo.",
+        description: error.message || "Hubo un problema al crear tu cuenta. Intenta de nuevo.",
         variant: "destructive",
       });
     } finally {
@@ -298,6 +324,32 @@ const Asociate = () => {
                         value={formData.telefono}
                         onChange={handleChange}
                         placeholder="+54 9 11 1234-5678"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Contraseña *</Label>
+                      <Input
+                        id="password"
+                        name="password"
+                        type="password"
+                        required
+                        value={formData.password}
+                        onChange={handleChange}
+                        placeholder="Mínimo 6 caracteres"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">Confirmar Contraseña *</Label>
+                      <Input
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        type="password"
+                        required
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        placeholder="Repite tu contraseña"
                       />
                     </div>
 

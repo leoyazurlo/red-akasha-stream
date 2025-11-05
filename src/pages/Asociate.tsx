@@ -171,7 +171,19 @@ const Asociate = () => {
         }
       });
 
-      if (signUpError) throw signUpError;
+      if (signUpError) {
+        // Manejar error de usuario ya existente
+        if (signUpError.message.includes('already registered') || signUpError.message.includes('User already registered')) {
+          toast({
+            title: "Email ya registrado",
+            description: "Este email ya está en uso. Por favor, inicia sesión o usa otro email.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+        throw signUpError;
+      }
       
       if (!authData.user) {
         throw new Error("No se pudo crear la cuenta");

@@ -94,6 +94,23 @@ const Circuito = () => {
   const [selectedProfile, setSelectedProfile] = useState<ProfileDetail | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Función para obtener el desglose de perfiles por tipo
+  const getProfileTypeBreakdown = (profiles: ProfileDetail[]) => {
+    const typeCounts: Record<string, number> = {};
+    
+    profiles.forEach(profile => {
+      const type = profile.profile_type;
+      typeCounts[type] = (typeCounts[type] || 0) + 1;
+    });
+
+    return Object.entries(typeCounts)
+      .map(([type, count]) => {
+        const label = profileTypeLabels[type] || type;
+        return `${count} ${label}${count !== 1 ? 's' : ''}`;
+      })
+      .join(', ');
+  };
+
   useEffect(() => {
     checkUserProfile();
   }, []);
@@ -363,12 +380,14 @@ const Circuito = () => {
 
                       {locationGroup.cities.map((cityGroup) => (
                         <div key={cityGroup.ciudad} className="space-y-4">
-                          <div className="flex items-center gap-2 mb-4">
-                            <MapPin className="w-5 h-5 text-primary" />
-                            <h4 className="text-xl font-bold text-foreground">{cityGroup.ciudad}</h4>
-                            <Badge variant="secondary" className="ml-2">
-                              {cityGroup.profiles.length} {cityGroup.profiles.length === 1 ? 'perfil' : 'perfiles'}
-                            </Badge>
+                          <div className="mb-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <MapPin className="w-5 h-5 text-primary" />
+                              <h4 className="text-xl font-bold text-foreground">{cityGroup.ciudad}</h4>
+                            </div>
+                            <p className="text-sm text-muted-foreground ml-7">
+                              {getProfileTypeBreakdown(cityGroup.profiles)}
+                            </p>
                           </div>
 
                           <div className="grid md:grid-cols-2 gap-6">

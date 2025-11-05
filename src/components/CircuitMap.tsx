@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, MapPin } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { geocodeAddress, extractCoordinates, createFullAddress, type Coordinates } from '@/lib/geocoding';
+import { toast } from 'sonner';
 
 interface CircuitMapProps {
   profiles: Array<{
@@ -12,6 +15,8 @@ interface CircuitMapProps {
     provincia: string | null;
     profile_type: string;
     map_location?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
   }>;
 }
 
@@ -20,6 +25,8 @@ export const CircuitMap = ({ profiles }: CircuitMapProps) => {
   const map = useRef<google.maps.Map | null>(null);
   const [googleApiKey, setGoogleApiKey] = useState('');
   const [showKeyInput, setShowKeyInput] = useState(true);
+  const [geocoding, setGeocoding] = useState(false);
+  const [geocodedCount, setGeocodedCount] = useState(0);
 
   // Load Google Maps JS API dynamically
   const loadGoogleMaps = (apiKey: string) => {
@@ -44,32 +51,119 @@ export const CircuitMap = ({ profiles }: CircuitMapProps) => {
     });
   };
 
-  // Extract coordinates from a Google Maps URL or plain "lat,lng" string
-  const extractLatLng = (input: string): { lat: number; lng: number } | null => {
-    if (!input) return null;
-
-    // @lat,lng pattern (Google Maps share URL)
-    const atMatch = input.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/);
-    if (atMatch) {
-      const [, lat, lng] = atMatch;
-      return { lat: parseFloat(lat), lng: parseFloat(lng) };
+  // Obtener coordenadas del perfil (almacenadas o desde map_location)
+  const getProfileCoordinates = (profile: typeof profiles[0]): Coordinates | null => {
+    // Prioridad 1: Coordenadas almacenadas en la BD
+    if (profile.latitude && profile.longitude) {
+      return { lat: profile.latitude, lng: profile.longitude };
     }
 
-    // q=lat,lng or ll=lat,lng
-    const qMatch = input.match(/[?&](?:q|ll)=(-?\d+\.?\d*),(-?\d+\.?\d*)/);
-    if (qMatch) {
-      const [, lat, lng] = qMatch;
-      return { lat: parseFloat(lat), lng: parseFloat(lng) };
-    }
-
-    // plain "lat,lng"
-    const plain = input.match(/^\s*(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)\s*$/);
-    if (plain) {
-      const [, lat, lng] = plain;
-      return { lat: parseFloat(lat), lng: parseFloat(lng) };
+    // Prioridad 2: Extraer de map_location si es URL
+    if (profile.map_location) {
+      return extractCoordinates(profile.map_location);
     }
 
     return null;
+  };
+
+  // Geocodificar perfiles que no tengan coordenadas
+  const geocodeProfiles = async () => {
+    if (!googleApiKey) return;
+
+    setGeocoding(true);
+    let count = 0;
+
+    const profilesToGeocode = profiles.filter(
+      (p) => !p.latitude && !p.longitude && !extractCoordinates(p.map_location || '')
+    );
+
+    if (profilesToGeocode.length === 0) {
+      toast.info('Todos los perfiles ya tienen coordenadas');
+      setGeocoding(false);
+      return;
+    }
+
+    toast.info(`Geocodificando ${profilesToGeocode.length} perfiles...`);
+
+    for (const profile of profilesToGeocode) {
+      const address = createFullAddress(profile.ciudad, profile.provincia, profile.pais);
+      const coords = await geocodeAddress(address, googleApiKey);
+
+      if (coords) {
+        // Actualizar en la base de datos
+        const { error } = await supabase
+          .from('profile_details')
+          .update({
+            latitude: coords.lat,
+            longitude: coords.lng,
+          })
+          .eq('id', profile.id);
+
+        if (!error) {
+          count++;
+          // Actualizar el objeto local
+          profile.latitude = coords.lat;
+          profile.longitude = coords.lng;
+        } else {
+          console.error('Error updating coordinates:', error);
+        }
+
+        // Pequeña pausa para no exceder límites de la API
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
+    }
+
+    setGeocodedCount(count);
+    setGeocoding(false);
+    
+    if (count > 0) {
+      toast.success(`Se geocodificaron ${count} perfiles correctamente`);
+      // Recargar el mapa
+      if (map.current) {
+        initializeMap();
+      }
+    } else {
+      toast.error('No se pudo geocodificar ningún perfil');
+    }
+  };
+
+  const initializeMap = () => {
+    if (!mapContainer.current || !map.current) return;
+
+    const bounds = new google.maps.LatLngBounds();
+    let hasAnyMarker = false;
+
+    // Limpiar marcadores existentes si los hay
+    // (En una implementación más robusta, guardaríamos referencias a los marcadores)
+
+    profiles.forEach((profile) => {
+      const coords = getProfileCoordinates(profile);
+      if (!coords) return;
+
+      const position = new google.maps.LatLng(coords.lat, coords.lng);
+      const marker = new google.maps.Marker({
+        position,
+        map: map.current!,
+        title: profile.display_name,
+      });
+
+      const infoHtml = `
+        <div style="padding:8px;max-width:220px;">
+          <h3 style="font-weight:600;margin:0 0 4px;">${profile.display_name}</h3>
+          <p style="font-size:12px;margin:0 0 2px;">${profile.ciudad}, ${profile.provincia || profile.pais}</p>
+          <p style="font-size:11px;color:#666;margin:0;">${profile.profile_type}</p>
+        </div>
+      `;
+      const infoWindow = new google.maps.InfoWindow({ content: infoHtml });
+      marker.addListener('click', () => infoWindow.open({ anchor: marker, map: map.current! }));
+
+      bounds.extend(position);
+      hasAnyMarker = true;
+    });
+
+    if (hasAnyMarker) {
+      map.current.fitBounds(bounds, 40);
+    }
   };
 
   useEffect(() => {
@@ -90,53 +184,25 @@ export const CircuitMap = ({ profiles }: CircuitMapProps) => {
           fullscreenControl: true,
         });
 
-        const bounds = new google.maps.LatLngBounds();
-        let hasAnyMarker = false;
-
-        profiles.forEach((profile) => {
-          if (!profile.map_location) return;
-          const coords = extractLatLng(profile.map_location);
-          if (!coords) return;
-
-          const position = new google.maps.LatLng(coords.lat, coords.lng);
-          const marker = new google.maps.Marker({
-            position,
-            map: map.current!,
-            title: profile.display_name,
-          });
-
-          const infoHtml = `
-            <div style="padding:8px;max-width:220px;">
-              <h3 style="font-weight:600;margin:0 0 4px;">${profile.display_name}</h3>
-              <p style="font-size:12px;margin:0 0 2px;">${profile.ciudad}, ${profile.provincia || profile.pais}</p>
-              <p style="font-size:11px;color:#666;margin:0;">${profile.profile_type}</p>
-            </div>
-          `;
-          const infoWindow = new google.maps.InfoWindow({ content: infoHtml });
-          marker.addListener('click', () => infoWindow.open({ anchor: marker, map: map.current! }));
-
-          bounds.extend(position);
-          hasAnyMarker = true;
-        });
-
-        if (hasAnyMarker) {
-          map.current.fitBounds(bounds, 40);
-        }
-
+        initializeMap();
         setShowKeyInput(false);
       })
       .catch((error) => {
         console.error('Error loading Google Maps:', error);
+        toast.error('Error al cargar Google Maps');
       });
 
     return () => {
       canceled = true;
-      // No explicit destroy API for Google Maps, GC will handle it.
       map.current = null;
     };
-  }, [googleApiKey, profiles]);
+  }, [googleApiKey, profiles, geocodedCount]);
 
   if (showKeyInput) {
+    const profilesWithoutCoords = profiles.filter(
+      (p) => !p.latitude && !p.longitude && !extractCoordinates(p.map_location || '')
+    );
+
     return (
       <div className="bg-card/50 backdrop-blur-sm rounded-lg border border-border p-6">
         <div className="flex items-start gap-3 mb-4">
@@ -155,6 +221,14 @@ export const CircuitMap = ({ profiles }: CircuitMapProps) => {
                 Google Cloud Console
               </a>
             </p>
+            {profilesWithoutCoords.length > 0 && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
+                <MapPin className="w-4 h-4" />
+                <span>
+                  {profilesWithoutCoords.length} perfil(es) sin coordenadas serán geocodificados automáticamente
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -184,9 +258,38 @@ export const CircuitMap = ({ profiles }: CircuitMapProps) => {
     );
   }
 
+  const profilesNeedingGeocode = profiles.filter(
+    (p) => !p.latitude && !p.longitude && !extractCoordinates(p.map_location || '')
+  ).length;
+
   return (
-    <div className="relative w-full h-[500px] rounded-lg overflow-hidden border border-border">
-      <div ref={mapContainer} className="absolute inset-0" />
+    <div className="space-y-4">
+      {profilesNeedingGeocode > 0 && (
+        <div className="bg-muted/50 border border-border rounded-lg p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <MapPin className="w-5 h-5 text-primary" />
+            <div>
+              <p className="text-sm font-medium">
+                {profilesNeedingGeocode} perfil(es) sin coordenadas
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Geocodifica automáticamente las direcciones para mostrarlas en el mapa
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={geocodeProfiles}
+            disabled={geocoding}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {geocoding ? 'Geocodificando...' : 'Geocodificar'}
+          </button>
+        </div>
+      )}
+      
+      <div className="relative w-full h-[500px] rounded-lg overflow-hidden border border-border">
+        <div ref={mapContainer} className="absolute inset-0" />
+      </div>
     </div>
   );
 };

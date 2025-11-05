@@ -59,6 +59,8 @@ interface ProfileDetail {
   telefono: string | null;
   whatsapp: string | null;
   map_location: string | null;
+  latitude: number | null;
+  longitude: number | null;
   venue_type: string | null;
   capacity: number | null;
   genre: string | null;
@@ -138,7 +140,7 @@ const Circuito = () => {
     try {
       const { data, error } = await supabase
         .from('profile_details')
-        .select('*')
+        .select('*, latitude, longitude')
         .eq('pais', selectedCountry.name)
         .neq('profile_type', 'productor_audiovisual')
         .order('provincia', { ascending: true })

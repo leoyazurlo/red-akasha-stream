@@ -782,7 +782,9 @@ export type Database = {
           genre: Database["public"]["Enums"]["music_genre"] | null
           id: string
           instagram: string | null
+          latitude: number | null
           linkedin: string | null
+          longitude: number | null
           map_location: string | null
           members: Json | null
           pais: string
@@ -812,7 +814,9 @@ export type Database = {
           genre?: Database["public"]["Enums"]["music_genre"] | null
           id?: string
           instagram?: string | null
+          latitude?: number | null
           linkedin?: string | null
+          longitude?: number | null
           map_location?: string | null
           members?: Json | null
           pais: string
@@ -842,7 +846,9 @@ export type Database = {
           genre?: Database["public"]["Enums"]["music_genre"] | null
           id?: string
           instagram?: string | null
+          latitude?: number | null
           linkedin?: string | null
+          longitude?: number | null
           map_location?: string | null
           members?: Json | null
           pais?: string

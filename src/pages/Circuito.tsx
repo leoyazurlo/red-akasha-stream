@@ -3,6 +3,7 @@ import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ProfileTechnicalSheet } from "@/components/ProfileTechnicalSheet";
@@ -13,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CardDescription } from "@/components/ui/card";
-import { ChevronDown, Mail, Phone, MapPin, Users, Instagram, Facebook, Linkedin, ExternalLink, Loader2, AlertCircle } from "lucide-react";
+import { ChevronDown, Mail, Phone, MapPin, Users, Instagram, Facebook, Linkedin, ExternalLink, Loader2, AlertCircle, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -91,6 +92,7 @@ const Circuito = () => {
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [hasProfile, setHasProfile] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<ProfileDetail | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     checkUserProfile();
@@ -173,6 +175,27 @@ const Circuito = () => {
       setLoading(false);
     }
   };
+
+  // Filtrar perfiles en tiempo real
+  const filteredLocationGroups = locationGroups
+    .map((locationGroup) => ({
+      ...locationGroup,
+      cities: locationGroup.cities
+        .map((cityGroup) => ({
+          ...cityGroup,
+          profiles: cityGroup.profiles.filter((profile) => {
+            if (!searchTerm) return true;
+            const term = searchTerm.toLowerCase();
+            return (
+              profile.display_name.toLowerCase().includes(term) ||
+              profile.ciudad.toLowerCase().includes(term) ||
+              (profile.provincia && profile.provincia.toLowerCase().includes(term))
+            );
+          }),
+        }))
+        .filter((cityGroup) => cityGroup.profiles.length > 0),
+    }))
+    .filter((locationGroup) => locationGroup.cities.length > 0);
 
   if (checkingProfile) {
     return (
@@ -269,12 +292,40 @@ const Circuito = () => {
               </div>
             </section>
 
+            {/* Search Bar */}
+            {!loading && allProfiles.length > 0 && (
+              <section className="max-w-6xl mx-auto mb-8">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+                  <Input
+                    type="text"
+                    placeholder="Buscar por nombre, ciudad o provincia..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 pr-4 py-6 text-base bg-card/50 backdrop-blur-sm border-border"
+                  />
+                </div>
+              </section>
+            )}
+
             {/* Content Section */}
             <section className="max-w-6xl mx-auto">
               {loading ? (
                 <div className="text-center py-12">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
                   <p className="text-muted-foreground mt-4">Cargando perfiles...</p>
+                </div>
+              ) : filteredLocationGroups.length === 0 ? (
+                <div className="bg-card/50 backdrop-blur-sm rounded-lg border border-border p-8 text-center">
+                  <h2 className="text-2xl font-bold mb-4 text-primary">
+                    No se encontraron resultados
+                  </h2>
+                  <p className="text-muted-foreground mb-6">
+                    No hay perfiles que coincidan con tu búsqueda "{searchTerm}".
+                  </p>
+                  <Button onClick={() => setSearchTerm("")} variant="outline">
+                    Limpiar búsqueda
+                  </Button>
                 </div>
               ) : locationGroups.length === 0 ? (
                 <div className="bg-card/50 backdrop-blur-sm rounded-lg border border-border p-8 text-center">
@@ -293,16 +344,18 @@ const Circuito = () => {
                 </div>
               ) : (
                 <div className="space-y-12">
-                <div className="text-center mb-8">
+                 <div className="text-center mb-8">
                   <h2 className="text-3xl font-bold mb-2 text-primary">
                     Perfiles - {selectedCountry.name} {selectedCountry.flag}
                   </h2>
                   <p className="text-muted-foreground">
-                    Encuentra espacios culturales, salas de grabación, bandas, productores y más
+                    {searchTerm
+                      ? `Mostrando resultados para "${searchTerm}"`
+                      : "Encuentra espacios culturales, salas de grabación, bandas, productores y más"}
                   </p>
                 </div>
 
-                  {locationGroups.map((locationGroup) => (
+                  {filteredLocationGroups.map((locationGroup) => (
                     <div key={locationGroup.provincia} className="space-y-8">
                       <div className="border-b border-border pb-2">
                         <h3 className="text-2xl font-bold text-primary">{locationGroup.provincia}</h3>

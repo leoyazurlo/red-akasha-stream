@@ -388,7 +388,7 @@ const Circuito = () => {
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
                                       <CardTitle className="text-lg mb-1">{profile.display_name}</CardTitle>
-                                      <Badge variant="outline" className="mb-2">
+                                      <Badge variant="outline" className="mb-2 border-primary text-primary">
                                         {profileTypeLabels[profile.profile_type] || profile.profile_type}
                                       </Badge>
                                       {profile.venue_type && (

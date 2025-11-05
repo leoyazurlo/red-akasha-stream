@@ -480,21 +480,9 @@ export const ProfileTechnicalSheet = ({
           <div className="absolute -top-8 -right-4 text-black text-base tracking-[0.3em] font-bold whitespace-nowrap text-right leading-tight">
             F I C H A<br/>T E C N I C A
           </div>
-          {/* Decorative background with diagonal lines */}
-          <div className="relative flex items-center justify-center">
-            <svg className="absolute w-72 h-72" viewBox="0 0 300 300">
-              <g stroke="#7DD3C0" strokeWidth="8" fill="none" opacity="0.6">
-                <line x1="50" y1="50" x2="110" y2="50" transform="rotate(-45 150 150)" />
-                <line x1="60" y1="60" x2="120" y2="60" transform="rotate(-45 150 150)" />
-                <line x1="70" y1="70" x2="130" y2="70" transform="rotate(-45 150 150)" />
-                <line x1="180" y1="50" x2="240" y2="50" transform="rotate(-45 150 150)" />
-                <line x1="190" y1="60" x2="250" y2="60" transform="rotate(-45 150 150)" />
-                <line x1="200" y1="70" x2="260" y2="70" transform="rotate(-45 150 150)" />
-              </g>
-            </svg>
-            {/* Círculo decorativo exterior - Ahora centrado */}
-            <div className="absolute w-52 h-52 rounded-full bg-gradient-to-br from-[#7DD3C0] to-[#5E9FFF] opacity-40"></div>
-            {/* Círculo de borde - Ahora centrado */}
+          {/* Avatar centrado con círculo de borde */}
+          <div className="relative flex items-center justify-center w-52 h-52">
+            {/* Círculo de borde negro */}
             <div className="absolute w-44 h-44 rounded-full border-4 border-black/80"></div>
             {/* Avatar centrado */}
             <Avatar className="w-40 h-40 border-4 border-black relative z-10">

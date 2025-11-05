@@ -127,6 +127,37 @@ export const CircuitMap = ({ profiles }: CircuitMapProps) => {
     }
   };
 
+  // Mapeo de colores según tipo de perfil
+  const getMarkerColor = (profileType: string): string => {
+    const colorMap: Record<string, string> = {
+      banda: '#06b6d4', // cyan
+      productor: '#8b5cf6', // purple
+      music_lover: '#ec4899', // pink
+      promotor: '#f59e0b', // amber
+      venue: '#10b981', // emerald
+      recording_studio: '#ef4444', // red
+    };
+    return colorMap[profileType] || '#06b6d4'; // default cyan
+  };
+
+  // Crear SVG personalizado para el marcador
+  const createMarkerIcon = (profileType: string): string => {
+    const color = getMarkerColor(profileType);
+    return `data:image/svg+xml,${encodeURIComponent(`
+      <svg width="32" height="42" viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.3"/>
+          </filter>
+        </defs>
+        <path d="M16 0C7.163 0 0 7.163 0 16c0 12 16 26 16 26s16-14 16-26c0-8.837-7.163-16-16-16z" 
+              fill="${color}" 
+              filter="url(#shadow)"/>
+        <circle cx="16" cy="16" r="6" fill="white" opacity="0.9"/>
+      </svg>
+    `)}`;
+  };
+
   const initializeMap = () => {
     if (!mapContainer.current || !map.current) return;
 
@@ -145,6 +176,12 @@ export const CircuitMap = ({ profiles }: CircuitMapProps) => {
         position,
         map: map.current!,
         title: profile.display_name,
+        icon: {
+          url: createMarkerIcon(profile.profile_type),
+          scaledSize: new google.maps.Size(32, 42),
+          anchor: new google.maps.Point(16, 42),
+        },
+        animation: google.maps.Animation.DROP,
       });
 
       const infoHtml = `
@@ -347,6 +384,23 @@ export const CircuitMap = ({ profiles }: CircuitMapProps) => {
     (p) => !p.latitude && !p.longitude && !extractCoordinates(p.map_location || '')
   ).length;
 
+  // Obtener tipos de perfil únicos para la leyenda
+  const uniqueProfileTypes = Array.from(
+    new Set(profiles.map((p) => p.profile_type))
+  );
+
+  const getProfileTypeLabel = (type: string): string => {
+    const labels: Record<string, string> = {
+      banda: 'Banda',
+      productor: 'Productor',
+      music_lover: 'Music Lover',
+      promotor: 'Promotor',
+      venue: 'Venue',
+      recording_studio: 'Recording Studio',
+    };
+    return labels[type] || type;
+  };
+
   return (
     <div className="space-y-4">
       {profilesNeedingGeocode > 0 && (
@@ -374,6 +428,24 @@ export const CircuitMap = ({ profiles }: CircuitMapProps) => {
       
       <div className="relative w-full h-[500px] rounded-lg overflow-hidden border border-border">
         <div ref={mapContainer} className="absolute inset-0" />
+        
+        {/* Leyenda de marcadores */}
+        <div className="absolute top-4 right-4 bg-card/95 backdrop-blur-sm border border-border rounded-lg p-4 shadow-lg">
+          <h4 className="text-sm font-semibold mb-3 text-foreground">Tipos de perfil</h4>
+          <div className="space-y-2">
+            {uniqueProfileTypes.map((type) => (
+              <div key={type} className="flex items-center gap-2">
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: getMarkerColor(type) }}
+                />
+                <span className="text-xs text-muted-foreground">
+                  {getProfileTypeLabel(type)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

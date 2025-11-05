@@ -198,19 +198,9 @@ const Circuito = () => {
           <div className="container mx-auto px-4">
             <Card className="max-w-2xl mx-auto border-border bg-card/50 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-2xl">Asociación Requerida</CardTitle>
-                <CardDescription>
-                  Para ver el circuito de artistas, primero debes asociarte a la plataforma
-                </CardDescription>
+                <CardTitle className="text-2xl">Para ver la base de datos deberías asociarte.</CardTitle>
               </CardHeader>
               <CardContent>
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>No tienes un perfil creado</AlertTitle>
-                  <AlertDescription>
-                    Para poder acceder al circuito de artistas y colaboradores, necesitas completar el proceso de asociación y crear tu perfil primero.
-                  </AlertDescription>
-                </Alert>
                 <div className="mt-6 flex gap-4">
                   <Button onClick={() => navigate("/asociate")} className="flex-1">
                     Asociarme Ahora

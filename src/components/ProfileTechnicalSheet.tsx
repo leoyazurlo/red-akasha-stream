@@ -475,23 +475,14 @@ export const ProfileTechnicalSheet = ({
           </div>
         </div>
 
-        {/* Avatar with decorative elements */}
-        <div className="relative ml-8">
-          <div className="absolute -top-8 -right-4 text-black text-base tracking-[0.3em] font-bold whitespace-nowrap text-right leading-tight">
-            F I C H A<br/>T E C N I C A
-          </div>
-          {/* Avatar centrado con círculo de borde */}
-          <div className="relative flex items-center justify-center w-52 h-52">
-            {/* Círculo de borde negro */}
-            <div className="absolute w-44 h-44 rounded-full border-4 border-black/80"></div>
-            {/* Avatar centrado */}
-            <Avatar className="w-40 h-40 border-4 border-black relative z-10">
-              <AvatarImage src={avatarUrl || ''} alt={displayName} className="object-cover" />
-              <AvatarFallback className="bg-gradient-to-br from-cyan-400 to-blue-500 text-white text-6xl font-bold">
-                {displayName.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          </div>
+        {/* Avatar simple */}
+        <div className="ml-8">
+          <Avatar className="w-40 h-40 border-4 border-black">
+            <AvatarImage src={avatarUrl || ''} alt={displayName} className="object-cover" />
+            <AvatarFallback className="bg-gradient-to-br from-cyan-400 to-blue-500 text-white text-6xl font-bold">
+              {displayName.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
         </div>
       </div>
 

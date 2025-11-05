@@ -950,6 +950,51 @@ export type Database = {
           },
         ]
       }
+      profile_ratings: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          rated_profile_id: string
+          rater_profile_id: string
+          rating: number
+          updated_at: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rated_profile_id: string
+          rater_profile_id: string
+          rating: number
+          updated_at?: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rated_profile_id?: string
+          rater_profile_id?: string
+          rating?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_ratings_rated_profile_id_fkey"
+            columns: ["rated_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profile_details"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_ratings_rater_profile_id_fkey"
+            columns: ["rater_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profile_details"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

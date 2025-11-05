@@ -17,10 +17,13 @@ import {
   Repeat,
   ExternalLink,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Star
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ProfileTechnicalSheetProps {
   profileId: string;
@@ -81,13 +84,23 @@ export const ProfileTechnicalSheet = ({
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [interactionCount, setInteractionCount] = useState(0);
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalRatings, setTotalRatings] = useState(0);
+  const [userRating, setUserRating] = useState(0);
+  const [hoveredStar, setHoveredStar] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchGallery();
     fetchAudioPlaylist();
     fetchInteractionCount();
-  }, [profileId]);
+    fetchRatings();
+    if (user) {
+      fetchUserRating();
+    }
+  }, [profileId, user]);
 
   const fetchGallery = async () => {
     try {
@@ -130,6 +143,115 @@ export const ProfileTechnicalSheet = ({
       setInteractionCount(count || 0);
     } catch (error) {
       console.error('Error fetching interaction count:', error);
+    }
+  };
+
+  const fetchRatings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profile_ratings')
+        .select('rating')
+        .eq('rated_profile_id', profileId);
+
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        const sum = data.reduce((acc, curr) => acc + curr.rating, 0);
+        setAverageRating(sum / data.length);
+        setTotalRatings(data.length);
+      }
+    } catch (error) {
+      console.error('Error fetching ratings:', error);
+    }
+  };
+
+  const fetchUserRating = async () => {
+    try {
+      const { data: userProfileData } = await supabase
+        .from('profile_details')
+        .select('id')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (!userProfileData) return;
+
+      const { data, error } = await supabase
+        .from('profile_ratings')
+        .select('rating')
+        .eq('rated_profile_id', profileId)
+        .eq('rater_profile_id', userProfileData.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data) {
+        setUserRating(data.rating);
+      }
+    } catch (error) {
+      console.error('Error fetching user rating:', error);
+    }
+  };
+
+  const handleRating = async (rating: number) => {
+    if (!user) {
+      toast({
+        title: "Debes iniciar sesión",
+        description: "Necesitas estar autenticado para valorar perfiles",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { data: userProfileData } = await supabase
+        .from('profile_details')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!userProfileData) {
+        toast({
+          title: "Error",
+          description: "No se encontró tu perfil",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (userProfileData.id === profileId) {
+        toast({
+          title: "No permitido",
+          description: "No puedes valorar tu propio perfil",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('profile_ratings')
+        .upsert({
+          rated_profile_id: profileId,
+          rater_profile_id: userProfileData.id,
+          rating: rating
+        }, {
+          onConflict: 'rated_profile_id,rater_profile_id'
+        });
+
+      if (error) throw error;
+
+      setUserRating(rating);
+      fetchRatings();
+      
+      toast({
+        title: "Valoración guardada",
+        description: `Has valorado este perfil con ${rating} estrellas`
+      });
+    } catch (error) {
+      console.error('Error saving rating:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo guardar la valoración",
+        variant: "destructive"
+      });
     }
   };
 
@@ -212,8 +334,44 @@ export const ProfileTechnicalSheet = ({
             {displayName.toUpperCase()}
           </h2>
           <p className="text-black text-base leading-relaxed font-normal">
-            {bio || "Sin descripción"}
+            {bio || "Sin información cargada, a la espera de que el socio active"}
           </p>
+          
+          {/* Rating Section */}
+          <div className="mt-6 space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    className={`w-6 h-6 cursor-pointer transition-all ${
+                      (hoveredStar || userRating) >= star
+                        ? 'fill-yellow-400 text-yellow-400'
+                        : averageRating >= star
+                        ? 'fill-gray-400 text-gray-400'
+                        : 'text-gray-300'
+                    }`}
+                    onMouseEnter={() => setHoveredStar(star)}
+                    onMouseLeave={() => setHoveredStar(0)}
+                    onClick={() => handleRating(star)}
+                  />
+                ))}
+              </div>
+              <span className="text-black font-semibold">
+                {averageRating > 0 ? averageRating.toFixed(1) : 'Sin valoraciones'}
+              </span>
+              {totalRatings > 0 && (
+                <span className="text-black/70 text-sm">
+                  ({totalRatings} valoración{totalRatings !== 1 ? 'es' : ''})
+                </span>
+              )}
+            </div>
+            {userRating > 0 && (
+              <p className="text-black/70 text-sm">
+                Tu valoración: {userRating} estrellas
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Avatar with decorative elements */}
@@ -222,27 +380,24 @@ export const ProfileTechnicalSheet = ({
             F I C H A<br/>T E C N I C A
           </div>
           {/* Decorative background with diagonal lines */}
-          <div className="relative">
-            <svg className="absolute -inset-12 w-72 h-72" viewBox="0 0 300 300">
+          <div className="relative flex items-center justify-center">
+            <svg className="absolute w-72 h-72" viewBox="0 0 300 300">
               <g stroke="#7DD3C0" strokeWidth="8" fill="none" opacity="0.6">
-                <line x1="20" y1="20" x2="80" y2="20" transform="rotate(-45 50 50)" />
-                <line x1="30" y1="30" x2="90" y2="30" transform="rotate(-45 60 60)" />
-                <line x1="40" y1="40" x2="100" y2="40" transform="rotate(-45 70 70)" />
-                <line x1="50" y1="50" x2="110" y2="50" transform="rotate(-45 80 80)" />
-                <line x1="220" y1="20" x2="280" y2="20" transform="rotate(-45 250 50)" />
-                <line x1="230" y1="30" x2="290" y2="30" transform="rotate(-45 260 60)" />
-                <line x1="240" y1="40" x2="300" y2="40" transform="rotate(-45 270 70)" />
-                <line x1="250" y1="50" x2="310" y2="50" transform="rotate(-45 280 80)" />
+                <line x1="50" y1="50" x2="110" y2="50" transform="rotate(-45 150 150)" />
+                <line x1="60" y1="60" x2="120" y2="60" transform="rotate(-45 150 150)" />
+                <line x1="70" y1="70" x2="130" y2="70" transform="rotate(-45 150 150)" />
+                <line x1="180" y1="50" x2="240" y2="50" transform="rotate(-45 150 150)" />
+                <line x1="190" y1="60" x2="250" y2="60" transform="rotate(-45 150 150)" />
+                <line x1="200" y1="70" x2="260" y2="70" transform="rotate(-45 150 150)" />
               </g>
             </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-44 h-44 rounded-full border-4 border-black/80"></div>
-            </div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-52 h-52 rounded-full bg-gradient-to-br from-[#7DD3C0] to-[#5E9FFF] opacity-40"></div>
-            </div>
-            <Avatar className="w-40 h-40 border-4 border-black relative z-10 ml-6 mt-6">
-              <AvatarImage src={avatarUrl || ''} alt={displayName} />
+            {/* Círculo decorativo exterior - Ahora centrado */}
+            <div className="absolute w-52 h-52 rounded-full bg-gradient-to-br from-[#7DD3C0] to-[#5E9FFF] opacity-40"></div>
+            {/* Círculo de borde - Ahora centrado */}
+            <div className="absolute w-44 h-44 rounded-full border-4 border-black/80"></div>
+            {/* Avatar centrado */}
+            <Avatar className="w-40 h-40 border-4 border-black relative z-10">
+              <AvatarImage src={avatarUrl || ''} alt={displayName} className="object-cover" />
               <AvatarFallback className="bg-gradient-to-br from-cyan-400 to-blue-500 text-white text-6xl font-bold">
                 {displayName.charAt(0).toUpperCase()}
               </AvatarFallback>

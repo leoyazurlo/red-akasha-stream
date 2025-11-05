@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Forum from "./pages/Forum";
+import Subforo from "./pages/Subforo";
 import Admin from "./pages/Admin";
 import AdminCategories from "./pages/admin/Categories";
 import AdminStreams from "./pages/admin/Streams";
@@ -31,6 +32,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/foro" element={<Forum />} />
+          <Route path="/foro/subforo/:id" element={<Subforo />} />
           <Route path="/asociate" element={<Asociate />} />
           <Route path="/circuito" element={<Circuito />} />
           <Route path="/auth" element={<Auth />} />

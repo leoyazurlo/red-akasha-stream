@@ -1,6 +1,7 @@
 import { Folder, MessageSquare, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 
 interface Subforo {
   id: string;
@@ -40,8 +41,9 @@ export const CategoryCard = ({ category }: CategoryCardProps) => {
         {category.subforos && category.subforos.length > 0 ? (
           <div className="space-y-3">
             {category.subforos.map((subforo) => (
-              <div
+              <Link
                 key={subforo.id}
+                to={`/foro/subforo/${subforo.id}`}
                 className="flex items-center gap-3 p-3 rounded-lg bg-background/50 hover:bg-background/80 transition-colors cursor-pointer group"
               >
                 <MessageSquare className="w-4 h-4 text-muted-foreground" />
@@ -54,7 +56,7 @@ export const CategoryCard = ({ category }: CategoryCardProps) => {
                   )}
                 </div>
                 <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-              </div>
+              </Link>
             ))}
           </div>
         ) : (

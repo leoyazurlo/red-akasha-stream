@@ -28,6 +28,7 @@ export const VenueForm = ({ formData, onChange }: VenueFormProps) => {
         onChange={(url) => onChange("avatar_url", url)}
         required
         description="Sube una imagen cuadrada de la sala (formato recomendado: 400x400px)"
+        allowLocalPreview={true}
       />
 
       <div className="space-y-2">

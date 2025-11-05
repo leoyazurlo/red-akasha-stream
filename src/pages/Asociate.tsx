@@ -173,11 +173,46 @@ const Asociate = () => {
         throw new Error("No se pudo crear la cuenta");
       }
 
-      // Paso 2: Preparar datos del perfil
+      // Paso 2: Si hay una imagen en base64, subirla al storage
+      let avatarUrl = formData.avatar_url;
+      if (formData.avatar_url && formData.avatar_url.startsWith('data:image/')) {
+        try {
+          // Convertir base64 a blob
+          const base64Response = await fetch(formData.avatar_url);
+          const blob = await base64Response.blob();
+          
+          // Crear nombre único para el archivo
+          const fileExt = blob.type.split('/')[1];
+          const fileName = `${authData.user.id}-${Date.now()}.${fileExt}`;
+
+          // Subir archivo
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('profile-avatars')
+            .upload(fileName, blob, {
+              cacheControl: '3600',
+              upsert: false
+            });
+
+          if (uploadError) throw uploadError;
+
+          // Obtener URL pública
+          const { data: { publicUrl } } = supabase.storage
+            .from('profile-avatars')
+            .getPublicUrl(uploadData.path);
+
+          avatarUrl = publicUrl;
+        } catch (uploadError) {
+          console.error('Error al subir avatar:', uploadError);
+          // Continuar sin avatar si falla la subida
+          avatarUrl = null;
+        }
+      }
+
+      // Paso 3: Preparar datos del perfil
       const profileData: any = {
         user_id: authData.user.id,
         profile_type: profileTypeMap[selectedProfile],
-        avatar_url: formData.avatar_url,
+        avatar_url: avatarUrl,
         display_name: formData.display_name || formData.nombre,
         bio: formData.bio || null,
         pais: formData.pais,

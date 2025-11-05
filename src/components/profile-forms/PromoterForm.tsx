@@ -18,6 +18,7 @@ export const PromoterForm = ({ formData, onChange }: PromoterFormProps) => {
         onChange={(url) => onChange("avatar_url", url)}
         required
         description="Sube una imagen cuadrada para tu perfil (formato recomendado: 400x400px)"
+        allowLocalPreview={true}
       />
 
       <div className="space-y-2">

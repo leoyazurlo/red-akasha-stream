@@ -18,6 +18,7 @@ export const MusicLoverForm = ({ formData, onChange }: MusicLoverFormProps) => {
         onChange={(url) => onChange("avatar_url", url)}
         required
         description="Sube una imagen cuadrada para tu perfil (formato recomendado: 400x400px)"
+        allowLocalPreview={true}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

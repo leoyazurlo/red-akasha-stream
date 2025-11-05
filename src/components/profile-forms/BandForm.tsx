@@ -35,6 +35,7 @@ export const BandForm = ({ formData, onChange }: BandFormProps) => {
         onChange={(url) => onChange("avatar_url", url)}
         required
         description="Sube una imagen cuadrada de la banda (formato recomendado: 400x400px)"
+        allowLocalPreview={true}
       />
 
       <div className="space-y-2">

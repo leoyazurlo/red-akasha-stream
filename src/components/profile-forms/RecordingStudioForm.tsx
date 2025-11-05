@@ -19,6 +19,7 @@ export const RecordingStudioForm = ({ formData, onChange }: RecordingStudioFormP
         onChange={(url) => onChange("avatar_url", url)}
         required
         description="Sube una imagen cuadrada del estudio (formato recomendado: 400x400px)"
+        allowLocalPreview={true}
       />
 
       <div className="space-y-2">

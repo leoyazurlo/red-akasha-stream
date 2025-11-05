@@ -11,9 +11,10 @@ interface ImageUploadProps {
   onChange: (url: string) => void;
   required?: boolean;
   description?: string;
+  allowLocalPreview?: boolean; // Para permitir preview local sin subir
 }
 
-export const ImageUpload = ({ label, value, onChange, required, description }: ImageUploadProps) => {
+export const ImageUpload = ({ label, value, onChange, required, description, allowLocalPreview = false }: ImageUploadProps) => {
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string>(value);
@@ -40,6 +41,18 @@ export const ImageUpload = ({ label, value, onChange, required, description }: I
         description: "La imagen debe ser menor a 5MB",
         variant: "destructive",
       });
+      return;
+    }
+
+    // Si allowLocalPreview está habilitado, solo mostrar preview local
+    if (allowLocalPreview) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setPreview(base64String);
+        onChange(base64String);
+      };
+      reader.readAsDataURL(file);
       return;
     }
 

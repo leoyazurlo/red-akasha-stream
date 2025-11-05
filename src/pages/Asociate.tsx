@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, CheckCircle2, Users, Zap, Globe, Award } from "lucide-react";
+import { Loader2, CheckCircle2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -236,28 +236,6 @@ const Asociate = () => {
     }
   };
 
-  const benefits = [
-    {
-      icon: Users,
-      title: "Comunidad Global",
-      description: "Conecta con artistas y creadores de todo el mundo"
-    },
-    {
-      icon: Zap,
-      title: "Acceso Exclusivo",
-      description: "Contenido, eventos y recursos exclusivos para miembros"
-    },
-    {
-      icon: Globe,
-      title: "Plataforma Digital",
-      description: "Espacio para compartir y monetizar tu contenido"
-    },
-    {
-      icon: Award,
-      title: "Reconocimiento",
-      description: "Visibilidad y oportunidades de colaboración"
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -266,37 +244,6 @@ const Asociate = () => {
       
       <main className="relative pt-24 pb-16">
         <div className="container mx-auto px-4">
-          {/* Hero Section */}
-          <div className="text-center mb-16 animate-fade-in">
-            <h1 className="text-4xl md:text-6xl font-light mb-6 bg-gradient-primary bg-clip-text text-transparent">
-              Únete a la Red Akasha
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Forma parte de una comunidad global de artistas, creadores y visionarios
-            </p>
-          </div>
-
-          {/* Benefits Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-            {benefits.map((benefit, index) => (
-              <Card 
-                key={index} 
-                className="border-border bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-all duration-300 animate-slide-in"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <CardHeader>
-                  <benefit.icon className="w-10 h-10 text-primary mb-4" />
-                  <CardTitle className="text-xl">{benefit.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-base">
-                    {benefit.description}
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
           {/* Registration Form */}
           <div className="max-w-2xl mx-auto">
             <Card className="border-border bg-card/50 backdrop-blur-sm">

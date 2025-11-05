@@ -175,270 +175,276 @@ const Circuito = () => {
 
   if (checkingProfile) {
     return (
-      <div className="min-h-screen relative">
+      <div className="min-h-screen bg-background relative">
         <CosmicBackground />
-        <Header />
-        <main className="relative z-10 pt-24 pb-16">
-          <div className="container mx-auto px-4 flex items-center justify-center min-h-[50vh]">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
-        </main>
-        <Footer />
+        <div className="relative z-10">
+          <Header />
+          <main className="pt-24 pb-16">
+            <div className="container mx-auto px-4 flex items-center justify-center min-h-[50vh]">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          </main>
+          <Footer />
+        </div>
       </div>
     );
   }
 
   if (!hasProfile) {
     return (
-      <div className="min-h-screen relative">
+      <div className="min-h-screen bg-background relative">
         <CosmicBackground />
-        <Header />
-        
-        <main className="relative z-10 pt-24 pb-16">
-          <div className="container mx-auto px-4">
-            <Card className="max-w-2xl mx-auto border-border bg-card/50 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="text-2xl">Para ver la base de datos deberías asociarte.</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="mt-6 flex gap-4">
-                  <Button onClick={() => navigate("/asociate")} className="flex-1">
-                    Asociarme Ahora
-                  </Button>
-                  <Button onClick={() => navigate("/")} variant="outline" className="flex-1">
-                    Volver al Inicio
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </main>
+        <div className="relative z-10">
+          <Header />
+          
+          <main className="pt-24 pb-16">
+            <div className="container mx-auto px-4">
+              <Card className="max-w-2xl mx-auto border-border bg-card/50 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-2xl">Para ver la base de datos deberías asociarte.</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="mt-6 flex gap-4">
+                    <Button onClick={() => navigate("/asociate")} className="flex-1">
+                      Asociarme Ahora
+                    </Button>
+                    <Button onClick={() => navigate("/")} variant="outline" className="flex-1">
+                      Volver al Inicio
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </main>
 
-        <Footer />
+          <Footer />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen bg-background relative">
       <CosmicBackground />
-      <Header />
-      
-      <main className="relative z-10 pt-24 pb-16">
-        <div className="container mx-auto px-4">
-          {/* Hero Section */}
-          <section className="text-center mb-16">
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-              En esta sección podrás acceder a la base de datos y conocimiento del circuito de producción de la industria
-            </p>
+      <div className="relative z-10">
+        <Header />
+        
+        <main className="pt-24 pb-16">
+          <div className="container mx-auto px-4">
+            {/* Hero Section */}
+            <section className="text-center mb-16">
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+                En esta sección podrás acceder a la base de datos y conocimiento del circuito de producción de la industria
+              </p>
 
-            {/* Country Selector */}
-            <div className="flex justify-center items-center gap-4">
-              <span className="text-foreground">Selecciona tu país:</span>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="min-w-[200px] justify-between">
-                    <span className="flex items-center gap-2">
-                      <span className="text-2xl">{selectedCountry.flag}</span>
-                      {selectedCountry.name}
-                    </span>
-                    <ChevronDown className="h-4 w-4 opacity-50" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-[200px] max-h-[400px] overflow-y-auto bg-card border-border">
-                  {latinAmericanCountries.map((country) => (
-                    <DropdownMenuItem
-                      key={country.code}
-                      onClick={() => setSelectedCountry(country)}
-                      className="cursor-pointer hover:bg-secondary"
-                    >
+              {/* Country Selector */}
+              <div className="flex justify-center items-center gap-4">
+                <span className="text-foreground">Selecciona tu país:</span>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="min-w-[200px] justify-between">
                       <span className="flex items-center gap-2">
-                        <span className="text-2xl">{country.flag}</span>
-                        {country.name}
+                        <span className="text-2xl">{selectedCountry.flag}</span>
+                        {selectedCountry.name}
                       </span>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </section>
-
-          {/* Map Section */}
-          {!loading && allProfiles.length > 0 && (
-            <section className="max-w-6xl mx-auto mb-12">
-              <h2 className="text-2xl font-bold mb-4 text-center">Mapa de Colaboradores</h2>
-              <CircuitMap profiles={allProfiles} />
-            </section>
-          )}
-
-          {/* Content Section */}
-          <section className="max-w-6xl mx-auto">
-            {loading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-                <p className="text-muted-foreground mt-4">Cargando fichas técnicas...</p>
-              </div>
-            ) : locationGroups.length === 0 ? (
-              <div className="bg-card/50 backdrop-blur-sm rounded-lg border border-border p-8 text-center">
-                <h2 className="text-2xl font-bold mb-4 text-primary">
-                  {selectedCountry.name} {selectedCountry.flag}
-                </h2>
-                <p className="text-muted-foreground mb-6">
-                  Aún no hay perfiles registrados en {selectedCountry.name}.
-                </p>
-                <div className="p-6 bg-secondary/30 rounded-lg border border-border inline-block">
-                  <h3 className="text-xl font-semibold mb-2">¿Quieres ser el primero?</h3>
-                  <p className="text-muted-foreground">
-                    Únete a la Red Akasha y aparece en el circuito de tu país.
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-12">
-                <div className="text-center mb-8">
-                  <h2 className="text-3xl font-bold mb-2 text-primary">
-                    Fichas Técnicas - {selectedCountry.name} {selectedCountry.flag}
-                  </h2>
-                  <p className="text-muted-foreground">
-                    Encuentra espacios culturales, salas de grabación, bandas, productores y más
-                  </p>
-                </div>
-
-                {locationGroups.map((locationGroup) => (
-                  <div key={locationGroup.provincia} className="space-y-8">
-                    <div className="border-b border-border pb-2">
-                      <h3 className="text-2xl font-bold text-primary">{locationGroup.provincia}</h3>
-                    </div>
-
-                    {locationGroup.cities.map((cityGroup) => (
-                      <div key={cityGroup.ciudad} className="space-y-4">
-                        <div className="flex items-center gap-2 mb-4">
-                          <MapPin className="w-5 h-5 text-primary" />
-                          <h4 className="text-xl font-bold text-foreground">{cityGroup.ciudad}</h4>
-                          <Badge variant="secondary" className="ml-2">
-                            {cityGroup.profiles.length} {cityGroup.profiles.length === 1 ? 'perfil' : 'perfiles'}
-                          </Badge>
-                        </div>
-
-                        <div className="grid md:grid-cols-2 gap-6">
-                          {cityGroup.profiles.map((profile) => (
-                            <Card key={profile.id} className="border-border bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-all">
-                              <CardHeader>
-                                <div className="flex items-start gap-4">
-                                  <Avatar className="w-16 h-16 border-2 border-primary">
-                                    <AvatarImage src={profile.avatar_url || ''} alt={profile.display_name} />
-                                    <AvatarFallback className="bg-primary/10 text-primary text-xl">
-                                      {profile.display_name.charAt(0).toUpperCase()}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div className="flex-1 min-w-0">
-                                    <CardTitle className="text-lg mb-1">{profile.display_name}</CardTitle>
-                                    <Badge variant="outline" className="mb-2">
-                                      {profileTypeLabels[profile.profile_type] || profile.profile_type}
-                                    </Badge>
-                                    {profile.venue_type && (
-                                      <p className="text-sm text-muted-foreground capitalize">
-                                        {profile.venue_type}
-                                      </p>
-                                    )}
-                                    {profile.genre && (
-                                      <p className="text-sm text-muted-foreground">
-                                        Género: {profile.genre}
-                                      </p>
-                                    )}
-                                  </div>
-                                </div>
-                              </CardHeader>
-                              <CardContent className="space-y-4">
-                                {profile.bio && (
-                                  <p className="text-sm text-muted-foreground">{profile.bio}</p>
-                                )}
-
-                                {profile.capacity && (
-                                  <div className="flex items-center gap-2 text-sm">
-                                    <Users className="w-4 h-4 text-primary" />
-                                    <span>Capacidad: {profile.capacity} personas</span>
-                                  </div>
-                                )}
-
-                                {profile.technical_specs && (
-                                  <div className="bg-secondary/20 p-3 rounded-md">
-                                    <p className="text-xs font-semibold text-muted-foreground mb-1">Ficha Técnica:</p>
-                                    <p className="text-sm whitespace-pre-wrap">{JSON.stringify(profile.technical_specs, null, 2)}</p>
-                                  </div>
-                                )}
-
-                                {/* Contact Info */}
-                                <div className="space-y-2 text-sm border-t border-border pt-3">
-                                  {profile.email && (
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                      <Mail className="w-4 h-4" />
-                                      <a href={`mailto:${profile.email}`} className="hover:text-primary transition-colors truncate">
-                                        {profile.email}
-                                      </a>
-                                    </div>
-                                  )}
-                                  {profile.telefono && (
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                      <Phone className="w-4 h-4" />
-                                      <a href={`tel:${profile.telefono}`} className="hover:text-primary transition-colors">
-                                        {profile.telefono}
-                                      </a>
-                                    </div>
-                                  )}
-                                  {profile.whatsapp && (
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                      <Phone className="w-4 h-4" />
-                                      <a href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
-                                        WhatsApp: {profile.whatsapp}
-                                      </a>
-                                    </div>
-                                  )}
-                                  {profile.map_location && (
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                      <MapPin className="w-4 h-4" />
-                                      <a href={profile.map_location} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-1">
-                                        Ver ubicación <ExternalLink className="w-3 h-3" />
-                                      </a>
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* Social Media */}
-                                {(profile.instagram || profile.facebook || profile.linkedin) && (
-                                  <div className="flex gap-3 pt-2 border-t border-border">
-                                    {profile.instagram && (
-                                      <a href={`https://instagram.com/${profile.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                                        <Instagram className="w-5 h-5" />
-                                      </a>
-                                    )}
-                                    {profile.facebook && (
-                                      <a href={profile.facebook.startsWith('http') ? profile.facebook : `https://facebook.com/${profile.facebook}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                                        <Facebook className="w-5 h-5" />
-                                      </a>
-                                    )}
-                                    {profile.linkedin && (
-                                      <a href={profile.linkedin.startsWith('http') ? profile.linkedin : `https://linkedin.com/in/${profile.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                                        <Linkedin className="w-5 h-5" />
-                                      </a>
-                                    )}
-                                  </div>
-                                )}
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </div>
-                      </div>
+                      <ChevronDown className="h-4 w-4 opacity-50" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-[200px] max-h-[400px] overflow-y-auto bg-card border-border">
+                    {latinAmericanCountries.map((country) => (
+                      <DropdownMenuItem
+                        key={country.code}
+                        onClick={() => setSelectedCountry(country)}
+                        className="cursor-pointer hover:bg-secondary"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className="text-2xl">{country.flag}</span>
+                          {country.name}
+                        </span>
+                      </DropdownMenuItem>
                     ))}
-                  </div>
-                ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
-            )}
-          </section>
-        </div>
-      </main>
+            </section>
 
-      <Footer />
+            {/* Map Section */}
+            {!loading && allProfiles.length > 0 && (
+              <section className="max-w-6xl mx-auto mb-12">
+                <h2 className="text-2xl font-bold mb-4 text-center">Mapa de Colaboradores</h2>
+                <CircuitMap profiles={allProfiles} />
+              </section>
+            )}
+
+            {/* Content Section */}
+            <section className="max-w-6xl mx-auto">
+              {loading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                  <p className="text-muted-foreground mt-4">Cargando fichas técnicas...</p>
+                </div>
+              ) : locationGroups.length === 0 ? (
+                <div className="bg-card/50 backdrop-blur-sm rounded-lg border border-border p-8 text-center">
+                  <h2 className="text-2xl font-bold mb-4 text-primary">
+                    {selectedCountry.name} {selectedCountry.flag}
+                  </h2>
+                  <p className="text-muted-foreground mb-6">
+                    Aún no hay perfiles registrados en {selectedCountry.name}.
+                  </p>
+                  <div className="p-6 bg-secondary/30 rounded-lg border border-border inline-block">
+                    <h3 className="text-xl font-semibold mb-2">¿Quieres ser el primero?</h3>
+                    <p className="text-muted-foreground">
+                      Únete a la Red Akasha y aparece en el circuito de tu país.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-12">
+                  <div className="text-center mb-8">
+                    <h2 className="text-3xl font-bold mb-2 text-primary">
+                      Fichas Técnicas - {selectedCountry.name} {selectedCountry.flag}
+                    </h2>
+                    <p className="text-muted-foreground">
+                      Encuentra espacios culturales, salas de grabación, bandas, productores y más
+                    </p>
+                  </div>
+
+                  {locationGroups.map((locationGroup) => (
+                    <div key={locationGroup.provincia} className="space-y-8">
+                      <div className="border-b border-border pb-2">
+                        <h3 className="text-2xl font-bold text-primary">{locationGroup.provincia}</h3>
+                      </div>
+
+                      {locationGroup.cities.map((cityGroup) => (
+                        <div key={cityGroup.ciudad} className="space-y-4">
+                          <div className="flex items-center gap-2 mb-4">
+                            <MapPin className="w-5 h-5 text-primary" />
+                            <h4 className="text-xl font-bold text-foreground">{cityGroup.ciudad}</h4>
+                            <Badge variant="secondary" className="ml-2">
+                              {cityGroup.profiles.length} {cityGroup.profiles.length === 1 ? 'perfil' : 'perfiles'}
+                            </Badge>
+                          </div>
+
+                          <div className="grid md:grid-cols-2 gap-6">
+                            {cityGroup.profiles.map((profile) => (
+                              <Card key={profile.id} className="border-border bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-all">
+                                <CardHeader>
+                                  <div className="flex items-start gap-4">
+                                    <Avatar className="w-16 h-16 border-2 border-primary">
+                                      <AvatarImage src={profile.avatar_url || ''} alt={profile.display_name} />
+                                      <AvatarFallback className="bg-primary/10 text-primary text-xl">
+                                        {profile.display_name.charAt(0).toUpperCase()}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1 min-w-0">
+                                      <CardTitle className="text-lg mb-1">{profile.display_name}</CardTitle>
+                                      <Badge variant="outline" className="mb-2">
+                                        {profileTypeLabels[profile.profile_type] || profile.profile_type}
+                                      </Badge>
+                                      {profile.venue_type && (
+                                        <p className="text-sm text-muted-foreground capitalize">
+                                          {profile.venue_type}
+                                        </p>
+                                      )}
+                                      {profile.genre && (
+                                        <p className="text-sm text-muted-foreground">
+                                          Género: {profile.genre}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                  {profile.bio && (
+                                    <p className="text-sm text-muted-foreground">{profile.bio}</p>
+                                  )}
+
+                                  {profile.capacity && (
+                                    <div className="flex items-center gap-2 text-sm">
+                                      <Users className="w-4 h-4 text-primary" />
+                                      <span>Capacidad: {profile.capacity} personas</span>
+                                    </div>
+                                  )}
+
+                                  {profile.technical_specs && (
+                                    <div className="bg-secondary/20 p-3 rounded-md">
+                                      <p className="text-xs font-semibold text-muted-foreground mb-1">Ficha Técnica:</p>
+                                      <p className="text-sm whitespace-pre-wrap">{JSON.stringify(profile.technical_specs, null, 2)}</p>
+                                    </div>
+                                  )}
+
+                                  {/* Contact Info */}
+                                  <div className="space-y-2 text-sm border-t border-border pt-3">
+                                    {profile.email && (
+                                      <div className="flex items-center gap-2 text-muted-foreground">
+                                        <Mail className="w-4 h-4" />
+                                        <a href={`mailto:${profile.email}`} className="hover:text-primary transition-colors truncate">
+                                          {profile.email}
+                                        </a>
+                                      </div>
+                                    )}
+                                    {profile.telefono && (
+                                      <div className="flex items-center gap-2 text-muted-foreground">
+                                        <Phone className="w-4 h-4" />
+                                        <a href={`tel:${profile.telefono}`} className="hover:text-primary transition-colors">
+                                          {profile.telefono}
+                                        </a>
+                                      </div>
+                                    )}
+                                    {profile.whatsapp && (
+                                      <div className="flex items-center gap-2 text-muted-foreground">
+                                        <Phone className="w-4 h-4" />
+                                        <a href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                                          WhatsApp: {profile.whatsapp}
+                                        </a>
+                                      </div>
+                                    )}
+                                    {profile.map_location && (
+                                      <div className="flex items-center gap-2 text-muted-foreground">
+                                        <MapPin className="w-4 h-4" />
+                                        <a href={profile.map_location} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-1">
+                                          Ver ubicación <ExternalLink className="w-3 h-3" />
+                                        </a>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Social Media */}
+                                  {(profile.instagram || profile.facebook || profile.linkedin) && (
+                                    <div className="flex gap-3 pt-2 border-t border-border">
+                                      {profile.instagram && (
+                                        <a href={`https://instagram.com/${profile.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                                          <Instagram className="w-5 h-5" />
+                                        </a>
+                                      )}
+                                      {profile.facebook && (
+                                        <a href={profile.facebook.startsWith('http') ? profile.facebook : `https://facebook.com/${profile.facebook}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                                          <Facebook className="w-5 h-5" />
+                                        </a>
+                                      )}
+                                      {profile.linkedin && (
+                                        <a href={profile.linkedin.startsWith('http') ? profile.linkedin : `https://linkedin.com/in/${profile.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                                          <Linkedin className="w-5 h-5" />
+                                        </a>
+                                      )}
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+        </main>
+
+        <Footer />
+      </div>
     </div>
   );
 };

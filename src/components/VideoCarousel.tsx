@@ -7,6 +7,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface VideoItem {
   id: string;
@@ -26,7 +28,7 @@ interface VideoCarouselProps {
   videos: VideoItem[];
   sectionId: string;
   showSchedule?: boolean;
-  schedules?: ProgramSchedule[];
+  loadSchedulesFromDB?: boolean;
 }
 
 export const VideoCarousel = ({ 
@@ -34,9 +36,32 @@ export const VideoCarousel = ({
   videos, 
   sectionId, 
   showSchedule = false,
-  schedules = []
+  loadSchedulesFromDB = false
 }: VideoCarouselProps) => {
   const [scrollPosition, setScrollPosition] = useState(0);
+
+  // Fetch schedules from database if enabled
+  const { data: dbSchedules } = useQuery({
+    queryKey: ["program-schedules-public"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("program_schedules")
+        .select("*")
+        .eq("is_active", true)
+        .order("order_index");
+
+      if (error) throw error;
+
+      return data.map((s) => ({
+        day: s.day,
+        time: s.time,
+        image: s.image_url || undefined,
+      }));
+    },
+    enabled: loadSchedulesFromDB && showSchedule,
+  });
+
+  const schedules = loadSchedulesFromDB ? dbSchedules || [] : [];
 
   const scroll = (direction: "left" | "right") => {
     const container = document.getElementById(`carousel-${sectionId}`);

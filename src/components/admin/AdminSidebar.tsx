@@ -24,6 +24,7 @@ const streamingItems = [
   { title: "Streams en Vivo", url: "/admin/streams", icon: Radio },
   { title: "Videos (VOD)", url: "/admin/vod", icon: Film },
   { title: "Podcasts", url: "/admin/podcasts", icon: Headphones },
+  { title: "Horarios", url: "/admin/program-schedules", icon: Calendar },
 ];
 
 const forumItems = [

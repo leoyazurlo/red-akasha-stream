@@ -1028,6 +1028,45 @@ export type Database = {
         }
         Relationships: []
       }
+      program_schedules: {
+        Row: {
+          created_at: string
+          day: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          order_index: number | null
+          program_name: string | null
+          time: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          day: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          order_index?: number | null
+          program_name?: string | null
+          time: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          order_index?: number | null
+          program_name?: string | null
+          time?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       registration_requests: {
         Row: {
           areas_interes: string[] | null

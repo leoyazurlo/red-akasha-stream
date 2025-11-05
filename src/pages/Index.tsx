@@ -215,23 +215,7 @@ const Index = () => {
             videos={programasVideos}
             sectionId="programas"
             showSchedule={true}
-            schedules={[
-              {
-                day: "Lunes",
-                time: "20:00 hs",
-                image: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=400&h=225&fit=crop"
-              },
-              {
-                day: "Miércoles",
-                time: "21:00 hs",
-                image: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=225&fit=crop"
-              },
-              {
-                day: "Viernes",
-                time: "22:00 hs",
-                image: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=400&h=225&fit=crop"
-              },
-            ]}
+            loadSchedulesFromDB={true}
           />
           
       <VideoCarousel 

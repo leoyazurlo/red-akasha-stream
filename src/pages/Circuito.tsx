@@ -4,17 +4,20 @@ import { CosmicBackground } from "@/components/CosmicBackground";
 import { CircuitMap } from "@/components/CircuitMap";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown, Mail, Phone, MapPin, Users, Instagram, Facebook, Linkedin, ExternalLink } from "lucide-react";
+import { CardDescription } from "@/components/ui/card";
+import { ChevronDown, Mail, Phone, MapPin, Users, Instagram, Facebook, Linkedin, ExternalLink, Loader2, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const latinAmericanCountries = [
   { name: "Argentina", flag: "🇦🇷", code: "AR" },
@@ -80,14 +83,52 @@ const profileTypeLabels: Record<string, string> = {
 };
 
 const Circuito = () => {
+  const navigate = useNavigate();
   const [selectedCountry, setSelectedCountry] = useState(latinAmericanCountries[0]);
   const [locationGroups, setLocationGroups] = useState<LocationGroup[]>([]);
   const [allProfiles, setAllProfiles] = useState<ProfileDetail[]>([]);
   const [loading, setLoading] = useState(true);
+  const [checkingProfile, setCheckingProfile] = useState(true);
+  const [hasProfile, setHasProfile] = useState(false);
 
   useEffect(() => {
-    fetchProfiles();
-  }, [selectedCountry]);
+    checkUserProfile();
+  }, []);
+
+  useEffect(() => {
+    if (hasProfile) {
+      fetchProfiles();
+    }
+  }, [selectedCountry, hasProfile]);
+
+  const checkUserProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        navigate("/auth");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('profile_details')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1);
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        setHasProfile(false);
+      } else {
+        setHasProfile(true);
+      }
+    } catch (error) {
+      console.error('Error checking profile:', error);
+    } finally {
+      setCheckingProfile(false);
+    }
+  };
 
   const fetchProfiles = async () => {
     setLoading(true);
@@ -131,6 +172,62 @@ const Circuito = () => {
       setLoading(false);
     }
   };
+
+  if (checkingProfile) {
+    return (
+      <div className="min-h-screen relative">
+        <CosmicBackground />
+        <Header />
+        <main className="relative z-10 pt-24 pb-16">
+          <div className="container mx-auto px-4 flex items-center justify-center min-h-[50vh]">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!hasProfile) {
+    return (
+      <div className="min-h-screen relative">
+        <CosmicBackground />
+        <Header />
+        
+        <main className="relative z-10 pt-24 pb-16">
+          <div className="container mx-auto px-4">
+            <Card className="max-w-2xl mx-auto border-border bg-card/50 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-2xl">Asociación Requerida</CardTitle>
+                <CardDescription>
+                  Para ver el circuito de artistas, primero debes asociarte a la plataforma
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>No tienes un perfil creado</AlertTitle>
+                  <AlertDescription>
+                    Para poder acceder al circuito de artistas y colaboradores, necesitas completar el proceso de asociación y crear tu perfil primero.
+                  </AlertDescription>
+                </Alert>
+                <div className="mt-6 flex gap-4">
+                  <Button onClick={() => navigate("/asociate")} className="flex-1">
+                    Asociarme Ahora
+                  </Button>
+                  <Button onClick={() => navigate("/")} variant="outline" className="flex-1">
+                    Volver al Inicio
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen relative">

@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CosmicBackground } from "@/components/CosmicBackground";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
@@ -132,96 +134,101 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background">
       <CosmicBackground />
+      <Header />
       
-      <div className="w-full max-w-md relative z-10">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-light mb-2 bg-gradient-primary bg-clip-text text-transparent">
-            Red Akasha
-          </h1>
-          <p className="text-muted-foreground">Únete a nuestra comunidad</p>
-        </div>
+      <main className="relative pt-24 pb-16 flex items-center justify-center min-h-[calc(100vh-4rem)] px-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-light mb-2 bg-gradient-primary bg-clip-text text-transparent">
+              Red Akasha
+            </h1>
+            <p className="text-muted-foreground">Únete a nuestra comunidad</p>
+          </div>
 
-        <Card className="border-border bg-card/80 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle>Autenticación</CardTitle>
-            <CardDescription>
-              Inicia sesión o crea una cuenta nueva
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Iniciar Sesión</TabsTrigger>
-                <TabsTrigger value="signup">Asociarse</TabsTrigger>
-              </TabsList>
+          <Card className="border-border bg-card/80 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle>Autenticación</CardTitle>
+              <CardDescription>
+                Inicia sesión o crea una cuenta nueva
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="login" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="login">Iniciar Sesión</TabsTrigger>
+                  <TabsTrigger value="signup">Asociarse</TabsTrigger>
+                </TabsList>
 
-              <TabsContent value="login">
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
-                    <Input
-                      id="login-email"
-                      type="email"
-                      required
-                      value={loginData.email}
-                      onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                      placeholder="tu@email.com"
-                    />
-                  </div>
+                <TabsContent value="login">
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="login-email">Email</Label>
+                      <Input
+                        id="login-email"
+                        type="email"
+                        required
+                        value={loginData.email}
+                        onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                        placeholder="tu@email.com"
+                      />
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">Contraseña</Label>
-                    <Input
-                      id="login-password"
-                      type="password"
-                      required
-                      value={loginData.password}
-                      onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                      placeholder="••••••"
-                    />
-                  </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="login-password">Contraseña</Label>
+                      <Input
+                        id="login-password"
+                        type="password"
+                        required
+                        value={loginData.password}
+                        onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                        placeholder="••••••"
+                      />
+                    </div>
 
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Iniciando sesión...
-                      </>
-                    ) : (
-                      "Iniciar Sesión"
-                    )}
-                  </Button>
-                </form>
-              </TabsContent>
+                    <Button type="submit" className="w-full" disabled={loading}>
+                      {loading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Iniciando sesión...
+                        </>
+                      ) : (
+                        "Iniciar Sesión"
+                      )}
+                    </Button>
+                  </form>
+                </TabsContent>
 
-              <TabsContent value="signup">
-                <div className="space-y-4 py-4">
-                  <p className="text-muted-foreground leading-relaxed">
-                    Red Akasha es una comunidad global de artistas y creadores. 
-                    Al <a 
-                      href="/asociate" 
-                      className="text-primary hover:underline font-medium"
+                <TabsContent value="signup">
+                  <div className="space-y-4 py-4">
+                    <p className="text-muted-foreground leading-relaxed">
+                      Red Akasha es una comunidad global de artistas y creadores. 
+                      Al <a 
+                        href="/asociate" 
+                        className="text-primary hover:underline font-medium"
+                      >
+                        asociarte
+                      </a>, tendrás acceso a recursos exclusivos, podrás conectar 
+                      con otros artistas y formar parte de una red que impulsa el 
+                      arte y la cultura independiente.
+                    </p>
+                    
+                    <Button 
+                      className="w-full" 
+                      onClick={() => navigate("/asociate")}
                     >
-                      asociarte
-                    </a>, tendrás acceso a recursos exclusivos, podrás conectar 
-                    con otros artistas y formar parte de una red que impulsa el 
-                    arte y la cultura independiente.
-                  </p>
-                  
-                  <Button 
-                    className="w-full" 
-                    onClick={() => navigate("/asociate")}
-                  >
-                    Ir a Formulario de Asociación
-                  </Button>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      </div>
+                      Ir a Formulario de Asociación
+                    </Button>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+
+      <Footer />
     </div>
   );
 };

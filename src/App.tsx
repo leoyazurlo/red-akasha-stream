@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Forum from "./pages/Forum";
 import Subforo from "./pages/Subforo";
+import Thread from "./pages/Thread";
 import Admin from "./pages/Admin";
 import AdminCategories from "./pages/admin/Categories";
 import AdminStreams from "./pages/admin/Streams";
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/foro" element={<Forum />} />
           <Route path="/foro/subforo/:id" element={<Subforo />} />
+          <Route path="/foro/hilo/:id" element={<Thread />} />
           <Route path="/asociate" element={<Asociate />} />
           <Route path="/circuito" element={<Circuito />} />
           <Route path="/auth" element={<Auth />} />

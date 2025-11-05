@@ -241,7 +241,7 @@ const UploadContent = () => {
           <div className="max-w-2xl mx-auto">
             <Card className="border-border bg-card/50 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-2xl">Subir Contenido</CardTitle>
+                <CardTitle className="text-2xl text-cyan-400">Subir Contenido</CardTitle>
                 <CardDescription>
                   Comparte tus videos y fotografías con la comunidad de Red Akasha
                 </CardDescription>
@@ -384,7 +384,7 @@ const UploadContent = () => {
                   )}
 
                   <div className="border-t pt-6">
-                    <h3 className="text-lg font-semibold mb-4">Ficha Técnica (opcional)</h3>
+                    <h3 className="text-lg font-semibold mb-4 text-cyan-400">Ficha Técnica</h3>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">

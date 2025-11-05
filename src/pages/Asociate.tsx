@@ -326,172 +326,178 @@ const Asociate = () => {
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
-                      <Label htmlFor="nombre">Nombre Completo *</Label>
-                      <Input
-                        id="nombre"
-                        name="nombre"
-                        required
-                        value={formData.nombre}
-                        onChange={handleChange}
-                        placeholder="Tu nombre completo"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email *</Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        required
-                        value={formData.email}
-                        onChange={handleChange}
-                        placeholder="tu@email.com"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="telefono">Teléfono</Label>
-                      <Input
-                        id="telefono"
-                        name="telefono"
-                        type="tel"
-                        value={formData.telefono}
-                        onChange={handleChange}
-                        placeholder="+54 9 11 1234-5678"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="password">Contraseña *</Label>
-                      <Input
-                        id="password"
-                        name="password"
-                        type="password"
-                        required
-                        value={formData.password}
-                        onChange={handleChange}
-                        placeholder="Mínimo 6 caracteres"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">Confirmar Contraseña *</Label>
-                      <Input
-                        id="confirmPassword"
-                        name="confirmPassword"
-                        type="password"
-                        required
-                        value={formData.confirmPassword}
-                        onChange={handleChange}
-                        placeholder="Repite tu contraseña"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="pais">País *</Label>
+                      <Label htmlFor="profileType">Selecciona tu perfil *</Label>
                       <Select
-                        value={formData.pais}
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, pais: value, provincia: "", ciudad: "" }))}
+                        value={selectedProfile}
+                        onValueChange={(value) => setSelectedProfile(value)}
                         required
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecciona tu país" />
+                          <SelectValue placeholder="¿Cuál es tu perfil?" />
                         </SelectTrigger>
                         <SelectContent>
-                          {latinAmericanCountries.map((country) => (
-                            <SelectItem key={country.code} value={country.name}>
-                              <span className="flex items-center gap-2">
-                                <span className="text-xl">{country.flag}</span>
-                                {country.name}
-                              </span>
+                          {perfilOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
 
-                    {formData.pais === "Argentina" && (
-                      <div className="space-y-2">
-                        <Label htmlFor="provincia">Provincia *</Label>
-                        <Select
-                          value={formData.provincia}
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, provincia: value, ciudad: "" }))}
-                          required
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona tu provincia" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {argentinaProvincias.map((provincia) => (
-                              <SelectItem key={provincia.name} value={provincia.name}>
-                                {provincia.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                    {selectedProfile && (
+                      <div className="border-t pt-6">
+                        <h3 className="text-lg font-semibold mb-4">Foto de perfil</h3>
+                        {renderProfileForm()}
                       </div>
                     )}
 
-                    {formData.pais && (formData.pais !== "Argentina" || formData.provincia) && (
-                      <div className="space-y-2">
-                        <Label htmlFor="ciudad">Ciudad *</Label>
-                        <Select
-                          value={formData.ciudad}
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, ciudad: value }))}
-                          required
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecciona tu ciudad" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {formData.pais === "Argentina" 
-                              ? argentinaProvincias
-                                  .find(p => p.name === formData.provincia)
-                                  ?.cities.map((city) => (
-                                    <SelectItem key={city} value={city}>
-                                      {city}
-                                    </SelectItem>
-                                  ))
-                              : latinAmericanCountries
-                                  .find(c => c.name === formData.pais)
-                                  ?.cities?.map((city) => (
-                                    <SelectItem key={city} value={city}>
-                                      {city}
-                                    </SelectItem>
-                                  ))
-                            }
-                          </SelectContent>
-                        </Select>
+                    <div className="border-t pt-6">
+                      <h3 className="text-lg font-semibold mb-4">Datos personales</h3>
+                      
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="nombre">Nombre Completo *</Label>
+                          <Input
+                            id="nombre"
+                            name="nombre"
+                            required
+                            value={formData.nombre}
+                            onChange={handleChange}
+                            placeholder="Tu nombre completo"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="email">Email *</Label>
+                          <Input
+                            id="email"
+                            name="email"
+                            type="email"
+                            required
+                            value={formData.email}
+                            onChange={handleChange}
+                            placeholder="tu@email.com"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="telefono">Teléfono</Label>
+                          <Input
+                            id="telefono"
+                            name="telefono"
+                            type="tel"
+                            value={formData.telefono}
+                            onChange={handleChange}
+                            placeholder="+54 9 11 1234-5678"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="password">Contraseña *</Label>
+                          <Input
+                            id="password"
+                            name="password"
+                            type="password"
+                            required
+                            value={formData.password}
+                            onChange={handleChange}
+                            placeholder="Mínimo 6 caracteres"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="confirmPassword">Confirmar Contraseña *</Label>
+                          <Input
+                            id="confirmPassword"
+                            name="confirmPassword"
+                            type="password"
+                            required
+                            value={formData.confirmPassword}
+                            onChange={handleChange}
+                            placeholder="Repite tu contraseña"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="pais">País *</Label>
+                          <Select
+                            value={formData.pais}
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, pais: value, provincia: "", ciudad: "" }))}
+                            required
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecciona tu país" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {latinAmericanCountries.map((country) => (
+                                <SelectItem key={country.code} value={country.name}>
+                                  <span className="flex items-center gap-2">
+                                    <span className="text-xl">{country.flag}</span>
+                                    {country.name}
+                                  </span>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {formData.pais === "Argentina" && (
+                          <div className="space-y-2">
+                            <Label htmlFor="provincia">Provincia *</Label>
+                            <Select
+                              value={formData.provincia}
+                              onValueChange={(value) => setFormData(prev => ({ ...prev, provincia: value, ciudad: "" }))}
+                              required
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona tu provincia" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {argentinaProvincias.map((provincia) => (
+                                  <SelectItem key={provincia.name} value={provincia.name}>
+                                    {provincia.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+
+                        {formData.pais && (formData.pais !== "Argentina" || formData.provincia) && (
+                          <div className="space-y-2">
+                            <Label htmlFor="ciudad">Ciudad *</Label>
+                            <Select
+                              value={formData.ciudad}
+                              onValueChange={(value) => setFormData(prev => ({ ...prev, ciudad: value }))}
+                              required
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona tu ciudad" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {formData.pais === "Argentina" 
+                                  ? argentinaProvincias
+                                      .find(p => p.name === formData.provincia)
+                                      ?.cities.map((city) => (
+                                        <SelectItem key={city} value={city}>
+                                          {city}
+                                        </SelectItem>
+                                      ))
+                                  : latinAmericanCountries
+                                      .find(c => c.name === formData.pais)
+                                      ?.cities?.map((city) => (
+                                        <SelectItem key={city} value={city}>
+                                          {city}
+                                        </SelectItem>
+                                      ))
+                                }
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
                       </div>
-                     )}
-
-                     <div className="space-y-2">
-                       <Label htmlFor="profileType">Selecciona tu perfil *</Label>
-                       <Select
-                         value={selectedProfile}
-                         onValueChange={(value) => setSelectedProfile(value)}
-                         required
-                       >
-                         <SelectTrigger>
-                           <SelectValue placeholder="¿Cuál es tu perfil?" />
-                         </SelectTrigger>
-                         <SelectContent>
-                           {perfilOptions.map((option) => (
-                             <SelectItem key={option.value} value={option.value}>
-                               {option.label}
-                             </SelectItem>
-                           ))}
-                         </SelectContent>
-                       </Select>
-                     </div>
-
-                     {selectedProfile && (
-                       <div className="border-t pt-6">
-                         <h3 className="text-lg font-semibold mb-4">Contacto</h3>
-                         {renderProfileForm()}
-                       </div>
-                     )}
+                    </div>
 
                     <Button 
                       type="submit" 

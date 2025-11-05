@@ -22,6 +22,7 @@ import { VenueForm } from "@/components/profile-forms/VenueForm";
 import { ProducerForm } from "@/components/profile-forms/ProducerForm";
 import { PromoterForm } from "@/components/profile-forms/PromoterForm";
 import { BandForm } from "@/components/profile-forms/BandForm";
+import { z } from "zod";
 
 const argentinaProvincias = [
   { name: "Buenos Aires", cities: ["Adolfo Alsina", "Adolfo Gonzales Chaves", "Alberti", "Almirante Brown", "Arrecifes", "Avellaneda", "Ayacucho", "Azul", "Bahía Blanca", "Balcarce", "Baradero", "Benito Juárez", "Berazategui", "Berisso", "Bolívar", "Bragado", "Brandsen", "Campana", "Cañuelas", "Capitán Sarmiento", "Carlos Casares", "Carlos Tejedor", "Carmen de Areco", "Castelli", "Chacabuco", "Chascomús", "Chivilcoy", "Colón", "Coronel de Marina Leonardo Rosales", "Coronel Dorrego", "Coronel Pringles", "Coronel Suárez", "Daireaux", "Dolores", "Ensenada", "Escobar", "Esteban Echeverría", "Exaltación de la Cruz", "Ezeiza", "Florencio Varela", "Florentino Ameghino", "General Alvarado", "General Alvear", "General Arenales", "General Belgrano", "General Guido", "General Juan Madariaga", "General La Madrid", "General Las Heras", "General Lavalle", "General Paz", "General Pinto", "General Pueyrredón", "General Rodríguez", "General San Martín", "General Viamonte", "General Villegas", "Guaminí", "Hipólito Yrigoyen", "Hurlingham", "Ituzaingó", "José C. Paz", "Junín", "La Costa", "La Matanza", "Lanús", "La Plata", "Laprida", "Las Flores", "Leandro N. Alem", "Lezama", "Lincoln", "Lobería", "Lobos", "Lomas de Zamora", "Luján", "Magdalena", "Maipú", "Malvinas Argentinas", "Mar Chiquita", "Marcos Paz", "Mercedes", "Merlo", "Monte", "Monte Hermoso", "Moreno", "Morón", "Navarro", "Necochea", "9 de Julio", "Olavarría", "Patagones", "Pehuajó", "Pellegrini", "Pergamino", "Pila", "Pilar", "Pinamar", "Presidente Perón", "Puan", "Punta Indio", "Quilmes", "Ramallo", "Rauch", "Rivadavia", "Rojas", "Roque Pérez", "Saavedra", "Saladillo", "Salliqueló", "Salto", "San Andrés de Giles", "San Antonio de Areco", "San Cayetano", "San Fernando", "San Isidro", "San Miguel", "San Nicolás", "San Pedro", "San Vicente", "Suipacha", "Tandil", "Tapalqué", "Tigre", "Tordillo", "Tornquist", "Trenque Lauquen", "Tres Arroyos", "Tres de Febrero", "Tres Lomas", "25 de Mayo", "Vicente López", "Villa Gesell", "Villarino", "Zárate"] },
@@ -126,6 +127,28 @@ const Asociate = () => {
     "agrupacion_musical": "agrupacion_musical"
   };
 
+  const registrationSchema = z.object({
+    nombre: z.string().trim().min(1, "El nombre es requerido").max(100, "El nombre es muy largo"),
+    email: z.string().email("Email inválido").max(255, "Email muy largo"),
+    telefono: z.string().max(20, "Teléfono muy largo").optional().or(z.literal("")),
+    pais: z.string().min(1, "El país es requerido").max(100),
+    provincia: z.string().max(100).optional().or(z.literal("")),
+    ciudad: z.string().min(1, "La ciudad es requerida").max(100),
+    password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres").max(100),
+    confirmPassword: z.string(),
+    display_name: z.string().max(100, "Nombre muy largo").optional().or(z.literal("")),
+    bio: z.string().max(1000, "Biografía muy larga").optional().or(z.literal("")),
+    instagram: z.string().max(100, "Instagram muy largo").optional().or(z.literal("")),
+    facebook: z.string().max(100, "Facebook muy largo").optional().or(z.literal("")),
+    linkedin: z.string().max(100, "LinkedIn muy largo").optional().or(z.literal("")),
+    whatsapp: z.string().max(20, "WhatsApp muy largo").optional().or(z.literal("")),
+    technical_specs: z.string().max(2000, "Especificaciones muy largas").optional().or(z.literal("")),
+    map_location: z.string().max(500, "Ubicación muy larga").optional().or(z.literal("")),
+  }).refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden",
+    path: ["confirmPassword"],
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -138,22 +161,18 @@ const Asociate = () => {
       return;
     }
 
-    if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Las contraseñas no coinciden",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      toast({
-        title: "Error",
-        description: "La contraseña debe tener al menos 6 caracteres",
-        variant: "destructive",
-      });
-      return;
+    // Validate form data
+    try {
+      registrationSchema.parse(formData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Error de validación",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setLoading(true);

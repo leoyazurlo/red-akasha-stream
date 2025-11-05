@@ -25,20 +25,23 @@ export const ImageUpload = ({ label, value, onChange, required, description, all
     if (!file) return;
 
     // Validar que sea una imagen
-    if (!file.type.startsWith('image/')) {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!file.type.startsWith('image/') || !allowedTypes.includes(file.type)) {
       toast({
         title: "Error",
-        description: "Por favor selecciona un archivo de imagen",
+        description: "Solo se permiten imágenes JPG, PNG, WEBP o GIF",
         variant: "destructive",
       });
       return;
     }
 
     // Validar tamaño (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    const maxSizeMB = 5;
+    const maxBytes = maxSizeMB * 1024 * 1024;
+    if (file.size > maxBytes) {
       toast({
         title: "Error",
-        description: "La imagen debe ser menor a 5MB",
+        description: `La imagen debe ser menor a ${maxSizeMB}MB`,
         variant: "destructive",
       });
       return;

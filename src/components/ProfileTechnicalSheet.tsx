@@ -80,11 +80,13 @@ export const ProfileTechnicalSheet = ({
   const [duration, setDuration] = useState(0);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+  const [interactionCount, setInteractionCount] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     fetchGallery();
     fetchAudioPlaylist();
+    fetchInteractionCount();
   }, [profileId]);
 
   const fetchGallery = async () => {
@@ -117,8 +119,28 @@ export const ProfileTechnicalSheet = ({
     }
   };
 
+  const fetchInteractionCount = async () => {
+    try {
+      const { count, error } = await supabase
+        .from('profile_interactions')
+        .select('*', { count: 'exact', head: true })
+        .or(`from_profile_id.eq.${profileId},to_profile_id.eq.${profileId}`);
+
+      if (error) throw error;
+      setInteractionCount(count || 0);
+    } catch (error) {
+      console.error('Error fetching interaction count:', error);
+    }
+  };
+
   const photos = gallery.filter(item => item.media_type === 'photo' || item.media_type === 'image');
   const videos = gallery.filter(item => item.media_type === 'video');
+  
+  // Check if there are any social media links
+  const hasSocialMedia = instagram || facebook || linkedin;
+  
+  // Check if there's any content in trabajos realizados
+  const hasContent = photos.length > 0 || videos.length > 0 || audioPlaylist.length > 0;
 
   const nextPhoto = () => {
     setCurrentPhotoIndex((prev) => (prev + 1) % photos.length);
@@ -229,14 +251,16 @@ export const ProfileTechnicalSheet = ({
         </div>
       </div>
 
-      {/* Trabajos Realizados Section */}
-      <div className="mb-8">
-        <h3 className="text-3xl font-black text-black text-center mb-8 tracking-wider">
-          TRABAJOS REALIZADOS
-        </h3>
+      {/* Trabajos Realizados Section - Only show if there's content */}
+      {hasContent && (
+        <div className="mb-8">
+          <h3 className="text-3xl font-black text-black text-center mb-8 tracking-wider">
+            TRABAJOS REALIZADOS
+          </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* FOTOS */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* FOTOS - Only show if there are photos */}
+          {photos.length > 0 && (
           <div>
             <h4 className="text-2xl font-black text-black mb-4 text-center tracking-wider">FOTOS</h4>
             <div className="relative group">
@@ -247,51 +271,45 @@ export const ProfileTechnicalSheet = ({
               <div className="absolute -bottom-3 -right-3 w-12 h-12 border-r-4 border-b-4 border-[#FF1493] z-20"></div>
               
               <div className="aspect-video bg-background rounded-lg overflow-hidden relative">
-                {photos.length > 0 ? (
+                <img 
+                  src={photos[currentPhotoIndex].url} 
+                  alt={photos[currentPhotoIndex].title || 'Gallery'} 
+                  className="w-full h-full object-cover transition-all duration-300" 
+                />
+                
+                {/* Navigation arrows */}
+                {photos.length > 1 && (
                   <>
-                    <img 
-                      src={photos[currentPhotoIndex].url} 
-                      alt={photos[currentPhotoIndex].title || 'Gallery'} 
-                      className="w-full h-full object-cover transition-all duration-300" 
-                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={previousPhoto}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <ChevronLeft className="w-6 h-6" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={nextPhoto}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <ChevronRight className="w-6 h-6" />
+                    </Button>
                     
-                    {/* Navigation arrows */}
-                    {photos.length > 1 && (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={previousPhoto}
-                          className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-primary opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <ChevronLeft className="w-6 h-6" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={nextPhoto}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-primary opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <ChevronRight className="w-6 h-6" />
-                        </Button>
-                        
-                        {/* Photo counter */}
-                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-background/80 px-3 py-1 rounded-full text-primary text-sm font-bold">
-                          {currentPhotoIndex + 1} / {photos.length}
-                        </div>
-                      </>
-                    )}
+                    {/* Photo counter */}
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-background/80 px-3 py-1 rounded-full text-primary text-sm font-bold">
+                      {currentPhotoIndex + 1} / {photos.length}
+                    </div>
                   </>
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                    <ImageIcon className="w-16 h-16" />
-                  </div>
                 )}
               </div>
             </div>
           </div>
+          )}
 
-          {/* VIDEO */}
+          {/* VIDEO - Only show if there are videos */}
+          {videos.length > 0 && (
           <div>
             <h4 className="text-2xl font-black text-black mb-4 text-center tracking-wider">VIDEO</h4>
             <div className="relative group">
@@ -302,240 +320,187 @@ export const ProfileTechnicalSheet = ({
               <div className="absolute -bottom-3 -right-3 w-12 h-12 border-r-4 border-b-4 border-[#FF1493] z-20"></div>
               
               <div className="aspect-video bg-background rounded-lg overflow-hidden relative">
-                {videos.length > 0 ? (
+                <video 
+                  key={videos[currentVideoIndex].url}
+                  controls 
+                  className="w-full h-full object-cover"
+                >
+                  <source src={videos[currentVideoIndex].url} type="video/mp4" />
+                </video>
+                
+                {/* Navigation arrows */}
+                {videos.length > 1 && (
                   <>
-                    <video 
-                      key={videos[currentVideoIndex].url}
-                      controls 
-                      className="w-full h-full object-cover"
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={previousVideo}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-primary opacity-0 group-hover:opacity-100 transition-opacity z-10"
                     >
-                      <source src={videos[currentVideoIndex].url} type="video/mp4" />
-                    </video>
+                      <ChevronLeft className="w-6 h-6" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={nextVideo}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-primary opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                    >
+                      <ChevronRight className="w-6 h-6" />
+                    </Button>
                     
-                    {/* Navigation arrows */}
-                    {videos.length > 1 && (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={previousVideo}
-                          className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-primary opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                        >
-                          <ChevronLeft className="w-6 h-6" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={nextVideo}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-primary opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                        >
-                          <ChevronRight className="w-6 h-6" />
-                        </Button>
-                        
-                        {/* Video counter */}
-                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-background/80 px-3 py-1 rounded-full text-primary text-sm font-bold z-10">
-                          {currentVideoIndex + 1} / {videos.length}
-                        </div>
-                      </>
-                    )}
+                    {/* Video counter */}
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-background/80 px-3 py-1 rounded-full text-primary text-sm font-bold z-10">
+                      {currentVideoIndex + 1} / {videos.length}
+                    </div>
                   </>
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                    <Video className="w-16 h-16" />
-                  </div>
                 )}
               </div>
             </div>
           </div>
+          )}
 
-          {/* AUDIO */}
+          {/* AUDIO - Only show if there's audio */}
+          {audioPlaylist.length > 0 && (
           <div>
             <h4 className="text-2xl font-black text-black mb-4 text-center tracking-wider">AUDIO</h4>
             <div className="space-y-4">
-              {audioPlaylist.length > 0 ? (
-                <>
-                  {/* Playlist */}
-                  <div className="space-y-2">
-                    {audioPlaylist.map((track, index) => (
-                      <div
-                        key={track.id}
-                        onClick={() => setCurrentTrack(index)}
-                        className={`flex items-center gap-2 cursor-pointer p-2 rounded ${
-                          currentTrack === index ? 'bg-black/20' : 'hover:bg-black/10'
-                        }`}
-                      >
-                        <span className="text-black font-bold text-lg">{index + 1}</span>
-                        <span className="text-black flex-1 font-semibold">{track.title}</span>
-                      </div>
-                    ))}
+              {/* Playlist */}
+              <div className="space-y-2">
+                {audioPlaylist.map((track, index) => (
+                  <div
+                    key={track.id}
+                    onClick={() => setCurrentTrack(index)}
+                    className={`flex items-center gap-2 cursor-pointer p-2 rounded ${
+                      currentTrack === index ? 'bg-black/20' : 'hover:bg-black/10'
+                    }`}
+                  >
+                    <span className="text-black font-bold text-lg">{index + 1}</span>
+                    <span className="text-black flex-1 font-semibold">{track.title}</span>
                   </div>
+                ))}
+              </div>
 
-                  {/* Audio Player */}
-                  <audio
-                    ref={audioRef}
-                    onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
-                    onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
-                    onEnded={playNext}
-                  />
+              {/* Audio Player */}
+              <audio
+                ref={audioRef}
+                onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+                onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+                onEnded={playNext}
+              />
 
-                  {/* Progress Bar */}
-                  <div className="space-y-2">
-                    <input
-                      type="range"
-                      min="0"
-                      max={duration || 0}
-                      value={currentTime}
-                      onChange={(e) => {
-                        const newTime = parseFloat(e.target.value);
-                        setCurrentTime(newTime);
-                        if (audioRef.current) {
-                          audioRef.current.currentTime = newTime;
-                        }
-                      }}
-                      className="w-full accent-black"
-                    />
-                    <div className="flex justify-between text-black text-sm font-semibold">
-                      <span>{formatTime(currentTime)}</span>
-                      <span>{formatTime(duration)}</span>
-                    </div>
-                  </div>
-
-                  {/* Controls */}
-                  <div className="flex items-center justify-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {}}
-                      className="text-black hover:text-black hover:bg-black/10"
-                    >
-                      <Repeat className="w-5 h-5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={playPrevious}
-                      className="text-black hover:text-black hover:bg-black/10"
-                    >
-                      <SkipBack className="w-7 h-7" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={togglePlayPause}
-                      className="w-16 h-16 rounded-full bg-black text-white hover:bg-black/90"
-                    >
-                      {isPlaying ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8 ml-1" />}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={playNext}
-                      className="text-black hover:text-black hover:bg-black/10"
-                    >
-                      <SkipForward className="w-7 h-7" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-black hover:text-black hover:bg-black/10"
-                    >
-                      <Music2 className="w-5 h-5" />
-                    </Button>
-                  </div>
-                </>
-              ) : (
-                <div className="text-black text-center py-8">
-                  <Music2 className="w-16 h-16 mx-auto mb-2 opacity-50" />
-                  <p>Sin audio disponible</p>
+              {/* Progress Bar */}
+              <div className="space-y-2">
+                <input
+                  type="range"
+                  min="0"
+                  max={duration || 0}
+                  value={currentTime}
+                  onChange={(e) => {
+                    const newTime = parseFloat(e.target.value);
+                    setCurrentTime(newTime);
+                    if (audioRef.current) {
+                      audioRef.current.currentTime = newTime;
+                    }
+                  }}
+                  className="w-full accent-black"
+                />
+                <div className="flex justify-between text-black text-sm font-semibold">
+                  <span>{formatTime(currentTime)}</span>
+                  <span>{formatTime(duration)}</span>
                 </div>
+              </div>
+
+              {/* Controls */}
+              <div className="flex items-center justify-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {}}
+                  className="text-black hover:text-black hover:bg-black/10"
+                >
+                  <Repeat className="w-5 h-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={playPrevious}
+                  className="text-black hover:text-black hover:bg-black/10"
+                >
+                  <SkipBack className="w-7 h-7" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={togglePlayPause}
+                  className="w-16 h-16 rounded-full bg-black text-white hover:bg-black/90"
+                >
+                  {isPlaying ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8 ml-1" />}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={playNext}
+                  className="text-black hover:text-black hover:bg-black/10"
+                >
+                  <SkipForward className="w-7 h-7" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-black hover:text-black hover:bg-black/10"
+                >
+                  <Music2 className="w-5 h-5" />
+                </Button>
+              </div>
+            </div>
+          </div>
+          )}
+        </div>
+        </div>
+      )}
+
+      {/* Contact & Social Section - Show if there's social media, otherwise just show interaction badge */}
+      <div className="flex items-center justify-between mt-12">
+        {hasSocialMedia && (
+          <div>
+            <h4 className="text-2xl font-black text-black mb-4 tracking-wider">CONTACTO</h4>
+            <div className="flex gap-4">
+              {instagram && (
+                <a
+                  href={`https://instagram.com/${instagram.replace('@', '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 hover:opacity-90 rounded-lg transition-opacity"
+                >
+                  <Instagram className="w-8 h-8 text-white" />
+                </a>
+              )}
+              {facebook && (
+                <a
+                  href={facebook.startsWith('http') ? facebook : `https://facebook.com/${facebook}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+                >
+                  <Facebook className="w-8 h-8 text-white" />
+                </a>
+              )}
+              {linkedin && (
+                <a
+                  href={linkedin.startsWith('http') ? linkedin : `https://linkedin.com/in/${linkedin}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors"
+                >
+                  <Linkedin className="w-8 h-8 text-white" />
+                </a>
               )}
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Contact & Social Section */}
-      <div className="flex items-center justify-between mt-12">
-        <div>
-          <h4 className="text-2xl font-black text-black mb-4 tracking-wider">CONTACTO</h4>
-          <div className="flex gap-4">
-            {/* YouTube */}
-            <a
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
-            >
-              <Youtube className="w-8 h-8 text-white" />
-            </a>
-            {instagram && (
-              <a
-                href={`https://instagram.com/${instagram.replace('@', '')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 hover:opacity-90 rounded-lg transition-opacity"
-              >
-                <Instagram className="w-8 h-8 text-white" />
-              </a>
-            )}
-            {facebook && (
-              <a
-                href={facebook.startsWith('http') ? facebook : `https://facebook.com/${facebook}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-              >
-                <Facebook className="w-8 h-8 text-white" />
-              </a>
-            )}
-            {/* Twitch */}
-            <a
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
-            >
-              <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
-              </svg>
-            </a>
-            {linkedin && (
-              <a
-                href={linkedin.startsWith('http') ? linkedin : `https://linkedin.com/in/${linkedin}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-2 bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors"
-              >
-                <Linkedin className="w-8 h-8 text-white" />
-              </a>
-            )}
-            {/* TikTok */}
-            <a
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 bg-black hover:bg-gray-800 rounded-lg transition-colors"
-            >
-              <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
-              </svg>
-            </a>
-            {/* X (Twitter) */}
-            <a
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 bg-black hover:bg-gray-800 rounded-lg transition-colors"
-            >
-              <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-              </svg>
-            </a>
-          </div>
-        </div>
+        )}
         
-        <Badge className="px-8 py-3 bg-gradient-to-r from-orange-400 to-amber-500 text-black text-lg font-black tracking-[0.2em] shadow-lg">
-          INTERACCION CON LA COMUNIDAD 5
+        <Badge className={`px-8 py-3 bg-gradient-to-r from-orange-400 to-amber-500 text-black text-lg font-black tracking-[0.2em] shadow-lg ${!hasSocialMedia ? 'ml-auto' : ''}`}>
+          INTERACCION CON LA COMUNIDAD {interactionCount}
         </Badge>
       </div>
     </div>

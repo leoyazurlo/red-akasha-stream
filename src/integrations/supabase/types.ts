@@ -908,6 +908,48 @@ export type Database = {
           },
         ]
       }
+      profile_interactions: {
+        Row: {
+          created_at: string
+          from_profile_id: string
+          id: string
+          interaction_type: string
+          metadata: Json | null
+          to_profile_id: string
+        }
+        Insert: {
+          created_at?: string
+          from_profile_id: string
+          id?: string
+          interaction_type: string
+          metadata?: Json | null
+          to_profile_id: string
+        }
+        Update: {
+          created_at?: string
+          from_profile_id?: string
+          id?: string
+          interaction_type?: string
+          metadata?: Json | null
+          to_profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_interactions_from_profile_id_fkey"
+            columns: ["from_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profile_details"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_interactions_to_profile_id_fkey"
+            columns: ["to_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profile_details"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

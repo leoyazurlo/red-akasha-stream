@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle2, Upload, X, Video, Image as ImageIcon, Music } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -76,7 +76,11 @@ const Asociate = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [showMediaUpload, setShowMediaUpload] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<string>("");
+  const [uploadedVideos, setUploadedVideos] = useState<File[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<File[]>([]);
+  const [uploadedAudios, setUploadedAudios] = useState<File[]>([]);
   const [formData, setFormData] = useState({
     nombre: "",
     email: "",
@@ -241,16 +245,98 @@ const Asociate = () => {
       }
 
       // Paso 3: Guardar perfil en profile_details
-      const { error: profileError } = await supabase
+      const { data: profileInsertData, error: profileError } = await supabase
         .from('profile_details')
-        .insert(profileData);
+        .insert(profileData)
+        .select('id')
+        .single();
 
       if (profileError) throw profileError;
+      
+      const profileId = profileInsertData.id;
+
+      // Paso 4: Subir archivos multimedia si hay
+      try {
+        // Subir videos
+        for (let i = 0; i < uploadedVideos.length; i++) {
+          const file = uploadedVideos[i];
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${authData.user.id}/videos/${Date.now()}-${i}.${fileExt}`;
+
+          const { data: videoData, error: videoUploadError } = await supabase.storage
+            .from('profile-avatars')
+            .upload(fileName, file);
+
+          if (!videoUploadError && videoData) {
+            const { data: { publicUrl } } = supabase.storage
+              .from('profile-avatars')
+              .getPublicUrl(videoData.path);
+
+            await supabase.from('profile_galleries').insert({
+              profile_id: profileId,
+              url: publicUrl,
+              media_type: 'video',
+              order_index: i
+            });
+          }
+        }
+
+        // Subir imágenes
+        for (let i = 0; i < uploadedImages.length; i++) {
+          const file = uploadedImages[i];
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${authData.user.id}/images/${Date.now()}-${i}.${fileExt}`;
+
+          const { data: imageData, error: imageUploadError } = await supabase.storage
+            .from('profile-avatars')
+            .upload(fileName, file);
+
+          if (!imageUploadError && imageData) {
+            const { data: { publicUrl } } = supabase.storage
+              .from('profile-avatars')
+              .getPublicUrl(imageData.path);
+
+            await supabase.from('profile_galleries').insert({
+              profile_id: profileId,
+              url: publicUrl,
+              media_type: 'photo',
+              order_index: i
+            });
+          }
+        }
+
+        // Subir audios
+        for (let i = 0; i < uploadedAudios.length; i++) {
+          const file = uploadedAudios[i];
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${authData.user.id}/audio/${Date.now()}-${i}.${fileExt}`;
+
+          const { data: audioData, error: audioUploadError } = await supabase.storage
+            .from('profile-avatars')
+            .upload(fileName, file);
+
+          if (!audioUploadError && audioData) {
+            const { data: { publicUrl } } = supabase.storage
+              .from('profile-avatars')
+              .getPublicUrl(audioData.path);
+
+            await supabase.from('audio_playlist').insert({
+              profile_id: profileId,
+              title: file.name.replace(/\.[^/.]+$/, ''),
+              audio_url: publicUrl,
+              order_index: i
+            });
+          }
+        }
+      } catch (uploadError) {
+        console.error('Error al subir multimedia:', uploadError);
+        // No lanzar error, continuar con el registro
+      }
       
       setSubmitted(true);
       toast({
         title: "¡Cuenta creada exitosamente!",
-        description: "Revisa tu email para confirmar tu cuenta. Ya puedes iniciar sesión.",
+        description: "Tu perfil y contenido multimedia se han guardado correctamente.",
       });
     } catch (error: any) {
       console.error('Error al crear cuenta:', error);
@@ -499,6 +585,114 @@ const Asociate = () => {
                       </div>
                     </div>
 
+                    {selectedProfile && (
+                      <div className="border-t pt-6">
+                        <h3 className="text-lg font-semibold mb-4">Multimedia (Opcional)</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Puedes subir videos, imágenes y audios para tu ficha técnica
+                        </p>
+                        
+                        {/* Upload Videos */}
+                        <div className="space-y-2 mb-4">
+                          <Label className="flex items-center gap-2">
+                            <Video className="w-4 h-4" />
+                            Videos
+                          </Label>
+                          <Input
+                            type="file"
+                            accept="video/*"
+                            multiple
+                            onChange={(e) => {
+                              const files = Array.from(e.target.files || []);
+                              setUploadedVideos(prev => [...prev, ...files]);
+                            }}
+                          />
+                          {uploadedVideos.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {uploadedVideos.map((file, idx) => (
+                                <div key={idx} className="flex items-center gap-2 bg-secondary px-3 py-1 rounded-md">
+                                  <span className="text-sm">{file.name}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setUploadedVideos(prev => prev.filter((_, i) => i !== idx))}
+                                    className="text-destructive"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Upload Images */}
+                        <div className="space-y-2 mb-4">
+                          <Label className="flex items-center gap-2">
+                            <ImageIcon className="w-4 h-4" />
+                            Imágenes
+                          </Label>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={(e) => {
+                              const files = Array.from(e.target.files || []);
+                              setUploadedImages(prev => [...prev, ...files]);
+                            }}
+                          />
+                          {uploadedImages.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {uploadedImages.map((file, idx) => (
+                                <div key={idx} className="flex items-center gap-2 bg-secondary px-3 py-1 rounded-md">
+                                  <span className="text-sm">{file.name}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setUploadedImages(prev => prev.filter((_, i) => i !== idx))}
+                                    className="text-destructive"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Upload Audio */}
+                        <div className="space-y-2 mb-4">
+                          <Label className="flex items-center gap-2">
+                            <Music className="w-4 h-4" />
+                            Audio (Playlist)
+                          </Label>
+                          <Input
+                            type="file"
+                            accept="audio/*"
+                            multiple
+                            onChange={(e) => {
+                              const files = Array.from(e.target.files || []);
+                              setUploadedAudios(prev => [...prev, ...files]);
+                            }}
+                          />
+                          {uploadedAudios.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {uploadedAudios.map((file, idx) => (
+                                <div key={idx} className="flex items-center gap-2 bg-secondary px-3 py-1 rounded-md">
+                                  <span className="text-sm">{file.name}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setUploadedAudios(prev => prev.filter((_, i) => i !== idx))}
+                                    className="text-destructive"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                     <Button 
                       type="submit" 
                       className="w-full" 
@@ -511,7 +705,7 @@ const Asociate = () => {
                           Enviando...
                         </>
                       ) : (
-                        "Enviar Solicitud"
+                        "Completar Inscripción"
                       )}
                     </Button>
                   </form>

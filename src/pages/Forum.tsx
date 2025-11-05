@@ -31,7 +31,7 @@ const Forum = () => {
               Foro Red Akasha
             </h1>
             <p className="text-muted-foreground text-center mt-4 text-lg">
-              Espacio de debate y colaboración para la comunidad
+              Espacio de debate y colaboración para la comunidad y desarrollo de la plataforma, esperamos tu contribución
             </p>
           </div>
 

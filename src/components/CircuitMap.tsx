@@ -148,10 +148,95 @@ export const CircuitMap = ({ profiles }: CircuitMapProps) => {
       });
 
       const infoHtml = `
-        <div style="padding:8px;max-width:220px;">
-          <h3 style="font-weight:600;margin:0 0 4px;">${profile.display_name}</h3>
-          <p style="font-size:12px;margin:0 0 2px;">${profile.ciudad}, ${profile.provincia || profile.pais}</p>
-          <p style="font-size:11px;color:#666;margin:0;">${profile.profile_type}</p>
+        <div style="
+          font-family: system-ui, -apple-system, sans-serif;
+          padding: 16px;
+          max-width: 280px;
+          background: linear-gradient(135deg, hsl(180 50% 10%) 0%, hsl(180 40% 15%) 100%);
+          border-radius: 12px;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        ">
+          <div style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(6, 182, 212, 0.2);
+          ">
+            <div style="
+              width: 48px;
+              height: 48px;
+              border-radius: 50%;
+              background: linear-gradient(135deg, hsl(180 70% 50%), hsl(180 60% 40%));
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 20px;
+              font-weight: 600;
+              color: white;
+              flex-shrink: 0;
+            ">${profile.display_name.charAt(0).toUpperCase()}</div>
+            <div style="flex: 1; min-width: 0;">
+              <h3 style="
+                font-weight: 600;
+                margin: 0 0 4px;
+                font-size: 16px;
+                color: hsl(180 70% 85%);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+              ">${profile.display_name}</h3>
+              <span style="
+                display: inline-block;
+                padding: 2px 8px;
+                background: rgba(6, 182, 212, 0.2);
+                border: 1px solid rgba(6, 182, 212, 0.3);
+                border-radius: 12px;
+                font-size: 11px;
+                font-weight: 500;
+                color: hsl(180 80% 70%);
+                text-transform: capitalize;
+              ">${profile.profile_type.replace(/_/g, ' ')}</span>
+            </div>
+          </div>
+          <div style="margin-bottom: 8px;">
+            <div style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              margin-bottom: 4px;
+            ">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="hsl(180 70% 60%)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              <p style="
+                font-size: 13px;
+                margin: 0;
+                color: hsl(180 40% 70%);
+                line-height: 1.4;
+              ">${profile.ciudad}${profile.provincia ? ', ' + profile.provincia : ''}, ${profile.pais}</p>
+            </div>
+          </div>
+          <div style="
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(6, 182, 212, 0.2);
+            text-align: center;
+          ">
+            <a href="#" onclick="return false;" style="
+              display: inline-block;
+              padding: 6px 16px;
+              background: linear-gradient(135deg, hsl(180 70% 50%), hsl(180 60% 40%));
+              color: white;
+              text-decoration: none;
+              border-radius: 8px;
+              font-size: 12px;
+              font-weight: 500;
+              transition: opacity 0.2s;
+            " onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Ver perfil</a>
+          </div>
         </div>
       `;
       const infoWindow = new google.maps.InfoWindow({ content: infoHtml });

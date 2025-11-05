@@ -417,9 +417,6 @@ const Asociate = () => {
                   <div className="text-center py-8 animate-fade-in">
                     <CheckCircle2 className="w-16 h-16 text-primary mx-auto mb-4" />
                     <h3 className="text-2xl font-semibold mb-2">¡Gracias por tu interés!</h3>
-                    <p className="text-muted-foreground">
-                      Hemos recibido tu solicitud. Nos pondremos en contacto contigo pronto.
-                    </p>
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-6">

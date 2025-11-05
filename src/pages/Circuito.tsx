@@ -76,7 +76,7 @@ const profileTypeLabels: Record<string, string> = {
   estudio_grabacion: "Estudio de grabación",
   productor_artistico: "Productor",
   promotor_artistico: "Promotor",
-  disfruto_musica: "Disfruto de la música"
+  productor_audiovisual: "Productor Audiovisual"
 };
 
 const Circuito = () => {
@@ -96,7 +96,7 @@ const Circuito = () => {
         .from('profile_details')
         .select('*')
         .eq('pais', selectedCountry.name)
-        .neq('profile_type', 'disfruto_musica')
+        .neq('profile_type', 'productor_audiovisual')
         .order('provincia', { ascending: true })
         .order('ciudad', { ascending: true });
 

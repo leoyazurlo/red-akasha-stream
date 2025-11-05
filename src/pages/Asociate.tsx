@@ -109,7 +109,7 @@ const Asociate = () => {
   });
 
   const perfilOptions = [
-    { value: "disfruto_musica", label: "Disfruto de la música" },
+    { value: "productor_audiovisual", label: "Productor Audiovisual" },
     { value: "productor_artistico", label: "Productor artístico" },
     { value: "estudio_grabacion", label: "Estudio de grabación" },
     { value: "promotor_artistico", label: "Promotor artístico" },
@@ -118,7 +118,7 @@ const Asociate = () => {
   ];
 
   const profileTypeMap: Record<string, string> = {
-    "disfruto_musica": "disfruto_musica",
+    "productor_audiovisual": "productor_audiovisual",
     "productor_artistico": "productor_artistico",
     "estudio_grabacion": "estudio_grabacion",
     "promotor_artistico": "promotor_artistico",
@@ -378,7 +378,7 @@ const Asociate = () => {
 
   const renderProfileForm = () => {
     switch (selectedProfile) {
-      case "disfruto_musica":
+      case "productor_audiovisual":
         return <MusicLoverForm formData={formData} onChange={handleProfileFieldChange} />;
       case "estudio_grabacion":
         return <RecordingStudioForm formData={formData} onChange={handleProfileFieldChange} />;

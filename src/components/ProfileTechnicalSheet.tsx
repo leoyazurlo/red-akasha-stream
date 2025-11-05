@@ -57,7 +57,7 @@ const profileTypeLabels: Record<string, string> = {
   estudio_grabacion: "ESTUDIO DE GRABACIÓN",
   productor_artistico: "PRODUCTOR",
   promotor_artistico: "PROMOTOR",
-  disfruto_musica: "MUSIC LOVER"
+  productor_audiovisual: "PRODUCTOR AUDIOVISUAL"
 };
 
 export const ProfileTechnicalSheet = ({

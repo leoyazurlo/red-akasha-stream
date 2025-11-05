@@ -1,7 +1,6 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
-import { CircuitMap } from "@/components/CircuitMap";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -58,9 +57,6 @@ interface ProfileDetail {
   email: string | null;
   telefono: string | null;
   whatsapp: string | null;
-  map_location: string | null;
-  latitude: number | null;
-  longitude: number | null;
   venue_type: string | null;
   capacity: number | null;
   genre: string | null;
@@ -140,7 +136,7 @@ const Circuito = () => {
     try {
       const { data, error } = await supabase
         .from('profile_details')
-        .select('*, latitude, longitude')
+        .select('*')
         .eq('pais', selectedCountry.name)
         .neq('profile_type', 'productor_audiovisual')
         .order('provincia', { ascending: true })
@@ -273,14 +269,6 @@ const Circuito = () => {
               </div>
             </section>
 
-            {/* Map Section */}
-            {!loading && allProfiles.length > 0 && (
-              <section className="max-w-6xl mx-auto mb-12">
-                <h2 className="text-2xl font-bold mb-4 text-center">Mapa de Colaboradores</h2>
-                <CircuitMap profiles={allProfiles} />
-              </section>
-            )}
-
             {/* Content Section */}
             <section className="max-w-6xl mx-auto">
               {loading ? (
@@ -405,14 +393,6 @@ const Circuito = () => {
                                         <Phone className="w-4 h-4" />
                                         <a href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
                                           WhatsApp: {profile.whatsapp}
-                                        </a>
-                                      </div>
-                                    )}
-                                    {profile.map_location && (
-                                      <div className="flex items-center gap-2 text-muted-foreground">
-                                        <MapPin className="w-4 h-4" />
-                                        <a href={profile.map_location} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors flex items-center gap-1">
-                                          Ver ubicación <ExternalLink className="w-3 h-3" />
                                         </a>
                                       </div>
                                     )}

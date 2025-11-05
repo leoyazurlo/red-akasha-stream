@@ -1,4 +1,4 @@
-import { LayoutDashboard, FolderTree, Users, Flag, ShieldAlert, Award, Radio, Film, Headphones, Calendar } from "lucide-react";
+import { LayoutDashboard, FolderTree, Users, Flag, ShieldAlert, Award, Radio, Film, Headphones, Calendar, FileText, UserCheck } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -14,6 +14,9 @@ import {
 
 const generalItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
+  { title: "Usuarios", url: "/admin/users", icon: Users },
+  { title: "Solicitudes", url: "/admin/requests", icon: UserCheck },
+  { title: "Curaduría", url: "/admin/content", icon: FileText },
 ];
 
 const streamingItems = [
@@ -24,7 +27,6 @@ const streamingItems = [
 
 const forumItems = [
   { title: "Categorías", url: "/admin/categories", icon: FolderTree },
-  { title: "Usuarios y Roles", url: "/admin/users", icon: Users },
   { title: "Reportes", url: "/admin/reports", icon: Flag },
   { title: "Sanciones", url: "/admin/sanctions", icon: ShieldAlert },
   { title: "Badges", url: "/admin/badges", icon: Award },

@@ -85,6 +85,8 @@ const ThreadPage = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [replyingToPostId, setReplyingToPostId] = useState<string | null>(null);
+  const [postsToShow, setPostsToShow] = useState(20);
+  const [totalPostsCount, setTotalPostsCount] = useState(0);
 
   // Fetch thread details
   const { data: thread, isLoading: threadLoading } = useQuery({
@@ -117,9 +119,24 @@ const ThreadPage = () => {
     enabled: !!id,
   });
 
-  // Fetch all posts for this thread
+  // Fetch total count of posts
+  const { data: postsCount } = useQuery({
+    queryKey: ["thread-posts-count", id],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("forum_posts")
+        .select("*", { count: "exact", head: true })
+        .eq("thread_id", id);
+
+      if (error) throw error;
+      return count || 0;
+    },
+    enabled: !!id,
+  });
+
+  // Fetch posts for this thread with pagination
   const { data: posts, isLoading: postsLoading } = useQuery({
-    queryKey: ["thread-posts", id],
+    queryKey: ["thread-posts", id, postsToShow],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("forum_posts")
@@ -136,13 +153,25 @@ const ThreadPage = () => {
         `
         )
         .eq("thread_id", id)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: true })
+        .limit(postsToShow);
 
       if (error) throw error;
+
+      // Update total count
+      if (postsCount) {
+        setTotalPostsCount(postsCount);
+      }
+
       return data as Post[];
     },
     enabled: !!id,
   });
+
+  const hasMorePosts = posts && postsCount ? posts.length < postsCount : false;
+  const loadMorePosts = () => {
+    setPostsToShow((prev) => prev + 20);
+  };
 
   // Increment view count
   const incrementViewsMutation = useMutation({
@@ -519,12 +548,57 @@ const ThreadPage = () => {
 
           {/* Posts List */}
           <div className="space-y-6">
-            {postsLoading ? (
+            {/* Posts Count Header */}
+            {postsCount !== undefined && postsCount > 0 && (
+              <div className="flex items-center justify-between px-4 py-2 bg-card/30 backdrop-blur-sm rounded-lg border border-border/50">
+                <p className="text-sm text-muted-foreground">
+                  Mostrando {posts?.length || 0} de {postsCount} respuestas
+                </p>
+                {hasMorePosts && (
+                  <p className="text-xs text-muted-foreground">
+                    {postsCount - (posts?.length || 0)} más sin cargar
+                  </p>
+                )}
+              </div>
+            )}
+
+            {postsLoading && postsToShow === 20 ? (
               <div className="flex justify-center py-12">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
               </div>
             ) : topLevelPosts.length > 0 ? (
-              topLevelPosts.map((post) => renderPost(post))
+              <>
+                {topLevelPosts.map((post) => renderPost(post))}
+
+                {/* Load More Button */}
+                {hasMorePosts && (
+                  <Card className="bg-card/50 backdrop-blur-sm border border-border">
+                    <CardContent className="p-6 text-center">
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Hay {postsCount! - posts!.length} respuestas más
+                      </p>
+                      <Button
+                        onClick={loadMorePosts}
+                        disabled={postsLoading}
+                        variant="outline"
+                        className="flex items-center gap-2 mx-auto"
+                      >
+                        {postsLoading && postsToShow > 20 ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Cargando...
+                          </>
+                        ) : (
+                          <>
+                            <MessageSquare className="w-4 h-4" />
+                            Cargar Más Respuestas
+                          </>
+                        )}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
             ) : (
               <Card className="bg-card/50 backdrop-blur-sm border border-border">
                 <CardContent className="p-12 text-center">

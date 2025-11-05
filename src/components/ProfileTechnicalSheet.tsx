@@ -54,6 +54,15 @@ interface AudioTrack {
   order_index: number;
 }
 
+interface Rating {
+  id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  rater_name: string;
+  rater_avatar: string | null;
+}
+
 const profileTypeLabels: Record<string, string> = {
   agrupacion_musical: "BANDA",
   sala_concierto: "VENUE",
@@ -88,6 +97,7 @@ export const ProfileTechnicalSheet = ({
   const [totalRatings, setTotalRatings] = useState(0);
   const [userRating, setUserRating] = useState(0);
   const [hoveredStar, setHoveredStar] = useState(0);
+  const [recentRatings, setRecentRatings] = useState<Rating[]>([]);
   const audioRef = useRef<HTMLAudioElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -148,17 +158,60 @@ export const ProfileTechnicalSheet = ({
 
   const fetchRatings = async () => {
     try {
-      const { data, error } = await supabase
+      // Obtener promedio y total
+      const { data: ratingsData, error: ratingsError } = await supabase
         .from('profile_ratings')
         .select('rating')
         .eq('rated_profile_id', profileId);
 
-      if (error) throw error;
+      if (ratingsError) throw ratingsError;
       
-      if (data && data.length > 0) {
-        const sum = data.reduce((acc, curr) => acc + curr.rating, 0);
-        setAverageRating(sum / data.length);
-        setTotalRatings(data.length);
+      if (ratingsData && ratingsData.length > 0) {
+        const sum = ratingsData.reduce((acc, curr) => acc + curr.rating, 0);
+        setAverageRating(sum / ratingsData.length);
+        setTotalRatings(ratingsData.length);
+      }
+
+      // Obtener últimas 5 valoraciones con información del perfil que valoró
+      const { data: recentData, error: recentError } = await supabase
+        .from('profile_ratings')
+        .select(`
+          id,
+          rating,
+          comment,
+          created_at,
+          rater_profile_id
+        `)
+        .eq('rated_profile_id', profileId)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (recentError) throw recentError;
+
+      if (recentData && recentData.length > 0) {
+        // Obtener información de los perfiles que valoraron
+        const raterIds = recentData.map(r => r.rater_profile_id);
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profile_details')
+          .select('id, display_name, avatar_url')
+          .in('id', raterIds);
+
+        if (profilesError) throw profilesError;
+
+        // Combinar datos
+        const ratingsWithNames = recentData.map(rating => {
+          const raterProfile = profilesData?.find(p => p.id === rating.rater_profile_id);
+          return {
+            id: rating.id,
+            rating: rating.rating,
+            comment: rating.comment,
+            created_at: rating.created_at,
+            rater_name: raterProfile?.display_name || 'Usuario desconocido',
+            rater_avatar: raterProfile?.avatar_url || null
+          };
+        });
+
+        setRecentRatings(ratingsWithNames);
       }
     } catch (error) {
       console.error('Error fetching ratings:', error);
@@ -338,7 +391,7 @@ export const ProfileTechnicalSheet = ({
           </p>
           
           {/* Rating Section */}
-          <div className="mt-6 space-y-2">
+          <div className="mt-6 space-y-4">
             <div className="flex items-center gap-2">
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -370,6 +423,54 @@ export const ProfileTechnicalSheet = ({
               <p className="text-black/70 text-sm">
                 Tu valoración: {userRating} estrellas
               </p>
+            )}
+
+            {/* Recent Ratings */}
+            {recentRatings.length > 0 && (
+              <div className="mt-4">
+                <h4 className="text-sm font-bold text-black mb-2 tracking-wider">ÚLTIMAS VALORACIONES</h4>
+                <div className="space-y-2">
+                  {recentRatings.map((rating) => (
+                    <div key={rating.id} className="bg-black/10 rounded-lg p-3">
+                      <div className="flex items-start gap-2">
+                        <Avatar className="w-8 h-8 border-2 border-black/20">
+                          <AvatarImage src={rating.rater_avatar || ''} />
+                          <AvatarFallback className="bg-gradient-to-br from-cyan-400 to-blue-500 text-white text-xs font-bold">
+                            {rating.rater_name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <span className="text-black font-semibold text-sm">{rating.rater_name}</span>
+                            <div className="flex gap-0.5">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`w-3 h-3 ${
+                                    star <= rating.rating
+                                      ? 'fill-yellow-400 text-yellow-400'
+                                      : 'text-gray-300'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                          {rating.comment && (
+                            <p className="text-black/70 text-xs mt-1">{rating.comment}</p>
+                          )}
+                          <span className="text-black/50 text-xs">
+                            {new Date(rating.created_at).toLocaleDateString('es-ES', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric'
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         </div>

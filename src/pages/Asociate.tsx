@@ -426,9 +426,9 @@ const Asociate = () => {
           <div className="max-w-2xl mx-auto">
             <Card className="border-border bg-card/50 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-2xl">Inscripción Asociados</CardTitle>
+                <CardTitle className="text-2xl text-primary">Inscripción Asociados</CardTitle>
                 <CardDescription>
-                  En esta plataforma vas a poder colaborar con otros socios, de los cuales esperamos que interactúes.
+                  En esta plataforma vas a poder colaborar y relacionarte con otros asociados, de los cuales esperamos que interactúes. Asociarte es sin costo, la base de datos tiene que ser un valor para todos, reconocernos.
                 </CardDescription>
               </CardHeader>
               <CardContent>

@@ -20,8 +20,6 @@ const venueTypes = [
 export const VenueForm = ({ formData, onChange }: VenueFormProps) => {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Información de la sala de concierto</h3>
-      
       <ImageUpload
         label="Foto de perfil (cuadrada)"
         value={formData.avatar_url || ""}
@@ -30,17 +28,6 @@ export const VenueForm = ({ formData, onChange }: VenueFormProps) => {
         description="Sube una imagen cuadrada de la sala (formato recomendado: 400x400px)"
         allowLocalPreview={true}
       />
-
-      <div className="space-y-2">
-        <Label htmlFor="venueName">Nombre de la sala *</Label>
-        <Input
-          id="venueName"
-          value={formData.display_name || ""}
-          onChange={(e) => onChange("display_name", e.target.value)}
-          placeholder="Nombre de la sala"
-          required
-        />
-      </div>
 
       <div className="space-y-2">
         <Label htmlFor="venueType">Estilo de sala *</Label>

@@ -488,6 +488,7 @@ const Asociate = () => {
 
                      {selectedProfile && (
                        <div className="border-t pt-6">
+                         <h3 className="text-lg font-semibold mb-4">Contacto</h3>
                          {renderProfileForm()}
                        </div>
                      )}

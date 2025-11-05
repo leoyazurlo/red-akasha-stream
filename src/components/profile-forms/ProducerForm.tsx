@@ -11,8 +11,6 @@ interface ProducerFormProps {
 export const ProducerForm = ({ formData, onChange }: ProducerFormProps) => {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Información del productor artístico</h3>
-      
       <ImageUpload
         label="Foto de perfil (cuadrada)"
         value={formData.avatar_url || ""}
@@ -21,17 +19,6 @@ export const ProducerForm = ({ formData, onChange }: ProducerFormProps) => {
         description="Sube una imagen cuadrada para tu perfil (formato recomendado: 400x400px)"
         allowLocalPreview={true}
       />
-
-      <div className="space-y-2">
-        <Label htmlFor="producerName">Nombre del productor *</Label>
-        <Input
-          id="producerName"
-          value={formData.display_name || ""}
-          onChange={(e) => onChange("display_name", e.target.value)}
-          placeholder="Nombre y apellido"
-          required
-        />
-      </div>
 
       <div className="space-y-2">
         <Label htmlFor="bio">Reseña/Bio *</Label>

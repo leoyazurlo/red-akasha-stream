@@ -11,8 +11,6 @@ interface RecordingStudioFormProps {
 export const RecordingStudioForm = ({ formData, onChange }: RecordingStudioFormProps) => {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Información del estudio de grabación</h3>
-      
       <ImageUpload
         label="Foto de perfil (cuadrada)"
         value={formData.avatar_url || ""}
@@ -21,17 +19,6 @@ export const RecordingStudioForm = ({ formData, onChange }: RecordingStudioFormP
         description="Sube una imagen cuadrada del estudio (formato recomendado: 400x400px)"
         allowLocalPreview={true}
       />
-
-      <div className="space-y-2">
-        <Label htmlFor="studioName">Nombre del estudio *</Label>
-        <Input
-          id="studioName"
-          value={formData.display_name || ""}
-          onChange={(e) => onChange("display_name", e.target.value)}
-          placeholder="Nombre del estudio"
-          required
-        />
-      </div>
 
       <div className="space-y-2">
         <Label htmlFor="technicalSpecs">Ficha técnica de instalaciones</Label>

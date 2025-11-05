@@ -27,8 +27,6 @@ const musicGenres = [
 export const BandForm = ({ formData, onChange }: BandFormProps) => {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Información de la agrupación musical</h3>
-      
       <ImageUpload
         label="Foto de perfil (cuadrada)"
         value={formData.avatar_url || ""}
@@ -37,17 +35,6 @@ export const BandForm = ({ formData, onChange }: BandFormProps) => {
         description="Sube una imagen cuadrada de la banda (formato recomendado: 400x400px)"
         allowLocalPreview={true}
       />
-
-      <div className="space-y-2">
-        <Label htmlFor="bandName">Nombre de la banda *</Label>
-        <Input
-          id="bandName"
-          value={formData.display_name || ""}
-          onChange={(e) => onChange("display_name", e.target.value)}
-          placeholder="Nombre de la banda"
-          required
-        />
-      </div>
 
       <div className="space-y-2">
         <Label htmlFor="genre">Estilo musical *</Label>

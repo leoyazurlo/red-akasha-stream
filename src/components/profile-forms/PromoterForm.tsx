@@ -10,8 +10,6 @@ interface PromoterFormProps {
 export const PromoterForm = ({ formData, onChange }: PromoterFormProps) => {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Información del promotor artístico</h3>
-      
       <ImageUpload
         label="Foto de perfil (cuadrada)"
         value={formData.avatar_url || ""}
@@ -20,17 +18,6 @@ export const PromoterForm = ({ formData, onChange }: PromoterFormProps) => {
         description="Sube una imagen cuadrada para tu perfil (formato recomendado: 400x400px)"
         allowLocalPreview={true}
       />
-
-      <div className="space-y-2">
-        <Label htmlFor="promoterName">Nombre y apellido *</Label>
-        <Input
-          id="promoterName"
-          value={formData.display_name || ""}
-          onChange={(e) => onChange("display_name", e.target.value)}
-          placeholder="Nombre y apellido"
-          required
-        />
-      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">

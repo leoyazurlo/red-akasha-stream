@@ -10,8 +10,6 @@ interface MusicLoverFormProps {
 export const MusicLoverForm = ({ formData, onChange }: MusicLoverFormProps) => {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Información de usuario</h3>
-      
       <ImageUpload
         label="Foto de perfil (cuadrada)"
         value={formData.avatar_url || ""}

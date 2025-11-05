@@ -117,7 +117,7 @@ export const ProfileTechnicalSheet = ({
     }
   };
 
-  const photos = gallery.filter(item => item.media_type === 'image');
+  const photos = gallery.filter(item => item.media_type === 'photo' || item.media_type === 'image');
   const videos = gallery.filter(item => item.media_type === 'video');
 
   const nextPhoto = () => {

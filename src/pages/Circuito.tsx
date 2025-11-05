@@ -5,6 +5,8 @@ import { CircuitMap } from "@/components/CircuitMap";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { ProfileTechnicalSheet } from "@/components/ProfileTechnicalSheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -90,6 +92,7 @@ const Circuito = () => {
   const [loading, setLoading] = useState(true);
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [hasProfile, setHasProfile] = useState(false);
+  const [selectedProfile, setSelectedProfile] = useState<ProfileDetail | null>(null);
 
   useEffect(() => {
     checkUserProfile();
@@ -281,7 +284,7 @@ const Circuito = () => {
               {loading ? (
                 <div className="text-center py-12">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-                  <p className="text-muted-foreground mt-4">Cargando fichas técnicas...</p>
+                  <p className="text-muted-foreground mt-4">Cargando perfiles...</p>
                 </div>
               ) : locationGroups.length === 0 ? (
                 <div className="bg-card/50 backdrop-blur-sm rounded-lg border border-border p-8 text-center">
@@ -300,14 +303,14 @@ const Circuito = () => {
                 </div>
               ) : (
                 <div className="space-y-12">
-                  <div className="text-center mb-8">
-                    <h2 className="text-3xl font-bold mb-2 text-primary">
-                      Fichas Técnicas - {selectedCountry.name} {selectedCountry.flag}
-                    </h2>
-                    <p className="text-muted-foreground">
-                      Encuentra espacios culturales, salas de grabación, bandas, productores y más
-                    </p>
-                  </div>
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl font-bold mb-2 text-primary">
+                    Perfiles - {selectedCountry.name} {selectedCountry.flag}
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Encuentra espacios culturales, salas de grabación, bandas, productores y más
+                  </p>
+                </div>
 
                   {locationGroups.map((locationGroup) => (
                     <div key={locationGroup.provincia} className="space-y-8">
@@ -327,7 +330,11 @@ const Circuito = () => {
 
                           <div className="grid md:grid-cols-2 gap-6">
                             {cityGroup.profiles.map((profile) => (
-                              <Card key={profile.id} className="border-border bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-all">
+                              <Card 
+                                key={profile.id} 
+                                className="border-border bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-all cursor-pointer"
+                                onClick={() => setSelectedProfile(profile)}
+                              >
                                 <CardHeader>
                                   <div className="flex items-start gap-4">
                                     <Avatar className="w-16 h-16 border-2 border-primary">
@@ -444,6 +451,26 @@ const Circuito = () => {
         </main>
 
         <Footer />
+
+        {/* Profile Detail Dialog */}
+        <Dialog open={!!selectedProfile} onOpenChange={(open) => !open && setSelectedProfile(null)}>
+          <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 overflow-y-auto bg-transparent border-none">
+            {selectedProfile && (
+              <ProfileTechnicalSheet
+                profileId={selectedProfile.id}
+                displayName={selectedProfile.display_name}
+                profileType={selectedProfile.profile_type}
+                bio={selectedProfile.bio}
+                avatarUrl={selectedProfile.avatar_url}
+                instagram={selectedProfile.instagram}
+                facebook={selectedProfile.facebook}
+                linkedin={selectedProfile.linkedin}
+                whatsapp={selectedProfile.whatsapp}
+                email={selectedProfile.email}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

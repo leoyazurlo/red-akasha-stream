@@ -64,11 +64,11 @@ interface Rating {
 }
 
 const profileTypeLabels: Record<string, string> = {
-  agrupacion_musical: "BANDA",
-  sala_concierto: "VENUE",
+  agrupacion_musical: "AGRUPACIÓN MUSICAL",
+  sala_concierto: "SALA DE CONCIERTO",
   estudio_grabacion: "ESTUDIO DE GRABACIÓN",
-  productor_artistico: "PRODUCTOR",
-  promotor_artistico: "PROMOTOR",
+  productor_artistico: "PRODUCTOR ARTÍSTICO",
+  promotor_artistico: "PROMOTOR ARTÍSTICO",
   productor_audiovisual: "PRODUCTOR AUDIOVISUAL"
 };
 

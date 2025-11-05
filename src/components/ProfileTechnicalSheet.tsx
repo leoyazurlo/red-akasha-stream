@@ -15,7 +15,9 @@ import {
   SkipBack,
   SkipForward,
   Repeat,
-  ExternalLink
+  ExternalLink,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -76,6 +78,8 @@ export const ProfileTechnicalSheet = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
@@ -115,6 +119,22 @@ export const ProfileTechnicalSheet = ({
 
   const photos = gallery.filter(item => item.media_type === 'image');
   const videos = gallery.filter(item => item.media_type === 'video');
+
+  const nextPhoto = () => {
+    setCurrentPhotoIndex((prev) => (prev + 1) % photos.length);
+  };
+
+  const previousPhoto = () => {
+    setCurrentPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length);
+  };
+
+  const nextVideo = () => {
+    setCurrentVideoIndex((prev) => (prev + 1) % videos.length);
+  };
+
+  const previousVideo = () => {
+    setCurrentVideoIndex((prev) => (prev - 1 + videos.length) % videos.length);
+  };
 
   const togglePlayPause = () => {
     if (audioRef.current) {
@@ -213,16 +233,49 @@ export const ProfileTechnicalSheet = ({
           {/* FOTOS */}
           <div>
             <h4 className="text-2xl font-black text-background mb-4 text-center tracking-wider">FOTOS</h4>
-            <div className="relative">
+            <div className="relative group">
               {/* Decorative corners */}
-              <div className="absolute -top-3 -left-3 w-12 h-12 border-l-4 border-t-4 border-secondary-foreground"></div>
-              <div className="absolute -top-3 -right-3 w-12 h-12 border-r-4 border-t-4 border-secondary-foreground"></div>
-              <div className="absolute -bottom-3 -left-3 w-12 h-12 border-l-4 border-b-4 border-secondary-foreground"></div>
-              <div className="absolute -bottom-3 -right-3 w-12 h-12 border-r-4 border-b-4 border-secondary-foreground"></div>
+              <div className="absolute -top-3 -left-3 w-12 h-12 border-l-4 border-t-4 border-secondary-foreground z-20"></div>
+              <div className="absolute -top-3 -right-3 w-12 h-12 border-r-4 border-t-4 border-secondary-foreground z-20"></div>
+              <div className="absolute -bottom-3 -left-3 w-12 h-12 border-l-4 border-b-4 border-secondary-foreground z-20"></div>
+              <div className="absolute -bottom-3 -right-3 w-12 h-12 border-r-4 border-b-4 border-secondary-foreground z-20"></div>
               
-              <div className="aspect-video bg-background rounded-lg overflow-hidden">
+              <div className="aspect-video bg-background rounded-lg overflow-hidden relative">
                 {photos.length > 0 ? (
-                  <img src={photos[0].url} alt={photos[0].title || 'Gallery'} className="w-full h-full object-cover" />
+                  <>
+                    <img 
+                      src={photos[currentPhotoIndex].url} 
+                      alt={photos[currentPhotoIndex].title || 'Gallery'} 
+                      className="w-full h-full object-cover transition-all duration-300" 
+                    />
+                    
+                    {/* Navigation arrows */}
+                    {photos.length > 1 && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={previousPhoto}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <ChevronLeft className="w-6 h-6" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={nextPhoto}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <ChevronRight className="w-6 h-6" />
+                        </Button>
+                        
+                        {/* Photo counter */}
+                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-background/80 px-3 py-1 rounded-full text-primary text-sm font-bold">
+                          {currentPhotoIndex + 1} / {photos.length}
+                        </div>
+                      </>
+                    )}
+                  </>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                     <ImageIcon className="w-16 h-16" />
@@ -235,18 +288,51 @@ export const ProfileTechnicalSheet = ({
           {/* VIDEO */}
           <div>
             <h4 className="text-2xl font-black text-background mb-4 text-center tracking-wider">VIDEO</h4>
-            <div className="relative">
+            <div className="relative group">
               {/* Decorative corners */}
-              <div className="absolute -top-3 -left-3 w-12 h-12 border-l-4 border-t-4 border-secondary-foreground"></div>
-              <div className="absolute -top-3 -right-3 w-12 h-12 border-r-4 border-t-4 border-secondary-foreground"></div>
-              <div className="absolute -bottom-3 -left-3 w-12 h-12 border-l-4 border-b-4 border-secondary-foreground"></div>
-              <div className="absolute -bottom-3 -right-3 w-12 h-12 border-r-4 border-b-4 border-secondary-foreground"></div>
+              <div className="absolute -top-3 -left-3 w-12 h-12 border-l-4 border-t-4 border-secondary-foreground z-20"></div>
+              <div className="absolute -top-3 -right-3 w-12 h-12 border-r-4 border-t-4 border-secondary-foreground z-20"></div>
+              <div className="absolute -bottom-3 -left-3 w-12 h-12 border-l-4 border-b-4 border-secondary-foreground z-20"></div>
+              <div className="absolute -bottom-3 -right-3 w-12 h-12 border-r-4 border-b-4 border-secondary-foreground z-20"></div>
               
-              <div className="aspect-video bg-background rounded-lg overflow-hidden">
+              <div className="aspect-video bg-background rounded-lg overflow-hidden relative">
                 {videos.length > 0 ? (
-                  <video controls className="w-full h-full object-cover">
-                    <source src={videos[0].url} type="video/mp4" />
-                  </video>
+                  <>
+                    <video 
+                      key={videos[currentVideoIndex].url}
+                      controls 
+                      className="w-full h-full object-cover"
+                    >
+                      <source src={videos[currentVideoIndex].url} type="video/mp4" />
+                    </video>
+                    
+                    {/* Navigation arrows */}
+                    {videos.length > 1 && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={previousVideo}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-primary opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                        >
+                          <ChevronLeft className="w-6 h-6" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={nextVideo}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-primary opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                        >
+                          <ChevronRight className="w-6 h-6" />
+                        </Button>
+                        
+                        {/* Video counter */}
+                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-background/80 px-3 py-1 rounded-full text-primary text-sm font-bold z-10">
+                          {currentVideoIndex + 1} / {videos.length}
+                        </div>
+                      </>
+                    )}
+                  </>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                     <Video className="w-16 h-16" />

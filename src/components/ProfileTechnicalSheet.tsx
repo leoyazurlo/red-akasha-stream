@@ -383,7 +383,7 @@ export const ProfileTechnicalSheet = ({
           <h1 className="text-4xl font-black text-black mb-2 tracking-wider">
             {profileTypeLabels[profileType] || profileType}
           </h1>
-          <h2 className="text-3xl font-bold text-black mb-6 tracking-[0.4em]">
+          <h2 className="text-3xl font-semibold text-black mb-6 tracking-[0.3em]">
             {displayName.toUpperCase()}
           </h2>
           <p className="text-black text-base leading-relaxed font-normal">

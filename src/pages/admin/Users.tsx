@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { Loader2, Trash2, Shield, User, Search, X, CalendarIcon } from "lucide-react";
+import { Loader2, Trash2, Shield, User, Search, X, CalendarIcon, Download } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,6 +38,7 @@ interface UserProfile {
   ciudad: string;
   pais: string;
   created_at: string;
+  provincia?: string;
 }
 
 export default function AdminUsers() {
@@ -158,6 +159,78 @@ export default function AdminUsers() {
     }
   };
 
+  const exportToCSV = () => {
+    if (users.length === 0) {
+      toast({
+        title: "No hay datos",
+        description: "No hay usuarios para exportar con los filtros actuales",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Define CSV headers
+    const headers = [
+      "Nombre",
+      "Email",
+      "Tipo de Perfil",
+      "País",
+      "Ciudad",
+      "Provincia",
+      "Fecha de Registro",
+    ];
+
+    // Convert users to CSV rows
+    const rows = users.map(user => [
+      user.display_name,
+      user.email || "",
+      user.profile_type.replace(/_/g, ' '),
+      user.pais,
+      user.ciudad,
+      user.provincia || "",
+      format(new Date(user.created_at), "dd/MM/yyyy HH:mm", { locale: es }),
+    ]);
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => 
+        row.map(cell => `"${cell}"`).join(",")
+      )
+    ].join("\n");
+
+    // Create blob and download
+    const blob = new Blob(["\ufeff" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    
+    // Generate filename with current date and active filters
+    const timestamp = format(new Date(), "yyyy-MM-dd_HH-mm");
+    let filename = `usuarios_${timestamp}`;
+    
+    if (profileTypeFilter !== "all") {
+      filename += `_${profileTypeFilter}`;
+    }
+    if (countryFilter !== "all") {
+      filename += `_${countryFilter}`;
+    }
+    if (dateRange?.from) {
+      filename += `_desde_${format(dateRange.from, "yyyy-MM-dd")}`;
+    }
+    
+    link.setAttribute("href", url);
+    link.setAttribute("download", `${filename}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Exportación exitosa",
+      description: `Se exportaron ${users.length} usuario${users.length !== 1 ? 's' : ''} a CSV`,
+    });
+  };
+
   if (authLoading || loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -182,11 +255,22 @@ export default function AdminUsers() {
           <AdminSidebar />
           <main className="flex-1 p-6">
             <div className="max-w-6xl mx-auto space-y-6">
-              <div>
-                <h2 className="text-3xl font-bold mb-2">Gestión de Usuarios</h2>
-                <p className="text-muted-foreground">
-                  Administra los usuarios registrados en la plataforma
-                </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-3xl font-bold mb-2">Gestión de Usuarios</h2>
+                  <p className="text-muted-foreground">
+                    Administra los usuarios registrados en la plataforma
+                  </p>
+                </div>
+                <Button
+                  onClick={exportToCSV}
+                  variant="outline"
+                  className="gap-2"
+                  disabled={users.length === 0}
+                >
+                  <Download className="h-4 w-4" />
+                  Exportar CSV
+                </Button>
               </div>
 
               {/* Filters Section */}

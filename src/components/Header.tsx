@@ -16,7 +16,7 @@ import {
 const navItems = [
   { name: "Home", href: "/", isRoute: true },
   { name: "On Demand", href: "#on-demand", isRoute: false },
-  { name: "Artistas", href: "#artistas", isRoute: false },
+  { name: "Artistas", href: "/artistas", isRoute: true },
   { name: "Circuito", href: "/circuito", isRoute: true },
   { name: "Asociate", href: "/asociate", isRoute: true },
   { name: "Subir Contenido", href: "/subir-contenido", isRoute: true },

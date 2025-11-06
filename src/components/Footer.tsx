@@ -20,7 +20,7 @@ const footerActions = [
   {
     icon: Palette,
     label: "Artistas",
-    href: "#artistas",
+    href: "/artistas",
   },
   {
     icon: Share2,

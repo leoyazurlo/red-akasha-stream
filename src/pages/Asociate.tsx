@@ -149,27 +149,114 @@ const Asociate = () => {
     "musico": "musico"
   };
 
-  const registrationSchema = z.object({
-    nombre: z.string().trim().min(1, "El nombre es requerido").max(100, "El nombre es muy largo"),
-    email: z.string().email("Email inválido").max(255, "Email muy largo"),
-    telefono: z.string().max(20, "Teléfono muy largo").optional().or(z.literal("")),
-    pais: z.string().min(1, "El país es requerido").max(100),
-    provincia: z.string().max(100).optional().or(z.literal("")),
-    ciudad: z.string().min(1, "La ciudad es requerida").max(100),
-    password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres").max(100),
-    confirmPassword: z.string(),
-    display_name: z.string().max(100, "Nombre muy largo").optional().or(z.literal("")),
-    bio: z.string().max(1000, "Biografía muy larga").optional().or(z.literal("")),
-    instagram: z.string().max(100, "Instagram muy largo").optional().or(z.literal("")),
-    facebook: z.string().max(100, "Facebook muy largo").optional().or(z.literal("")),
-    linkedin: z.string().max(100, "LinkedIn muy largo").optional().or(z.literal("")),
-    whatsapp: z.string().max(20, "WhatsApp muy largo").optional().or(z.literal("")),
-    technical_specs: z.string().max(2000, "Especificaciones muy largas").optional().or(z.literal("")),
-    map_location: z.string().max(500, "Ubicación muy larga").optional().or(z.literal("")),
-  }).refine((data) => data.password === data.confirmPassword, {
-    message: "Las contraseñas no coinciden",
-    path: ["confirmPassword"],
-  });
+  const getValidationSchema = (profileType: string) => {
+    // Schema base común para todos
+    const baseSchema = z.object({
+      nombre: z.string().trim().min(1, "El nombre completo es requerido").max(100, "El nombre no puede exceder 100 caracteres"),
+      email: z.string().trim().email("Ingresa un email válido (ejemplo: usuario@dominio.com)").max(255, "El email es demasiado largo"),
+      telefono: z.string().trim().max(20, "El teléfono no puede exceder 20 caracteres").optional().or(z.literal("")),
+      pais: z.string().min(1, "Debes seleccionar un país").max(100),
+      provincia: z.string().max(100).optional().or(z.literal("")),
+      ciudad: z.string().min(1, "Debes seleccionar o ingresar una ciudad").max(100),
+      password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres para mayor seguridad").max(100, "La contraseña es demasiado larga"),
+      confirmPassword: z.string(),
+      avatar_url: z.string().min(1, "La foto de perfil es obligatoria. Por favor sube una imagen."),
+      bio: z.string().trim().min(10, "La biografía debe tener al menos 10 caracteres para dar una buena descripción").max(1000, "La biografía no puede exceder 1000 caracteres"),
+      instagram: z.string().max(100, "El usuario de Instagram es muy largo").optional().or(z.literal("")),
+      facebook: z.string().max(100, "El enlace de Facebook es muy largo").optional().or(z.literal("")),
+      linkedin: z.string().max(100, "El enlace de LinkedIn es muy largo").optional().or(z.literal("")),
+      whatsapp: z.string().max(20, "El número de WhatsApp es muy largo").optional().or(z.literal("")),
+    });
+
+    // Validaciones específicas por tipo de perfil
+    let profileSpecificSchema = {};
+
+    switch (profileType) {
+      case "agrupacion_musical":
+        profileSpecificSchema = {
+          genre: z.string().min(1, "Debes seleccionar el género musical de la banda"),
+          formation_date: z.string().optional().or(z.literal("")),
+          producer_instagram: z.string().max(100).optional().or(z.literal("")),
+          recorded_at: z.string().max(200, "El nombre del estudio/productor es muy largo").optional().or(z.literal("")),
+        };
+        break;
+
+      case "estudio_grabacion":
+        profileSpecificSchema = {
+          technical_specs: z.string().min(20, "Describe las especificaciones técnicas de tu estudio (mínimo 20 caracteres)").max(2000, "Las especificaciones técnicas son muy largas"),
+          map_location: z.string().max(500, "La ubicación del mapa es muy larga").optional().or(z.literal("")),
+        };
+        break;
+
+      case "sala_concierto":
+        profileSpecificSchema = {
+          venue_type: z.string().min(1, "Debes seleccionar el tipo de sala o venue"),
+          capacity: z.string().min(1, "Debes ingresar la capacidad de la sala").refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+            message: "La capacidad debe ser un número mayor a 0"
+          }),
+        };
+        break;
+
+      case "marketing_digital":
+        profileSpecificSchema = {
+          marketing_services: z.array(z.string()).min(1, "Debes seleccionar al menos un servicio que ofreces"),
+          specialties: z.string().max(200, "Las especialidades no pueden exceder 200 caracteres").optional().or(z.literal("")),
+          portfolio_url: z.string().max(255).refine((val) => {
+            if (!val) return true;
+            try {
+              new URL(val);
+              return true;
+            } catch {
+              return false;
+            }
+          }, { message: "Ingresa una URL válida para tu portafolio (ejemplo: https://tuportafolio.com)" }).optional().or(z.literal("")),
+        };
+        break;
+
+      case "musico":
+        profileSpecificSchema = {
+          instrument: z.string().min(1, "Debes seleccionar tu instrumento principal"),
+          genre: z.string().min(1, "Debes seleccionar tu género musical principal"),
+          experience_level: z.string().min(1, "Debes seleccionar tu nivel de experiencia"),
+          education: z.string().max(200, "La formación académica no puede exceder 200 caracteres").optional().or(z.literal("")),
+          available_for: z.string().max(300, "La descripción de disponibilidad es muy larga").optional().or(z.literal("")),
+        };
+        break;
+
+      case "sello_discografico":
+        profileSpecificSchema = {
+          display_name: z.string().trim().min(2, "El nombre del sello debe tener al menos 2 caracteres").max(100, "El nombre del sello es muy largo"),
+          label_genres: z.array(z.string()).min(1, "Debes seleccionar al menos un género musical que representa el sello"),
+          formation_date: z.string().optional().or(z.literal("")),
+          website: z.string().max(255).refine((val) => {
+            if (!val) return true;
+            try {
+              new URL(val);
+              return true;
+            } catch {
+              return false;
+            }
+          }, { message: "Ingresa una URL válida para el sitio web (ejemplo: https://tusello.com)" }).optional().or(z.literal("")),
+          services: z.string().max(500, "La descripción de servicios no puede exceder 500 caracteres").optional().or(z.literal("")),
+        };
+        break;
+
+      case "productor_artistico":
+      case "productor_audiovisual":
+      case "promotor_artistico":
+        // Para estos perfiles, la bio es suficiente
+        profileSpecificSchema = {};
+        break;
+
+      default:
+        profileSpecificSchema = {};
+    }
+
+    return baseSchema.extend(profileSpecificSchema).refine((data) => data.password === data.confirmPassword, {
+      message: "Las contraseñas no coinciden. Por favor verifica que ambas sean iguales.",
+      path: ["confirmPassword"],
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -185,14 +272,19 @@ const Asociate = () => {
 
     // Validate form data
     try {
-      registrationSchema.parse(formData);
+      const validationSchema = getValidationSchema(selectedProfile);
+      validationSchema.parse(formData);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        const firstError = error.errors[0];
         toast({
           title: "Error de validación",
-          description: error.errors[0].message,
+          description: firstError.message,
           variant: "destructive",
         });
+        
+        // Log all errors to console for debugging
+        console.error("Errores de validación:", error.errors);
         return;
       }
     }

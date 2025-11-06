@@ -20,12 +20,22 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
+interface ProfileOption {
+  id: string;
+  display_name: string;
+}
+
 const UploadContent = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [hasProfile, setHasProfile] = useState(false);
+  const [bands, setBands] = useState<ProfileOption[]>([]);
+  const [producers, setProducers] = useState<ProfileOption[]>([]);
+  const [studios, setStudios] = useState<ProfileOption[]>([]);
+  const [venues, setVenues] = useState<ProfileOption[]>([]);
+  const [promoters, setPromoters] = useState<ProfileOption[]>([]);
   const [formData, setFormData] = useState({
     content_type: "",
     title: "",
@@ -60,7 +70,55 @@ const UploadContent = () => {
 
   useEffect(() => {
     checkUserProfile();
+    loadProfiles();
   }, []);
+
+  const loadProfiles = async () => {
+    try {
+      // Cargar bandas
+      const { data: bandsData } = await supabase
+        .from('profile_details')
+        .select('id, display_name')
+        .eq('profile_type', 'agrupacion_musical')
+        .order('display_name');
+      
+      // Cargar productores artísticos
+      const { data: producersData } = await supabase
+        .from('profile_details')
+        .select('id, display_name')
+        .eq('profile_type', 'productor_artistico')
+        .order('display_name');
+      
+      // Cargar estudios de grabación
+      const { data: studiosData } = await supabase
+        .from('profile_details')
+        .select('id, display_name')
+        .eq('profile_type', 'estudio_grabacion')
+        .order('display_name');
+      
+      // Cargar salas/venues
+      const { data: venuesData } = await supabase
+        .from('profile_details')
+        .select('id, display_name')
+        .eq('profile_type', 'sala_concierto')
+        .order('display_name');
+      
+      // Cargar promotores artísticos
+      const { data: promotersData } = await supabase
+        .from('profile_details')
+        .select('id, display_name')
+        .eq('profile_type', 'promotor_artistico')
+        .order('display_name');
+      
+      setBands(bandsData || []);
+      setProducers(producersData || []);
+      setStudios(studiosData || []);
+      setVenues(venuesData || []);
+      setPromoters(promotersData || []);
+    } catch (error) {
+      console.error('Error loading profiles:', error);
+    }
+  };
 
   const checkUserProfile = async () => {
     try {
@@ -389,57 +447,97 @@ const UploadContent = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="band_name">Banda</Label>
-                        <Input
-                          id="band_name"
-                          name="band_name"
+                        <Select
                           value={formData.band_name}
-                          onChange={handleChange}
-                          placeholder="Nombre de la banda"
-                        />
+                          onValueChange={(value) => setFormData(prev => ({ ...prev, band_name: value }))}
+                        >
+                          <SelectTrigger className="bg-card">
+                            <SelectValue placeholder="Selecciona una banda" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-card border-border z-50">
+                            {bands.map((band) => (
+                              <SelectItem key={band.id} value={band.display_name}>
+                                {band.display_name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="producer_name">Productor Artístico</Label>
-                        <Input
-                          id="producer_name"
-                          name="producer_name"
+                        <Select
                           value={formData.producer_name}
-                          onChange={handleChange}
-                          placeholder="Nombre del productor"
-                        />
+                          onValueChange={(value) => setFormData(prev => ({ ...prev, producer_name: value }))}
+                        >
+                          <SelectTrigger className="bg-card">
+                            <SelectValue placeholder="Selecciona un productor" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-card border-border z-50">
+                            {producers.map((producer) => (
+                              <SelectItem key={producer.id} value={producer.display_name}>
+                                {producer.display_name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="recording_studio">Estudio de Grabación</Label>
-                        <Input
-                          id="recording_studio"
-                          name="recording_studio"
+                        <Select
                           value={formData.recording_studio}
-                          onChange={handleChange}
-                          placeholder="Nombre del estudio"
-                        />
+                          onValueChange={(value) => setFormData(prev => ({ ...prev, recording_studio: value }))}
+                        >
+                          <SelectTrigger className="bg-card">
+                            <SelectValue placeholder="Selecciona un estudio" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-card border-border z-50">
+                            {studios.map((studio) => (
+                              <SelectItem key={studio.id} value={studio.display_name}>
+                                {studio.display_name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="venue_name">Sala / Venue</Label>
-                        <Input
-                          id="venue_name"
-                          name="venue_name"
+                        <Select
                           value={formData.venue_name}
-                          onChange={handleChange}
-                          placeholder="Nombre de la sala"
-                        />
+                          onValueChange={(value) => setFormData(prev => ({ ...prev, venue_name: value }))}
+                        >
+                          <SelectTrigger className="bg-card">
+                            <SelectValue placeholder="Selecciona una sala" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-card border-border z-50">
+                            {venues.map((venue) => (
+                              <SelectItem key={venue.id} value={venue.display_name}>
+                                {venue.display_name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="promoter_name">Promotor Artístico</Label>
-                        <Input
-                          id="promoter_name"
-                          name="promoter_name"
+                        <Select
                           value={formData.promoter_name}
-                          onChange={handleChange}
-                          placeholder="Nombre del promotor"
-                        />
+                          onValueChange={(value) => setFormData(prev => ({ ...prev, promoter_name: value }))}
+                        >
+                          <SelectTrigger className="bg-card">
+                            <SelectValue placeholder="Selecciona un promotor" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-card border-border z-50">
+                            {promoters.map((promoter) => (
+                              <SelectItem key={promoter.id} value={promoter.display_name}>
+                                {promoter.display_name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </div>

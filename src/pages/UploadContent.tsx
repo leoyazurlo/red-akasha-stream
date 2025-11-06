@@ -318,7 +318,7 @@ const UploadContent = () => {
                   {formData.content_type !== 'podcast' && (
                     <div className="border-t pt-6 space-y-4">
                       <div>
-                        <h3 className="text-lg font-semibold mb-2">Video</h3>
+                        <h3 className="text-lg font-semibold mb-2 text-cyan-400">Video</h3>
                         <p className="text-sm text-muted-foreground mb-4">
                           Comparte tu video musical, video clip, documental o contenido audiovisual
                         </p>
@@ -340,7 +340,7 @@ const UploadContent = () => {
                   {formData.content_type !== 'podcast' && (
                     <div className="border-t pt-6 space-y-4">
                       <div>
-                        <h3 className="text-lg font-semibold mb-2">Fotografía</h3>
+                        <h3 className="text-lg font-semibold mb-2 text-cyan-400">Fotografía</h3>
                         <p className="text-sm text-muted-foreground mb-4">
                           Sube fotografías de conciertos, sesiones de grabación o material gráfico relacionado
                         </p>
@@ -364,7 +364,7 @@ const UploadContent = () => {
                   {formData.content_type === 'podcast' && (
                     <div className="border-t pt-6 space-y-4">
                       <div>
-                        <h3 className="text-lg font-semibold mb-2">Audio</h3>
+                        <h3 className="text-lg font-semibold mb-2 text-cyan-400">Audio</h3>
                         <p className="text-sm text-muted-foreground mb-4">
                           Comparte tu podcast sobre producción, marketing, derecho de autor y más
                         </p>

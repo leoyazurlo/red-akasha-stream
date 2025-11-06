@@ -22,6 +22,9 @@ import { VenueForm } from "@/components/profile-forms/VenueForm";
 import { ProducerForm } from "@/components/profile-forms/ProducerForm";
 import { PromoterForm } from "@/components/profile-forms/PromoterForm";
 import { BandForm } from "@/components/profile-forms/BandForm";
+import { MarketingDigitalForm } from "@/components/profile-forms/MarketingDigitalForm";
+import { MusicianForm } from "@/components/profile-forms/MusicianForm";
+import { RecordLabelForm } from "@/components/profile-forms/RecordLabelForm";
 import { z } from "zod";
 
 const argentinaProvincias = [
@@ -107,6 +110,19 @@ const Asociate = () => {
     formation_date: "",
     producer_instagram: "",
     recorded_at: "",
+    // Campos para Marketing Digital
+    marketing_services: [] as string[],
+    specialties: "",
+    portfolio_url: "",
+    // Campos para Músico
+    instrument: "",
+    experience_level: "",
+    education: "",
+    available_for: "",
+    // Campos para Sello Discográfico
+    label_genres: [] as string[],
+    website: "",
+    services: "",
   });
 
   const perfilOptions = [
@@ -279,6 +295,27 @@ const Asociate = () => {
         profileData.formation_date = formData.formation_date || null;
         profileData.producer_instagram = formData.producer_instagram || null;
         profileData.recorded_at = formData.recorded_at || null;
+      } else if (selectedProfile === "marketing_digital") {
+        profileData.technical_specs = JSON.stringify({
+          marketing_services: formData.marketing_services || [],
+          specialties: formData.specialties || null,
+          portfolio_url: formData.portfolio_url || null
+        });
+      } else if (selectedProfile === "musico") {
+        profileData.genre = formData.genre || null;
+        profileData.technical_specs = JSON.stringify({
+          instrument: formData.instrument || null,
+          experience_level: formData.experience_level || null,
+          education: formData.education || null,
+          available_for: formData.available_for || null
+        });
+      } else if (selectedProfile === "sello_discografico") {
+        profileData.formation_date = formData.formation_date || null;
+        profileData.technical_specs = JSON.stringify({
+          label_genres: formData.label_genres || [],
+          website: formData.website || null,
+          services: formData.services || null
+        });
       }
 
       // Paso 3: Guardar perfil en profile_details
@@ -415,6 +452,12 @@ const Asociate = () => {
         return <PromoterForm formData={formData} onChange={handleProfileFieldChange} />;
       case "agrupacion_musical":
         return <BandForm formData={formData} onChange={handleProfileFieldChange} />;
+      case "marketing_digital":
+        return <MarketingDigitalForm formData={formData} onChange={handleProfileFieldChange} />;
+      case "musico":
+        return <MusicianForm formData={formData} onChange={handleProfileFieldChange} />;
+      case "sello_discografico":
+        return <RecordLabelForm formData={formData} onChange={handleProfileFieldChange} />;
       default:
         return null;
     }

@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { Loader2, Trash2, Shield, User, Search, X } from "lucide-react";
+import { Loader2, Trash2, Shield, User, Search, X, CalendarIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuditLog } from "@/hooks/useAuditLog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { DateRange } from "react-day-picker";
+import { cn } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,12 +52,13 @@ export default function AdminUsers() {
   const [profileTypeFilter, setProfileTypeFilter] = useState<string>("all");
   const [countryFilter, setCountryFilter] = useState<string>("all");
   const [countries, setCountries] = useState<string[]>([]);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
   useEffect(() => {
     if (!authLoading && user && isAdmin) {
       loadUsers();
     }
-  }, [authLoading, user, isAdmin, searchQuery, profileTypeFilter, countryFilter]);
+  }, [authLoading, user, isAdmin, searchQuery, profileTypeFilter, countryFilter, dateRange]);
 
   const loadUsers = async () => {
     try {
@@ -74,6 +81,17 @@ export default function AdminUsers() {
       // Apply country filter
       if (countryFilter !== "all") {
         query = query.eq('pais', countryFilter);
+      }
+
+      // Apply date range filter
+      if (dateRange?.from) {
+        query = query.gte('created_at', dateRange.from.toISOString());
+      }
+      if (dateRange?.to) {
+        // Add one day to include the entire end date
+        const endDate = new Date(dateRange.to);
+        endDate.setDate(endDate.getDate() + 1);
+        query = query.lt('created_at', endDate.toISOString());
       }
 
       query = query.order('created_at', { ascending: false });
@@ -174,7 +192,7 @@ export default function AdminUsers() {
               {/* Filters Section */}
               <Card>
                 <CardContent className="pt-6">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {/* Search Input */}
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -226,10 +244,48 @@ export default function AdminUsers() {
                         ))}
                       </SelectContent>
                     </Select>
+
+                    {/* Date Range Filter */}
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "justify-start text-left font-normal",
+                            !dateRange && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {dateRange?.from ? (
+                            dateRange.to ? (
+                              <>
+                                {format(dateRange.from, "dd MMM yyyy", { locale: es })} -{" "}
+                                {format(dateRange.to, "dd MMM yyyy", { locale: es })}
+                              </>
+                            ) : (
+                              format(dateRange.from, "dd MMM yyyy", { locale: es })
+                            )
+                          ) : (
+                            <span>Fecha de registro</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="range"
+                          selected={dateRange}
+                          onSelect={setDateRange}
+                          numberOfMonths={2}
+                          locale={es}
+                          className={cn("p-3 pointer-events-auto")}
+                          disabled={(date) => date > new Date()}
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
 
                   {/* Active Filters Summary */}
-                  {(searchQuery || profileTypeFilter !== "all" || countryFilter !== "all") && (
+                  {(searchQuery || profileTypeFilter !== "all" || countryFilter !== "all" || dateRange) && (
                     <div className="flex items-center gap-2 mt-4 flex-wrap">
                       <span className="text-sm text-muted-foreground">Filtros activos:</span>
                       {searchQuery && (
@@ -259,6 +315,16 @@ export default function AdminUsers() {
                           />
                         </Badge>
                       )}
+                      {dateRange && (
+                        <Badge variant="secondary" className="gap-1">
+                          Fecha: {dateRange.from && format(dateRange.from, "dd/MM/yy", { locale: es })}
+                          {dateRange.to && ` - ${format(dateRange.to, "dd/MM/yy", { locale: es })}`}
+                          <X 
+                            className="h-3 w-3 cursor-pointer" 
+                            onClick={() => setDateRange(undefined)}
+                          />
+                        </Badge>
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"
@@ -266,6 +332,7 @@ export default function AdminUsers() {
                           setSearchQuery("");
                           setProfileTypeFilter("all");
                           setCountryFilter("all");
+                          setDateRange(undefined);
                         }}
                       >
                         Limpiar todos

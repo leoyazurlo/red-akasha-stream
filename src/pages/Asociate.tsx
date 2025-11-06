@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Autocomplete } from "@/components/ui/autocomplete";
 import { MusicLoverForm } from "@/components/profile-forms/MusicLoverForm";
 import { RecordingStudioForm } from "@/components/profile-forms/RecordingStudioForm";
 import { VenueForm } from "@/components/profile-forms/VenueForm";
@@ -148,6 +149,19 @@ const Asociate = () => {
     "sello_discografico": "sello_discografico",
     "musico": "musico"
   };
+
+  // Preparar opciones de ciudades para autocompletado
+  const cityOptions = useMemo(() => {
+    if (!formData.pais) return [];
+    
+    if (formData.pais === "Argentina") {
+      const provincia = argentinaProvincias.find(p => p.name === formData.provincia);
+      return provincia?.cities.map(city => ({ value: city, label: city })) || [];
+    } else {
+      const country = latinAmericanCountries.find(c => c.name === formData.pais);
+      return country?.cities?.map(city => ({ value: city, label: city })) || [];
+    }
+  }, [formData.pais, formData.provincia]);
 
   const getValidationSchema = (profileType: string) => {
     // Schema base común para todos
@@ -722,33 +736,14 @@ const Asociate = () => {
                         {formData.pais && (formData.pais !== "Argentina" || formData.provincia) && (
                           <div className="space-y-2">
                             <Label htmlFor="ciudad">Ciudad *</Label>
-                            <Select
+                            <Autocomplete
+                              options={cityOptions}
                               value={formData.ciudad}
                               onValueChange={(value) => setFormData(prev => ({ ...prev, ciudad: value }))}
-                              required
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecciona tu ciudad" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {formData.pais === "Argentina" 
-                                  ? argentinaProvincias
-                                      .find(p => p.name === formData.provincia)
-                                      ?.cities.map((city) => (
-                                        <SelectItem key={city} value={city}>
-                                          {city}
-                                        </SelectItem>
-                                      ))
-                                  : latinAmericanCountries
-                                      .find(c => c.name === formData.pais)
-                                      ?.cities?.map((city) => (
-                                        <SelectItem key={city} value={city}>
-                                          {city}
-                                        </SelectItem>
-                                      ))
-                                }
-                              </SelectContent>
-                            </Select>
+                              placeholder="Busca o selecciona tu ciudad"
+                              searchPlaceholder="Escribe para buscar..."
+                              emptyMessage="No se encontró esa ciudad"
+                            />
                           </div>
                         )}
                       </div>

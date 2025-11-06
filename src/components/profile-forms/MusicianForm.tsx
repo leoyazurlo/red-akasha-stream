@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ImageUpload } from "@/components/ImageUpload";
+import { Autocomplete } from "@/components/ui/autocomplete";
 
 interface MusicianFormProps {
   formData: any;
@@ -10,19 +11,71 @@ interface MusicianFormProps {
 }
 
 const instruments = [
-  "Voz/Canto", "Guitarra", "Bajo", "Batería", "Piano", "Teclado", "Violín",
-  "Saxofón", "Trompeta", "Flauta", "Clarinete", "Percusión", "DJ/Productor",
-  "Sintetizador", "Acordeón", "Armónica", "Violonchelo", "Contrabajo",
-  "Trombón", "Charango", "Bombo", "Bandoneón", "Otros"
+  { value: "voz_canto", label: "Voz/Canto" },
+  { value: "guitarra", label: "Guitarra" },
+  { value: "bajo", label: "Bajo" },
+  { value: "bateria", label: "Batería" },
+  { value: "piano", label: "Piano" },
+  { value: "teclado", label: "Teclado" },
+  { value: "violin", label: "Violín" },
+  { value: "saxofon", label: "Saxofón" },
+  { value: "trompeta", label: "Trompeta" },
+  { value: "flauta", label: "Flauta" },
+  { value: "clarinete", label: "Clarinete" },
+  { value: "percusion", label: "Percusión" },
+  { value: "dj_productor", label: "DJ/Productor" },
+  { value: "sintetizador", label: "Sintetizador" },
+  { value: "acordeon", label: "Acordeón" },
+  { value: "armonica", label: "Armónica" },
+  { value: "violonchelo", label: "Violonchelo" },
+  { value: "contrabajo", label: "Contrabajo" },
+  { value: "trombon", label: "Trombón" },
+  { value: "charango", label: "Charango" },
+  { value: "bombo", label: "Bombo" },
+  { value: "bandoneon", label: "Bandoneón" },
+  { value: "ukulele", label: "Ukelele" },
+  { value: "mandolina", label: "Mandolina" },
+  { value: "arpa", label: "Arpa" },
+  { value: "otros", label: "Otros" },
 ];
 
 const musicGenres = [
-  "rock", "pop", "jazz", "blues", "reggae", "hip_hop", "rap",
-  "electronica", "house", "techno", "trance", "country", "folk",
-  "soul", "funk", "rnb", "metal", "punk", "ska", "clasica",
-  "opera", "flamenco", "tango", "salsa", "merengue", "cumbia",
-  "bachata", "kpop", "jpop", "andina", "celta", "gospel",
-  "arabe", "africana", "india"
+  { value: "rock", label: "Rock" },
+  { value: "pop", label: "Pop" },
+  { value: "jazz", label: "Jazz" },
+  { value: "blues", label: "Blues" },
+  { value: "reggae", label: "Reggae" },
+  { value: "hip_hop", label: "Hip Hop" },
+  { value: "rap", label: "Rap" },
+  { value: "electronica", label: "Electrónica" },
+  { value: "house", label: "House" },
+  { value: "techno", label: "Techno" },
+  { value: "trance", label: "Trance" },
+  { value: "country", label: "Country" },
+  { value: "folk", label: "Folk" },
+  { value: "soul", label: "Soul" },
+  { value: "funk", label: "Funk" },
+  { value: "rnb", label: "R&B" },
+  { value: "metal", label: "Metal" },
+  { value: "punk", label: "Punk" },
+  { value: "ska", label: "Ska" },
+  { value: "clasica", label: "Clásica" },
+  { value: "opera", label: "Ópera" },
+  { value: "flamenco", label: "Flamenco" },
+  { value: "tango", label: "Tango" },
+  { value: "salsa", label: "Salsa" },
+  { value: "merengue", label: "Merengue" },
+  { value: "cumbia", label: "Cumbia" },
+  { value: "bachata", label: "Bachata" },
+  { value: "reggaeton", label: "Reggaeton" },
+  { value: "kpop", label: "K-Pop" },
+  { value: "jpop", label: "J-Pop" },
+  { value: "andina", label: "Andina" },
+  { value: "celta", label: "Celta" },
+  { value: "gospel", label: "Gospel" },
+  { value: "arabe", label: "Árabe" },
+  { value: "africana", label: "Africana" },
+  { value: "india", label: "India" },
 ];
 
 const experienceLevels = [
@@ -46,40 +99,26 @@ export const MusicianForm = ({ formData, onChange }: MusicianFormProps) => {
 
       <div className="space-y-2">
         <Label htmlFor="instrument">Instrumento principal *</Label>
-        <Select
+        <Autocomplete
+          options={instruments}
           value={formData.instrument || ""}
           onValueChange={(value) => onChange("instrument", value)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Selecciona tu instrumento" />
-          </SelectTrigger>
-          <SelectContent>
-            {instruments.map((instrument) => (
-              <SelectItem key={instrument} value={instrument.toLowerCase().replace(/\//g, '_')}>
-                {instrument}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          placeholder="Selecciona tu instrumento"
+          searchPlaceholder="Buscar instrumento..."
+          emptyMessage="No se encontró ese instrumento"
+        />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="genre">Género musical *</Label>
-        <Select
+        <Autocomplete
+          options={musicGenres}
           value={formData.genre || ""}
           onValueChange={(value) => onChange("genre", value)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Selecciona el género" />
-          </SelectTrigger>
-          <SelectContent>
-            {musicGenres.map((genre) => (
-              <SelectItem key={genre} value={genre}>
-                {genre.charAt(0).toUpperCase() + genre.slice(1).replace('_', ' ')}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          placeholder="Selecciona el género musical"
+          searchPlaceholder="Buscar género..."
+          emptyMessage="No se encontró ese género"
+        />
       </div>
 
       <div className="space-y-2">

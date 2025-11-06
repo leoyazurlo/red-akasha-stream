@@ -1,7 +1,6 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ImageUpload } from "@/components/ImageUpload";
+import { Autocomplete } from "@/components/ui/autocomplete";
 
 interface BandFormProps {
   formData: any;
@@ -16,12 +16,42 @@ interface BandFormProps {
 }
 
 const musicGenres = [
-  "rock", "pop", "jazz", "blues", "reggae", "hip_hop", "rap",
-  "electronica", "house", "techno", "trance", "country", "folk",
-  "soul", "funk", "rnb", "metal", "punk", "ska", "clasica",
-  "opera", "flamenco", "tango", "salsa", "merengue", "cumbia",
-  "bachata", "kpop", "jpop", "andina", "celta", "gospel",
-  "arabe", "africana", "india"
+  { value: "rock", label: "Rock" },
+  { value: "pop", label: "Pop" },
+  { value: "jazz", label: "Jazz" },
+  { value: "blues", label: "Blues" },
+  { value: "reggae", label: "Reggae" },
+  { value: "hip_hop", label: "Hip Hop" },
+  { value: "rap", label: "Rap" },
+  { value: "electronica", label: "Electrónica" },
+  { value: "house", label: "House" },
+  { value: "techno", label: "Techno" },
+  { value: "trance", label: "Trance" },
+  { value: "country", label: "Country" },
+  { value: "folk", label: "Folk" },
+  { value: "soul", label: "Soul" },
+  { value: "funk", label: "Funk" },
+  { value: "rnb", label: "R&B" },
+  { value: "metal", label: "Metal" },
+  { value: "punk", label: "Punk" },
+  { value: "ska", label: "Ska" },
+  { value: "clasica", label: "Clásica" },
+  { value: "opera", label: "Ópera" },
+  { value: "flamenco", label: "Flamenco" },
+  { value: "tango", label: "Tango" },
+  { value: "salsa", label: "Salsa" },
+  { value: "merengue", label: "Merengue" },
+  { value: "cumbia", label: "Cumbia" },
+  { value: "bachata", label: "Bachata" },
+  { value: "reggaeton", label: "Reggaeton" },
+  { value: "kpop", label: "K-Pop" },
+  { value: "jpop", label: "J-Pop" },
+  { value: "andina", label: "Andina" },
+  { value: "celta", label: "Celta" },
+  { value: "gospel", label: "Gospel" },
+  { value: "arabe", label: "Árabe" },
+  { value: "africana", label: "Africana" },
+  { value: "india", label: "India" },
 ];
 
 export const BandForm = ({ formData, onChange }: BandFormProps) => {
@@ -38,21 +68,14 @@ export const BandForm = ({ formData, onChange }: BandFormProps) => {
 
       <div className="space-y-2">
         <Label htmlFor="genre">Estilo musical *</Label>
-        <Select
+        <Autocomplete
+          options={musicGenres}
           value={formData.genre || ""}
           onValueChange={(value) => onChange("genre", value)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Selecciona el género" />
-          </SelectTrigger>
-          <SelectContent>
-            {musicGenres.map((genre) => (
-              <SelectItem key={genre} value={genre}>
-                {genre.charAt(0).toUpperCase() + genre.slice(1).replace('_', ' ')}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          placeholder="Selecciona el género musical"
+          searchPlaceholder="Buscar género..."
+          emptyMessage="No se encontró ese género"
+        />
       </div>
 
       <div className="space-y-2">

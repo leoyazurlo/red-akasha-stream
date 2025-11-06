@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { Loader2, Trash2, Shield, User, Search, X, CalendarIcon, Download } from "lucide-react";
+import { Loader2, Trash2, Shield, User, Search, X, CalendarIcon, Download, FileText, MessageSquare, Video } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -40,6 +40,13 @@ interface UserProfile {
   pais: string;
   created_at: string;
   provincia?: string;
+  updated_at?: string;
+}
+
+interface UserStats {
+  content_count: number;
+  forum_posts_count: number;
+  forum_threads_count: number;
 }
 
 export default function AdminUsers() {
@@ -57,6 +64,7 @@ export default function AdminUsers() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+  const [userStats, setUserStats] = useState<Map<string, UserStats>>(new Map());
 
   useEffect(() => {
     if (!authLoading && user && isAdmin) {
@@ -109,7 +117,55 @@ export default function AdminUsers() {
       if (data) {
         const uniqueCountries = [...new Set(data.map(u => u.pais))].filter(Boolean).sort();
         setCountries(uniqueCountries as string[]);
+        
+        // Load stats for all users
+        await loadUserStats(data.map(u => u.user_id));
       }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudieron cargar los usuarios",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadUserStats = async (userIds: string[]) => {
+    if (userIds.length === 0) return;
+
+    try {
+      // Get content uploads count
+      const { data: contentData } = await supabase
+        .from('content_uploads')
+        .select('uploader_id')
+        .in('uploader_id', userIds);
+
+      // Get forum posts count
+      const { data: postsData } = await supabase
+        .from('forum_posts')
+        .select('author_id')
+        .in('author_id', userIds);
+
+      // Get forum threads count
+      const { data: threadsData } = await supabase
+        .from('forum_threads')
+        .select('author_id')
+        .in('author_id', userIds);
+
+      // Aggregate stats
+      const statsMap = new Map<string, UserStats>();
+      
+      userIds.forEach(userId => {
+        statsMap.set(userId, {
+          content_count: contentData?.filter(c => c.uploader_id === userId).length || 0,
+          forum_posts_count: postsData?.filter(p => p.author_id === userId).length || 0,
+          forum_threads_count: threadsData?.filter(t => t.author_id === userId).length || 0,
+        });
+      });
+
+      setUserStats(statsMap);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -586,7 +642,7 @@ export default function AdminUsers() {
                       </Badge>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-4">
                         <div>
                           <span className="text-muted-foreground">Email:</span>
                           <p className="font-medium">{userProfile.email}</p>
@@ -598,11 +654,57 @@ export default function AdminUsers() {
                         <div>
                           <span className="text-muted-foreground">Registrado:</span>
                           <p className="font-medium">
-                            {new Date(userProfile.created_at).toLocaleDateString()}
+                            {format(new Date(userProfile.created_at), "dd/MM/yyyy", { locale: es })}
                           </p>
                         </div>
                       </div>
-                      <div className="flex gap-2 mt-4">
+
+                      {/* Activity Statistics */}
+                      {userStats.has(userProfile.user_id) && (
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4 p-3 bg-muted/50 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <Video className="h-4 w-4 text-primary" />
+                            <div>
+                              <p className="text-xs text-muted-foreground">Contenido</p>
+                              <p className="text-sm font-semibold">
+                                {userStats.get(userProfile.user_id)?.content_count || 0}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-primary" />
+                            <div>
+                              <p className="text-xs text-muted-foreground">Hilos creados</p>
+                              <p className="text-sm font-semibold">
+                                {userStats.get(userProfile.user_id)?.forum_threads_count || 0}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <MessageSquare className="h-4 w-4 text-primary" />
+                            <div>
+                              <p className="text-xs text-muted-foreground">Posts foro</p>
+                              <p className="text-sm font-semibold">
+                                {userStats.get(userProfile.user_id)?.forum_posts_count || 0}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <CalendarIcon className="h-4 w-4 text-primary" />
+                            <div>
+                              <p className="text-xs text-muted-foreground">Última actividad</p>
+                              <p className="text-sm font-semibold">
+                                {userProfile.updated_at 
+                                  ? format(new Date(userProfile.updated_at), "dd/MM/yyyy", { locale: es })
+                                  : "N/A"
+                                }
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex gap-2">
                         <Button
                           variant="destructive"
                           size="sm"

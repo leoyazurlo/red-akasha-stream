@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { Loader2, Trash2, Shield, User, Search, X, CalendarIcon, Download, FileText, MessageSquare, Video, ArrowUpDown } from "lucide-react";
+import { Loader2, Trash2, Shield, User, Search, X, CalendarIcon, Download, FileText, MessageSquare, Video, ArrowUpDown, UserCog } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,6 +49,14 @@ interface UserStats {
   forum_threads_count: number;
 }
 
+interface UserRole {
+  id: string;
+  user_id: string;
+  role: string;
+  assigned_at: string;
+  assigned_by: string | null;
+}
+
 export default function AdminUsers() {
   const { user, loading: authLoading, isAdmin } = useAuth(true);
   const { toast } = useToast();
@@ -66,6 +74,7 @@ export default function AdminUsers() {
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
   const [userStats, setUserStats] = useState<Map<string, UserStats>>(new Map());
   const [sortBy, setSortBy] = useState<string>("recent");
+  const [userRoles, setUserRoles] = useState<Map<string, UserRole>>(new Map());
 
   useEffect(() => {
     if (!authLoading && user && isAdmin) {
@@ -119,8 +128,11 @@ export default function AdminUsers() {
         const uniqueCountries = [...new Set(data.map(u => u.pais))].filter(Boolean).sort();
         setCountries(uniqueCountries as string[]);
         
-        // Load stats for all users
-        await loadUserStats(data.map(u => u.user_id));
+        // Load stats and roles for all users
+        await Promise.all([
+          loadUserStats(data.map(u => u.user_id)),
+          loadUserRoles(data.map(u => u.user_id))
+        ]);
       }
     } catch (error: any) {
       toast({
@@ -175,6 +187,86 @@ export default function AdminUsers() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadUserRoles = async (userIds: string[]) => {
+    if (userIds.length === 0) return;
+
+    try {
+      const { data: rolesData, error } = await supabase
+        .from('user_roles')
+        .select('*')
+        .in('user_id', userIds);
+
+      if (error) throw error;
+
+      const rolesMap = new Map<string, UserRole>();
+      rolesData?.forEach(role => {
+        rolesMap.set(role.user_id, role);
+      });
+
+      setUserRoles(rolesMap);
+    } catch (error: any) {
+      console.error('Error loading user roles:', error);
+    }
+  };
+
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    try {
+      const currentRole = userRoles.get(userId);
+
+      if (currentRole) {
+        // Update existing role
+        const { error } = await supabase
+          .from('user_roles')
+          .update({ 
+            role: newRole as any,
+            assigned_by: user?.id 
+          })
+          .eq('id', currentRole.id);
+
+        if (error) throw error;
+      } else {
+        // Insert new role
+        const { error } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: userId,
+            role: newRole as any,
+            assigned_by: user?.id
+          } as any);
+
+        if (error) throw error;
+      }
+
+      // Log the action
+      const userProfile = users.find(u => u.user_id === userId);
+      await logAction({
+        action: 'update_user_role',
+        targetType: 'user',
+        targetId: userId,
+        details: {
+          display_name: userProfile?.display_name,
+          email: userProfile?.email,
+          previous_role: currentRole?.role || 'user',
+          new_role: newRole,
+        },
+      });
+
+      toast({
+        title: "Rol actualizado",
+        description: `El rol del usuario ha sido cambiado a ${newRole}`,
+      });
+
+      // Reload roles
+      await loadUserRoles(users.map(u => u.user_id));
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo actualizar el rol",
+        variant: "destructive",
+      });
     }
   };
 
@@ -755,6 +847,51 @@ export default function AdminUsers() {
                           </div>
                         </div>
                       )}
+
+                      {/* Role Assignment */}
+                      <div className="mb-4 p-3 border rounded-lg bg-card">
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-2">
+                            <UserCog className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm font-medium">Rol del usuario:</span>
+                          </div>
+                          <Select 
+                            value={userRoles.get(userProfile.user_id)?.role || 'user'}
+                            onValueChange={(value) => 
+                              handleRoleChange(userProfile.user_id, value)
+                            }
+                          >
+                            <SelectTrigger className="w-[180px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="user">
+                                <div className="flex items-center gap-2">
+                                  <User className="h-4 w-4" />
+                                  Usuario
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="moderator">
+                                <div className="flex items-center gap-2">
+                                  <Shield className="h-4 w-4" />
+                                  Moderador
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="admin">
+                                <div className="flex items-center gap-2">
+                                  <Shield className="h-4 w-4 text-primary" />
+                                  Administrador
+                                </div>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        {userRoles.get(userProfile.user_id)?.assigned_at && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Asignado: {format(new Date(userRoles.get(userProfile.user_id)!.assigned_at), "dd/MM/yyyy HH:mm", { locale: es })}
+                          </p>
+                        )}
+                      </div>
 
                       <div className="flex gap-2">
                         <Button

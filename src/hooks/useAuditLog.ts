@@ -7,7 +7,8 @@ export type AuditAction =
   | 'approve_request'
   | 'reject_request'
   | 'update_content'
-  | 'delete_content';
+  | 'delete_content'
+  | 'update_user_role';
 
 export type TargetType = 'content' | 'user' | 'registration_request';
 

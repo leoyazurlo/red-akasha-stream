@@ -110,12 +110,15 @@ const Asociate = () => {
   });
 
   const perfilOptions = [
-    { value: "productor_audiovisual", label: "Productor Audiovisual" },
-    { value: "productor_artistico", label: "Productor artístico" },
+    { value: "agrupacion_musical", label: "Agrupación musical" },
     { value: "estudio_grabacion", label: "Estudio de grabación" },
+    { value: "marketing_digital", label: "Marketing digital" },
+    { value: "musico", label: "Músico" },
+    { value: "productor_artistico", label: "Productor artístico" },
+    { value: "productor_audiovisual", label: "Productor audiovisual" },
     { value: "promotor_artistico", label: "Promotor artístico" },
     { value: "sala_concierto", label: "Sala de concierto" },
-    { value: "agrupacion_musical", label: "Agrupación musical" }
+    { value: "sello_discografico", label: "Sello discográfico" }
   ];
 
   const profileTypeMap: Record<string, string> = {
@@ -124,7 +127,10 @@ const Asociate = () => {
     "estudio_grabacion": "estudio_grabacion",
     "promotor_artistico": "promotor_artistico",
     "sala_concierto": "sala_concierto",
-    "agrupacion_musical": "agrupacion_musical"
+    "agrupacion_musical": "agrupacion_musical",
+    "marketing_digital": "marketing_digital",
+    "sello_discografico": "sello_discografico",
+    "musico": "musico"
   };
 
   const registrationSchema = z.object({

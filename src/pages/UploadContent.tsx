@@ -36,6 +36,11 @@ const UploadContent = () => {
   const [studios, setStudios] = useState<ProfileOption[]>([]);
   const [venues, setVenues] = useState<ProfileOption[]>([]);
   const [promoters, setPromoters] = useState<ProfileOption[]>([]);
+  const [showOtherBand, setShowOtherBand] = useState(false);
+  const [showOtherProducer, setShowOtherProducer] = useState(false);
+  const [showOtherStudio, setShowOtherStudio] = useState(false);
+  const [showOtherVenue, setShowOtherVenue] = useState(false);
+  const [showOtherPromoter, setShowOtherPromoter] = useState(false);
   const [formData, setFormData] = useState({
     content_type: "",
     title: "",
@@ -447,97 +452,252 @@ const UploadContent = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="band_name">Banda</Label>
-                        <Select
-                          value={formData.band_name}
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, band_name: value }))}
-                        >
-                          <SelectTrigger className="bg-card">
-                            <SelectValue placeholder="Selecciona una banda" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-card border-border z-50">
-                            {bands.map((band) => (
-                              <SelectItem key={band.id} value={band.display_name}>
-                                {band.display_name}
+                        {!showOtherBand ? (
+                          <Select
+                            value={formData.band_name}
+                            onValueChange={(value) => {
+                              if (value === "__otro__") {
+                                setShowOtherBand(true);
+                                setFormData(prev => ({ ...prev, band_name: "" }));
+                              } else {
+                                setFormData(prev => ({ ...prev, band_name: value }));
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="bg-card">
+                              <SelectValue placeholder="Selecciona una banda" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-card border-border z-50">
+                              {bands.map((band) => (
+                                <SelectItem key={band.id} value={band.display_name}>
+                                  {band.display_name}
+                                </SelectItem>
+                              ))}
+                              <SelectItem value="__otro__" className="text-cyan-400 font-semibold">
+                                ✏️ Otro (escribir manualmente)
                               </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <div className="flex gap-2">
+                            <Input
+                              value={formData.band_name}
+                              onChange={(e) => setFormData(prev => ({ ...prev, band_name: e.target.value }))}
+                              placeholder="Escribe el nombre de la banda"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setShowOtherBand(false);
+                                setFormData(prev => ({ ...prev, band_name: "" }));
+                              }}
+                            >
+                              ✕
+                            </Button>
+                          </div>
+                        )}
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="producer_name">Productor Artístico</Label>
-                        <Select
-                          value={formData.producer_name}
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, producer_name: value }))}
-                        >
-                          <SelectTrigger className="bg-card">
-                            <SelectValue placeholder="Selecciona un productor" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-card border-border z-50">
-                            {producers.map((producer) => (
-                              <SelectItem key={producer.id} value={producer.display_name}>
-                                {producer.display_name}
+                        {!showOtherProducer ? (
+                          <Select
+                            value={formData.producer_name}
+                            onValueChange={(value) => {
+                              if (value === "__otro__") {
+                                setShowOtherProducer(true);
+                                setFormData(prev => ({ ...prev, producer_name: "" }));
+                              } else {
+                                setFormData(prev => ({ ...prev, producer_name: value }));
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="bg-card">
+                              <SelectValue placeholder="Selecciona un productor" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-card border-border z-50">
+                              {producers.map((producer) => (
+                                <SelectItem key={producer.id} value={producer.display_name}>
+                                  {producer.display_name}
+                                </SelectItem>
+                              ))}
+                              <SelectItem value="__otro__" className="text-cyan-400 font-semibold">
+                                ✏️ Otro (escribir manualmente)
                               </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <div className="flex gap-2">
+                            <Input
+                              value={formData.producer_name}
+                              onChange={(e) => setFormData(prev => ({ ...prev, producer_name: e.target.value }))}
+                              placeholder="Escribe el nombre del productor"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setShowOtherProducer(false);
+                                setFormData(prev => ({ ...prev, producer_name: "" }));
+                              }}
+                            >
+                              ✕
+                            </Button>
+                          </div>
+                        )}
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="recording_studio">Estudio de Grabación</Label>
-                        <Select
-                          value={formData.recording_studio}
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, recording_studio: value }))}
-                        >
-                          <SelectTrigger className="bg-card">
-                            <SelectValue placeholder="Selecciona un estudio" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-card border-border z-50">
-                            {studios.map((studio) => (
-                              <SelectItem key={studio.id} value={studio.display_name}>
-                                {studio.display_name}
+                        {!showOtherStudio ? (
+                          <Select
+                            value={formData.recording_studio}
+                            onValueChange={(value) => {
+                              if (value === "__otro__") {
+                                setShowOtherStudio(true);
+                                setFormData(prev => ({ ...prev, recording_studio: "" }));
+                              } else {
+                                setFormData(prev => ({ ...prev, recording_studio: value }));
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="bg-card">
+                              <SelectValue placeholder="Selecciona un estudio" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-card border-border z-50">
+                              {studios.map((studio) => (
+                                <SelectItem key={studio.id} value={studio.display_name}>
+                                  {studio.display_name}
+                                </SelectItem>
+                              ))}
+                              <SelectItem value="__otro__" className="text-cyan-400 font-semibold">
+                                ✏️ Otro (escribir manualmente)
                               </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <div className="flex gap-2">
+                            <Input
+                              value={formData.recording_studio}
+                              onChange={(e) => setFormData(prev => ({ ...prev, recording_studio: e.target.value }))}
+                              placeholder="Escribe el nombre del estudio"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setShowOtherStudio(false);
+                                setFormData(prev => ({ ...prev, recording_studio: "" }));
+                              }}
+                            >
+                              ✕
+                            </Button>
+                          </div>
+                        )}
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="venue_name">Sala / Venue</Label>
-                        <Select
-                          value={formData.venue_name}
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, venue_name: value }))}
-                        >
-                          <SelectTrigger className="bg-card">
-                            <SelectValue placeholder="Selecciona una sala" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-card border-border z-50">
-                            {venues.map((venue) => (
-                              <SelectItem key={venue.id} value={venue.display_name}>
-                                {venue.display_name}
+                        {!showOtherVenue ? (
+                          <Select
+                            value={formData.venue_name}
+                            onValueChange={(value) => {
+                              if (value === "__otro__") {
+                                setShowOtherVenue(true);
+                                setFormData(prev => ({ ...prev, venue_name: "" }));
+                              } else {
+                                setFormData(prev => ({ ...prev, venue_name: value }));
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="bg-card">
+                              <SelectValue placeholder="Selecciona una sala" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-card border-border z-50">
+                              {venues.map((venue) => (
+                                <SelectItem key={venue.id} value={venue.display_name}>
+                                  {venue.display_name}
+                                </SelectItem>
+                              ))}
+                              <SelectItem value="__otro__" className="text-cyan-400 font-semibold">
+                                ✏️ Otro (escribir manualmente)
                               </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <div className="flex gap-2">
+                            <Input
+                              value={formData.venue_name}
+                              onChange={(e) => setFormData(prev => ({ ...prev, venue_name: e.target.value }))}
+                              placeholder="Escribe el nombre de la sala"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setShowOtherVenue(false);
+                                setFormData(prev => ({ ...prev, venue_name: "" }));
+                              }}
+                            >
+                              ✕
+                            </Button>
+                          </div>
+                        )}
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="promoter_name">Promotor Artístico</Label>
-                        <Select
-                          value={formData.promoter_name}
-                          onValueChange={(value) => setFormData(prev => ({ ...prev, promoter_name: value }))}
-                        >
-                          <SelectTrigger className="bg-card">
-                            <SelectValue placeholder="Selecciona un promotor" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-card border-border z-50">
-                            {promoters.map((promoter) => (
-                              <SelectItem key={promoter.id} value={promoter.display_name}>
-                                {promoter.display_name}
+                        {!showOtherPromoter ? (
+                          <Select
+                            value={formData.promoter_name}
+                            onValueChange={(value) => {
+                              if (value === "__otro__") {
+                                setShowOtherPromoter(true);
+                                setFormData(prev => ({ ...prev, promoter_name: "" }));
+                              } else {
+                                setFormData(prev => ({ ...prev, promoter_name: value }));
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="bg-card">
+                              <SelectValue placeholder="Selecciona un promotor" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-card border-border z-50">
+                              {promoters.map((promoter) => (
+                                <SelectItem key={promoter.id} value={promoter.display_name}>
+                                  {promoter.display_name}
+                                </SelectItem>
+                              ))}
+                              <SelectItem value="__otro__" className="text-cyan-400 font-semibold">
+                                ✏️ Otro (escribir manualmente)
                               </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <div className="flex gap-2">
+                            <Input
+                              value={formData.promoter_name}
+                              onChange={(e) => setFormData(prev => ({ ...prev, promoter_name: e.target.value }))}
+                              placeholder="Escribe el nombre del promotor"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setShowOtherPromoter(false);
+                                setFormData(prev => ({ ...prev, promoter_name: "" }));
+                              }}
+                            >
+                              ✕
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

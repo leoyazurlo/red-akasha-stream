@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { Loader2, Trash2, Shield, User, Search, X, CalendarIcon, Download, FileText, MessageSquare, Video } from "lucide-react";
+import { Loader2, Trash2, Shield, User, Search, X, CalendarIcon, Download, FileText, MessageSquare, Video, ArrowUpDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,6 +65,7 @@ export default function AdminUsers() {
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
   const [userStats, setUserStats] = useState<Map<string, UserStats>>(new Map());
+  const [sortBy, setSortBy] = useState<string>("recent");
 
   useEffect(() => {
     if (!authLoading && user && isAdmin) {
@@ -365,6 +366,43 @@ export default function AdminUsers() {
     }
   };
 
+  const getSortedUsers = () => {
+    const usersArray = [...users];
+    
+    switch (sortBy) {
+      case "most_active":
+        return usersArray.sort((a, b) => {
+          const dateA = a.updated_at ? new Date(a.updated_at).getTime() : 0;
+          const dateB = b.updated_at ? new Date(b.updated_at).getTime() : 0;
+          return dateB - dateA;
+        });
+      
+      case "most_content":
+        return usersArray.sort((a, b) => {
+          const countA = userStats.get(a.user_id)?.content_count || 0;
+          const countB = userStats.get(b.user_id)?.content_count || 0;
+          return countB - countA;
+        });
+      
+      case "most_forum":
+        return usersArray.sort((a, b) => {
+          const statsA = userStats.get(a.user_id);
+          const statsB = userStats.get(b.user_id);
+          const forumCountA = (statsA?.forum_posts_count || 0) + (statsA?.forum_threads_count || 0);
+          const forumCountB = (statsB?.forum_posts_count || 0) + (statsB?.forum_threads_count || 0);
+          return forumCountB - forumCountA;
+        });
+      
+      case "recent":
+      default:
+        return usersArray.sort((a, b) => {
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
+    }
+  };
+
+  const sortedUsers = getSortedUsers();
+
   if (authLoading || loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -603,8 +641,22 @@ export default function AdminUsers() {
 
               {/* Results Count and Select All */}
               <div className="flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">
-                  Mostrando {users.length} usuario{users.length !== 1 ? 's' : ''}
+                <div className="flex items-center gap-4">
+                  <div className="text-sm text-muted-foreground">
+                    Mostrando {users.length} usuario{users.length !== 1 ? 's' : ''}
+                  </div>
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="w-[220px]">
+                      <ArrowUpDown className="h-4 w-4 mr-2" />
+                      <SelectValue placeholder="Ordenar por" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="recent">Más recientes</SelectItem>
+                      <SelectItem value="most_active">Más activos</SelectItem>
+                      <SelectItem value="most_content">Más contenido</SelectItem>
+                      <SelectItem value="most_forum">Más participación foro</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 {users.length > 0 && (
                   <div className="flex items-center gap-2">
@@ -624,7 +676,7 @@ export default function AdminUsers() {
               </div>
 
               <div className="grid gap-4">
-                {users.map((userProfile) => (
+                {sortedUsers.map((userProfile) => (
                   <Card key={userProfile.id} className={selectedUsers.has(userProfile.id) ? "border-primary" : ""}>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <div className="flex items-center gap-3">

@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { Loader2, Trash2, Shield, User, Search, X, CalendarIcon, Download, FileText, MessageSquare, Video, ArrowUpDown, UserCog } from "lucide-react";
+import { Loader2, Trash2, Shield, User, Search, X, CalendarIcon, Download, FileText, MessageSquare, Video, ArrowUpDown, UserCog, Ban, AlertTriangle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +29,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { z } from "zod";
 
 interface UserProfile {
   id: string;
@@ -57,6 +67,33 @@ interface UserRole {
   assigned_by: string | null;
 }
 
+interface UserSanction {
+  id: string;
+  user_id: string;
+  sanction_type: string;
+  reason: string;
+  duration_days: number | null;
+  start_date: string;
+  end_date: string | null;
+  is_active: boolean;
+  sanctioned_by: string;
+  created_at: string;
+}
+
+const sanctionSchema = z.object({
+  sanctionType: z.enum(['warning', 'temporary_ban', 'permanent_ban'], {
+    required_error: "Debe seleccionar un tipo de sanción",
+  }),
+  reason: z.string()
+    .trim()
+    .min(10, { message: "La razón debe tener al menos 10 caracteres" })
+    .max(500, { message: "La razón no puede exceder 500 caracteres" }),
+  duration: z.number()
+    .min(1, { message: "La duración debe ser al menos 1 día" })
+    .max(365, { message: "La duración no puede exceder 365 días" })
+    .optional(),
+});
+
 export default function AdminUsers() {
   const { user, loading: authLoading, isAdmin } = useAuth(true);
   const { toast } = useToast();
@@ -75,6 +112,13 @@ export default function AdminUsers() {
   const [userStats, setUserStats] = useState<Map<string, UserStats>>(new Map());
   const [sortBy, setSortBy] = useState<string>("recent");
   const [userRoles, setUserRoles] = useState<Map<string, UserRole>>(new Map());
+  const [userSanctions, setUserSanctions] = useState<Map<string, UserSanction[]>>(new Map());
+  const [sanctionDialogOpen, setSanctionDialogOpen] = useState(false);
+  const [selectedUserForSanction, setSelectedUserForSanction] = useState<UserProfile | null>(null);
+  const [sanctionType, setSanctionType] = useState<string>("");
+  const [sanctionReason, setSanctionReason] = useState("");
+  const [sanctionDuration, setSanctionDuration] = useState<number>(7);
+  const [sanctionErrors, setSanctionErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!authLoading && user && isAdmin) {
@@ -128,10 +172,11 @@ export default function AdminUsers() {
         const uniqueCountries = [...new Set(data.map(u => u.pais))].filter(Boolean).sort();
         setCountries(uniqueCountries as string[]);
         
-        // Load stats and roles for all users
+        // Load stats, roles and sanctions for all users
         await Promise.all([
           loadUserStats(data.map(u => u.user_id)),
-          loadUserRoles(data.map(u => u.user_id))
+          loadUserRoles(data.map(u => u.user_id)),
+          loadUserSanctions(data.map(u => u.user_id))
         ]);
       }
     } catch (error: any) {
@@ -209,6 +254,151 @@ export default function AdminUsers() {
       setUserRoles(rolesMap);
     } catch (error: any) {
       console.error('Error loading user roles:', error);
+    }
+  };
+
+  const loadUserSanctions = async (userIds: string[]) => {
+    if (userIds.length === 0) return;
+
+    try {
+      const { data: sanctionsData, error } = await supabase
+        .from('forum_sanctions')
+        .select('*')
+        .in('user_id', userIds)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const sanctionsMap = new Map<string, UserSanction[]>();
+      sanctionsData?.forEach(sanction => {
+        const existing = sanctionsMap.get(sanction.user_id) || [];
+        sanctionsMap.set(sanction.user_id, [...existing, sanction]);
+      });
+
+      setUserSanctions(sanctionsMap);
+    } catch (error: any) {
+      console.error('Error loading user sanctions:', error);
+    }
+  };
+
+  const handleAddSanction = async () => {
+    // Reset errors
+    setSanctionErrors({});
+
+    // Validate input
+    try {
+      const validationData = {
+        sanctionType,
+        reason: sanctionReason,
+        duration: sanctionType === 'temporary_ban' ? sanctionDuration : undefined,
+      };
+
+      sanctionSchema.parse(validationData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errors: Record<string, string> = {};
+        error.errors.forEach((err) => {
+          if (err.path[0]) {
+            errors[err.path[0] as string] = err.message;
+          }
+        });
+        setSanctionErrors(errors);
+        return;
+      }
+    }
+
+    if (!selectedUserForSanction || !sanctionType || !sanctionReason.trim()) {
+      toast({
+        title: "Error",
+        description: "Por favor complete todos los campos requeridos",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const startDate = new Date();
+      let endDate = null;
+      let durationDays = null;
+
+      if (sanctionType === 'temporary_ban') {
+        durationDays = sanctionDuration;
+        endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + durationDays);
+      }
+
+      const { error } = await supabase
+        .from('forum_sanctions')
+        .insert({
+          user_id: selectedUserForSanction.user_id,
+          sanction_type: sanctionType as any,
+          reason: sanctionReason.trim(),
+          duration_days: durationDays,
+          start_date: startDate.toISOString(),
+          end_date: endDate?.toISOString() || null,
+          is_active: true,
+          sanctioned_by: user?.id,
+        } as any);
+
+      if (error) throw error;
+
+      // Log the action
+      await logAction({
+        action: 'update_user_role',
+        targetType: 'user',
+        targetId: selectedUserForSanction.user_id,
+        details: {
+          display_name: selectedUserForSanction.display_name,
+          email: selectedUserForSanction.email,
+          sanction_type: sanctionType,
+          reason: sanctionReason,
+          duration_days: durationDays,
+        },
+      });
+
+      toast({
+        title: "Sanción aplicada",
+        description: `Se ha aplicado la sanción al usuario ${selectedUserForSanction.display_name}`,
+      });
+
+      // Reset form and reload
+      setSanctionDialogOpen(false);
+      setSelectedUserForSanction(null);
+      setSanctionType("");
+      setSanctionReason("");
+      setSanctionDuration(7);
+      setSanctionErrors({});
+      await loadUserSanctions(users.map(u => u.user_id));
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo aplicar la sanción",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRevokeSanction = async (sanctionId: string, userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('forum_sanctions')
+        .update({ is_active: false })
+        .eq('id', sanctionId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sanción revocada",
+        description: "La sanción ha sido revocada exitosamente",
+      });
+
+      await loadUserSanctions(users.map(u => u.user_id));
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo revocar la sanción",
+        variant: "destructive",
+      });
     }
   };
 
@@ -890,10 +1080,60 @@ export default function AdminUsers() {
                           <p className="text-xs text-muted-foreground mt-2">
                             Asignado: {format(new Date(userRoles.get(userProfile.user_id)!.assigned_at), "dd/MM/yyyy HH:mm", { locale: es })}
                           </p>
-                        )}
+                      )}
                       </div>
 
+                      {/* Sanctions Display */}
+                      {userSanctions.get(userProfile.user_id)?.some(s => s.is_active) && (
+                        <div className="mb-4 p-3 border border-destructive/50 rounded-lg bg-destructive/5">
+                          <div className="flex items-center gap-2 mb-2">
+                            <AlertTriangle className="h-4 w-4 text-destructive" />
+                            <span className="text-sm font-semibold text-destructive">Sanciones Activas</span>
+                          </div>
+                          {userSanctions.get(userProfile.user_id)
+                            ?.filter(s => s.is_active)
+                            .map(sanction => (
+                              <div key={sanction.id} className="mb-2 last:mb-0 p-2 bg-background rounded border">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="flex-1">
+                                    <Badge variant="destructive" className="mb-1">
+                                      {sanction.sanction_type === 'warning' && 'Advertencia'}
+                                      {sanction.sanction_type === 'temporary_ban' && 'Suspensión Temporal'}
+                                      {sanction.sanction_type === 'permanent_ban' && 'Suspensión Permanente'}
+                                    </Badge>
+                                    <p className="text-xs text-muted-foreground mt-1">{sanction.reason}</p>
+                                    {sanction.end_date && (
+                                      <p className="text-xs text-muted-foreground mt-1">
+                                        Expira: {format(new Date(sanction.end_date), "dd/MM/yyyy HH:mm", { locale: es })}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleRevokeSanction(sanction.id, userProfile.user_id)}
+                                  >
+                                    Revocar
+                                  </Button>
+                                </div>
+                              </div>
+                            ))
+                          }
+                        </div>
+                      )}
+
                       <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedUserForSanction(userProfile);
+                            setSanctionDialogOpen(true);
+                          }}
+                        >
+                          <Ban className="h-4 w-4 mr-2" />
+                          Sancionar
+                        </Button>
                         <Button
                           variant="destructive"
                           size="sm"
@@ -956,6 +1196,102 @@ export default function AdminUsers() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={sanctionDialogOpen} onOpenChange={setSanctionDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Aplicar Sanción</DialogTitle>
+            <DialogDescription>
+              Aplica una sanción a {selectedUserForSanction?.display_name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Tipo de Sanción</label>
+              <Select value={sanctionType} onValueChange={setSanctionType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar tipo de sanción" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="warning">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                      Advertencia
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="temporary_ban">
+                    <div className="flex items-center gap-2">
+                      <Ban className="h-4 w-4 text-orange-500" />
+                      Suspensión Temporal
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="permanent_ban">
+                    <div className="flex items-center gap-2">
+                      <Ban className="h-4 w-4 text-destructive" />
+                      Suspensión Permanente
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              {sanctionErrors.sanctionType && (
+                <p className="text-xs text-destructive">{sanctionErrors.sanctionType}</p>
+              )}
+            </div>
+
+            {sanctionType === 'temporary_ban' && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Duración (días)</label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="365"
+                  value={sanctionDuration}
+                  onChange={(e) => setSanctionDuration(parseInt(e.target.value) || 1)}
+                />
+                {sanctionErrors.duration && (
+                  <p className="text-xs text-destructive">{sanctionErrors.duration}</p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Expira: {format(new Date(Date.now() + sanctionDuration * 24 * 60 * 60 * 1000), "dd/MM/yyyy HH:mm", { locale: es })}
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Razón de la Sanción</label>
+              <Textarea
+                placeholder="Explique la razón de la sanción (mínimo 10 caracteres)..."
+                value={sanctionReason}
+                onChange={(e) => setSanctionReason(e.target.value)}
+                rows={4}
+                maxLength={500}
+                className={sanctionErrors.reason ? "border-destructive" : ""}
+              />
+              {sanctionErrors.reason && (
+                <p className="text-xs text-destructive">{sanctionErrors.reason}</p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                {sanctionReason.length}/500 caracteres
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setSanctionDialogOpen(false);
+              setSelectedUserForSanction(null);
+              setSanctionType("");
+              setSanctionReason("");
+              setSanctionDuration(7);
+              setSanctionErrors({});
+            }}>
+              Cancelar
+            </Button>
+            <Button onClick={handleAddSanction} variant="destructive">
+              Aplicar Sanción
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   );
 }

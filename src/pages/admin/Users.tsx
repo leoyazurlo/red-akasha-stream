@@ -18,6 +18,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -54,6 +55,8 @@ export default function AdminUsers() {
   const [countryFilter, setCountryFilter] = useState<string>("all");
   const [countries, setCountries] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && user && isAdmin) {
@@ -159,11 +162,13 @@ export default function AdminUsers() {
     }
   };
 
-  const exportToCSV = () => {
-    if (users.length === 0) {
+  const exportToCSV = (usersToExport?: UserProfile[]) => {
+    const dataToExport = usersToExport || users;
+    
+    if (dataToExport.length === 0) {
       toast({
         title: "No hay datos",
-        description: "No hay usuarios para exportar con los filtros actuales",
+        description: "No hay usuarios para exportar",
         variant: "destructive",
       });
       return;
@@ -181,7 +186,7 @@ export default function AdminUsers() {
     ];
 
     // Convert users to CSV rows
-    const rows = users.map(user => [
+    const rows = dataToExport.map(user => [
       user.display_name,
       user.email || "",
       user.profile_type.replace(/_/g, ' '),
@@ -208,6 +213,9 @@ export default function AdminUsers() {
     const timestamp = format(new Date(), "yyyy-MM-dd_HH-mm");
     let filename = `usuarios_${timestamp}`;
     
+    if (usersToExport) {
+      filename += "_seleccionados";
+    }
     if (profileTypeFilter !== "all") {
       filename += `_${profileTypeFilter}`;
     }
@@ -227,8 +235,78 @@ export default function AdminUsers() {
 
     toast({
       title: "Exportación exitosa",
-      description: `Se exportaron ${users.length} usuario${users.length !== 1 ? 's' : ''} a CSV`,
+      description: `Se exportaron ${dataToExport.length} usuario${dataToExport.length !== 1 ? 's' : ''} a CSV`,
     });
+  };
+
+  const toggleUserSelection = (userId: string) => {
+    const newSelection = new Set(selectedUsers);
+    if (newSelection.has(userId)) {
+      newSelection.delete(userId);
+    } else {
+      newSelection.add(userId);
+    }
+    setSelectedUsers(newSelection);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedUsers.size === users.length) {
+      setSelectedUsers(new Set());
+    } else {
+      setSelectedUsers(new Set(users.map(u => u.id)));
+    }
+  };
+
+  const exportSelectedUsers = () => {
+    const selectedUserData = users.filter(u => selectedUsers.has(u.id));
+    exportToCSV(selectedUserData);
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedUsers.size === 0) return;
+
+    try {
+      const selectedUserIds = Array.from(selectedUsers);
+      const usersToDelete = users.filter(u => selectedUsers.has(u.id));
+
+      // Delete profiles
+      const { error: profileError } = await supabase
+        .from('profile_details')
+        .delete()
+        .in('id', selectedUserIds);
+
+      if (profileError) throw profileError;
+
+      // Log each deletion
+      for (const user of usersToDelete) {
+        await logAction({
+          action: 'delete_user',
+          targetType: 'user',
+          targetId: user.user_id,
+          details: {
+            display_name: user.display_name,
+            email: user.email,
+            profile_type: user.profile_type,
+            bulk_operation: true,
+          },
+        });
+      }
+      
+      toast({
+        title: "Usuarios eliminados",
+        description: `Se eliminaron ${selectedUsers.size} usuario${selectedUsers.size !== 1 ? 's' : ''} exitosamente`,
+      });
+
+      setBulkDeleteDialogOpen(false);
+      setSelectedUsers(new Set());
+      loadUsers();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudieron eliminar los usuarios",
+        variant: "destructive",
+      });
+    }
   };
 
   if (authLoading || loading) {
@@ -263,7 +341,7 @@ export default function AdminUsers() {
                   </p>
                 </div>
                 <Button
-                  onClick={exportToCSV}
+                  onClick={() => exportToCSV()}
                   variant="outline"
                   className="gap-2"
                   disabled={users.length === 0}
@@ -426,19 +504,83 @@ export default function AdminUsers() {
                 </CardContent>
               </Card>
 
-              {/* Results Count */}
-              <div className="text-sm text-muted-foreground">
-                Mostrando {users.length} usuario{users.length !== 1 ? 's' : ''}
+              {/* Bulk Actions Bar */}
+              {selectedUsers.size > 0 && (
+                <Card className="border-primary">
+                  <CardContent className="py-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <Badge variant="secondary" className="text-base px-3 py-1">
+                          {selectedUsers.size} usuario{selectedUsers.size !== 1 ? 's' : ''} seleccionado{selectedUsers.size !== 1 ? 's' : ''}
+                        </Badge>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedUsers(new Set())}
+                        >
+                          <X className="h-4 w-4 mr-2" />
+                          Cancelar selección
+                        </Button>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={exportSelectedUsers}
+                          className="gap-2"
+                        >
+                          <Download className="h-4 w-4" />
+                          Exportar seleccionados
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          onClick={() => setBulkDeleteDialogOpen(true)}
+                          className="gap-2"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Eliminar seleccionados
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Results Count and Select All */}
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-muted-foreground">
+                  Mostrando {users.length} usuario{users.length !== 1 ? 's' : ''}
+                </div>
+                {users.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="select-all"
+                      checked={selectedUsers.size === users.length && users.length > 0}
+                      onCheckedChange={toggleSelectAll}
+                    />
+                    <label
+                      htmlFor="select-all"
+                      className="text-sm font-medium cursor-pointer"
+                    >
+                      Seleccionar todos
+                    </label>
+                  </div>
+                )}
               </div>
 
               <div className="grid gap-4">
                 {users.map((userProfile) => (
-                  <Card key={userProfile.id}>
+                  <Card key={userProfile.id} className={selectedUsers.has(userProfile.id) ? "border-primary" : ""}>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-base font-medium flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        {userProfile.display_name}
-                      </CardTitle>
+                      <div className="flex items-center gap-3">
+                        <Checkbox
+                          checked={selectedUsers.has(userProfile.id)}
+                          onCheckedChange={() => toggleUserSelection(userProfile.id)}
+                        />
+                        <CardTitle className="text-base font-medium flex items-center gap-2">
+                          <User className="h-4 w-4" />
+                          {userProfile.display_name}
+                        </CardTitle>
+                      </div>
                       <Badge variant="outline">
                         {userProfile.profile_type.replace('_', ' ')}
                       </Badge>
@@ -501,6 +643,24 @@ export default function AdminUsers() {
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteUser} className="bg-destructive text-destructive-foreground">
               Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar {selectedUsers.size} usuario{selectedUsers.size !== 1 ? 's' : ''}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará permanentemente {selectedUsers.size} perfil{selectedUsers.size !== 1 ? 'es' : ''} de usuario.
+              Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive text-destructive-foreground">
+              Eliminar {selectedUsers.size} usuario{selectedUsers.size !== 1 ? 's' : ''}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

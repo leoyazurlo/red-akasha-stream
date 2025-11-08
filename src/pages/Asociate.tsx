@@ -576,37 +576,59 @@ const Asociate = () => {
       <Header />
       
       <main className="relative pt-24 pb-16">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 max-w-4xl">
+          {/* Hero Section */}
+          <div className="text-center mb-12 animate-fade-in">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-primary-glow to-accent bg-clip-text text-transparent">
+              Inscripción Asociados
+            </h1>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Únete a nuestra comunidad creativa. Colabora, conecta y crece junto a otros profesionales.
+            </p>
+          </div>
+
           {/* Registration Form */}
-          <div className="max-w-2xl mx-auto">
-            <Card className="border-border bg-card/50 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="text-2xl text-primary">Inscripción Asociados</CardTitle>
-                <CardDescription>
-                  En esta plataforma vas a poder colaborar y relacionarte con otros asociados, de los cuales esperamos que interactúes. Asociarte es sin costo, la base de datos tiene que ser un valor para todos, reconocernos.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+          <Card className="border border-border/50 bg-gradient-card backdrop-blur-xl shadow-elegant hover:shadow-glow transition-all duration-500 animate-scale-in">
+            <CardHeader className="space-y-3 pb-6">
+              <div className="w-16 h-1 bg-gradient-primary rounded-full mx-auto"></div>
+              <CardTitle className="text-2xl md:text-3xl text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Comienza Tu Registro
+              </CardTitle>
+              <CardDescription className="text-center text-base">
+                Completa el formulario para formar parte de Red Akasha
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
                 {submitted ? (
-                  <div className="text-center py-8 animate-fade-in">
-                    <CheckCircle2 className="w-16 h-16 text-primary mx-auto mb-4" />
-                    <h3 className="text-2xl font-semibold mb-2">¡Gracias por tu interés!</h3>
+                  <div className="text-center py-12 animate-scale-in">
+                    <div className="relative inline-block mb-6">
+                      <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse-glow"></div>
+                      <CheckCircle2 className="w-20 h-20 text-primary mx-auto relative" />
+                    </div>
+                    <h3 className="text-3xl font-bold mb-3 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                      ¡Bienvenido a Red Akasha!
+                    </h3>
+                    <p className="text-muted-foreground text-lg">Tu registro se ha completado exitosamente</p>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="profileType">Selecciona tu perfil *</Label>
+                  <form onSubmit={handleSubmit} className="space-y-8">
+                    {/* Profile Type Selection */}
+                    <div className="space-y-3 p-6 rounded-xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all duration-300">
+                      <Label htmlFor="profileType" className="text-base font-semibold flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                        Selecciona tu perfil *
+                      </Label>
                       <Select
                         value={selectedProfile}
                         onValueChange={(value) => setSelectedProfile(value)}
                         required
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="h-12 text-base hover:border-primary/50 transition-colors">
                           <SelectValue placeholder="¿Cuál es tu perfil?" />
                         </SelectTrigger>
                         <SelectContent>
                           {perfilOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
+                            <SelectItem key={option.value} value={option.value} className="text-base">
                               {option.label}
                             </SelectItem>
                           ))}
@@ -615,18 +637,24 @@ const Asociate = () => {
                     </div>
 
                     {selectedProfile && (
-                      <div className="border-t pt-6">
-                        <h3 className="text-lg font-semibold mb-4">Foto de perfil</h3>
+                      <div className="border-t border-border/50 pt-8 animate-fade-in">
+                        <div className="flex items-center gap-3 mb-6">
+                          <div className="w-1 h-6 bg-gradient-primary rounded-full"></div>
+                          <h3 className="text-xl font-semibold">Foto de perfil</h3>
+                        </div>
                         {renderProfileForm()}
                       </div>
                     )}
 
-                    <div className="border-t pt-6">
-                      <h3 className="text-lg font-semibold mb-4">Datos personales</h3>
+                    <div className="border-t border-border/50 pt-8">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="w-1 h-6 bg-gradient-primary rounded-full"></div>
+                        <h3 className="text-xl font-semibold">Datos personales</h3>
+                      </div>
                       
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="nombre">Nombre Completo *</Label>
+                       <div className="grid gap-6 md:grid-cols-2">
+                        <div className="space-y-2 md:col-span-2">
+                          <Label htmlFor="nombre" className="text-sm font-medium">Nombre Completo *</Label>
                           <Input
                             id="nombre"
                             name="nombre"
@@ -634,11 +662,12 @@ const Asociate = () => {
                             value={formData.nombre}
                             onChange={handleChange}
                             placeholder="Tu nombre completo"
+                            className="h-11 hover:border-primary/50 focus:border-primary transition-colors"
                           />
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="email">Email *</Label>
+                          <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
                           <Input
                             id="email"
                             name="email"
@@ -647,11 +676,12 @@ const Asociate = () => {
                             value={formData.email}
                             onChange={handleChange}
                             placeholder="tu@email.com"
+                            className="h-11 hover:border-primary/50 focus:border-primary transition-colors"
                           />
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="telefono">Teléfono</Label>
+                          <Label htmlFor="telefono" className="text-sm font-medium">Teléfono</Label>
                           <Input
                             id="telefono"
                             name="telefono"
@@ -659,11 +689,12 @@ const Asociate = () => {
                             value={formData.telefono}
                             onChange={handleChange}
                             placeholder="+54 9 11 1234-5678"
+                            className="h-11 hover:border-primary/50 focus:border-primary transition-colors"
                           />
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="password">Contraseña *</Label>
+                          <Label htmlFor="password" className="text-sm font-medium">Contraseña *</Label>
                           <Input
                             id="password"
                             name="password"
@@ -672,11 +703,12 @@ const Asociate = () => {
                             value={formData.password}
                             onChange={handleChange}
                             placeholder="Mínimo 6 caracteres"
+                            className="h-11 hover:border-primary/50 focus:border-primary transition-colors"
                           />
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="confirmPassword">Confirmar Contraseña *</Label>
+                          <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirmar Contraseña *</Label>
                           <Input
                             id="confirmPassword"
                             name="confirmPassword"
@@ -685,17 +717,18 @@ const Asociate = () => {
                             value={formData.confirmPassword}
                             onChange={handleChange}
                             placeholder="Repite tu contraseña"
+                            className="h-11 hover:border-primary/50 focus:border-primary transition-colors"
                           />
                         </div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="pais">País *</Label>
+                        <div className="space-y-2 md:col-span-2">
+                          <Label htmlFor="pais" className="text-sm font-medium">País *</Label>
                           <Select
                             value={formData.pais}
                             onValueChange={(value) => setFormData(prev => ({ ...prev, pais: value, provincia: "", ciudad: "" }))}
                             required
                           >
-                            <SelectTrigger>
+                            <SelectTrigger className="h-11 hover:border-primary/50 transition-colors">
                               <SelectValue placeholder="Selecciona tu país" />
                             </SelectTrigger>
                             <SelectContent>
@@ -712,14 +745,14 @@ const Asociate = () => {
                         </div>
 
                         {formData.pais === "Argentina" && (
-                          <div className="space-y-2">
-                            <Label htmlFor="provincia">Provincia *</Label>
+                          <div className="space-y-2 md:col-span-2 animate-fade-in">
+                            <Label htmlFor="provincia" className="text-sm font-medium">Provincia *</Label>
                             <Select
                               value={formData.provincia}
                               onValueChange={(value) => setFormData(prev => ({ ...prev, provincia: value, ciudad: "" }))}
                               required
                             >
-                              <SelectTrigger>
+                              <SelectTrigger className="h-11 hover:border-primary/50 transition-colors">
                                 <SelectValue placeholder="Selecciona tu provincia" />
                               </SelectTrigger>
                               <SelectContent>
@@ -734,8 +767,8 @@ const Asociate = () => {
                         )}
 
                         {formData.pais && (formData.pais !== "Argentina" || formData.provincia) && (
-                          <div className="space-y-2">
-                            <Label htmlFor="ciudad">Ciudad *</Label>
+                          <div className="space-y-2 md:col-span-2 animate-fade-in">
+                            <Label htmlFor="ciudad" className="text-sm font-medium">Ciudad *</Label>
                             <Autocomplete
                               options={cityOptions}
                               value={formData.ciudad}
@@ -743,6 +776,7 @@ const Asociate = () => {
                               placeholder="Busca o selecciona tu ciudad"
                               searchPlaceholder="Escribe para buscar..."
                               emptyMessage="No se encontró esa ciudad"
+                              className="hover:border-primary/50 transition-colors"
                             />
                           </div>
                         )}
@@ -750,16 +784,19 @@ const Asociate = () => {
                     </div>
 
                     {selectedProfile && (
-                      <div className="border-t pt-6">
-                        <h3 className="text-lg font-semibold mb-4">Multimedia (Opcional)</h3>
-                        <p className="text-sm text-muted-foreground mb-4">
-                          Puedes subir videos, imágenes y audios para tu ficha técnica
+                      <div className="border-t border-border/50 pt-8 animate-fade-in">
+                        <div className="flex items-center gap-3 mb-6">
+                          <div className="w-1 h-6 bg-gradient-primary rounded-full"></div>
+                          <h3 className="text-xl font-semibold">Multimedia (Opcional)</h3>
+                        </div>
+                        <p className="text-muted-foreground mb-6">
+                          Sube videos, imágenes y audios para enriquecer tu perfil
                         </p>
                         
                         {/* Upload Videos */}
-                        <div className="space-y-2 mb-4">
-                          <Label className="flex items-center gap-2">
-                            <Video className="w-4 h-4" />
+                        <div className="space-y-3 mb-6 p-4 rounded-xl bg-muted/20 border border-border/50">
+                          <Label className="flex items-center gap-2 text-base font-medium">
+                            <Video className="w-5 h-5 text-primary" />
                             Videos
                           </Label>
                           <Input
@@ -770,16 +807,17 @@ const Asociate = () => {
                               const files = Array.from(e.target.files || []);
                               setUploadedVideos(prev => [...prev, ...files]);
                             }}
+                            className="hover:border-primary/50 transition-colors"
                           />
                           {uploadedVideos.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mt-2">
+                            <div className="flex flex-wrap gap-2 mt-3">
                               {uploadedVideos.map((file, idx) => (
-                                <div key={idx} className="flex items-center gap-2 bg-secondary px-3 py-1 rounded-md">
+                                <div key={idx} className="flex items-center gap-2 bg-secondary/50 border border-border/50 px-3 py-2 rounded-lg hover:border-primary/30 transition-colors">
                                   <span className="text-sm">{file.name}</span>
                                   <button
                                     type="button"
                                     onClick={() => setUploadedVideos(prev => prev.filter((_, i) => i !== idx))}
-                                    className="text-destructive"
+                                    className="text-destructive hover:scale-110 transition-transform"
                                   >
                                     <X className="w-4 h-4" />
                                   </button>
@@ -790,9 +828,9 @@ const Asociate = () => {
                         </div>
 
                         {/* Upload Images */}
-                        <div className="space-y-2 mb-4">
-                          <Label className="flex items-center gap-2">
-                            <ImageIcon className="w-4 h-4" />
+                        <div className="space-y-3 mb-6 p-4 rounded-xl bg-muted/20 border border-border/50">
+                          <Label className="flex items-center gap-2 text-base font-medium">
+                            <ImageIcon className="w-5 h-5 text-primary" />
                             Imágenes
                           </Label>
                           <Input
@@ -803,16 +841,17 @@ const Asociate = () => {
                               const files = Array.from(e.target.files || []);
                               setUploadedImages(prev => [...prev, ...files]);
                             }}
+                            className="hover:border-primary/50 transition-colors"
                           />
                           {uploadedImages.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mt-2">
+                            <div className="flex flex-wrap gap-2 mt-3">
                               {uploadedImages.map((file, idx) => (
-                                <div key={idx} className="flex items-center gap-2 bg-secondary px-3 py-1 rounded-md">
+                                <div key={idx} className="flex items-center gap-2 bg-secondary/50 border border-border/50 px-3 py-2 rounded-lg hover:border-primary/30 transition-colors">
                                   <span className="text-sm">{file.name}</span>
                                   <button
                                     type="button"
                                     onClick={() => setUploadedImages(prev => prev.filter((_, i) => i !== idx))}
-                                    className="text-destructive"
+                                    className="text-destructive hover:scale-110 transition-transform"
                                   >
                                     <X className="w-4 h-4" />
                                   </button>
@@ -823,9 +862,9 @@ const Asociate = () => {
                         </div>
 
                         {/* Upload Audio */}
-                        <div className="space-y-2 mb-4">
-                          <Label className="flex items-center gap-2">
-                            <Music className="w-4 h-4" />
+                        <div className="space-y-3 p-4 rounded-xl bg-muted/20 border border-border/50">
+                          <Label className="flex items-center gap-2 text-base font-medium">
+                            <Music className="w-5 h-5 text-primary" />
                             Audio (Playlist)
                           </Label>
                           <Input
@@ -836,16 +875,17 @@ const Asociate = () => {
                               const files = Array.from(e.target.files || []);
                               setUploadedAudios(prev => [...prev, ...files]);
                             }}
+                            className="hover:border-primary/50 transition-colors"
                           />
                           {uploadedAudios.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mt-2">
+                            <div className="flex flex-wrap gap-2 mt-3">
                               {uploadedAudios.map((file, idx) => (
-                                <div key={idx} className="flex items-center gap-2 bg-secondary px-3 py-1 rounded-md">
+                                <div key={idx} className="flex items-center gap-2 bg-secondary/50 border border-border/50 px-3 py-2 rounded-lg hover:border-primary/30 transition-colors">
                                   <span className="text-sm">{file.name}</span>
                                   <button
                                     type="button"
                                     onClick={() => setUploadedAudios(prev => prev.filter((_, i) => i !== idx))}
-                                    className="text-destructive"
+                                    className="text-destructive hover:scale-110 transition-transform"
                                   >
                                     <X className="w-4 h-4" />
                                   </button>
@@ -859,13 +899,12 @@ const Asociate = () => {
 
                     <Button 
                       type="submit" 
-                      className="w-full" 
-                      size="lg"
+                      className="w-full h-12 text-base font-semibold bg-gradient-primary hover:shadow-glow transition-all duration-300 hover:scale-[1.02]" 
                       disabled={loading}
                     >
                       {loading ? (
                         <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                           Enviando...
                         </>
                       ) : (
@@ -876,7 +915,6 @@ const Asociate = () => {
                 )}
               </CardContent>
             </Card>
-          </div>
         </div>
       </main>
 

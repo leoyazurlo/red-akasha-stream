@@ -8,48 +8,51 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 220 20% 8%;
-    --foreground: 180 100% 98%;
+    --background: 240 15% 6%;
+    --foreground: 240 10% 95%;
 
-    --card: 220 18% 12%;
-    --card-foreground: 180 100% 98%;
+    --card: 240 12% 10%;
+    --card-foreground: 240 10% 95%;
 
-    --popover: 220 18% 10%;
-    --popover-foreground: 180 100% 98%;
+    --popover: 240 15% 8%;
+    --popover-foreground: 240 10% 95%;
 
-    --primary: 186 95% 46%;
-    --primary-foreground: 220 20% 8%;
-    --primary-glow: 186 95% 65%;
+    --primary: 270 70% 55%;
+    --primary-foreground: 240 10% 95%;
+    --primary-glow: 270 80% 70%;
 
-    --secondary: 220 18% 16%;
-    --secondary-foreground: 186 95% 80%;
+    --secondary: 240 12% 14%;
+    --secondary-foreground: 270 60% 80%;
 
-    --muted: 220 15% 18%;
-    --muted-foreground: 180 10% 60%;
+    --muted: 240 10% 16%;
+    --muted-foreground: 240 5% 55%;
 
-    --accent: 186 95% 46%;
-    --accent-foreground: 220 20% 8%;
+    --accent: 280 75% 60%;
+    --accent-foreground: 240 10% 95%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 240 10% 98%;
 
-    --border: 220 15% 20%;
-    --input: 220 15% 20%;
-    --ring: 186 95% 46%;
+    --border: 240 10% 18%;
+    --input: 240 10% 18%;
+    --ring: 270 70% 55%;
 
     --radius: 0.75rem;
 
-    /* Custom gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(186 95% 46%), hsl(186 95% 65%));
-    --gradient-dark: linear-gradient(180deg, hsl(220 20% 8%), hsl(220 18% 12%));
-    --gradient-glow: radial-gradient(circle at center, hsl(186 95% 46% / 0.15), transparent 70%);
+    /* Custom gradients - Mystic theme */
+    --gradient-primary: linear-gradient(135deg, hsl(270 70% 55%), hsl(280 75% 65%));
+    --gradient-dark: linear-gradient(180deg, hsl(240 15% 6%), hsl(240 12% 10%));
+    --gradient-glow: radial-gradient(circle at center, hsl(270 70% 55% / 0.12), transparent 70%);
+    --gradient-card: linear-gradient(145deg, hsl(240 12% 10% / 0.8), hsl(240 15% 8% / 0.6));
     
-    /* Shadows with cyan glow */
-    --shadow-glow: 0 0 40px hsl(186 95% 46% / 0.3);
-    --shadow-card: 0 8px 32px hsl(220 20% 4% / 0.4);
+    /* Shadows with mystical purple glow */
+    --shadow-glow: 0 0 40px hsl(270 70% 55% / 0.25);
+    --shadow-card: 0 8px 32px hsl(240 20% 3% / 0.5);
+    --shadow-elegant: 0 10px 40px hsl(270 70% 55% / 0.15);
     
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 }
 

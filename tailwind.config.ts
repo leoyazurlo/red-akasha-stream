@@ -57,10 +57,12 @@ export default {
         'gradient-primary': 'var(--gradient-primary)',
         'gradient-dark': 'var(--gradient-dark)',
         'gradient-glow': 'var(--gradient-glow)',
+        'gradient-card': 'var(--gradient-card)',
       },
       boxShadow: {
         'glow': 'var(--shadow-glow)',
         'card': 'var(--shadow-card)',
+        'elegant': 'var(--shadow-elegant)',
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -87,11 +89,11 @@ export default {
         "pulse-glow": {
           "0%, 100%": {
             opacity: "1",
-            boxShadow: "0 0 20px hsl(186 95% 46% / 0.3)",
+            boxShadow: "0 0 20px hsl(270 70% 55% / 0.25)",
           },
           "50%": {
-            opacity: "0.8",
-            boxShadow: "0 0 40px hsl(186 95% 46% / 0.6)",
+            opacity: "0.85",
+            boxShadow: "0 0 40px hsl(270 70% 55% / 0.45)",
           },
         },
         "slide-in": {

@@ -5,6 +5,7 @@ import { Heart, Star, Share2 } from "lucide-react";
 import { Artist, useFollowArtist, useIsFollowing, useRateArtist, useUserRating } from "@/hooks/useArtists";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface ArtistCardProps {
   artist: Artist;
@@ -13,6 +14,7 @@ interface ArtistCardProps {
 }
 
 export const ArtistCard = ({ artist, genreLabel, index }: ArtistCardProps) => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const { data: isFollowing = false } = useIsFollowing(artist.id);
   const { data: userRating } = useUserRating(artist.id);
@@ -50,6 +52,7 @@ export const ArtistCard = ({ artist, genreLabel, index }: ArtistCardProps) => {
     <Card
       className="group overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-elegant animate-scale-in hover-scale cursor-pointer"
       style={{ animationDelay: `${index * 75}ms` }}
+      onClick={() => navigate(`/artistas/${artist.id}`)}
     >
       <CardContent className="p-0">
         {/* Artist Image */}

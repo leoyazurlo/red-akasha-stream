@@ -4,10 +4,12 @@ import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Music, Mic, Film, FileVideo, Camera, Radio, Search } from "lucide-react";
+import { useArtists, ArtistType } from "@/hooks/useArtists";
+import { ArtistCard } from "@/components/artists/ArtistCard";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const genres = [
+const genres: Array<{ id: ArtistType | "all"; label: string; icon: any; color: string }> = [
   { 
     id: "all", 
     label: "Todos", 
@@ -15,111 +17,58 @@ const genres = [
     color: "bg-primary/10 hover:bg-primary/20" 
   },
   { 
-    id: "bands", 
+    id: "banda_musical", 
     label: "Bandas Musicales", 
     icon: Music, 
     color: "bg-purple-500/10 hover:bg-purple-500/20" 
   },
   { 
-    id: "podcasts", 
+    id: "musico_solista", 
+    label: "Músicos Solistas", 
+    icon: Music, 
+    color: "bg-indigo-500/10 hover:bg-indigo-500/20" 
+  },
+  { 
+    id: "podcast", 
     label: "Podcasts", 
     icon: Mic, 
     color: "bg-blue-500/10 hover:bg-blue-500/20" 
   },
   { 
-    id: "documentaries", 
+    id: "documental", 
     label: "Documentales", 
     icon: Film, 
     color: "bg-green-500/10 hover:bg-green-500/20" 
   },
   { 
-    id: "shorts", 
+    id: "cortometraje", 
     label: "Cortos", 
     icon: FileVideo, 
     color: "bg-orange-500/10 hover:bg-orange-500/20" 
   },
   { 
-    id: "photography", 
+    id: "fotografia", 
     label: "Fotografía", 
     icon: Camera, 
     color: "bg-pink-500/10 hover:bg-pink-500/20" 
   },
   { 
-    id: "radio", 
+    id: "radio_show", 
     label: "Radio Shows", 
     icon: Radio, 
     color: "bg-cyan-500/10 hover:bg-cyan-500/20" 
   },
 ];
 
-const artistsData = [
-  { 
-    id: 1, 
-    name: "Luna y Los Sueños", 
-    genre: "bands", 
-    image: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&h=400&fit=crop", 
-    followers: "15.2K" 
-  },
-  { 
-    id: 2, 
-    name: "Conversaciones Profundas", 
-    genre: "podcasts", 
-    image: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=400&h=400&fit=crop", 
-    followers: "8.5K" 
-  },
-  { 
-    id: 3, 
-    name: "Historias Visuales", 
-    genre: "documentaries", 
-    image: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=400&h=400&fit=crop", 
-    followers: "22.1K" 
-  },
-  { 
-    id: 4, 
-    name: "Micro Relatos", 
-    genre: "shorts", 
-    image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400&h=400&fit=crop", 
-    followers: "12.8K" 
-  },
-  { 
-    id: 5, 
-    name: "Miradas Urbanas", 
-    genre: "photography", 
-    image: "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=400&h=400&fit=crop", 
-    followers: "18.3K" 
-  },
-  { 
-    id: 6, 
-    name: "El Sonido Alternativo", 
-    genre: "bands", 
-    image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop", 
-    followers: "25.6K" 
-  },
-  { 
-    id: 7, 
-    name: "Voces del Aire", 
-    genre: "radio", 
-    image: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=400&fit=crop", 
-    followers: "9.2K" 
-  },
-  { 
-    id: 8, 
-    name: "Cultura Independiente", 
-    genre: "podcasts", 
-    image: "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=400&h=400&fit=crop", 
-    followers: "14.7K" 
-  },
-];
-
 const Artists = () => {
-  const [selectedGenre, setSelectedGenre] = useState("all");
+  const [selectedGenre, setSelectedGenre] = useState<ArtistType | "all">("all");
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredArtists = artistsData.filter((artist) => {
-    const matchesGenre = selectedGenre === "all" || artist.genre === selectedGenre;
-    const matchesSearch = artist.name.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesGenre && matchesSearch;
-  });
+  const { data: artists = [], isLoading } = useArtists(selectedGenre === "all" ? undefined : selectedGenre);
+
+  const filteredArtists = artists.filter((artist) =>
+    artist.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -187,7 +136,17 @@ const Artists = () => {
 
         {/* Artists Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 px-2">
-          {filteredArtists.length === 0 ? (
+          {isLoading ? (
+            Array.from({ length: 8 }).map((_, i) => (
+              <Card key={i} className="overflow-hidden">
+                <Skeleton className="aspect-square w-full" />
+                <div className="p-4 space-y-2">
+                  <Skeleton className="h-5 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              </Card>
+            ))
+          ) : filteredArtists.length === 0 ? (
             <div className="col-span-full text-center py-12 md:py-16">
               <p className="text-muted-foreground text-base md:text-lg px-4">
                 No se encontraron artistas con los filtros seleccionados
@@ -195,45 +154,12 @@ const Artists = () => {
             </div>
           ) : (
             filteredArtists.map((artist, index) => (
-              <Card
+              <ArtistCard
                 key={artist.id}
-                className="group overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-elegant animate-scale-in hover-scale cursor-pointer"
-                style={{ animationDelay: `${index * 75}ms` }}
-              >
-                <CardContent className="p-0">
-                  {/* Artist Image */}
-                  <div className="relative aspect-square overflow-hidden">
-                    <img
-                      src={artist.image}
-                      alt={`Foto de perfil de ${artist.name}`}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    
-                    {/* Genre Badge */}
-                    <Badge className="absolute top-2 md:top-3 right-2 md:right-3 bg-background/90 text-foreground hover:bg-background text-xs">
-                      {genres.find(g => g.id === artist.genre)?.label}
-                    </Badge>
-                  </div>
-
-                  {/* Artist Info */}
-                  <div className="p-3 md:p-4">
-                    <h3 className="font-semibold text-base md:text-lg mb-2 group-hover:text-primary transition-colors line-clamp-1">
-                      {artist.name}
-                    </h3>
-                    <div className="flex items-center justify-between text-xs md:text-sm text-muted-foreground gap-2">
-                      <span className="whitespace-nowrap">{artist.followers} seguidores</span>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="opacity-0 group-hover:opacity-100 transition-opacity text-xs md:text-sm h-7 md:h-8 px-2 md:px-3"
-                      >
-                        Ver Perfil
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                artist={artist}
+                genreLabel={genres.find(g => g.id === artist.artist_type)?.label || artist.artist_type}
+                index={index}
+              />
             ))
           )}
         </div>

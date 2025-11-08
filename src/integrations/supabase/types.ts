@@ -50,6 +50,145 @@ export type Database = {
         }
         Relationships: []
       }
+      artist_followers: {
+        Row: {
+          artist_id: string
+          created_at: string | null
+          follower_id: string
+          id: string
+        }
+        Insert: {
+          artist_id: string
+          created_at?: string | null
+          follower_id: string
+          id?: string
+        }
+        Update: {
+          artist_id?: string
+          created_at?: string | null
+          follower_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artist_followers_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      artist_ratings: {
+        Row: {
+          artist_id: string
+          comment: string | null
+          created_at: string | null
+          id: string
+          rating: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          artist_id: string
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          rating: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          artist_id?: string
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          rating?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artist_ratings_artist_id_fkey"
+            columns: ["artist_id"]
+            isOneToOne: false
+            referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      artists: {
+        Row: {
+          artist_type: Database["public"]["Enums"]["artist_type"]
+          avatar_url: string | null
+          average_rating: number | null
+          bio: string | null
+          city: string | null
+          country: string | null
+          cover_image_url: string | null
+          created_at: string | null
+          facebook: string | null
+          followers_count: number | null
+          id: string
+          instagram: string | null
+          linkedin: string | null
+          name: string
+          spotify_url: string | null
+          total_votes: number | null
+          updated_at: string | null
+          user_id: string | null
+          verified: boolean | null
+          website: string | null
+          youtube_url: string | null
+        }
+        Insert: {
+          artist_type: Database["public"]["Enums"]["artist_type"]
+          avatar_url?: string | null
+          average_rating?: number | null
+          bio?: string | null
+          city?: string | null
+          country?: string | null
+          cover_image_url?: string | null
+          created_at?: string | null
+          facebook?: string | null
+          followers_count?: number | null
+          id?: string
+          instagram?: string | null
+          linkedin?: string | null
+          name: string
+          spotify_url?: string | null
+          total_votes?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          verified?: boolean | null
+          website?: string | null
+          youtube_url?: string | null
+        }
+        Update: {
+          artist_type?: Database["public"]["Enums"]["artist_type"]
+          avatar_url?: string | null
+          average_rating?: number | null
+          bio?: string | null
+          city?: string | null
+          country?: string | null
+          cover_image_url?: string | null
+          created_at?: string | null
+          facebook?: string | null
+          followers_count?: number | null
+          id?: string
+          instagram?: string | null
+          linkedin?: string | null
+          name?: string
+          spotify_url?: string | null
+          total_votes?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          verified?: boolean | null
+          website?: string | null
+          youtube_url?: string | null
+        }
+        Relationships: []
+      }
       audio_playlist: {
         Row: {
           audio_url: string
@@ -1692,6 +1831,14 @@ export type Database = {
         | "guest"
         | "producer"
         | "streamer"
+      artist_type:
+        | "banda_musical"
+        | "musico_solista"
+        | "podcast"
+        | "documental"
+        | "cortometraje"
+        | "fotografia"
+        | "radio_show"
       badge_type: "bronze" | "silver" | "gold" | "special" | "merit"
       content_type:
         | "video_musical_vivo"
@@ -1910,6 +2057,15 @@ export const Constants = {
         "guest",
         "producer",
         "streamer",
+      ],
+      artist_type: [
+        "banda_musical",
+        "musico_solista",
+        "podcast",
+        "documental",
+        "cortometraje",
+        "fotografia",
+        "radio_show",
       ],
       badge_type: ["bronze", "silver", "gold", "special", "merit"],
       content_type: [

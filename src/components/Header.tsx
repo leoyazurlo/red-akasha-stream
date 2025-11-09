@@ -16,7 +16,7 @@ import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 const navItems = [
   { name: "Home", href: "/", isRoute: true },
-  { name: "On Demand", href: "#on-demand", isRoute: false },
+  { name: "On Demand", href: "/on-demand", isRoute: true },
   { name: "Artistas", href: "/artistas", isRoute: true },
   { name: "Circuito", href: "/circuito", isRoute: true },
   { name: "Asociate", href: "/asociate", isRoute: true },

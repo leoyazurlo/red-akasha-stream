@@ -26,6 +26,7 @@ import UploadContent from "./pages/UploadContent";
 import Artists from "./pages/Artists";
 import ArtistProfile from "./pages/ArtistProfile";
 import UserProfile from "./pages/UserProfile";
+import OnDemand from "./pages/OnDemand";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/on-demand" element={<OnDemand />} />
           <Route path="/foro" element={<Forum />} />
           <Route path="/foro/subforo/:id" element={<Subforo />} />
           <Route path="/foro/hilo/:id" element={<Thread />} />

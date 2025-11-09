@@ -225,6 +225,13 @@ export type Database = {
             referencedRelation: "profile_details"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "audio_playlist_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       chat_messages: {
@@ -1111,6 +1118,13 @@ export type Database = {
             referencedRelation: "profile_details"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "profile_galleries_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       profile_interactions: {
@@ -1147,10 +1161,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "profile_interactions_from_profile_id_fkey"
+            columns: ["from_profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "profile_interactions_to_profile_id_fkey"
             columns: ["to_profile_id"]
             isOneToOne: false
             referencedRelation: "profile_details"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_interactions_to_profile_id_fkey"
+            columns: ["to_profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1192,10 +1220,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "profile_ratings_rated_profile_id_fkey"
+            columns: ["rated_profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "profile_ratings_rater_profile_id_fkey"
             columns: ["rater_profile_id"]
             isOneToOne: false
             referencedRelation: "profile_details"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profile_ratings_rater_profile_id_fkey"
+            columns: ["rater_profile_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1897,7 +1939,90 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          capacity: number | null
+          ciudad: string | null
+          created_at: string | null
+          display_name: string | null
+          facebook: string | null
+          formation_date: string | null
+          genre: Database["public"]["Enums"]["music_genre"] | null
+          id: string | null
+          instagram: string | null
+          latitude: number | null
+          linkedin: string | null
+          longitude: number | null
+          map_location: string | null
+          members: Json | null
+          pais: string | null
+          produced_artists: Json | null
+          profile_type: Database["public"]["Enums"]["profile_type"] | null
+          recorded_at: string | null
+          technical_specs: Json | null
+          updated_at: string | null
+          user_id: string | null
+          venue_type: Database["public"]["Enums"]["sala_type"] | null
+          venues_produced: Json | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          capacity?: number | null
+          ciudad?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          facebook?: string | null
+          formation_date?: string | null
+          genre?: Database["public"]["Enums"]["music_genre"] | null
+          id?: string | null
+          instagram?: string | null
+          latitude?: number | null
+          linkedin?: string | null
+          longitude?: number | null
+          map_location?: string | null
+          members?: Json | null
+          pais?: string | null
+          produced_artists?: Json | null
+          profile_type?: Database["public"]["Enums"]["profile_type"] | null
+          recorded_at?: string | null
+          technical_specs?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+          venue_type?: Database["public"]["Enums"]["sala_type"] | null
+          venues_produced?: Json | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          capacity?: number | null
+          ciudad?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          facebook?: string | null
+          formation_date?: string | null
+          genre?: Database["public"]["Enums"]["music_genre"] | null
+          id?: string | null
+          instagram?: string | null
+          latitude?: number | null
+          linkedin?: string | null
+          longitude?: number | null
+          map_location?: string | null
+          members?: Json | null
+          pais?: string | null
+          produced_artists?: Json | null
+          profile_type?: Database["public"]["Enums"]["profile_type"] | null
+          recorded_at?: string | null
+          technical_specs?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+          venue_type?: Database["public"]["Enums"]["sala_type"] | null
+          venues_produced?: Json | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       award_badge_if_eligible: {

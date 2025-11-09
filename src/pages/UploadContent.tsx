@@ -86,35 +86,35 @@ const UploadContent = () => {
     try {
       // Cargar bandas
       const { data: bandsData } = await supabase
-        .from('profile_details')
+        .from('public_profiles')
         .select('id, display_name')
         .eq('profile_type', 'agrupacion_musical')
         .order('display_name');
       
       // Cargar productores artísticos
       const { data: producersData } = await supabase
-        .from('profile_details')
+        .from('public_profiles')
         .select('id, display_name')
         .eq('profile_type', 'productor_artistico')
         .order('display_name');
       
       // Cargar estudios de grabación
       const { data: studiosData } = await supabase
-        .from('profile_details')
+        .from('public_profiles')
         .select('id, display_name')
         .eq('profile_type', 'estudio_grabacion')
         .order('display_name');
       
       // Cargar salas/venues
       const { data: venuesData } = await supabase
-        .from('profile_details')
+        .from('public_profiles')
         .select('id, display_name')
         .eq('profile_type', 'sala_concierto')
         .order('display_name');
       
       // Cargar promotores artísticos
       const { data: promotersData } = await supabase
-        .from('profile_details')
+        .from('public_profiles')
         .select('id, display_name')
         .eq('profile_type', 'promotor_artistico')
         .order('display_name');

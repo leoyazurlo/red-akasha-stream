@@ -194,7 +194,7 @@ export const ProfileTechnicalSheet = ({
         // Obtener información de los perfiles que valoraron
         const raterIds = recentData.map(r => r.rater_profile_id);
         const { data: profilesData, error: profilesError } = await supabase
-          .from('profile_details')
+          .from('public_profiles')
           .select('id, display_name, avatar_url')
           .in('id', raterIds);
 

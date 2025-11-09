@@ -64,6 +64,24 @@ interface ProfileDetail {
   technical_specs: any;
 }
 
+// Tipo para la vista pública sin información sensible
+interface PublicProfile {
+  id: string;
+  display_name: string;
+  avatar_url: string | null;
+  profile_type: string;
+  pais: string;
+  ciudad: string;
+  bio: string | null;
+  instagram: string | null;
+  facebook: string | null;
+  linkedin: string | null;
+  venue_type: string | null;
+  capacity: number | null;
+  genre: string | null;
+  technical_specs: any;
+}
+
 interface LocationGroup {
   provincia: string;
   cities: CityGroup[];
@@ -71,7 +89,7 @@ interface LocationGroup {
 
 interface CityGroup {
   ciudad: string;
-  profiles: ProfileDetail[];
+  profiles: PublicProfile[];
 }
 
 const profileTypeLabels: Record<string, string> = {
@@ -86,16 +104,16 @@ const profileTypeLabels: Record<string, string> = {
 const Circuito = () => {
   const navigate = useNavigate();
   const [selectedCountry, setSelectedCountry] = useState(latinAmericanCountries[0]);
-  const [locationGroups, setLocationGroups] = useState<LocationGroup[]>([]);
-  const [allProfiles, setAllProfiles] = useState<ProfileDetail[]>([]);
+  const [locationGroups, setLocationGroups] = useState<CityGroup[]>([]);
+  const [allProfiles, setAllProfiles] = useState<PublicProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [hasProfile, setHasProfile] = useState(false);
-  const [selectedProfile, setSelectedProfile] = useState<ProfileDetail | null>(null);
+  const [selectedProfile, setSelectedProfile] = useState<PublicProfile | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   // Función para obtener el desglose de perfiles por tipo
-  const getProfileTypeBreakdown = (profiles: ProfileDetail[]) => {
+  const getProfileTypeBreakdown = (profiles: PublicProfile[]) => {
     const typeCounts: Record<string, number> = {};
     
     profiles.forEach(profile => {
@@ -154,33 +172,23 @@ const Circuito = () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('profile_details')
+        .from('public_profiles')
         .select('*')
         .eq('pais', selectedCountry.name)
         .neq('profile_type', 'productor_audiovisual')
-        .order('provincia', { ascending: true })
         .order('ciudad', { ascending: true });
 
       if (error) throw error;
 
       setAllProfiles(data || []);
 
-      // Agrupar por provincia y ciudad
-      const grouped = (data || []).reduce((acc: LocationGroup[], curr: ProfileDetail) => {
-        const provincia = curr.provincia || 'Sin provincia';
-        let provinciaGroup = acc.find(g => g.provincia === provincia);
-        
-        if (!provinciaGroup) {
-          provinciaGroup = { provincia, cities: [] };
-          acc.push(provinciaGroup);
-        }
-
-        let cityGroup = provinciaGroup.cities.find(c => c.ciudad === curr.ciudad);
+      // Agrupar solo por ciudad
+      const grouped = (data || []).reduce((acc: CityGroup[], curr: PublicProfile) => {
+        let cityGroup = acc.find(c => c.ciudad === curr.ciudad);
         if (!cityGroup) {
           cityGroup = { ciudad: curr.ciudad, profiles: [] };
-          provinciaGroup.cities.push(cityGroup);
+          acc.push(cityGroup);
         }
-
         cityGroup.profiles.push(curr);
         return acc;
       }, []);
@@ -195,24 +203,18 @@ const Circuito = () => {
 
   // Filtrar perfiles en tiempo real
   const filteredLocationGroups = locationGroups
-    .map((locationGroup) => ({
-      ...locationGroup,
-      cities: locationGroup.cities
-        .map((cityGroup) => ({
-          ...cityGroup,
-          profiles: cityGroup.profiles.filter((profile) => {
-            if (!searchTerm) return true;
-            const term = searchTerm.toLowerCase();
-            return (
-              profile.display_name.toLowerCase().includes(term) ||
-              profile.ciudad.toLowerCase().includes(term) ||
-              (profile.provincia && profile.provincia.toLowerCase().includes(term))
-            );
-          }),
-        }))
-        .filter((cityGroup) => cityGroup.profiles.length > 0),
+    .map((cityGroup) => ({
+      ...cityGroup,
+      profiles: cityGroup.profiles.filter((profile) => {
+        if (!searchTerm) return true;
+        const term = searchTerm.toLowerCase();
+        return (
+          profile.display_name.toLowerCase().includes(term) ||
+          profile.ciudad.toLowerCase().includes(term)
+        );
+      }),
     }))
-    .filter((locationGroup) => locationGroup.cities.length > 0);
+    .filter((cityGroup) => cityGroup.profiles.length > 0);
 
   if (checkingProfile) {
     return (
@@ -372,130 +374,94 @@ const Circuito = () => {
                   </p>
                 </div>
 
-                  {filteredLocationGroups.map((locationGroup) => (
-                    <div key={locationGroup.provincia} className="space-y-8">
-                      <div className="border-b border-border pb-2">
-                        <h3 className="text-2xl font-bold text-primary">{locationGroup.provincia}</h3>
+                  {filteredLocationGroups.map((cityGroup) => (
+                    <div key={cityGroup.ciudad} className="space-y-4 mb-12">
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <MapPin className="w-5 h-5 text-primary" />
+                          <h4 className="text-xl font-bold text-foreground">{cityGroup.ciudad}</h4>
+                        </div>
+                        <p className="text-sm text-muted-foreground ml-7">
+                          {getProfileTypeBreakdown(cityGroup.profiles)}
+                        </p>
                       </div>
 
-                      {locationGroup.cities.map((cityGroup) => (
-                        <div key={cityGroup.ciudad} className="space-y-4">
-                          <div className="mb-4">
-                            <div className="flex items-center gap-2 mb-2">
-                              <MapPin className="w-5 h-5 text-primary" />
-                              <h4 className="text-xl font-bold text-foreground">{cityGroup.ciudad}</h4>
-                            </div>
-                            <p className="text-sm text-muted-foreground ml-7">
-                              {getProfileTypeBreakdown(cityGroup.profiles)}
-                            </p>
-                          </div>
-
-                          <div className="grid md:grid-cols-2 gap-6">
-                            {cityGroup.profiles.map((profile) => (
-                              <Card 
-                                key={profile.id} 
-                                className="border-border bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-all cursor-pointer"
-                                onClick={() => setSelectedProfile(profile)}
-                              >
-                                <CardHeader>
-                                  <div className="flex items-start gap-4">
-                                    <Avatar className="w-16 h-16 border-2 border-primary">
-                                      <AvatarImage src={profile.avatar_url || ''} alt={profile.display_name} />
-                                      <AvatarFallback className="bg-primary/10 text-primary text-xl">
-                                        {profile.display_name.charAt(0).toUpperCase()}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex-1 min-w-0">
-                                      <CardTitle className="text-lg mb-1">{profile.display_name}</CardTitle>
-                                      <Badge variant="outline" className="mb-2 border-primary text-primary">
-                                        {profileTypeLabels[profile.profile_type] || profile.profile_type}
-                                      </Badge>
-                                      {profile.venue_type && (
-                                        <p className="text-sm text-muted-foreground capitalize">
-                                          {profile.venue_type}
-                                        </p>
-                                      )}
-                                      {profile.genre && (
-                                        <p className="text-sm text-muted-foreground">
-                                          Género: {profile.genre}
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                  {profile.bio && (
-                                    <p className="text-sm text-muted-foreground">{profile.bio}</p>
+                      <div className="grid md:grid-cols-2 gap-6">
+                        {cityGroup.profiles.map((profile) => (
+                          <Card 
+                            key={profile.id} 
+                            className="border-border bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-all cursor-pointer"
+                            onClick={() => setSelectedProfile(profile)}
+                          >
+                            <CardHeader>
+                              <div className="flex items-start gap-4">
+                                <Avatar className="w-16 h-16 border-2 border-primary">
+                                  <AvatarImage src={profile.avatar_url || ''} alt={profile.display_name} />
+                                  <AvatarFallback className="bg-primary/10 text-primary text-xl">
+                                    {profile.display_name.charAt(0).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 min-w-0">
+                                  <CardTitle className="text-lg mb-1">{profile.display_name}</CardTitle>
+                                  <Badge variant="outline" className="mb-2 border-primary text-primary">
+                                    {profileTypeLabels[profile.profile_type] || profile.profile_type}
+                                  </Badge>
+                                  {profile.venue_type && (
+                                    <p className="text-sm text-muted-foreground capitalize">
+                                      {profile.venue_type}
+                                    </p>
                                   )}
-
-                                  {profile.capacity && (
-                                    <div className="flex items-center gap-2 text-sm">
-                                      <Users className="w-4 h-4 text-primary" />
-                                      <span>Capacidad: {profile.capacity} personas</span>
-                                    </div>
+                                  {profile.genre && (
+                                    <p className="text-sm text-muted-foreground">
+                                      Género: {profile.genre}
+                                    </p>
                                   )}
+                                </div>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                              {profile.bio && (
+                                <p className="text-sm text-muted-foreground">{profile.bio}</p>
+                              )}
 
-                                  {profile.technical_specs && (
-                                    <div className="bg-secondary/20 p-3 rounded-md">
-                                      <p className="text-xs font-semibold text-muted-foreground mb-1">Ficha Técnica:</p>
-                                      <p className="text-sm whitespace-pre-wrap">{JSON.stringify(profile.technical_specs, null, 2)}</p>
-                                    </div>
+                              {profile.capacity && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <Users className="w-4 h-4 text-primary" />
+                                  <span>Capacidad: {profile.capacity} personas</span>
+                                </div>
+                              )}
+
+                              {profile.technical_specs && (
+                                <div className="bg-secondary/20 p-3 rounded-md">
+                                  <p className="text-xs font-semibold text-muted-foreground mb-1">Ficha Técnica:</p>
+                                  <p className="text-sm whitespace-pre-wrap">{JSON.stringify(profile.technical_specs, null, 2)}</p>
+                                </div>
+                              )}
+
+                              {/* Social Media */}
+                              {(profile.instagram || profile.facebook || profile.linkedin) && (
+                                <div className="flex gap-3 pt-2 border-t border-border">
+                                  {profile.instagram && (
+                                    <a href={`https://instagram.com/${profile.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                                      <Instagram className="w-5 h-5" />
+                                    </a>
                                   )}
-
-                                  {/* Contact Info */}
-                                  <div className="space-y-2 text-sm border-t border-border pt-3">
-                                    {profile.email && (
-                                      <div className="flex items-center gap-2 text-muted-foreground">
-                                        <Mail className="w-4 h-4" />
-                                        <a href={`mailto:${profile.email}`} className="hover:text-primary transition-colors truncate">
-                                          {profile.email}
-                                        </a>
-                                      </div>
-                                    )}
-                                    {profile.telefono && (
-                                      <div className="flex items-center gap-2 text-muted-foreground">
-                                        <Phone className="w-4 h-4" />
-                                        <a href={`tel:${profile.telefono}`} className="hover:text-primary transition-colors">
-                                          {profile.telefono}
-                                        </a>
-                                      </div>
-                                    )}
-                                    {profile.whatsapp && (
-                                      <div className="flex items-center gap-2 text-muted-foreground">
-                                        <Phone className="w-4 h-4" />
-                                        <a href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
-                                          WhatsApp: {profile.whatsapp}
-                                        </a>
-                                      </div>
-                                    )}
-                                  </div>
-
-                                  {/* Social Media */}
-                                  {(profile.instagram || profile.facebook || profile.linkedin) && (
-                                    <div className="flex gap-3 pt-2 border-t border-border">
-                                      {profile.instagram && (
-                                        <a href={`https://instagram.com/${profile.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                                          <Instagram className="w-5 h-5" />
-                                        </a>
-                                      )}
-                                      {profile.facebook && (
-                                        <a href={profile.facebook.startsWith('http') ? profile.facebook : `https://facebook.com/${profile.facebook}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                                          <Facebook className="w-5 h-5" />
-                                        </a>
-                                      )}
-                                      {profile.linkedin && (
-                                        <a href={profile.linkedin.startsWith('http') ? profile.linkedin : `https://linkedin.com/in/${profile.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                                          <Linkedin className="w-5 h-5" />
-                                        </a>
-                                      )}
-                                    </div>
+                                  {profile.facebook && (
+                                    <a href={profile.facebook.startsWith('http') ? profile.facebook : `https://facebook.com/${profile.facebook}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                                      <Facebook className="w-5 h-5" />
+                                    </a>
                                   )}
-                                </CardContent>
-                              </Card>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
+                                  {profile.linkedin && (
+                                    <a href={profile.linkedin.startsWith('http') ? profile.linkedin : `https://linkedin.com/in/${profile.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                                      <Linkedin className="w-5 h-5" />
+                                    </a>
+                                  )}
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -519,8 +485,8 @@ const Circuito = () => {
                 instagram={selectedProfile.instagram}
                 facebook={selectedProfile.facebook}
                 linkedin={selectedProfile.linkedin}
-                whatsapp={selectedProfile.whatsapp}
-                email={selectedProfile.email}
+                whatsapp={null}
+                email={null}
               />
             )}
           </DialogContent>

@@ -34,15 +34,15 @@ export const Header = () => {
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/95 backdrop-blur-md">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3">
-            <span className="text-2xl font-light tracking-wider bg-gradient-primary bg-clip-text text-transparent">
+          {/* Logo - Responsive sizes */}
+          <Link to="/" className="flex items-center space-x-2 sm:space-x-3">
+            <span className="text-lg sm:text-xl md:text-2xl font-light tracking-wider bg-gradient-primary bg-clip-text text-transparent">
               RED AKASHA
             </span>
             <img 
               src={logoAkasha} 
               alt="Logo Akasha" 
-              className="h-12 w-12"
+              className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12"
               style={{ filter: 'brightness(0) saturate(100%) invert(70%) sepia(100%) saturate(2500%) hue-rotate(160deg) brightness(120%) contrast(110%)' }}
             />
           </Link>
@@ -113,24 +113,24 @@ export const Header = () => {
             )}
           </nav>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Button - Larger for better touch */}
           <Button
             variant="ghost"
-            size="icon"
-            className="md:hidden"
+            size="lg"
+            className="md:hidden h-12 w-12 p-0"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? (
-              <X className="h-6 w-6" />
+              <X className="h-8 w-8" />
             ) : (
-              <Menu className="h-6 w-6" />
+              <Menu className="h-8 w-8" />
             )}
           </Button>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation - Larger touch targets */}
         {mobileMenuOpen && (
-          <nav className="md:hidden py-4 space-y-2 animate-slide-in">
+          <nav className="md:hidden py-4 space-y-1 animate-slide-in">
             {navItems.map((item) => {
               const isActive = item.isRoute && location.pathname === item.href;
               return item.isRoute ? (
@@ -138,8 +138,8 @@ export const Header = () => {
                   key={item.name}
                   to={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`block px-4 py-2 text-sm font-light transition-colors rounded-lg hover:bg-secondary ${
-                    isActive ? 'text-primary' : 'text-foreground hover:text-primary'
+                  className={`block px-4 py-3 text-base font-light transition-colors rounded-lg hover:bg-secondary ${
+                    isActive ? 'text-primary bg-secondary/50' : 'text-foreground hover:text-primary'
                   }`}
                 >
                   {item.name}
@@ -149,57 +149,59 @@ export const Header = () => {
                   key={item.name}
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-2 text-sm font-light text-foreground hover:text-primary transition-colors rounded-lg hover:bg-secondary"
+                  className="block px-4 py-3 text-base font-light text-foreground hover:text-primary transition-colors rounded-lg hover:bg-secondary"
                 >
                   {item.name}
                 </a>
               );
             })}
             
-            {/* Mobile Auth Section */}
-            {user ? (
-              <>
-                {isAdmin && (
+            {/* Mobile Auth Section - Larger buttons */}
+            <div className="pt-2 space-y-2 border-t border-border/50 mt-2">
+              {user ? (
+                <>
+                  {isAdmin && (
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start h-12 text-base"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        navigate("/admin");
+                      }}
+                    >
+                      Panel de Control
+                    </Button>
+                  )}
                   <Button
                     variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => {
+                    className="w-full justify-start h-12 text-base"
+                    onClick={async () => {
+                      await supabase.auth.signOut();
+                      toast({
+                        title: "Sesión cerrada",
+                        description: "Has cerrado sesión correctamente.",
+                      });
                       setMobileMenuOpen(false);
-                      navigate("/admin");
+                      navigate("/");
                     }}
                   >
-                    Panel de Control
+                    <LogOut className="mr-2 h-5 w-5" />
+                    Cerrar Sesión
                   </Button>
-                )}
+                </>
+              ) : (
                 <Button
-                  variant="ghost"
-                  className="w-full justify-start"
-                  onClick={async () => {
-                    await supabase.auth.signOut();
-                    toast({
-                      title: "Sesión cerrada",
-                      description: "Has cerrado sesión correctamente.",
-                    });
+                  variant="default"
+                  className="w-full h-12 text-base"
+                  onClick={() => {
                     setMobileMenuOpen(false);
-                    navigate("/");
+                    navigate("/auth");
                   }}
                 >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Cerrar Sesión
+                  Iniciar Sesión
                 </Button>
-              </>
-            ) : (
-              <Button
-                variant="default"
-                className="w-full"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  navigate("/auth");
-                }}
-              >
-                Iniciar Sesión
-              </Button>
-            )}
+              )}
+            </div>
           </nav>
         )}
       </div>

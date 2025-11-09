@@ -81,25 +81,25 @@ export const VideoCarousel = ({
   };
 
   return (
-    <section className="py-8" id={sectionId}>
-      <div className="container mx-auto px-4">
+    <section className="py-4 md:py-8" id={sectionId}>
+      <div className="container mx-auto px-2 sm:px-4">
         {/* Section Title with Navigation Arrows on Sides */}
-        <div className="flex items-center justify-center gap-4 mb-8 max-w-4xl mx-auto">
-          {/* Left Arrow */}
+        <div className="flex items-center justify-between md:justify-center gap-2 sm:gap-4 mb-4 md:mb-8 max-w-4xl mx-auto">
+          {/* Left Arrow - Larger on mobile */}
           <Button
             variant="ghost"
             size="icon"
             onClick={() => scroll("left")}
-            className="hover:bg-secondary hover:scale-110 transition-all duration-300 flex-shrink-0"
+            className="hover:bg-secondary hover:scale-110 transition-all duration-300 flex-shrink-0 h-10 w-10 md:h-12 md:w-12"
           >
-            <ChevronLeft className="h-5 w-5 text-primary" />
+            <ChevronLeft className="h-6 w-6 md:h-5 md:w-5 text-primary" />
           </Button>
 
           {/* Title and Schedule Dropdown */}
-          <div className="flex items-center gap-3 flex-1 justify-center">
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-center overflow-hidden">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-glow opacity-20 blur-3xl" />
-              <h2 className="text-2xl md:text-3xl font-poppins font-medium tracking-wide text-foreground relative animate-slide-in">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-poppins font-medium tracking-wide text-foreground relative animate-slide-in truncate">
                 {title}
               </h2>
             </div>
@@ -110,15 +110,15 @@ export const VideoCarousel = ({
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="flex items-center gap-2 bg-card/80 backdrop-blur-sm border-primary/30 hover:border-primary hover:bg-card z-50"
+                    className="flex items-center gap-1 sm:gap-2 bg-card/80 backdrop-blur-sm border-primary/30 hover:border-primary hover:bg-card z-50 h-9 md:h-10 px-2 sm:px-3 text-xs sm:text-sm flex-shrink-0"
                   >
                     <Clock className="h-4 w-4 text-primary" />
-                    Horarios
+                    <span className="hidden sm:inline">Horarios</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent 
                   align="start" 
-                  className="w-64 bg-card/95 backdrop-blur-md border-border/50 z-[100]"
+                  className="w-56 sm:w-64 bg-card/95 backdrop-blur-md border-border/50 z-[100]"
                 >
                   {schedules.map((schedule, index) => (
                     <DropdownMenuItem 
@@ -143,36 +143,36 @@ export const VideoCarousel = ({
             )}
           </div>
 
-          {/* Right Arrow */}
+          {/* Right Arrow - Larger on mobile */}
           <Button
             variant="ghost"
             size="icon"
             onClick={() => scroll("right")}
-            className="hover:bg-secondary hover:scale-110 transition-all duration-300 flex-shrink-0"
+            className="hover:bg-secondary hover:scale-110 transition-all duration-300 flex-shrink-0 h-10 w-10 md:h-12 md:w-12"
           >
-            <ChevronRight className="h-5 w-5 text-primary" />
+            <ChevronRight className="h-6 w-6 md:h-5 md:w-5 text-primary" />
           </Button>
         </div>
 
-        {/* Carousel Container with Glow Effect - More Compact */}
+        {/* Carousel Container with Glow Effect - Responsive padding */}
         <div className="relative max-w-5xl mx-auto">
           {/* Outer glow container */}
-          <div className="absolute inset-0 bg-gradient-glow opacity-10 rounded-3xl blur-2xl" />
+          <div className="absolute inset-0 bg-gradient-glow opacity-10 rounded-2xl md:rounded-3xl blur-2xl" />
           
           {/* Inner container with border */}
-          <div className="relative bg-card/30 backdrop-blur-sm rounded-2xl border border-border/50 p-6 shadow-glow">
+          <div className="relative bg-card/30 backdrop-blur-sm rounded-xl md:rounded-2xl border border-border/50 p-3 sm:p-4 md:p-6 shadow-glow">
             <div
               id={`carousel-${sectionId}`}
-              className="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth"
+              className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide scroll-smooth"
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
               {videos.map((video, index) => (
                 <div
                   key={video.id}
-                  className="flex-none w-56 group cursor-pointer animate-slide-in"
+                  className="flex-none w-44 sm:w-52 md:w-56 group cursor-pointer animate-slide-in"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
-                  <div className="relative aspect-video bg-card rounded-xl overflow-hidden border border-border hover:border-primary transition-all duration-300 hover:shadow-glow hover:scale-105">
+                  <div className="relative aspect-video bg-card rounded-lg md:rounded-xl overflow-hidden border border-border hover:border-primary transition-all duration-300 hover:shadow-glow hover:scale-105">
                     {/* Thumbnail */}
                     <img
                       src={video.thumbnail}
@@ -182,19 +182,19 @@ export const VideoCarousel = ({
                     
                     {/* Overlay */}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                      <div className="w-14 h-14 bg-primary/90 rounded-full flex items-center justify-center group-hover:animate-float">
-                        <Play className="w-6 h-6 text-primary-foreground fill-primary-foreground ml-1" />
+                      <div className="w-12 h-12 md:w-14 md:h-14 bg-primary/90 rounded-full flex items-center justify-center group-hover:animate-float">
+                        <Play className="w-5 h-5 md:w-6 md:h-6 text-primary-foreground fill-primary-foreground ml-0.5" />
                       </div>
                     </div>
 
                     {/* Duration */}
-                    <div className="absolute bottom-2 right-2 bg-black/80 px-2 py-1 rounded text-xs font-light backdrop-blur-sm">
+                    <div className="absolute bottom-1.5 right-1.5 md:bottom-2 md:right-2 bg-black/80 px-1.5 py-0.5 md:px-2 md:py-1 rounded text-xs font-light backdrop-blur-sm">
                       {video.duration}
                     </div>
                   </div>
 
                   {/* Title */}
-                  <h3 className="mt-3 text-sm font-light text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+                  <h3 className="mt-2 md:mt-3 text-xs sm:text-sm font-light text-foreground line-clamp-2 group-hover:text-primary transition-colors">
                     {video.title}
                   </h3>
                 </div>

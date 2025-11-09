@@ -73,28 +73,28 @@ const Forum = () => {
         <div className="relative z-10">
           <Header />
           
-          <main className="pt-24 pb-16">
+          <main className="pt-20 sm:pt-24 pb-12 sm:pb-16">
             <div className="container mx-auto px-4">
               <Card className="max-w-2xl mx-auto border-border bg-card/50 backdrop-blur-sm">
-                <CardHeader>
-                  <CardTitle className="text-2xl">Asociación Requerida</CardTitle>
-                  <CardDescription>
+                <CardHeader className="space-y-2">
+                  <CardTitle className="text-xl sm:text-2xl">Asociación Requerida</CardTitle>
+                  <CardDescription className="text-sm sm:text-base">
                     Para participar en el foro, primero debes asociarte a la plataforma
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
                   <Alert>
                     <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>No tienes un perfil creado</AlertTitle>
-                    <AlertDescription>
+                    <AlertTitle className="text-sm sm:text-base">No tienes un perfil creado</AlertTitle>
+                    <AlertDescription className="text-xs sm:text-sm">
                       Para poder participar en el foro y colaborar con la comunidad, necesitas completar el proceso de asociación y crear tu perfil primero.
                     </AlertDescription>
                   </Alert>
-                  <div className="mt-6 flex gap-4">
-                    <Button onClick={() => navigate("/asociate")} className="flex-1">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2">
+                    <Button onClick={() => navigate("/asociate")} className="flex-1 h-11">
                       Asociarme Ahora
                     </Button>
-                    <Button onClick={() => navigate("/")} variant="outline" className="flex-1">
+                    <Button onClick={() => navigate("/")} variant="outline" className="flex-1 h-11">
                       Volver al Inicio
                     </Button>
                   </div>
@@ -114,25 +114,22 @@ const Forum = () => {
       <CosmicBackground />
       <Header />
       
-      <main className="relative z-10 pt-24">
-        <div className="container mx-auto px-4 py-12">
-          {/* Header Section */}
-          <div className="relative mb-12">
-            <div className="absolute inset-0 bg-gradient-glow opacity-20 blur-3xl" />
-            <h1 className="text-4xl md:text-5xl font-poppins font-medium tracking-wide text-foreground text-center relative animate-slide-in">
-              Foro Red Akasha
-            </h1>
-            <p className="text-muted-foreground text-center mt-4 text-lg">
-              Espacio de debate y colaboración para la comunidad y el desarrollo de la plataforma como herramienta para músicos, productores, esperamos tu aporte
-            </p>
-          </div>
+      <main className="container mx-auto px-4 py-6 pt-20 md:pt-24 pb-12 md:pb-16">
+        {/* Hero Section - Responsive text */}
+        <section className="text-center mb-8 md:mb-12 animate-fade-in px-2">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 md:mb-4 bg-gradient-primary bg-clip-text text-transparent">
+            Foro de la Comunidad
+          </h1>
+          <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
+            Conecta, colabora y comparte con artistas y profesionales
+          </p>
+        </section>
 
-          {/* Stats Section */}
-          <ForumStats />
+        {/* Stats Section */}
+        <ForumStats />
 
-          {/* Categories Section */}
-          <ForumCategories />
-        </div>
+        {/* Categories Section */}
+        <ForumCategories />
       </main>
 
       <Footer />

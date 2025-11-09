@@ -20,6 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { validateFile } from "@/lib/storage-validation";
 
 interface ProgramSchedule {
   id: string;
@@ -157,6 +158,17 @@ const ProgramSchedules = () => {
       const fileExt = file.name.split(".").pop();
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `${fileName}`;
+
+      // Validate file before upload
+      const validation = validateFile(file, 'image');
+      if (!validation.valid) {
+        toast({
+          title: "Error de validación",
+          description: validation.error,
+          variant: "destructive",
+        });
+        return;
+      }
 
       const { error: uploadError } = await supabase.storage
         .from("program-schedules")

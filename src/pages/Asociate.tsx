@@ -27,6 +27,7 @@ import { MarketingDigitalForm } from "@/components/profile-forms/MarketingDigita
 import { MusicianForm } from "@/components/profile-forms/MusicianForm";
 import { RecordLabelForm } from "@/components/profile-forms/RecordLabelForm";
 import { z } from "zod";
+import { validateFile, formatFileSize } from "@/lib/storage-validation";
 
 const argentinaProvincias = [
   { name: "Buenos Aires", cities: ["Adolfo Alsina", "Adolfo Gonzales Chaves", "Alberti", "Almirante Brown", "Arrecifes", "Avellaneda", "Ayacucho", "Azul", "Bahía Blanca", "Balcarce", "Baradero", "Benito Juárez", "Berazategui", "Berisso", "Bolívar", "Bragado", "Brandsen", "Campana", "Cañuelas", "Capitán Sarmiento", "Carlos Casares", "Carlos Tejedor", "Carmen de Areco", "Castelli", "Chacabuco", "Chascomús", "Chivilcoy", "Colón", "Coronel de Marina Leonardo Rosales", "Coronel Dorrego", "Coronel Pringles", "Coronel Suárez", "Daireaux", "Dolores", "Ensenada", "Escobar", "Esteban Echeverría", "Exaltación de la Cruz", "Ezeiza", "Florencio Varela", "Florentino Ameghino", "General Alvarado", "General Alvear", "General Arenales", "General Belgrano", "General Guido", "General Juan Madariaga", "General La Madrid", "General Las Heras", "General Lavalle", "General Paz", "General Pinto", "General Pueyrredón", "General Rodríguez", "General San Martín", "General Viamonte", "General Villegas", "Guaminí", "Hipólito Yrigoyen", "Hurlingham", "Ituzaingó", "José C. Paz", "Junín", "La Costa", "La Matanza", "Lanús", "La Plata", "Laprida", "Las Flores", "Leandro N. Alem", "Lezama", "Lincoln", "Lobería", "Lobos", "Lomas de Zamora", "Luján", "Magdalena", "Maipú", "Malvinas Argentinas", "Mar Chiquita", "Marcos Paz", "Mercedes", "Merlo", "Monte", "Monte Hermoso", "Moreno", "Morón", "Navarro", "Necochea", "9 de Julio", "Olavarría", "Patagones", "Pehuajó", "Pellegrini", "Pergamino", "Pila", "Pilar", "Pinamar", "Presidente Perón", "Puan", "Punta Indio", "Quilmes", "Ramallo", "Rauch", "Rivadavia", "Rojas", "Roque Pérez", "Saavedra", "Saladillo", "Salliqueló", "Salto", "San Andrés de Giles", "San Antonio de Areco", "San Cayetano", "San Fernando", "San Isidro", "San Miguel", "San Nicolás", "San Pedro", "San Vicente", "Suipacha", "Tandil", "Tapalqué", "Tigre", "Tordillo", "Tornquist", "Trenque Lauquen", "Tres Arroyos", "Tres de Febrero", "Tres Lomas", "25 de Mayo", "Vicente López", "Villa Gesell", "Villarino", "Zárate"] },
@@ -805,7 +806,24 @@ const Asociate = () => {
                             multiple
                             onChange={(e) => {
                               const files = Array.from(e.target.files || []);
-                              setUploadedVideos(prev => [...prev, ...files]);
+                              const validFiles: File[] = [];
+                              
+                              for (const file of files) {
+                                const validation = validateFile(file, 'video');
+                                if (!validation.valid) {
+                                  toast({
+                                    title: "Archivo rechazado",
+                                    description: `${file.name}: ${validation.error}`,
+                                    variant: "destructive",
+                                  });
+                                } else {
+                                  validFiles.push(file);
+                                }
+                              }
+                              
+                              if (validFiles.length > 0) {
+                                setUploadedVideos(prev => [...prev, ...validFiles]);
+                              }
                             }}
                             className="hover:border-primary/50 transition-colors"
                           />
@@ -839,7 +857,24 @@ const Asociate = () => {
                             multiple
                             onChange={(e) => {
                               const files = Array.from(e.target.files || []);
-                              setUploadedImages(prev => [...prev, ...files]);
+                              const validFiles: File[] = [];
+                              
+                              for (const file of files) {
+                                const validation = validateFile(file, 'image');
+                                if (!validation.valid) {
+                                  toast({
+                                    title: "Archivo rechazado",
+                                    description: `${file.name}: ${validation.error}`,
+                                    variant: "destructive",
+                                  });
+                                } else {
+                                  validFiles.push(file);
+                                }
+                              }
+                              
+                              if (validFiles.length > 0) {
+                                setUploadedImages(prev => [...prev, ...validFiles]);
+                              }
                             }}
                             className="hover:border-primary/50 transition-colors"
                           />
@@ -873,7 +908,24 @@ const Asociate = () => {
                             multiple
                             onChange={(e) => {
                               const files = Array.from(e.target.files || []);
-                              setUploadedAudios(prev => [...prev, ...files]);
+                              const validFiles: File[] = [];
+                              
+                              for (const file of files) {
+                                const validation = validateFile(file, 'audio');
+                                if (!validation.valid) {
+                                  toast({
+                                    title: "Archivo rechazado",
+                                    description: `${file.name}: ${validation.error}`,
+                                    variant: "destructive",
+                                  });
+                                } else {
+                                  validFiles.push(file);
+                                }
+                              }
+                              
+                              if (validFiles.length > 0) {
+                                setUploadedAudios(prev => [...prev, ...validFiles]);
+                              }
                             }}
                             className="hover:border-primary/50 transition-colors"
                           />

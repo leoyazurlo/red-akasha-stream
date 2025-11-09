@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Upload, X } from "lucide-react";
+import { validateFile } from "@/lib/storage-validation";
 
 interface ImageUploadProps {
   label: string;
@@ -24,24 +25,12 @@ export const ImageUpload = ({ label, value, onChange, required, description, all
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validar que sea una imagen
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    if (!file.type.startsWith('image/') || !allowedTypes.includes(file.type)) {
+    // Validate file using centralized validation
+    const validation = validateFile(file, 'image');
+    if (!validation.valid) {
       toast({
         title: "Error",
-        description: "Solo se permiten imágenes JPG, PNG, WEBP o GIF",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validar tamaño (max 5MB)
-    const maxSizeMB = 5;
-    const maxBytes = maxSizeMB * 1024 * 1024;
-    if (file.size > maxBytes) {
-      toast({
-        title: "Error",
-        description: `La imagen debe ser menor a ${maxSizeMB}MB`,
+        description: validation.error,
         variant: "destructive",
       });
       return;

@@ -6,6 +6,10 @@ import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { ShareProfile } from "@/components/profile/ShareProfile";
 import { ExportAchievements } from "@/components/profile/ExportAchievements";
+import { FollowButton } from "@/components/profile/FollowButton";
+import { FollowStats } from "@/components/profile/FollowStats";
+import { FollowingActivity } from "@/components/profile/FollowingActivity";
+import { useFollow } from "@/hooks/useFollow";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -96,6 +100,7 @@ const UserProfile = () => {
 
   const { data: userBadges, isLoading: badgesLoading } = useUserBadges(id);
   const { data: stats, isLoading: statsLoading } = useUserStats(id);
+  const { followersCount, followingCount } = useFollow(id || null);
 
   // Fetch all available badges
   const { data: allBadges } = useQuery({
@@ -262,6 +267,7 @@ const UserProfile = () => {
                       {profile.username || profile.full_name || "Usuario"}
                     </h1>
                     <div className="flex gap-2">
+                      <FollowButton userId={id!} currentUserId={user?.id} />
                       <ShareProfile 
                         userId={id!} 
                         userName={profile.username || profile.full_name || "Usuario"} 
@@ -310,6 +316,11 @@ const UserProfile = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column - Stats */}
             <div className="space-y-6">
+              {/* Follow Stats */}
+              <FollowStats 
+                followersCount={followersCount}
+                followingCount={followingCount}
+              />
               {/* Activity Stats */}
               <Card className="bg-card/50 backdrop-blur-sm border-border">
                 <CardHeader>
@@ -471,6 +482,21 @@ const UserProfile = () => {
                         </div>
                       );
                     })}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Following Activity - Only show on own profile */}
+              {isOwnProfile && (
+                <Card className="bg-card/50 backdrop-blur-sm border-border">
+                  <CardHeader>
+                    <CardTitle>Actividad de tus Seguidos</CardTitle>
+                    <CardDescription>
+                      Últimas publicaciones de usuarios que sigues
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <FollowingActivity />
                   </CardContent>
                 </Card>
               )}

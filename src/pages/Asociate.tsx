@@ -285,7 +285,7 @@ const Asociate = () => {
       return;
     }
 
-    // Validate form data
+    // Client-side validation
     try {
       const validationSchema = getValidationSchema(selectedProfile);
       validationSchema.parse(formData);
@@ -297,9 +297,6 @@ const Asociate = () => {
           description: firstError.message,
           variant: "destructive",
         });
-        
-        // Log all errors to console for debugging
-        console.error("Errores de validación:", error.errors);
         return;
       }
     }
@@ -307,49 +304,16 @@ const Asociate = () => {
     setLoading(true);
 
     try {
-      // Paso 1: Crear cuenta de usuario
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            full_name: formData.nombre,
-          }
-        }
-      });
-
-      if (signUpError) {
-        // Manejar error de usuario ya existente
-        if (signUpError.message.includes('already registered') || signUpError.message.includes('User already registered')) {
-          toast({
-            title: "Email ya registrado",
-            description: "Este email ya está en uso. Por favor, inicia sesión o usa otro email.",
-            variant: "destructive",
-          });
-          setLoading(false);
-          return;
-        }
-        throw signUpError;
-      }
-      
-      if (!authData.user) {
-        throw new Error("No se pudo crear la cuenta");
-      }
-
-      // Paso 2: Si hay una imagen en base64, subirla al storage
+      // Step 1: Upload avatar if needed
       let avatarUrl = formData.avatar_url;
       if (formData.avatar_url && formData.avatar_url.startsWith('data:image/')) {
         try {
-          // Convertir base64 a blob
           const base64Response = await fetch(formData.avatar_url);
           const blob = await base64Response.blob();
           
-          // Crear nombre único para el archivo
           const fileExt = blob.type.split('/')[1];
-          const fileName = `${authData.user.id}-${Date.now()}.${fileExt}`;
+          const fileName = `${Date.now()}-avatar.${fileExt}`;
 
-          // Subir archivo
           const { data: uploadData, error: uploadError } = await supabase.storage
             .from('profile-avatars')
             .upload(fileName, blob, {
@@ -359,7 +323,6 @@ const Asociate = () => {
 
           if (uploadError) throw uploadError;
 
-          // Obtener URL pública
           const { data: { publicUrl } } = supabase.storage
             .from('profile-avatars')
             .getPublicUrl(uploadData.path);
@@ -367,151 +330,149 @@ const Asociate = () => {
           avatarUrl = publicUrl;
         } catch (uploadError) {
           console.error('Error al subir avatar:', uploadError);
-          // Continuar sin avatar si falla la subida
           avatarUrl = null;
         }
       }
 
-      // Paso 3: Preparar datos del perfil
-      const profileData: any = {
-        user_id: authData.user.id,
+      // Step 2: Call secure Edge Function for server-side validation and registration
+      const registrationData = {
         profile_type: profileTypeMap[selectedProfile],
-        avatar_url: avatarUrl,
-        display_name: formData.display_name || formData.nombre,
-        bio: formData.bio || null,
-        pais: formData.pais,
-        provincia: formData.provincia || null,
-        ciudad: formData.ciudad,
-        instagram: formData.instagram || null,
-        facebook: formData.facebook || null,
-        linkedin: formData.linkedin || null,
+        nombre: formData.nombre,
         email: formData.email,
-        telefono: formData.telefono || null,
-        whatsapp: formData.whatsapp || null,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        display_name: formData.display_name,
+        bio: formData.bio,
+        pais: formData.pais,
+        provincia: formData.provincia,
+        ciudad: formData.ciudad,
+        telefono: formData.telefono,
+        instagram: formData.instagram,
+        facebook: formData.facebook,
+        linkedin: formData.linkedin,
+        whatsapp: formData.whatsapp,
+        avatar_url: avatarUrl,
+        // Profile-specific fields
+        technical_specs: formData.technical_specs,
+        map_location: formData.map_location,
+        venue_type: formData.venue_type,
+        capacity: formData.capacity,
+        genre: formData.genre,
+        formation_date: formData.formation_date,
+        producer_instagram: formData.producer_instagram,
+        recorded_at: formData.recorded_at,
+        marketing_services: formData.marketing_services,
+        specialties: formData.specialties,
+        portfolio_url: formData.portfolio_url,
+        instrument: formData.instrument,
+        experience_level: formData.experience_level,
+        education: formData.education,
+        available_for: formData.available_for,
+        label_genres: formData.label_genres,
+        website: formData.website,
+        services: formData.services,
       };
 
-      // Agregar campos específicos según el tipo de perfil
-      if (selectedProfile === "estudio_grabacion") {
-        profileData.technical_specs = formData.technical_specs ? JSON.stringify({ description: formData.technical_specs }) : null;
-        profileData.map_location = formData.map_location || null;
-      } else if (selectedProfile === "sala_concierto") {
-        profileData.venue_type = formData.venue_type || null;
-        profileData.capacity = formData.capacity ? parseInt(formData.capacity) : null;
-      } else if (selectedProfile === "agrupacion_musical") {
-        profileData.genre = formData.genre || null;
-        profileData.formation_date = formData.formation_date || null;
-        profileData.producer_instagram = formData.producer_instagram || null;
-        profileData.recorded_at = formData.recorded_at || null;
-      } else if (selectedProfile === "marketing_digital") {
-        profileData.technical_specs = JSON.stringify({
-          marketing_services: formData.marketing_services || [],
-          specialties: formData.specialties || null,
-          portfolio_url: formData.portfolio_url || null
-        });
-      } else if (selectedProfile === "musico") {
-        profileData.genre = formData.genre || null;
-        profileData.technical_specs = JSON.stringify({
-          instrument: formData.instrument || null,
-          experience_level: formData.experience_level || null,
-          education: formData.education || null,
-          available_for: formData.available_for || null
-        });
-      } else if (selectedProfile === "sello_discografico") {
-        profileData.formation_date = formData.formation_date || null;
-        profileData.technical_specs = JSON.stringify({
-          label_genres: formData.label_genres || [],
-          website: formData.website || null,
-          services: formData.services || null
-        });
+      const response = await supabase.functions.invoke('validate-registration', {
+        body: registrationData
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message || 'Error al crear la cuenta');
       }
 
-      // Paso 3: Guardar perfil en profile_details
-      const { data: profileInsertData, error: profileError } = await supabase
+      if (!response.data?.success) {
+        throw new Error(response.data?.error || 'Error al crear la cuenta');
+      }
+
+      // Continue with file uploads if any
+      const userId = response.data.user_id;
+      const { data: profileQuery } = await supabase
         .from('profile_details')
-        .insert(profileData)
         .select('id')
+        .eq('user_id', userId)
         .single();
-
-      if (profileError) throw profileError;
       
-      const profileId = profileInsertData.id;
+      const profileId = profileQuery?.id;
 
-      // Paso 4: Subir archivos multimedia si hay
-      try {
-        // Subir videos
-        for (let i = 0; i < uploadedVideos.length; i++) {
-          const file = uploadedVideos[i];
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${authData.user.id}/videos/${Date.now()}-${i}.${fileExt}`;
+      // Step 3: Upload multimedia files if any
+      if (profileId) {
+        try {
+          // Upload videos
+          for (let i = 0; i < uploadedVideos.length; i++) {
+            const file = uploadedVideos[i];
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${userId}/videos/${Date.now()}-${i}.${fileExt}`;
 
-          const { data: videoData, error: videoUploadError } = await supabase.storage
-            .from('profile-avatars')
-            .upload(fileName, file);
-
-          if (!videoUploadError && videoData) {
-            const { data: { publicUrl } } = supabase.storage
+            const { data: videoData, error: videoUploadError } = await supabase.storage
               .from('profile-avatars')
-              .getPublicUrl(videoData.path);
+              .upload(fileName, file);
 
-            await supabase.from('profile_galleries').insert({
-              profile_id: profileId,
-              url: publicUrl,
-              media_type: 'video',
-              order_index: i
-            });
+            if (!videoUploadError && videoData) {
+              const { data: { publicUrl } } = supabase.storage
+                .from('profile-avatars')
+                .getPublicUrl(videoData.path);
+
+              await supabase.from('profile_galleries').insert({
+                profile_id: profileId,
+                url: publicUrl,
+                media_type: 'video',
+                order_index: i
+              });
+            }
           }
-        }
 
-        // Subir imágenes
-        for (let i = 0; i < uploadedImages.length; i++) {
-          const file = uploadedImages[i];
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${authData.user.id}/images/${Date.now()}-${i}.${fileExt}`;
+          // Upload images
+          for (let i = 0; i < uploadedImages.length; i++) {
+            const file = uploadedImages[i];
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${userId}/images/${Date.now()}-${i}.${fileExt}`;
 
-          const { data: imageData, error: imageUploadError } = await supabase.storage
-            .from('profile-avatars')
-            .upload(fileName, file);
-
-          if (!imageUploadError && imageData) {
-            const { data: { publicUrl } } = supabase.storage
+            const { data: imageData, error: imageUploadError } = await supabase.storage
               .from('profile-avatars')
-              .getPublicUrl(imageData.path);
+              .upload(fileName, file);
 
-            await supabase.from('profile_galleries').insert({
-              profile_id: profileId,
-              url: publicUrl,
-              media_type: 'photo',
-              order_index: i
-            });
+            if (!imageUploadError && imageData) {
+              const { data: { publicUrl } } = supabase.storage
+                .from('profile-avatars')
+                .getPublicUrl(imageData.path);
+
+              await supabase.from('profile_galleries').insert({
+                profile_id: profileId,
+                url: publicUrl,
+                media_type: 'photo',
+                order_index: i
+              });
+            }
           }
-        }
 
-        // Subir audios
-        for (let i = 0; i < uploadedAudios.length; i++) {
-          const file = uploadedAudios[i];
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${authData.user.id}/audio/${Date.now()}-${i}.${fileExt}`;
+          // Upload audio
+          for (let i = 0; i < uploadedAudios.length; i++) {
+            const file = uploadedAudios[i];
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${userId}/audio/${Date.now()}-${i}.${fileExt}`;
 
-          const { data: audioData, error: audioUploadError } = await supabase.storage
-            .from('profile-avatars')
-            .upload(fileName, file);
-
-          if (!audioUploadError && audioData) {
-            const { data: { publicUrl } } = supabase.storage
+            const { data: audioData, error: audioUploadError } = await supabase.storage
               .from('profile-avatars')
-              .getPublicUrl(audioData.path);
+              .upload(fileName, file);
 
-            await supabase.from('audio_playlist').insert({
-              profile_id: profileId,
-              title: file.name.replace(/\.[^/.]+$/, ''),
-              audio_url: publicUrl,
-              order_index: i
-            });
+            if (!audioUploadError && audioData) {
+              const { data: { publicUrl } } = supabase.storage
+                .from('profile-avatars')
+                .getPublicUrl(audioData.path);
+
+              await supabase.from('audio_playlist').insert({
+                profile_id: profileId,
+                title: file.name.replace(/\.[^/.]+$/, ''),
+                audio_url: publicUrl,
+                order_index: i
+              });
+            }
           }
+        } catch (uploadError) {
+          console.error('Error al subir multimedia:', uploadError);
+          // Don't throw error, continue with registration
         }
-      } catch (uploadError) {
-        console.error('Error al subir multimedia:', uploadError);
-        // No lanzar error, continuar con el registro
       }
       
       setSubmitted(true);

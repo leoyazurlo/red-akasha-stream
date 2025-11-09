@@ -25,6 +25,7 @@ import Auth from "./pages/Auth";
 import UploadContent from "./pages/UploadContent";
 import Artists from "./pages/Artists";
 import ArtistProfile from "./pages/ArtistProfile";
+import UserProfile from "./pages/UserProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
           <Route path="/subir-contenido" element={<UploadContent />} />
           <Route path="/artistas" element={<Artists />} />
           <Route path="/artistas/:id" element={<ArtistProfile />} />
+          <Route path="/perfil/:id" element={<UserProfile />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/categories" element={<AdminCategories />} />
           <Route path="/admin/streams" element={<AdminStreams />} />

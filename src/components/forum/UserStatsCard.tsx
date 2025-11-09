@@ -1,7 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useUserStats, useUserBadges } from "@/hooks/useUserBadges";
 import { MessageSquare, MessageCircle, ThumbsUp, Award, Trophy } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useNavigate } from "react-router-dom";
 
 interface UserStatsCardProps {
   userId: string;
@@ -9,6 +11,7 @@ interface UserStatsCardProps {
 }
 
 export const UserStatsCard = ({ userId, userName }: UserStatsCardProps) => {
+  const navigate = useNavigate();
   const { data: stats, isLoading: statsLoading } = useUserStats(userId);
   const { data: badges, isLoading: badgesLoading } = useUserBadges(userId);
 
@@ -115,6 +118,14 @@ export const UserStatsCard = ({ userId, userName }: UserStatsCardProps) => {
             </div>
           </div>
         )}
+        
+        <Button 
+          variant="outline" 
+          className="w-full mt-4"
+          onClick={() => navigate(`/perfil/${userId}`)}
+        >
+          Ver Perfil Completo
+        </Button>
       </CardContent>
     </Card>
   );

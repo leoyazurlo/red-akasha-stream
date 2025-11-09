@@ -322,9 +322,15 @@ const ThreadPage = () => {
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <p className="font-semibold text-foreground">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/perfil/${post.author_id}`);
+                        }}
+                        className="font-semibold text-foreground hover:text-primary transition-colors"
+                      >
                         {post.author.username || post.author.full_name || "Usuario"}
-                      </p>
+                      </button>
                       <UserBadges userId={post.author_id} limit={3} showCount />
                     </div>
                     <p className="text-xs text-muted-foreground">
@@ -491,11 +497,17 @@ const ThreadPage = () => {
                     </Badge>
                     <div className="flex items-center gap-2">
                       <User className="w-3 h-3" />
-                      <span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/perfil/${thread.author_id}`);
+                        }}
+                        className="hover:text-primary transition-colors"
+                      >
                         {thread.author.username ||
                           thread.author.full_name ||
                           "Usuario"}
-                      </span>
+                      </button>
                       <UserBadges userId={thread.author_id} limit={3} showCount />
                     </div>
                     <div className="flex items-center gap-1">

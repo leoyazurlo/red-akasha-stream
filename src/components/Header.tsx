@@ -81,6 +81,10 @@ export const Header = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => navigate(`/perfil/${user.id}`)}>
+                    <User className="mr-2 h-4 w-4" />
+                    Mi Perfil
+                  </DropdownMenuItem>
                   {isAdmin && (
                     <DropdownMenuItem onClick={() => navigate("/admin")}>
                       Panel de Control
@@ -160,6 +164,17 @@ export const Header = () => {
             <div className="pt-2 space-y-2 border-t border-border/50 mt-2">
               {user ? (
                 <>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start h-12 text-base"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      navigate(`/perfil/${user.id}`);
+                    }}
+                  >
+                    <User className="mr-2 h-5 w-5" />
+                    Mi Perfil
+                  </Button>
                   {isAdmin && (
                     <Button
                       variant="ghost"

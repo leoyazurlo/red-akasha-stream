@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Switch } from "@/components/ui/switch";
 
 interface ProfileOption {
   id: string;
@@ -54,6 +55,9 @@ const UploadContent = () => {
     recording_studio: "",
     venue_name: "",
     promoter_name: "",
+    is_free: true,
+    price: "0",
+    currency: "USD",
   });
 
   const contentTypes = [
@@ -178,7 +182,10 @@ const UploadContent = () => {
         video_url: formData.video_url || null,
         audio_url: formData.audio_url || null,
         photo_url: formData.photo_url || null,
-        status: 'pending'
+        status: 'pending',
+        is_free: formData.is_free,
+        price: formData.is_free ? 0 : parseFloat(formData.price) || 0,
+        currency: formData.currency,
       };
 
       // Agregar campos específicos según el tipo
@@ -218,6 +225,9 @@ const UploadContent = () => {
         recording_studio: "",
         venue_name: "",
         promoter_name: "",
+        is_free: true,
+        price: "0",
+        currency: "USD",
       });
     } catch (error: any) {
       console.error('Error al subir contenido:', error);
@@ -445,6 +455,74 @@ const UploadContent = () => {
                       </div>
                     </div>
                   )}
+
+                  {/* Sección de Monetización */}
+                  <div className="border-t pt-6 space-y-4">
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2 text-cyan-400">Monetización</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Configura si tu contenido será gratuito o de pago
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-lg border border-border bg-card p-4">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="is_free" className="text-base">
+                          Contenido Gratuito
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          {formData.is_free 
+                            ? "El contenido será visible para todos sin costo" 
+                            : "Los usuarios deberán pagar para acceder al contenido"}
+                        </p>
+                      </div>
+                      <Switch
+                        id="is_free"
+                        checked={formData.is_free}
+                        onCheckedChange={(checked) => 
+                          setFormData(prev => ({ ...prev, is_free: checked }))
+                        }
+                      />
+                    </div>
+
+                    {!formData.is_free && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-lg border border-border bg-card/50">
+                        <div className="space-y-2">
+                          <Label htmlFor="price">Precio *</Label>
+                          <Input
+                            id="price"
+                            name="price"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            required
+                            value={formData.price}
+                            onChange={handleChange}
+                            placeholder="0.00"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="currency">Moneda</Label>
+                          <Select
+                            value={formData.currency}
+                            onValueChange={(value) => setFormData(prev => ({ ...prev, currency: value }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecciona moneda" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="USD">USD - Dólar</SelectItem>
+                              <SelectItem value="EUR">EUR - Euro</SelectItem>
+                              <SelectItem value="ARS">ARS - Peso Argentino</SelectItem>
+                              <SelectItem value="MXN">MXN - Peso Mexicano</SelectItem>
+                              <SelectItem value="COP">COP - Peso Colombiano</SelectItem>
+                              <SelectItem value="CLP">CLP - Peso Chileno</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
                   <div className="border-t pt-6">
                     <h3 className="text-lg font-semibold mb-4 text-cyan-400">Ficha Técnica</h3>

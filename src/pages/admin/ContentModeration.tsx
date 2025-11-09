@@ -28,6 +28,9 @@ interface ContentItem {
   promoter_name?: string;
   created_at: string;
   uploader_id: string;
+  is_free: boolean;
+  price?: number;
+  currency?: string;
 }
 
 export default function AdminContentModeration() {
@@ -177,6 +180,15 @@ export default function AdminContentModeration() {
                                     {item.content_type.replace('_', ' ')}
                                   </Badge>
                                   {getStatusBadge(item.status)}
+                                  {item.is_free ? (
+                                    <Badge variant="secondary" className="bg-green-500/10 text-green-500 border-green-500/20">
+                                      Gratuito
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
+                                      De Pago: {item.price} {item.currency}
+                                    </Badge>
+                                  )}
                                 </div>
                               </div>
                             </div>

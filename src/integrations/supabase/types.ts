@@ -280,13 +280,16 @@ export type Database = {
           band_name: string | null
           content_type: Database["public"]["Enums"]["content_type"]
           created_at: string | null
+          currency: string | null
           description: string | null
           duration: number | null
           id: string
+          is_free: boolean
           photo_url: string | null
           podcast_category:
             | Database["public"]["Enums"]["podcast_category"]
             | null
+          price: number | null
           producer_name: string | null
           promoter_name: string | null
           recording_studio: string | null
@@ -305,13 +308,16 @@ export type Database = {
           band_name?: string | null
           content_type: Database["public"]["Enums"]["content_type"]
           created_at?: string | null
+          currency?: string | null
           description?: string | null
           duration?: number | null
           id?: string
+          is_free?: boolean
           photo_url?: string | null
           podcast_category?:
             | Database["public"]["Enums"]["podcast_category"]
             | null
+          price?: number | null
           producer_name?: string | null
           promoter_name?: string | null
           recording_studio?: string | null
@@ -330,13 +336,16 @@ export type Database = {
           band_name?: string | null
           content_type?: Database["public"]["Enums"]["content_type"]
           created_at?: string | null
+          currency?: string | null
           description?: string | null
           duration?: number | null
           id?: string
+          is_free?: boolean
           photo_url?: string | null
           podcast_category?:
             | Database["public"]["Enums"]["podcast_category"]
             | null
+          price?: number | null
           producer_name?: string | null
           promoter_name?: string | null
           recording_studio?: string | null

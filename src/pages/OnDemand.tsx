@@ -2,6 +2,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { OnDemandPlayer } from "@/components/OnDemandPlayer";
+import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -42,20 +43,36 @@ interface Content {
   promoter_name: string | null;
 }
 
+interface PlaybackHistory {
+  id: string;
+  content_id: string;
+  last_position: number;
+  duration: number;
+  completed: boolean;
+  last_watched_at: string;
+  content?: Content;
+}
+
 const OnDemand = () => {
+  const { user } = useAuth();
   const [contents, setContents] = useState<Content[]>([]);
   const [filteredContents, setFilteredContents] = useState<Content[]>([]);
+  const [continueWatching, setContinueWatching] = useState<PlaybackHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
   const [filterPrice, setFilterPrice] = useState<string>("all");
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
+  const [initialPosition, setInitialPosition] = useState(0);
   const [playerOpen, setPlayerOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchContents();
-  }, []);
+    if (user) {
+      fetchContinueWatching();
+    }
+  }, [user]);
 
   useEffect(() => {
     filterContents();
@@ -81,6 +98,37 @@ const OnDemand = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchContinueWatching = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('playback_history')
+        .select(`
+          *,
+          content:content_uploads(*)
+        `)
+        .eq('user_id', user.id)
+        .eq('completed', false)
+        .order('last_watched_at', { ascending: false })
+        .limit(6);
+
+      if (error) throw error;
+
+      // Filtrar solo los que tienen contenido y progreso mayor a 30 segundos
+      const validHistory = (data || [])
+        .filter(item => item.content && item.last_position > 30)
+        .map(item => ({
+          ...item,
+          content: Array.isArray(item.content) ? item.content[0] : item.content
+        }));
+
+      setContinueWatching(validHistory);
+    } catch (error) {
+      console.error('Error fetching continue watching:', error);
     }
   };
 
@@ -149,6 +197,7 @@ const OnDemand = () => {
 
   const handleContentClick = (content: Content) => {
     setSelectedContent(content);
+    setInitialPosition(0); // Por defecto desde el inicio
     setPlayerOpen(true);
     
     // Incrementar contador de vistas
@@ -165,6 +214,24 @@ const OnDemand = () => {
           )
         );
       });
+  };
+
+  const handleContinueWatching = (history: PlaybackHistory) => {
+    if (!history.content) return;
+    
+    setSelectedContent(history.content as Content);
+    setInitialPosition(history.last_position);
+    setPlayerOpen(true);
+  };
+
+  const handlePlayerClose = (open: boolean) => {
+    setPlayerOpen(open);
+    // Recargar historial cuando se cierra el reproductor
+    if (!open && user) {
+      setTimeout(() => {
+        fetchContinueWatching();
+      }, 500);
+    }
   };
 
   const handlePurchase = () => {
@@ -191,6 +258,75 @@ const OnDemand = () => {
               Accede a nuestra biblioteca de contenido exclusivo. Videos, audios, fotos y podcasts cuando quieras, donde quieras.
             </p>
           </div>
+
+          {/* Continue Watching Section */}
+          {user && continueWatching.length > 0 && (
+            <Card className="mb-8 bg-card/50 backdrop-blur-sm border-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Play className="w-5 h-5" />
+                  Continuar Viendo
+                </CardTitle>
+                <CardDescription>
+                  Retoma donde lo dejaste
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {continueWatching.map((history) => {
+                    const content = history.content as Content;
+                    if (!content) return null;
+                    
+                    const progress = (history.last_position / history.duration) * 100;
+                    
+                    return (
+                      <Card 
+                        key={history.id}
+                        className="group overflow-hidden border-border bg-card/30 hover:bg-card/60 transition-all cursor-pointer"
+                        onClick={() => handleContinueWatching(history)}
+                      >
+                        <div className="relative overflow-hidden">
+                          <AspectRatio ratio={16 / 9}>
+                            {content.thumbnail_url ? (
+                              <img
+                                src={content.thumbnail_url}
+                                alt={content.title}
+                                className="object-cover w-full h-full"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-secondary/30">
+                                {getContentIcon(content.content_type)}
+                              </div>
+                            )}
+                          </AspectRatio>
+                          
+                          {/* Progress Bar */}
+                          <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/50">
+                            <div 
+                              className="h-full bg-primary transition-all"
+                              style={{ width: `${progress}%` }}
+                            />
+                          </div>
+
+                          {/* Play Overlay */}
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                            <Play className="w-12 h-12 text-white" fill="white" />
+                          </div>
+                        </div>
+
+                        <CardContent className="p-3">
+                          <p className="font-medium text-sm line-clamp-1 mb-1">{content.title}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {Math.floor(history.last_position / 60)}:{(history.last_position % 60).toString().padStart(2, '0')} / {Math.floor(history.duration / 60)}:{(history.duration % 60).toString().padStart(2, '0')}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Filters */}
           <Card className="mb-8 bg-card/50 backdrop-blur-sm border-border">
@@ -368,8 +504,9 @@ const OnDemand = () => {
       {selectedContent && (
         <OnDemandPlayer
           open={playerOpen}
-          onOpenChange={setPlayerOpen}
+          onOpenChange={handlePlayerClose}
           content={selectedContent}
+          initialPosition={initialPosition}
           isPurchased={false}
           onPurchase={handlePurchase}
         />

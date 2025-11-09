@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Slider } from "@/components/ui/slider";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface OnDemandPlayerProps {
   open: boolean;
@@ -36,6 +38,7 @@ interface OnDemandPlayerProps {
   };
   isPurchased?: boolean;
   onPurchase?: () => void;
+  initialPosition?: number;
 }
 
 export const OnDemandPlayer = ({ 
@@ -43,18 +46,22 @@ export const OnDemandPlayer = ({
   onOpenChange, 
   content,
   isPurchased = false,
-  onPurchase
+  onPurchase,
+  initialPosition = 0
 }: OnDemandPlayerProps) => {
+  const { user } = useAuth();
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
+  const [currentTime, setCurrentTime] = useState(initialPosition);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const saveIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const isVideo = content.content_type !== 'podcast';
   const mediaRef = isVideo ? videoRef : audioRef;
@@ -65,9 +72,43 @@ export const OnDemandPlayer = ({
   useEffect(() => {
     if (!open) {
       setIsPlaying(false);
-      setCurrentTime(0);
+      // Guardar progreso al cerrar
+      if (user && hasStarted) {
+        savePlaybackPosition(false);
+      }
+      // Limpiar interval
+      if (saveIntervalRef.current) {
+        clearInterval(saveIntervalRef.current);
+      }
+    } else {
+      // Restaurar posición inicial al abrir
+      if (initialPosition > 0 && mediaRef.current) {
+        mediaRef.current.currentTime = initialPosition;
+        setCurrentTime(initialPosition);
+      }
     }
   }, [open]);
+
+  // Guardar progreso periódicamente mientras reproduce
+  useEffect(() => {
+    if (isPlaying && user && canPlay) {
+      setHasStarted(true);
+      // Guardar cada 5 segundos
+      saveIntervalRef.current = setInterval(() => {
+        savePlaybackPosition(false);
+      }, 5000);
+    } else {
+      if (saveIntervalRef.current) {
+        clearInterval(saveIntervalRef.current);
+      }
+    }
+
+    return () => {
+      if (saveIntervalRef.current) {
+        clearInterval(saveIntervalRef.current);
+      }
+    };
+  }, [isPlaying, user, canPlay]);
 
   useEffect(() => {
     const media = mediaRef.current;
@@ -75,7 +116,13 @@ export const OnDemandPlayer = ({
 
     const handleTimeUpdate = () => setCurrentTime(media.currentTime);
     const handleDurationChange = () => setDuration(media.duration);
-    const handleEnded = () => setIsPlaying(false);
+    const handleEnded = () => {
+      setIsPlaying(false);
+      // Marcar como completado
+      if (user) {
+        savePlaybackPosition(true);
+      }
+    };
 
     media.addEventListener('timeupdate', handleTimeUpdate);
     media.addEventListener('durationchange', handleDurationChange);
@@ -86,7 +133,37 @@ export const OnDemandPlayer = ({
       media.removeEventListener('durationchange', handleDurationChange);
       media.removeEventListener('ended', handleEnded);
     };
-  }, [mediaRef]);
+  }, [mediaRef, user]);
+
+  const savePlaybackPosition = async (completed: boolean) => {
+    if (!user) return;
+
+    const media = mediaRef.current;
+    if (!media) return;
+
+    try {
+      const position = Math.floor(media.currentTime);
+      const totalDuration = Math.floor(media.duration);
+
+      // Determinar si está completado (vio más del 90% o llegó al final)
+      const isCompleted = completed || (position / totalDuration) > 0.9;
+
+      await supabase
+        .from('playback_history')
+        .upsert({
+          user_id: user.id,
+          content_id: content.id,
+          last_position: position,
+          duration: totalDuration,
+          completed: isCompleted,
+          last_watched_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id,content_id'
+        });
+    } catch (error) {
+      console.error('Error saving playback position:', error);
+    }
+  };
 
   const togglePlayPause = () => {
     const media = mediaRef.current;

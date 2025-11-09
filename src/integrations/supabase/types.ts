@@ -893,6 +893,50 @@ export type Database = {
           },
         ]
       }
+      playback_history: {
+        Row: {
+          completed: boolean
+          content_id: string
+          created_at: string
+          duration: number | null
+          id: string
+          last_position: number
+          last_watched_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          content_id: string
+          created_at?: string
+          duration?: number | null
+          id?: string
+          last_position?: number
+          last_watched_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          content_id?: string
+          created_at?: string
+          duration?: number | null
+          id?: string
+          last_position?: number
+          last_watched_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playback_history_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "content_uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       podcast_episodes: {
         Row: {
           apple_podcasts_url: string | null

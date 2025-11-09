@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { ThreadForm } from "@/components/forum/ThreadForm";
+import { UserBadges } from "@/components/forum/UserBadges";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -237,11 +238,12 @@ const Subforo = () => {
                               <Badge variant={getThreadTypeBadgeVariant(thread.thread_type)}>
                                 {getThreadTypeLabel(thread.thread_type)}
                               </Badge>
-                              <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-2">
                                 <User className="w-3 h-3" />
                                 <span>
                                   {thread.author?.username || thread.author?.full_name || "Usuario"}
                                 </span>
+                                <UserBadges userId={thread.author_id} limit={2} />
                               </div>
                               <div className="flex items-center gap-1">
                                 <Clock className="w-3 h-3" />

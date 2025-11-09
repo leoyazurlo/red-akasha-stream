@@ -6,6 +6,8 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { PostForm } from "@/components/forum/PostForm";
+import { UserBadges } from "@/components/forum/UserBadges";
+import { UserStatsCard } from "@/components/forum/UserStatsCard";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -318,10 +320,13 @@ const ThreadPage = () => {
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-foreground">
-                      {post.author.username || post.author.full_name || "Usuario"}
-                    </p>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-foreground">
+                        {post.author.username || post.author.full_name || "Usuario"}
+                      </p>
+                      <UserBadges userId={post.author_id} limit={3} showCount />
+                    </div>
                     <p className="text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(post.created_at), {
                         addSuffix: true,
@@ -465,31 +470,33 @@ const ThreadPage = () => {
           </div>
 
           {/* Thread Header */}
-          <Card className="mb-8 bg-card/50 backdrop-blur-sm border border-border">
-            <CardContent className="p-8">
-              <div className="flex items-start gap-4 mb-6">
-                {thread.is_pinned && (
-                  <Pin className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-                )}
-                {thread.is_closed && (
-                  <Lock className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-1" />
-                )}
-                <div className="flex-1">
-                  <h1 className="text-3xl font-poppins font-medium tracking-wide text-foreground mb-4">
-                    {thread.title}
-                  </h1>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <Card className="lg:col-span-2 bg-card/50 backdrop-blur-sm border border-border">
+              <CardContent className="p-8">
+                <div className="flex items-start gap-4 mb-6">
+                  {thread.is_pinned && (
+                    <Pin className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+                  )}
+                  {thread.is_closed && (
+                    <Lock className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-1" />
+                  )}
+                  <div className="flex-1">
+                    <h1 className="text-3xl font-poppins font-medium tracking-wide text-foreground mb-4">
+                      {thread.title}
+                    </h1>
 
                   <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-6">
                     <Badge variant="outline">
                       {getThreadTypeLabel(thread.thread_type)}
                     </Badge>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
                       <User className="w-3 h-3" />
                       <span>
                         {thread.author.username ||
                           thread.author.full_name ||
                           "Usuario"}
                       </span>
+                      <UserBadges userId={thread.author_id} limit={3} showCount />
                     </div>
                     <div className="flex items-center gap-1">
                       <Clock className="w-3 h-3" />
@@ -511,10 +518,19 @@ const ThreadPage = () => {
                       {thread.content}
                     </p>
                   </div>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+            
+            {/* Author Stats Sidebar */}
+            <div className="hidden lg:block">
+              <UserStatsCard 
+                userId={thread.author_id} 
+                userName={thread.author.username || thread.author.full_name || undefined}
+              />
+            </div>
+          </div>
 
           {/* New Reply Form (Top Level) */}
           {user && !thread.is_closed ? (

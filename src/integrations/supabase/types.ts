@@ -1813,6 +1813,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      award_badge_if_eligible: {
+        Args: { p_badge_name: string; p_user_id: string }
+        Returns: undefined
+      }
       generate_rtmp_key: { Args: never; Returns: string }
       has_role: {
         Args: {

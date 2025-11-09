@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
+import { ShareProfile } from "@/components/profile/ShareProfile";
+import { ExportAchievements } from "@/components/profile/ExportAchievements";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -255,9 +257,29 @@ const UserProfile = () => {
                 </Avatar>
 
                 <div className="flex-1 text-center md:text-left">
-                  <h1 className="text-3xl font-bold mb-2">
-                    {profile.username || profile.full_name || "Usuario"}
-                  </h1>
+                  <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-4 mb-2">
+                    <h1 className="text-3xl font-bold">
+                      {profile.username || profile.full_name || "Usuario"}
+                    </h1>
+                    <div className="flex gap-2">
+                      <ShareProfile 
+                        userId={id!} 
+                        userName={profile.username || profile.full_name || "Usuario"} 
+                      />
+                      <ExportAchievements
+                        userName={profile.username || profile.full_name || "Usuario"}
+                        stats={stats || { threads: 0, posts: 0, positiveVotes: 0, bestAnswers: 0 }}
+                        badges={{
+                          bronze: badgesByType.bronze.length,
+                          silver: badgesByType.silver.length,
+                          gold: badgesByType.gold.length,
+                          special: badgesByType.special.length,
+                          merit: badgesByType.merit.length,
+                        }}
+                        reputationPoints={profile.reputation_points || 0}
+                      />
+                    </div>
+                  </div>
                   {profile.bio && (
                     <p className="text-muted-foreground mb-4">{profile.bio}</p>
                   )}

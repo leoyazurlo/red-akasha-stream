@@ -1,6 +1,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
+import { OnDemandPlayer } from "@/components/OnDemandPlayer";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +49,8 @@ const OnDemand = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
   const [filterPrice, setFilterPrice] = useState<string>("all");
+  const [selectedContent, setSelectedContent] = useState<Content | null>(null);
+  const [playerOpen, setPlayerOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -142,6 +145,33 @@ const OnDemand = () => {
       pelicula: "Película"
     };
     return labels[type] || type;
+  };
+
+  const handleContentClick = (content: Content) => {
+    setSelectedContent(content);
+    setPlayerOpen(true);
+    
+    // Incrementar contador de vistas
+    supabase
+      .from('content_uploads')
+      .update({ views_count: content.views_count + 1 })
+      .eq('id', content.id)
+      .then(() => {
+        // Actualizar localmente
+        setContents(prev => 
+          prev.map(c => c.id === content.id 
+            ? { ...c, views_count: c.views_count + 1 }
+            : c
+          )
+        );
+      });
+  };
+
+  const handlePurchase = () => {
+    toast({
+      title: "Próximamente",
+      description: "El sistema de pagos estará disponible pronto",
+    });
   };
 
   return (
@@ -250,6 +280,7 @@ const OnDemand = () => {
                 <Card 
                   key={content.id} 
                   className="group overflow-hidden border-border bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-all cursor-pointer"
+                  onClick={() => handleContentClick(content)}
                 >
                   {/* Thumbnail */}
                   <div className="relative overflow-hidden bg-secondary/20">
@@ -332,6 +363,17 @@ const OnDemand = () => {
 
         <Footer />
       </div>
+
+      {/* Video/Audio Player */}
+      {selectedContent && (
+        <OnDemandPlayer
+          open={playerOpen}
+          onOpenChange={setPlayerOpen}
+          content={selectedContent}
+          isPurchased={false}
+          onPurchase={handlePurchase}
+        />
+      )}
     </div>
   );
 };

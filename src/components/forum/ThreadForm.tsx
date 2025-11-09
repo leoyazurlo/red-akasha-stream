@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { MentionTextarea } from "./MentionTextarea";
 import {
   Select,
   SelectContent,
@@ -143,11 +143,11 @@ export const ThreadForm = ({ subforoId, onSuccess }: ThreadFormProps) => {
             <FormItem>
               <FormLabel>Contenido</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Escribe el contenido del hilo (10-10,000 caracteres)"
-                  className="min-h-[200px]"
-                  {...field}
-                  maxLength={10000}
+                <MentionTextarea
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Escribe el contenido del hilo (10-10,000 caracteres). Usa @usuario para mencionar."
+                  minRows={8}
                 />
               </FormControl>
               <div className="text-xs text-muted-foreground text-right">

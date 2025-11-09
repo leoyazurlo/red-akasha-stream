@@ -8,6 +8,7 @@ import { CosmicBackground } from "@/components/CosmicBackground";
 import { PostForm } from "@/components/forum/PostForm";
 import { UserBadges } from "@/components/forum/UserBadges";
 import { UserStatsCard } from "@/components/forum/UserStatsCard";
+import { MentionContent } from "@/components/forum/MentionContent";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -364,7 +365,10 @@ const ThreadPage = () => {
 
             {/* Post Content */}
             <div className="prose prose-invert max-w-none mb-4">
-              <p className="text-foreground whitespace-pre-wrap">{post.content}</p>
+              <MentionContent 
+                content={post.content}
+                className="text-foreground"
+              />
             </div>
 
             {/* Post Actions */}
@@ -526,9 +530,10 @@ const ThreadPage = () => {
                   </div>
 
                   <div className="prose prose-invert max-w-none">
-                    <p className="text-foreground whitespace-pre-wrap text-lg">
-                      {thread.content}
-                    </p>
+                    <MentionContent 
+                      content={thread.content}
+                      className="text-foreground text-lg"
+                    />
                   </div>
                   </div>
                 </div>

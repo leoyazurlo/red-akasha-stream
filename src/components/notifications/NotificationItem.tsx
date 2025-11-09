@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Notification } from '@/hooks/useNotifications';
 import { useNotifications } from '@/hooks/useNotifications';
-import { UserPlus, MessageSquare, Award, ThumbsUp } from 'lucide-react';
+import { UserPlus, MessageSquare, Award, ThumbsUp, AtSign } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -16,6 +16,8 @@ const notificationIcons = {
   new_post: MessageSquare,
   new_badge: Award,
   new_vote: ThumbsUp,
+  mention_thread: AtSign,
+  mention_post: AtSign,
 };
 
 export const NotificationItem = ({ notification, onClose }: NotificationItemProps) => {

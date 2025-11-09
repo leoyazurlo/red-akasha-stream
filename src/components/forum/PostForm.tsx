@@ -13,7 +13,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
+import { MentionTextarea } from "./MentionTextarea";
 import { Loader2 } from "lucide-react";
 
 interface PostFormProps {
@@ -99,11 +99,11 @@ export const PostForm = ({
                 {parentPostId ? "Responder al comentario" : "Tu respuesta"}
               </FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder={placeholder}
-                  className="min-h-[120px]"
-                  {...field}
-                  maxLength={5000}
+                <MentionTextarea
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder={`${placeholder}. Usa @usuario para mencionar.`}
+                  minRows={5}
                 />
               </FormControl>
               <div className="text-xs text-muted-foreground text-right">

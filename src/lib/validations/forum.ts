@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { validateMentions } from "./mentions";
 
 // Thread validation schema
 export const threadSchema = z.object({
@@ -11,7 +12,11 @@ export const threadSchema = z.object({
     .string()
     .trim()
     .min(10, { message: "El contenido debe tener al menos 10 caracteres" })
-    .max(10000, { message: "El contenido no puede exceder 10,000 caracteres" }),
+    .max(10000, { message: "El contenido no puede exceder 10,000 caracteres" })
+    .refine(
+      (content) => validateMentions(content),
+      { message: "Las menciones contienen caracteres inválidos" }
+    ),
   subforo_id: z.string().uuid({ message: "Subforo inválido" }),
   thread_type: z.enum(["debate_abierto", "debate_moderado", "pregunta_encuesta", "hilo_recursos", "anuncio"]).optional(),
 });
@@ -24,7 +29,11 @@ export const postSchema = z.object({
     .string()
     .trim()
     .min(1, { message: "El contenido no puede estar vacío" })
-    .max(5000, { message: "El contenido no puede exceder 5,000 caracteres" }),
+    .max(5000, { message: "El contenido no puede exceder 5,000 caracteres" })
+    .refine(
+      (content) => validateMentions(content),
+      { message: "Las menciones contienen caracteres inválidos" }
+    ),
   thread_id: z.string().uuid({ message: "Thread inválido" }),
   parent_post_id: z.string().uuid().optional(),
 });

@@ -400,7 +400,7 @@ export const ProfileTechnicalSheet = ({
   return (
     <div className="relative w-full min-h-screen bg-gradient-dark p-4 sm:p-8 overflow-hidden">
       {/* Animated background effects */}
-      <div className="absolute inset-0 bg-gradient-glow opacity-50 animate-pulse-glow pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-glow opacity-30 pointer-events-none" />
       <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-float" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
       
@@ -415,7 +415,7 @@ export const ProfileTechnicalSheet = ({
                 {profileTypeLabels[profileType] || profileType}
               </Badge>
               
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-foreground mb-4 tracking-tight bg-gradient-to-r from-primary-glow to-accent bg-clip-text text-transparent animate-slide-in">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground mb-4 tracking-tight bg-gradient-to-r from-primary-glow to-accent bg-clip-text text-transparent animate-slide-in">
                 {displayName.toUpperCase()}
               </h2>
               
@@ -512,7 +512,7 @@ export const ProfileTechnicalSheet = ({
 
             {/* Avatar with Artistic Design */}
             <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-primary rounded-full blur-xl opacity-75 group-hover:opacity-100 transition-opacity duration-500 animate-pulse-glow" />
+              <div className="absolute -inset-1 bg-gradient-primary rounded-full blur-xl opacity-60 group-hover:opacity-90 transition-opacity duration-500" />
               <Avatar className="relative w-32 h-32 sm:w-40 sm:h-40 border-4 border-primary/30 ring-4 ring-primary/10 shadow-glow">
                 <AvatarImage src={avatarUrl || ''} alt={displayName} className="object-cover" />
                 <AvatarFallback className="bg-gradient-primary text-primary-foreground text-4xl sm:text-6xl font-bold">

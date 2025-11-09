@@ -92,6 +92,8 @@ export const ProfileTechnicalSheet = ({
   const [duration, setDuration] = useState(0);
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+  const [photoTransition, setPhotoTransition] = useState<'idle' | 'exit' | 'enter'>('idle');
+  const [videoTransition, setVideoTransition] = useState<'idle' | 'exit' | 'enter'>('idle');
   const [interactionCount, setInteractionCount] = useState(0);
   const [averageRating, setAverageRating] = useState(0);
   const [totalRatings, setTotalRatings] = useState(0);
@@ -318,19 +320,39 @@ export const ProfileTechnicalSheet = ({
   const hasContent = photos.length > 0 || videos.length > 0 || audioPlaylist.length > 0;
 
   const nextPhoto = () => {
-    setCurrentPhotoIndex((prev) => (prev + 1) % photos.length);
+    setPhotoTransition('exit');
+    setTimeout(() => {
+      setCurrentPhotoIndex((prev) => (prev + 1) % photos.length);
+      setPhotoTransition('enter');
+      setTimeout(() => setPhotoTransition('idle'), 500);
+    }, 300);
   };
 
   const previousPhoto = () => {
-    setCurrentPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length);
+    setPhotoTransition('exit');
+    setTimeout(() => {
+      setCurrentPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length);
+      setPhotoTransition('enter');
+      setTimeout(() => setPhotoTransition('idle'), 500);
+    }, 300);
   };
 
   const nextVideo = () => {
-    setCurrentVideoIndex((prev) => (prev + 1) % videos.length);
+    setVideoTransition('exit');
+    setTimeout(() => {
+      setCurrentVideoIndex((prev) => (prev + 1) % videos.length);
+      setVideoTransition('enter');
+      setTimeout(() => setVideoTransition('idle'), 500);
+    }, 300);
   };
 
   const previousVideo = () => {
-    setCurrentVideoIndex((prev) => (prev - 1 + videos.length) % videos.length);
+    setVideoTransition('exit');
+    setTimeout(() => {
+      setCurrentVideoIndex((prev) => (prev - 1 + videos.length) % videos.length);
+      setVideoTransition('enter');
+      setTimeout(() => setVideoTransition('idle'), 500);
+    }, 300);
   };
 
   const togglePlayPause = () => {
@@ -524,7 +546,13 @@ export const ProfileTechnicalSheet = ({
                       <img 
                         src={photos[currentPhotoIndex].url} 
                         alt={photos[currentPhotoIndex].title || 'Gallery'} 
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                        className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${
+                          photoTransition === 'exit' 
+                            ? 'opacity-0 scale-95 -translate-x-10' 
+                            : photoTransition === 'enter' 
+                            ? 'opacity-0 scale-95 translate-x-10 animate-photo-enter' 
+                            : 'opacity-100 scale-100 translate-x-0'
+                        }`}
                       />
                       
                       {/* Navigation arrows */}
@@ -573,7 +601,13 @@ export const ProfileTechnicalSheet = ({
                       <video 
                         key={videos[currentVideoIndex].url}
                         controls 
-                        className="w-full h-full object-cover"
+                        className={`w-full h-full object-cover transition-all duration-500 ${
+                          videoTransition === 'exit' 
+                            ? 'opacity-0 scale-95' 
+                            : videoTransition === 'enter' 
+                            ? 'opacity-0 scale-95 animate-video-enter' 
+                            : 'opacity-100 scale-100'
+                        }`}
                       >
                         <source src={videos[currentVideoIndex].url} type="video/mp4" />
                       </video>

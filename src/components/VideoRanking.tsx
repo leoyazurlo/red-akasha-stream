@@ -2,6 +2,7 @@ import { Play, Star } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 interface RankingVideo {
   id: string;
@@ -21,6 +22,7 @@ interface VideoRankingProps {
 
 export const VideoRanking = ({ videos }: VideoRankingProps) => {
   const [userRatings, setUserRatings] = useState<{ [key: string]: number }>({});
+  const { elementRef, isVisible } = useScrollAnimation({ threshold: 0.1 });
 
   const handleRating = (videoId: string, rating: number) => {
     setUserRatings(prev => ({ ...prev, [videoId]: rating }));
@@ -28,18 +30,35 @@ export const VideoRanking = ({ videos }: VideoRankingProps) => {
   };
 
   return (
-    <section className="py-8 md:py-12" id="ranking">
+    <section 
+      ref={elementRef}
+      className={`py-8 md:py-12 transition-all duration-700 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}
+      id="ranking"
+    >
       <div className="container mx-auto px-2 sm:px-4">
         <div className="relative mb-6 md:mb-8">
           <div className="absolute inset-0 bg-gradient-glow opacity-20 blur-3xl" />
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-poppins font-medium tracking-wide text-foreground text-center relative animate-slide-in px-4">
+          <h2 className={`text-2xl sm:text-3xl md:text-4xl font-poppins font-medium tracking-wide text-foreground text-center relative px-4 transition-all duration-700 delay-200 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
+          }`}>
             Rankings de Videos
           </h2>
         </div>
 
         <div className="max-w-4xl mx-auto space-y-2 sm:space-y-3">
           {videos.map((video, index) => (
-            <Card key={video.id} className="p-3 sm:p-4 hover:shadow-glow transition-all duration-300 backdrop-blur-sm bg-card/50 animate-slide-in hover:scale-[1.02]" style={{ animationDelay: `${index * 0.05}s` }}>
+            <Card 
+              key={video.id} 
+              data-index={index}
+              className={`p-3 sm:p-4 hover:shadow-glow transition-all duration-500 backdrop-blur-sm bg-card/50 hover:scale-[1.02] ${
+                isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'
+              }`}
+              style={{ 
+                transitionDelay: isVisible ? `${(index * 100) + 300}ms` : '0ms'
+              }}
+            >
               <div className="flex gap-2 sm:gap-4">
                 {/* Rank Number */}
                 <div className="flex items-center justify-center w-6 sm:w-8 shrink-0">

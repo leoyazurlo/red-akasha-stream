@@ -50,8 +50,12 @@ export const ArtistCard = ({ artist, genreLabel, index }: ArtistCardProps) => {
 
   return (
     <Card
-      className="group overflow-hidden border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-elegant animate-scale-in hover-scale cursor-pointer"
-      style={{ animationDelay: `${index * 75}ms` }}
+      data-index={index}
+      className="group overflow-hidden border-2 hover:border-primary/50 transition-all duration-500 hover:shadow-elegant hover-scale cursor-pointer opacity-0 animate-fade-in"
+      style={{ 
+        animationDelay: `${index * 75}ms`,
+        animationFillMode: 'forwards'
+      }}
       onClick={() => navigate(`/artistas/${artist.id}`)}
     >
       <CardContent className="p-0">

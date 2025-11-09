@@ -9,6 +9,7 @@ import {
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 interface VideoItem {
   id: string;
@@ -39,6 +40,7 @@ export const VideoCarousel = ({
   loadSchedulesFromDB = false
 }: VideoCarouselProps) => {
   const [scrollPosition, setScrollPosition] = useState(0);
+  const { elementRef, isVisible } = useScrollAnimation({ threshold: 0.15 });
 
   // Fetch schedules from database if enabled
   const { data: dbSchedules } = useQuery({
@@ -81,7 +83,13 @@ export const VideoCarousel = ({
   };
 
   return (
-    <section className="py-4 md:py-8" id={sectionId}>
+    <section 
+      ref={elementRef}
+      className={`py-4 md:py-8 transition-all duration-700 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`} 
+      id={sectionId}
+    >
       <div className="container mx-auto px-2 sm:px-4">
         {/* Section Title with Navigation Arrows on Sides */}
         <div className="flex items-center justify-between md:justify-center gap-2 sm:gap-4 mb-4 md:mb-8 max-w-4xl mx-auto">
@@ -169,8 +177,13 @@ export const VideoCarousel = ({
               {videos.map((video, index) => (
                 <div
                   key={video.id}
-                  className="flex-none w-44 sm:w-52 md:w-56 group cursor-pointer animate-slide-in"
-                  style={{ animationDelay: `${index * 0.1}s` }}
+                  data-index={index}
+                  className={`flex-none w-44 sm:w-52 md:w-56 group cursor-pointer transition-all duration-500 ${
+                    isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
+                  }`}
+                  style={{ 
+                    transitionDelay: isVisible ? `${index * 75}ms` : '0ms'
+                  }}
                 >
                   <div className="relative aspect-video bg-card rounded-lg md:rounded-xl overflow-hidden border border-border hover:border-primary transition-all duration-300 hover:shadow-glow hover:scale-105">
                     {/* Thumbnail */}

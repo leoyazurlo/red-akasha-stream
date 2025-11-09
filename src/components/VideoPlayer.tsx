@@ -1,7 +1,17 @@
 import { Play } from "lucide-react";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+
 export const VideoPlayer = () => {
+  const { elementRef, isVisible } = useScrollAnimation({ threshold: 0.2 });
+  
   return (
-    <section className="container mx-auto px-4 py-8 sm:py-10 md:py-12 mt-16" id="home">
+    <section 
+      ref={elementRef}
+      className={`container mx-auto px-4 py-8 sm:py-10 md:py-12 mt-16 transition-all duration-700 ${
+        isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+      }`}
+      id="home"
+    >
       <div className="max-w-3xl mx-auto">
         {/* Live Badge */}
         <div className="flex items-center justify-center mb-3 md:mb-4 gap-2">

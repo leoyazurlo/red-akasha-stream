@@ -10,11 +10,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { ScrollProgressBar } from "@/components/ScrollProgressBar";
 
 const Forum = () => {
   const navigate = useNavigate();
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [hasProfile, setHasProfile] = useState(false);
+  const { elementRef: heroRef, isVisible: heroVisible } = useScrollAnimation({ threshold: 0.2 });
 
   useEffect(() => {
     checkUserProfile();
@@ -111,12 +114,20 @@ const Forum = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
+      {/* Scroll Progress Bar */}
+      <ScrollProgressBar />
+      
       <CosmicBackground />
       <Header />
       
       <main className="container mx-auto px-4 py-6 pt-20 md:pt-24 pb-12 md:pb-16">
         {/* Hero Section - Responsive text */}
-        <section className="text-center mb-8 md:mb-12 animate-fade-in px-2">
+        <section 
+          ref={heroRef}
+          className={`text-center mb-8 md:mb-12 px-2 transition-all duration-700 ${
+            heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+        >
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 md:mb-4 bg-gradient-primary bg-clip-text text-transparent">
             Foro de la Comunidad
           </h1>

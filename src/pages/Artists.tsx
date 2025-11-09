@@ -8,6 +8,8 @@ import { Music, Mic, Film, FileVideo, Camera, Radio, Search } from "lucide-react
 import { useArtists, ArtistType } from "@/hooks/useArtists";
 import { ArtistCard } from "@/components/artists/ArtistCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { ScrollProgressBar } from "@/components/ScrollProgressBar";
 
 const genres: Array<{ id: ArtistType | "all"; label: string; icon: any; color: string }> = [
   { 
@@ -63,6 +65,8 @@ const genres: Array<{ id: ArtistType | "all"; label: string; icon: any; color: s
 const Artists = () => {
   const [selectedGenre, setSelectedGenre] = useState<ArtistType | "all">("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const { elementRef: heroRef, isVisible: heroVisible } = useScrollAnimation({ threshold: 0.2 });
+  const { elementRef: gridRef, isVisible: gridVisible } = useScrollAnimation({ threshold: 0.1 });
 
   const { data: artists = [], isLoading } = useArtists(selectedGenre === "all" ? undefined : selectedGenre);
 
@@ -72,11 +76,19 @@ const Artists = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Scroll Progress Bar */}
+      <ScrollProgressBar />
+      
       <Header />
       
       <main className="container mx-auto px-4 py-6 pt-20 md:pt-24 pb-12 md:pb-16">
         {/* Hero Section */}
-        <section className="text-center mb-8 md:mb-12 animate-fade-in">
+        <section 
+          ref={heroRef}
+          className={`text-center mb-8 md:mb-12 transition-all duration-700 ${
+            heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
+        >
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 md:mb-4 bg-gradient-primary bg-clip-text text-transparent">
             Explora Artistas
           </h1>
@@ -135,7 +147,10 @@ const Artists = () => {
         </div>
 
         {/* Artists Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 px-2">
+        <div 
+          ref={gridRef}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 px-2"
+        >
           {isLoading ? (
             Array.from({ length: 8 }).map((_, i) => (
               <Card key={i} className="overflow-hidden">

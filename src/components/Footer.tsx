@@ -1,5 +1,6 @@
 import { Music, Vote, UserPlus, Palette, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const footerActions = [
   {
@@ -30,18 +31,31 @@ const footerActions = [
 ];
 
 export const Footer = () => {
+  const { elementRef, isVisible } = useScrollAnimation({ threshold: 0.1 });
+  
   return (
-    <footer className="border-t border-border bg-card mt-16">
+    <footer 
+      ref={elementRef}
+      className={`border-t border-border bg-card mt-16 transition-all duration-700 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}
+    >
       <div className="container mx-auto px-4 py-8 md:py-12">
         {/* Action Buttons - Better mobile layout */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4 mb-8 md:mb-12">
-          {footerActions.map((action) => {
+          {footerActions.map((action, index) => {
             const Icon = action.icon;
             return (
               <a
                 key={action.label}
                 href={action.href}
-                className="group"
+                data-index={index}
+                className={`group transition-all duration-500 ${
+                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+                }`}
+                style={{ 
+                  transitionDelay: isVisible ? `${index * 100}ms` : '0ms'
+                }}
               >
                 <div className="flex flex-col items-center gap-2 md:gap-3 p-4 md:p-6 bg-secondary rounded-xl border border-border hover:border-primary transition-all duration-300 hover:shadow-glow hover:scale-105">
                   <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/20 rounded-full flex items-center justify-center group-hover:bg-primary/30 transition-all duration-300 group-hover:animate-float">

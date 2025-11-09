@@ -376,367 +376,413 @@ export const ProfileTechnicalSheet = ({
   }, [currentTrack, audioPlaylist]);
 
   return (
-    <div className="relative w-full min-h-screen bg-[#00D4FF] p-8">
-      {/* Header Section */}
-      <div className="flex justify-between items-start mb-8">
-        <div className="flex-1 max-w-3xl">
-          <h1 className="text-4xl font-black text-black mb-2 tracking-wider">
-            {profileTypeLabels[profileType] || profileType}
-          </h1>
-          <h2 className="text-3xl font-semibold text-black mb-6 tracking-[0.3em]">
-            {displayName.toUpperCase()}
-          </h2>
-          <p className="text-black text-base leading-relaxed font-normal">
-            {bio || "Sin información cargada, a la espera de que el socio active"}
-          </p>
-          
-          {/* Rating Section */}
-          <div className="mt-6 space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="flex gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className={`w-6 h-6 cursor-pointer transition-all ${
-                      (hoveredStar || userRating) >= star
-                        ? 'fill-yellow-400 text-yellow-400'
-                        : averageRating >= star
-                        ? 'fill-gray-400 text-gray-400'
-                        : 'text-gray-300'
-                    }`}
-                    onMouseEnter={() => setHoveredStar(star)}
-                    onMouseLeave={() => setHoveredStar(0)}
-                    onClick={() => handleRating(star)}
-                  />
-                ))}
-              </div>
-              <span className="text-black font-semibold">
-                {averageRating > 0 ? averageRating.toFixed(1) : 'Sin valoraciones'}
-              </span>
-              {totalRatings > 0 && (
-                <span className="text-black/70 text-sm">
-                  ({totalRatings} valoración{totalRatings !== 1 ? 'es' : ''})
-                </span>
-              )}
-            </div>
-            {userRating > 0 && (
-              <p className="text-black/70 text-sm">
-                Tu valoración: {userRating} estrellas
+    <div className="relative w-full min-h-screen bg-gradient-dark p-4 sm:p-8 overflow-hidden">
+      {/* Animated background effects */}
+      <div className="absolute inset-0 bg-gradient-glow opacity-50 animate-pulse-glow pointer-events-none" />
+      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-float" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
+      
+      {/* Main content container */}
+      <div className="relative z-10">
+        {/* Header Section with Glassmorphism */}
+        <div className="backdrop-blur-xl bg-card/40 rounded-3xl border border-primary/20 p-6 sm:p-8 mb-6 shadow-glow hover:shadow-elegant transition-all duration-500">
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-6">
+            <div className="flex-1 max-w-3xl">
+              {/* Badge with profile type */}
+              <Badge className="mb-4 px-4 py-1.5 bg-gradient-primary text-primary-foreground font-bold text-xs tracking-widest border-0 shadow-glow">
+                {profileTypeLabels[profileType] || profileType}
+              </Badge>
+              
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-foreground mb-4 tracking-tight bg-gradient-to-r from-primary-glow to-accent bg-clip-text text-transparent animate-slide-in">
+                {displayName.toUpperCase()}
+              </h2>
+              
+              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-6 backdrop-blur-sm">
+                {bio || "Sin información cargada, a la espera de que el socio active"}
               </p>
-            )}
+              
+              {/* Rating Section with Modern Design */}
+              <div className="mt-6 space-y-4 backdrop-blur-sm bg-background/20 rounded-2xl p-4 border border-primary/10">
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`w-6 h-6 sm:w-7 sm:h-7 cursor-pointer transition-all duration-300 hover:scale-110 ${
+                          (hoveredStar || userRating) >= star
+                            ? 'fill-yellow-400 text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]'
+                            : averageRating >= star
+                            ? 'fill-primary/60 text-primary/60'
+                            : 'text-muted-foreground/30 hover:text-primary/40'
+                        }`}
+                        onMouseEnter={() => setHoveredStar(star)}
+                        onMouseLeave={() => setHoveredStar(0)}
+                        onClick={() => handleRating(star)}
+                      />
+                    ))}
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-foreground font-bold text-xl">
+                      {averageRating > 0 ? averageRating.toFixed(1) : '0.0'}
+                    </span>
+                    {totalRatings > 0 && (
+                      <span className="text-muted-foreground text-xs">
+                        ({totalRatings} {totalRatings !== 1 ? 'valoraciones' : 'valoración'})
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {userRating > 0 && (
+                  <p className="text-accent text-xs font-medium">
+                    ✨ Tu valoración: {userRating} estrellas
+                  </p>
+                )}
 
-            {/* Recent Ratings */}
-            {recentRatings.length > 0 && (
-              <div className="mt-4">
-                <h4 className="text-sm font-bold text-black mb-2 tracking-wider">ÚLTIMAS VALORACIONES</h4>
-                <div className="space-y-2">
-                  {recentRatings.map((rating) => (
-                    <div key={rating.id} className="bg-black/10 rounded-lg p-3">
-                      <div className="flex items-start gap-2">
-                        <Avatar className="w-8 h-8 border-2 border-black/20">
-                          <AvatarImage src={rating.rater_avatar || ''} />
-                          <AvatarFallback className="bg-gradient-to-br from-cyan-400 to-blue-500 text-white text-xs font-bold">
-                            {rating.rater_name.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <span className="text-black font-semibold text-sm">{rating.rater_name}</span>
-                            <div className="flex gap-0.5">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={`w-3 h-3 ${
-                                    star <= rating.rating
-                                      ? 'fill-yellow-400 text-yellow-400'
-                                      : 'text-gray-300'
-                                  }`}
-                                />
-                              ))}
+                {/* Recent Ratings */}
+                {recentRatings.length > 0 && (
+                  <div className="mt-6 pt-4 border-t border-primary/10">
+                    <h4 className="text-xs font-bold text-foreground mb-3 tracking-widest uppercase">Últimas Valoraciones</h4>
+                    <div className="space-y-2">
+                      {recentRatings.map((rating) => (
+                        <div key={rating.id} className="backdrop-blur-md bg-card/30 rounded-xl p-3 border border-primary/5 hover:border-primary/20 transition-all duration-300">
+                          <div className="flex items-start gap-3">
+                            <Avatar className="w-10 h-10 border-2 border-primary/30 ring-2 ring-primary/10">
+                              <AvatarImage src={rating.rater_avatar || ''} />
+                              <AvatarFallback className="bg-gradient-primary text-primary-foreground text-sm font-bold">
+                                {rating.rater_name.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between flex-wrap gap-2">
+                                <span className="text-foreground font-semibold text-sm">{rating.rater_name}</span>
+                                <div className="flex gap-0.5">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                      key={star}
+                                      className={`w-3 h-3 ${
+                                        star <= rating.rating
+                                          ? 'fill-yellow-400 text-yellow-400'
+                                          : 'text-muted-foreground/20'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                              {rating.comment && (
+                                <p className="text-muted-foreground text-xs mt-1 line-clamp-2">{rating.comment}</p>
+                              )}
+                              <span className="text-muted-foreground/70 text-[10px] mt-1 block">
+                                {new Date(rating.created_at).toLocaleDateString('es-ES', {
+                                  day: 'numeric',
+                                  month: 'short',
+                                  year: 'numeric'
+                                })}
+                              </span>
                             </div>
                           </div>
-                          {rating.comment && (
-                            <p className="text-black/70 text-xs mt-1">{rating.comment}</p>
-                          )}
-                          <span className="text-black/50 text-xs">
-                            {new Date(rating.created_at).toLocaleDateString('es-ES', {
-                              day: 'numeric',
-                              month: 'short',
-                              year: 'numeric'
-                            })}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Avatar with Artistic Design */}
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-primary rounded-full blur-xl opacity-75 group-hover:opacity-100 transition-opacity duration-500 animate-pulse-glow" />
+              <Avatar className="relative w-32 h-32 sm:w-40 sm:h-40 border-4 border-primary/30 ring-4 ring-primary/10 shadow-glow">
+                <AvatarImage src={avatarUrl || ''} alt={displayName} className="object-cover" />
+                <AvatarFallback className="bg-gradient-primary text-primary-foreground text-4xl sm:text-6xl font-bold">
+                  {displayName.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+          </div>
+        </div>
+
+        {/* Trabajos Realizados Section - Only show if there's content */}
+        {hasContent && (
+          <div className="backdrop-blur-xl bg-card/40 rounded-3xl border border-primary/20 p-6 sm:p-8 mb-6 shadow-glow">
+            <h3 className="text-2xl sm:text-3xl font-black text-center mb-8 tracking-tight bg-gradient-to-r from-primary-glow to-accent bg-clip-text text-transparent">
+              TRABAJOS REALIZADOS
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* FOTOS - Only show if there are photos */}
+              {photos.length > 0 && (
+                <div className="space-y-4">
+                  <h4 className="text-lg font-bold text-foreground text-center tracking-widest uppercase flex items-center justify-center gap-2">
+                    <ImageIcon className="w-5 h-5 text-primary" />
+                    Fotos
+                  </h4>
+                  <div className="relative group">
+                    {/* Glow effect border */}
+                    <div className="absolute -inset-0.5 bg-gradient-primary rounded-2xl blur opacity-30 group-hover:opacity-60 transition-opacity duration-500" />
+                    
+                    <div className="relative aspect-video bg-background/50 backdrop-blur-sm rounded-2xl overflow-hidden border border-primary/20">
+                      <img 
+                        src={photos[currentPhotoIndex].url} 
+                        alt={photos[currentPhotoIndex].title || 'Gallery'} 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                      />
+                      
+                      {/* Navigation arrows */}
+                      {photos.length > 1 && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={previousPhoto}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/90 backdrop-blur-md hover:bg-primary/80 text-foreground hover:text-primary-foreground opacity-0 group-hover:opacity-100 transition-all duration-300 border border-primary/20"
+                          >
+                            <ChevronLeft className="w-5 h-5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={nextPhoto}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/90 backdrop-blur-md hover:bg-primary/80 text-foreground hover:text-primary-foreground opacity-0 group-hover:opacity-100 transition-all duration-300 border border-primary/20"
+                          >
+                            <ChevronRight className="w-5 h-5" />
+                          </Button>
+                          
+                          {/* Photo counter */}
+                          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-background/90 backdrop-blur-md px-4 py-1.5 rounded-full text-primary text-xs font-bold border border-primary/20 shadow-lg">
+                            {currentPhotoIndex + 1} / {photos.length}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* VIDEO - Only show if there are videos */}
+              {videos.length > 0 && (
+                <div className="space-y-4">
+                  <h4 className="text-lg font-bold text-foreground text-center tracking-widest uppercase flex items-center justify-center gap-2">
+                    <Video className="w-5 h-5 text-accent" />
+                    Video
+                  </h4>
+                  <div className="relative group">
+                    {/* Glow effect border */}
+                    <div className="absolute -inset-0.5 bg-gradient-primary rounded-2xl blur opacity-30 group-hover:opacity-60 transition-opacity duration-500" />
+                    
+                    <div className="relative aspect-video bg-background/50 backdrop-blur-sm rounded-2xl overflow-hidden border border-primary/20">
+                      <video 
+                        key={videos[currentVideoIndex].url}
+                        controls 
+                        className="w-full h-full object-cover"
+                      >
+                        <source src={videos[currentVideoIndex].url} type="video/mp4" />
+                      </video>
+                      
+                      {/* Navigation arrows */}
+                      {videos.length > 1 && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={previousVideo}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/90 backdrop-blur-md hover:bg-primary/80 text-foreground hover:text-primary-foreground opacity-0 group-hover:opacity-100 transition-all duration-300 border border-primary/20 z-10"
+                          >
+                            <ChevronLeft className="w-5 h-5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={nextVideo}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/90 backdrop-blur-md hover:bg-primary/80 text-foreground hover:text-primary-foreground opacity-0 group-hover:opacity-100 transition-all duration-300 border border-primary/20 z-10"
+                          >
+                            <ChevronRight className="w-5 h-5" />
+                          </Button>
+                          
+                          {/* Video counter */}
+                          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-background/90 backdrop-blur-md px-4 py-1.5 rounded-full text-primary text-xs font-bold border border-primary/20 shadow-lg z-10">
+                            {currentVideoIndex + 1} / {videos.length}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* AUDIO - Only show if there's audio */}
+              {audioPlaylist.length > 0 && (
+                <div className="space-y-4">
+                  <h4 className="text-lg font-bold text-foreground text-center tracking-widest uppercase flex items-center justify-center gap-2">
+                    <Music2 className="w-5 h-5 text-primary-glow" />
+                    Audio
+                  </h4>
+                  <div className="backdrop-blur-md bg-card/30 rounded-2xl p-4 border border-primary/20 space-y-4">
+                    {/* Playlist */}
+                    <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+                      {audioPlaylist.map((track, index) => (
+                        <div
+                          key={track.id}
+                          onClick={() => setCurrentTrack(index)}
+                          className={`flex items-center gap-3 cursor-pointer p-3 rounded-xl transition-all duration-300 ${
+                            currentTrack === index 
+                              ? 'bg-primary/20 border border-primary/40 shadow-glow' 
+                              : 'hover:bg-card/50 border border-transparent'
+                          }`}
+                        >
+                          <span className={`font-bold text-base min-w-[24px] ${
+                            currentTrack === index ? 'text-primary' : 'text-muted-foreground'
+                          }`}>
+                            {index + 1}
+                          </span>
+                          <span className={`flex-1 font-semibold text-sm ${
+                            currentTrack === index ? 'text-foreground' : 'text-muted-foreground'
+                          }`}>
+                            {track.title}
                           </span>
                         </div>
+                      ))}
+                    </div>
+
+                    {/* Audio Player */}
+                    <audio
+                      ref={audioRef}
+                      onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+                      onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+                      onEnded={playNext}
+                    />
+
+                    {/* Progress Bar */}
+                    <div className="space-y-2">
+                      <input
+                        type="range"
+                        min="0"
+                        max={duration || 0}
+                        value={currentTime}
+                        onChange={(e) => {
+                          const newTime = parseFloat(e.target.value);
+                          setCurrentTime(newTime);
+                          if (audioRef.current) {
+                            audioRef.current.currentTime = newTime;
+                          }
+                        }}
+                        className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:shadow-glow"
+                      />
+                      <div className="flex justify-between text-muted-foreground text-xs font-semibold">
+                        <span>{formatTime(currentTime)}</span>
+                        <span>{formatTime(duration)}</span>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
 
-        {/* Avatar simple */}
-        <div className="ml-8">
-          <Avatar className="w-40 h-40 border-4 border-black">
-            <AvatarImage src={avatarUrl || ''} alt={displayName} className="object-cover" />
-            <AvatarFallback className="bg-gradient-to-br from-cyan-400 to-blue-500 text-white text-6xl font-bold">
-              {displayName.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-        </div>
-      </div>
-
-      {/* Trabajos Realizados Section - Only show if there's content */}
-      {hasContent && (
-        <div className="mb-8">
-          <h3 className="text-3xl font-black text-black text-center mb-8 tracking-wider">
-            TRABAJOS REALIZADOS
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* FOTOS - Only show if there are photos */}
-          {photos.length > 0 && (
-          <div>
-            <h4 className="text-2xl font-black text-black mb-4 text-center tracking-wider">FOTOS</h4>
-            <div className="relative group">
-              {/* Decorative corners */}
-              <div className="absolute -top-3 -left-3 w-12 h-12 border-l-4 border-t-4 border-[#FF1493] z-20"></div>
-              <div className="absolute -top-3 -right-3 w-12 h-12 border-r-4 border-t-4 border-[#FF1493] z-20"></div>
-              <div className="absolute -bottom-3 -left-3 w-12 h-12 border-l-4 border-b-4 border-[#FF1493] z-20"></div>
-              <div className="absolute -bottom-3 -right-3 w-12 h-12 border-r-4 border-b-4 border-[#FF1493] z-20"></div>
-              
-              <div className="aspect-video bg-background rounded-lg overflow-hidden relative">
-                <img 
-                  src={photos[currentPhotoIndex].url} 
-                  alt={photos[currentPhotoIndex].title || 'Gallery'} 
-                  className="w-full h-full object-cover transition-all duration-300" 
-                />
-                
-                {/* Navigation arrows */}
-                {photos.length > 1 && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={previousPhoto}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-primary opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <ChevronLeft className="w-6 h-6" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={nextPhoto}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-primary opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <ChevronRight className="w-6 h-6" />
-                    </Button>
-                    
-                    {/* Photo counter */}
-                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-background/80 px-3 py-1 rounded-full text-primary text-sm font-bold">
-                      {currentPhotoIndex + 1} / {photos.length}
+                    {/* Controls */}
+                    <div className="flex items-center justify-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {}}
+                        className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                      >
+                        <Repeat className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={playPrevious}
+                        className="text-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                      >
+                        <SkipBack className="w-5 h-5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={togglePlayPause}
+                        className="w-14 h-14 rounded-full bg-gradient-primary text-primary-foreground hover:shadow-glow transition-all duration-300 hover:scale-105"
+                      >
+                        {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-0.5" />}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={playNext}
+                        className="text-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                      >
+                        <SkipForward className="w-5 h-5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                      >
+                        <Music2 className="w-4 h-4" />
+                      </Button>
                     </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-          )}
-
-          {/* VIDEO - Only show if there are videos */}
-          {videos.length > 0 && (
-          <div>
-            <h4 className="text-2xl font-black text-black mb-4 text-center tracking-wider">VIDEO</h4>
-            <div className="relative group">
-              {/* Decorative corners */}
-              <div className="absolute -top-3 -left-3 w-12 h-12 border-l-4 border-t-4 border-[#FF1493] z-20"></div>
-              <div className="absolute -top-3 -right-3 w-12 h-12 border-r-4 border-t-4 border-[#FF1493] z-20"></div>
-              <div className="absolute -bottom-3 -left-3 w-12 h-12 border-l-4 border-b-4 border-[#FF1493] z-20"></div>
-              <div className="absolute -bottom-3 -right-3 w-12 h-12 border-r-4 border-b-4 border-[#FF1493] z-20"></div>
-              
-              <div className="aspect-video bg-background rounded-lg overflow-hidden relative">
-                <video 
-                  key={videos[currentVideoIndex].url}
-                  controls 
-                  className="w-full h-full object-cover"
-                >
-                  <source src={videos[currentVideoIndex].url} type="video/mp4" />
-                </video>
-                
-                {/* Navigation arrows */}
-                {videos.length > 1 && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={previousVideo}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-primary opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                    >
-                      <ChevronLeft className="w-6 h-6" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={nextVideo}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-background/80 hover:bg-background text-primary opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                    >
-                      <ChevronRight className="w-6 h-6" />
-                    </Button>
-                    
-                    {/* Video counter */}
-                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-background/80 px-3 py-1 rounded-full text-primary text-sm font-bold z-10">
-                      {currentVideoIndex + 1} / {videos.length}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-          )}
-
-          {/* AUDIO - Only show if there's audio */}
-          {audioPlaylist.length > 0 && (
-          <div>
-            <h4 className="text-2xl font-black text-black mb-4 text-center tracking-wider">AUDIO</h4>
-            <div className="space-y-4">
-              {/* Playlist */}
-              <div className="space-y-2">
-                {audioPlaylist.map((track, index) => (
-                  <div
-                    key={track.id}
-                    onClick={() => setCurrentTrack(index)}
-                    className={`flex items-center gap-2 cursor-pointer p-2 rounded ${
-                      currentTrack === index ? 'bg-black/20' : 'hover:bg-black/10'
-                    }`}
-                  >
-                    <span className="text-black font-bold text-lg">{index + 1}</span>
-                    <span className="text-black flex-1 font-semibold">{track.title}</span>
                   </div>
-                ))}
-              </div>
-
-              {/* Audio Player */}
-              <audio
-                ref={audioRef}
-                onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
-                onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
-                onEnded={playNext}
-              />
-
-              {/* Progress Bar */}
-              <div className="space-y-2">
-                <input
-                  type="range"
-                  min="0"
-                  max={duration || 0}
-                  value={currentTime}
-                  onChange={(e) => {
-                    const newTime = parseFloat(e.target.value);
-                    setCurrentTime(newTime);
-                    if (audioRef.current) {
-                      audioRef.current.currentTime = newTime;
-                    }
-                  }}
-                  className="w-full accent-black"
-                />
-                <div className="flex justify-between text-black text-sm font-semibold">
-                  <span>{formatTime(currentTime)}</span>
-                  <span>{formatTime(duration)}</span>
                 </div>
-              </div>
-
-              {/* Controls */}
-              <div className="flex items-center justify-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => {}}
-                  className="text-black hover:text-black hover:bg-black/10"
-                >
-                  <Repeat className="w-5 h-5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={playPrevious}
-                  className="text-black hover:text-black hover:bg-black/10"
-                >
-                  <SkipBack className="w-7 h-7" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={togglePlayPause}
-                  className="w-16 h-16 rounded-full bg-black text-white hover:bg-black/90"
-                >
-                  {isPlaying ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8 ml-1" />}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={playNext}
-                  className="text-black hover:text-black hover:bg-black/10"
-                >
-                  <SkipForward className="w-7 h-7" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-black hover:text-black hover:bg-black/10"
-                >
-                  <Music2 className="w-5 h-5" />
-                </Button>
-              </div>
-            </div>
-          </div>
-          )}
-        </div>
-        </div>
-      )}
-
-      {/* Contact & Social Section - Show if there's social media, otherwise just show interaction badge */}
-      <div className="flex items-center justify-between mt-12">
-        {hasSocialMedia && (
-          <div>
-            <h4 className="text-2xl font-black text-black mb-4 tracking-wider">CONTACTO</h4>
-            <div className="flex gap-4">
-              {instagram && (
-                <a
-                  href={`https://instagram.com/${instagram.replace('@', '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 hover:opacity-90 rounded-lg transition-opacity"
-                >
-                  <Instagram className="w-8 h-8 text-white" />
-                </a>
-              )}
-              {facebook && (
-                <a
-                  href={facebook.startsWith('http') ? facebook : `https://facebook.com/${facebook}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-                >
-                  <Facebook className="w-8 h-8 text-white" />
-                </a>
-              )}
-              {linkedin && (
-                <a
-                  href={linkedin.startsWith('http') ? linkedin : `https://linkedin.com/in/${linkedin}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors"
-                >
-                  <Linkedin className="w-8 h-8 text-white" />
-                </a>
               )}
             </div>
           </div>
         )}
-        
-        <Badge className={`px-8 py-3 bg-gradient-to-r from-orange-400 to-amber-500 text-black text-lg font-black tracking-[0.2em] shadow-lg ${!hasSocialMedia ? 'ml-auto' : ''}`}>
-          INTERACCION CON LA COMUNIDAD {interactionCount}
-        </Badge>
+
+        {/* Contact & Social Section - Show if there's social media, otherwise just show interaction badge */}
+        <div className="backdrop-blur-xl bg-card/40 rounded-3xl border border-primary/20 p-6 sm:p-8 shadow-glow">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+            {hasSocialMedia && (
+              <div className="w-full sm:w-auto">
+                <h4 className="text-xl font-bold text-foreground mb-4 tracking-widest uppercase text-center sm:text-left">Contacto</h4>
+                <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
+                  {instagram && (
+                    <a
+                      href={`https://instagram.com/${instagram.replace('@', '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group relative p-3 rounded-xl transition-all duration-300 hover:scale-110"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-xl blur opacity-60 group-hover:opacity-100 transition-opacity" />
+                      <div className="relative bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-xl p-0.5">
+                        <div className="bg-background rounded-lg p-2">
+                          <Instagram className="w-6 h-6 text-pink-500" />
+                        </div>
+                      </div>
+                    </a>
+                  )}
+                  {facebook && (
+                    <a
+                      href={facebook.startsWith('http') ? facebook : `https://facebook.com/${facebook}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group relative p-3 rounded-xl transition-all duration-300 hover:scale-110"
+                    >
+                      <div className="absolute inset-0 bg-blue-500 rounded-xl blur opacity-60 group-hover:opacity-100 transition-opacity" />
+                      <div className="relative bg-blue-500 rounded-xl p-0.5">
+                        <div className="bg-background rounded-lg p-2">
+                          <Facebook className="w-6 h-6 text-blue-500" />
+                        </div>
+                      </div>
+                    </a>
+                  )}
+                  {linkedin && (
+                    <a
+                      href={linkedin.startsWith('http') ? linkedin : `https://linkedin.com/in/${linkedin}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group relative p-3 rounded-xl transition-all duration-300 hover:scale-110"
+                    >
+                      <div className="absolute inset-0 bg-blue-600 rounded-xl blur opacity-60 group-hover:opacity-100 transition-opacity" />
+                      <div className="relative bg-blue-600 rounded-xl p-0.5">
+                        <div className="bg-background rounded-lg p-2">
+                          <Linkedin className="w-6 h-6 text-blue-600" />
+                        </div>
+                      </div>
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            <Badge className={`px-6 py-3 bg-gradient-primary text-primary-foreground text-sm font-bold tracking-wider border-0 shadow-glow hover:shadow-elegant transition-all duration-300 whitespace-nowrap ${!hasSocialMedia ? 'mx-auto' : ''}`}>
+              ✨ Interacciones: {interactionCount}
+            </Badge>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1895,6 +1895,7 @@ export type Database = {
         Args: { p_badge_name: string; p_user_id: string }
         Returns: undefined
       }
+      extract_mentions: { Args: { content_text: string }; Returns: string[] }
       generate_rtmp_key: { Args: never; Returns: string }
       has_role: {
         Args: {

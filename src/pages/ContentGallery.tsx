@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loader2, Play, Music, Image as ImageIcon, Clock, MonitorPlay, HardDrive, X, Eye, Heart, MessageSquare, Send, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { CommentThread } from "@/components/CommentThread";
 
 interface ContentItem {
   id: string;
@@ -43,10 +44,12 @@ interface Comment {
   user_id: string;
   comment: string;
   created_at: string;
+  parent_comment_id: string | null;
   profiles: {
     username: string | null;
     avatar_url: string | null;
   } | null;
+  replies?: Comment[];
 }
 
 const ContentGallery = () => {
@@ -254,9 +257,9 @@ const ContentGallery = () => {
     try {
       const { data, error } = await supabase
         .from('content_comments')
-        .select('*')
+        .select('id, content_id, user_id, comment, created_at, parent_comment_id')
         .eq('content_id', contentId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: true });
       
       if (error) throw error;
       
@@ -275,7 +278,30 @@ const ContentGallery = () => {
           profiles: profilesMap.get(comment.user_id) || { username: null, avatar_url: null }
         }));
         
-        setComments(commentsWithProfiles as Comment[]);
+        // Organizar comentarios en jerarquía
+        const commentMap = new Map<string, Comment>();
+        const rootComments: Comment[] = [];
+        
+        // Crear el mapa de comentarios
+        commentsWithProfiles.forEach(comment => {
+          commentMap.set(comment.id, { ...comment, replies: [] } as Comment);
+        });
+        
+        // Construir la jerarquía
+        commentsWithProfiles.forEach(comment => {
+          const commentWithReplies = commentMap.get(comment.id)!;
+          if (comment.parent_comment_id) {
+            const parent = commentMap.get(comment.parent_comment_id);
+            if (parent) {
+              parent.replies = parent.replies || [];
+              parent.replies.push(commentWithReplies);
+            }
+          } else {
+            rootComments.push(commentWithReplies);
+          }
+        });
+        
+        setComments(rootComments);
       } else {
         setComments([]);
       }
@@ -769,43 +795,13 @@ const ContentGallery = () => {
                           </p>
                         ) : (
                           comments.map((comment) => (
-                            <div key={comment.id} className="flex gap-3 p-3 rounded-lg bg-muted/50">
-                              <Avatar className="w-8 h-8 flex-shrink-0">
-                                <AvatarFallback>
-                                  {comment.profiles?.username?.[0]?.toUpperCase() || 'U'}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between gap-2 mb-1">
-                                  <span className="text-sm font-medium text-foreground">
-                                    {comment.profiles?.username || 'Usuario'}
-                                  </span>
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-xs text-muted-foreground">
-                                      {new Date(comment.created_at).toLocaleDateString('es-ES', {
-                                        day: 'numeric',
-                                        month: 'short',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                      })}
-                                    </span>
-                                    {user && (user.id === comment.user_id) && (
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-6 w-6 p-0"
-                                        onClick={() => handleDeleteComment(comment.id)}
-                                      >
-                                        <Trash2 className="w-3 h-3" />
-                                      </Button>
-                                    )}
-                                  </div>
-                                </div>
-                                <p className="text-sm text-foreground whitespace-pre-wrap break-words">
-                                  {comment.comment}
-                                </p>
-                              </div>
-                            </div>
+                            <CommentThread
+                              key={comment.id}
+                              comment={comment}
+                              currentUserId={user?.id || null}
+                              onDelete={handleDeleteComment}
+                              contentId={selectedContent.id}
+                            />
                           ))
                         )}
                       </div>

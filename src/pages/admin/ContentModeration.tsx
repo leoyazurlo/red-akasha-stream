@@ -51,6 +51,7 @@ export default function AdminContentModeration() {
   const [bulkDateTo, setBulkDateTo] = useState<string>("");
   const [bulkApproving, setBulkApproving] = useState(false);
   const [bulkRejecting, setBulkRejecting] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState<string>("no_especificada");
 
   useEffect(() => {
     if (!authLoading && user && isAdmin) {
@@ -346,13 +347,24 @@ export default function AdminContentModeration() {
         return acc;
       }, {} as Record<string, typeof itemsToReject>);
 
+      const rejectionReasons: Record<string, string> = {
+        no_especificada: 'No cumple con los estándares de la plataforma',
+        baja_calidad: 'Baja calidad de audio/video',
+        contenido_inapropiado: 'Contenido inapropiado o que viola las normas',
+        derechos_autor: 'Posible violación de derechos de autor',
+        informacion_incompleta: 'Información incompleta o incorrecta',
+        contenido_duplicado: 'Contenido duplicado',
+      };
+
+      const reasonText = rejectionReasons[rejectionReason] || rejectionReasons.no_especificada;
+
       const notifications = Object.entries(uploaderGroups).map(([uploaderId, items]) => ({
         user_id: uploaderId,
         type: 'content_rejected',
         title: 'Contenido Rechazado',
         message: items.length === 1 
-          ? `Tu contenido "${items[0].title}" ha sido rechazado. Por favor revisa que cumpla con los estándares de la plataforma.`
-          : `${items.length} de tus contenidos han sido rechazados. Por favor revisa que cumplan con los estándares de la plataforma.`,
+          ? `Tu contenido "${items[0].title}" ha sido rechazado. Motivo: ${reasonText}.`
+          : `${items.length} de tus contenidos han sido rechazados. Motivo: ${reasonText}.`,
         link: '/upload-content',
       }));
 
@@ -374,6 +386,7 @@ export default function AdminContentModeration() {
       setBulkContentType("all");
       setBulkDateFrom("");
       setBulkDateTo("");
+      setRejectionReason("no_especificada");
       loadContent();
     } catch (error: any) {
       toast({
@@ -445,50 +458,73 @@ export default function AdminContentModeration() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                    {/* Filtro por tipo */}
-                    <div className="space-y-2">
-                      <Label htmlFor="bulk-type">Tipo de contenido</Label>
-                      <Select value={bulkContentType} onValueChange={setBulkContentType}>
-                        <SelectTrigger id="bulk-type">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Todos los tipos</SelectItem>
-                          <SelectItem value="video_musical_vivo">Video Musical en Vivo</SelectItem>
-                          <SelectItem value="video_clip">Video Clip</SelectItem>
-                          <SelectItem value="podcast">Podcast</SelectItem>
-                          <SelectItem value="corto">Cortometraje</SelectItem>
-                          <SelectItem value="documental">Documental</SelectItem>
-                          <SelectItem value="pelicula">Película</SelectItem>
-                        </SelectContent>
-                      </Select>
+                  <div className="space-y-4">
+                    {/* Primera fila: filtros básicos */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Filtro por tipo */}
+                      <div className="space-y-2">
+                        <Label htmlFor="bulk-type">Tipo de contenido</Label>
+                        <Select value={bulkContentType} onValueChange={setBulkContentType}>
+                          <SelectTrigger id="bulk-type">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">Todos los tipos</SelectItem>
+                            <SelectItem value="video_musical_vivo">Video Musical en Vivo</SelectItem>
+                            <SelectItem value="video_clip">Video Clip</SelectItem>
+                            <SelectItem value="podcast">Podcast</SelectItem>
+                            <SelectItem value="corto">Cortometraje</SelectItem>
+                            <SelectItem value="documental">Documental</SelectItem>
+                            <SelectItem value="pelicula">Película</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {/* Fecha desde */}
+                      <div className="space-y-2">
+                        <Label htmlFor="bulk-date-from">Fecha desde</Label>
+                        <Input
+                          id="bulk-date-from"
+                          type="date"
+                          value={bulkDateFrom}
+                          onChange={(e) => setBulkDateFrom(e.target.value)}
+                        />
+                      </div>
+
+                      {/* Fecha hasta */}
+                      <div className="space-y-2">
+                        <Label htmlFor="bulk-date-to">Fecha hasta</Label>
+                        <Input
+                          id="bulk-date-to"
+                          type="date"
+                          value={bulkDateTo}
+                          onChange={(e) => setBulkDateTo(e.target.value)}
+                        />
+                      </div>
                     </div>
 
-                    {/* Fecha desde */}
-                    <div className="space-y-2">
-                      <Label htmlFor="bulk-date-from">Fecha desde</Label>
-                      <Input
-                        id="bulk-date-from"
-                        type="date"
-                        value={bulkDateFrom}
-                        onChange={(e) => setBulkDateFrom(e.target.value)}
-                      />
+                    {/* Segunda fila: razón de rechazo */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="rejection-reason">Motivo de rechazo</Label>
+                        <Select value={rejectionReason} onValueChange={setRejectionReason}>
+                          <SelectTrigger id="rejection-reason">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="no_especificada">No cumple con los estándares</SelectItem>
+                            <SelectItem value="baja_calidad">Baja calidad de audio/video</SelectItem>
+                            <SelectItem value="contenido_inapropiado">Contenido inapropiado</SelectItem>
+                            <SelectItem value="derechos_autor">Posible violación de derechos</SelectItem>
+                            <SelectItem value="informacion_incompleta">Información incompleta</SelectItem>
+                            <SelectItem value="contenido_duplicado">Contenido duplicado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
 
-                    {/* Fecha hasta */}
+                    {/* Tercera fila: botones de acción */}
                     <div className="space-y-2">
-                      <Label htmlFor="bulk-date-to">Fecha hasta</Label>
-                      <Input
-                        id="bulk-date-to"
-                        type="date"
-                        value={bulkDateTo}
-                        onChange={(e) => setBulkDateTo(e.target.value)}
-                      />
-                    </div>
-
-                    {/* Botones de acción */}
-                    <div className="space-y-2 md:col-span-2">
                       <Label className="invisible">Acciones</Label>
                       <div className="flex gap-2">
                         {/* Aprobar Todo */}
@@ -556,7 +592,7 @@ export default function AdminContentModeration() {
                               )}
                             </Button>
                           </AlertDialogTrigger>
-                          <AlertDialogContent>
+                           <AlertDialogContent>
                             <AlertDialogHeader>
                               <AlertDialogTitle>¿Rechazar contenido masivamente?</AlertDialogTitle>
                               <AlertDialogDescription>
@@ -565,9 +601,18 @@ export default function AdminContentModeration() {
                                   <div>• Tipo: {bulkContentType === "all" ? "Todos" : bulkContentType}</div>
                                   {bulkDateFrom && <div>• Desde: {bulkDateFrom}</div>}
                                   {bulkDateTo && <div>• Hasta: {bulkDateTo}</div>}
+                                  <div className="text-destructive">• Motivo: {
+                                    rejectionReason === "no_especificada" ? "No cumple con los estándares" :
+                                    rejectionReason === "baja_calidad" ? "Baja calidad de audio/video" :
+                                    rejectionReason === "contenido_inapropiado" ? "Contenido inapropiado" :
+                                    rejectionReason === "derechos_autor" ? "Posible violación de derechos" :
+                                    rejectionReason === "informacion_incompleta" ? "Información incompleta" :
+                                    rejectionReason === "contenido_duplicado" ? "Contenido duplicado" :
+                                    "No cumple con los estándares"
+                                  }</div>
                                 </div>
                                 <p className="mt-3 text-destructive font-normal">
-                                  Esta acción rechazará permanentemente el contenido. Asegúrate de revisar los filtros antes de continuar.
+                                  Esta acción rechazará permanentemente el contenido y notificará a los creadores con el motivo seleccionado.
                                 </p>
                               </AlertDialogDescription>
                             </AlertDialogHeader>

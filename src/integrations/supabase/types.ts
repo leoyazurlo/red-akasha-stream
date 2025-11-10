@@ -281,6 +281,35 @@ export type Database = {
           },
         ]
       }
+      content_likes: {
+        Row: {
+          content_id: string
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          content_id: string
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          content_id?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_likes_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "content_uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_uploads: {
         Row: {
           audio_duration_seconds: number | null
@@ -294,6 +323,7 @@ export type Database = {
           file_size: number | null
           id: string
           is_free: boolean
+          likes_count: number | null
           photo_url: string | null
           podcast_category:
             | Database["public"]["Enums"]["podcast_category"]
@@ -327,6 +357,7 @@ export type Database = {
           file_size?: number | null
           id?: string
           is_free?: boolean
+          likes_count?: number | null
           photo_url?: string | null
           podcast_category?:
             | Database["public"]["Enums"]["podcast_category"]
@@ -360,6 +391,7 @@ export type Database = {
           file_size?: number | null
           id?: string
           is_free?: boolean
+          likes_count?: number | null
           photo_url?: string | null
           podcast_category?:
             | Database["public"]["Enums"]["podcast_category"]

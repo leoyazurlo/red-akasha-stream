@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Loader2, Play, Music, Image as ImageIcon, Clock, MonitorPlay, HardDrive, X, Eye } from "lucide-react";
+import { Loader2, Play, Music, Image as ImageIcon, Clock, MonitorPlay, HardDrive, X, Eye, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface ContentItem {
@@ -29,6 +29,7 @@ interface ContentItem {
   status: string;
   created_at: string;
   views_count: number;
+  likes_count: number;
   uploader_id: string;
 }
 
@@ -40,10 +41,101 @@ const ContentGallery = () => {
   const [filter, setFilter] = useState<"all" | "videos" | "audios" | "photos">("all");
   const [selectedContent, setSelectedContent] = useState<ContentItem | null>(null);
   const [playerOpen, setPlayerOpen] = useState(false);
+  const [userLikes, setUserLikes] = useState<Set<string>>(new Set());
+  const [likingContent, setLikingContent] = useState<string | null>(null);
 
   useEffect(() => {
     loadContent();
+    if (user) {
+      loadUserLikes();
+    }
   }, [user]);
+
+  const loadUserLikes = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('content_likes')
+        .select('content_id')
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      const likedIds = new Set(data?.map(like => like.content_id) || []);
+      setUserLikes(likedIds);
+    } catch (error) {
+      console.error('Error loading user likes:', error);
+    }
+  };
+
+  const handleToggleLike = async (contentId: string, currentLikes: number) => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+
+    setLikingContent(contentId);
+    const isLiked = userLikes.has(contentId);
+
+    try {
+      if (isLiked) {
+        // Quitar like
+        const { error } = await supabase
+          .from('content_likes')
+          .delete()
+          .eq('content_id', contentId)
+          .eq('user_id', user.id);
+        
+        if (error) throw error;
+        
+        // Actualizar estado local
+        setUserLikes(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(contentId);
+          return newSet;
+        });
+        
+        setContent(prevContent =>
+          prevContent.map(c =>
+            c.id === contentId
+              ? { ...c, likes_count: Math.max(0, c.likes_count - 1) }
+              : c
+          )
+        );
+        
+        if (selectedContent?.id === contentId) {
+          setSelectedContent(prev => prev ? { ...prev, likes_count: Math.max(0, prev.likes_count - 1) } : null);
+        }
+      } else {
+        // Agregar like
+        const { error } = await supabase
+          .from('content_likes')
+          .insert({ content_id: contentId, user_id: user.id });
+        
+        if (error) throw error;
+        
+        // Actualizar estado local
+        setUserLikes(prev => new Set([...prev, contentId]));
+        
+        setContent(prevContent =>
+          prevContent.map(c =>
+            c.id === contentId
+              ? { ...c, likes_count: c.likes_count + 1 }
+              : c
+          )
+        );
+        
+        if (selectedContent?.id === contentId) {
+          setSelectedContent(prev => prev ? { ...prev, likes_count: prev.likes_count + 1 } : null);
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error);
+    } finally {
+      setLikingContent(null);
+    }
+  };
 
   const loadContent = async () => {
     try {
@@ -278,19 +370,43 @@ const ContentGallery = () => {
                           <Eye className="w-4 h-4" />
                           <span>{item.views_count || 0} visualizaciones</span>
                         </div>
+
+                        <div className="flex items-center gap-2">
+                          <Heart className="w-4 h-4" />
+                          <span>{item.likes_count || 0} favoritos</span>
+                        </div>
                       </div>
 
-                      {/* Ver contenido */}
-                      <Button 
-                        variant="outline" 
-                        className="w-full"
-                        onClick={() => handleOpenPlayer(item)}
-                      >
-                        {item.video_url && <Play className="w-4 h-4 mr-2" />}
-                        {item.audio_url && !item.video_url && <Music className="w-4 h-4 mr-2" />}
-                        {item.photo_url && !item.video_url && !item.audio_url && <ImageIcon className="w-4 h-4 mr-2" />}
-                        Ver Contenido
-                      </Button>
+                      {/* Botones de acción */}
+                      <div className="flex gap-2">
+                        <Button 
+                          variant={userLikes.has(item.id) ? "default" : "outline"}
+                          size="sm"
+                          className="flex-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleLike(item.id, item.likes_count);
+                          }}
+                          disabled={likingContent === item.id}
+                        >
+                          <Heart 
+                            className={`w-4 h-4 mr-2 ${userLikes.has(item.id) ? 'fill-current' : ''}`}
+                          />
+                          {userLikes.has(item.id) ? 'Me gusta' : 'Favorito'}
+                        </Button>
+
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => handleOpenPlayer(item)}
+                        >
+                          {item.video_url && <Play className="w-4 h-4 mr-2" />}
+                          {item.audio_url && !item.video_url && <Music className="w-4 h-4 mr-2" />}
+                          {item.photo_url && !item.video_url && !item.audio_url && <ImageIcon className="w-4 h-4 mr-2" />}
+                          Ver
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
@@ -409,6 +525,33 @@ const ContentGallery = () => {
                           {selectedContent.views_count || 0}
                         </p>
                       </div>
+
+                      <div>
+                        <p className="text-muted-foreground mb-1">Favoritos</p>
+                        <p className="font-medium text-foreground flex items-center gap-1">
+                          <Heart className="w-4 h-4" />
+                          {selectedContent.likes_count || 0}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Botón de favorito en el modal */}
+                    <div className="mt-4">
+                      <Button
+                        variant={userLikes.has(selectedContent.id) ? "default" : "outline"}
+                        className="w-full"
+                        onClick={() => handleToggleLike(selectedContent.id, selectedContent.likes_count)}
+                        disabled={likingContent === selectedContent.id}
+                      >
+                        <Heart 
+                          className={`w-4 h-4 mr-2 ${userLikes.has(selectedContent.id) ? 'fill-current' : ''}`}
+                        />
+                        {likingContent === selectedContent.id 
+                          ? 'Procesando...' 
+                          : userLikes.has(selectedContent.id) 
+                            ? 'Quitar de favoritos' 
+                            : 'Agregar a favoritos'}
+                      </Button>
                     </div>
                   </div>
                 </div>

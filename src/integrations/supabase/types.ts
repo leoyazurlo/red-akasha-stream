@@ -281,6 +281,41 @@ export type Database = {
           },
         ]
       }
+      content_comments: {
+        Row: {
+          comment: string
+          content_id: string
+          created_at: string | null
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          comment: string
+          content_id: string
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          comment?: string
+          content_id?: string
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_comments_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "content_uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_likes: {
         Row: {
           content_id: string
@@ -315,6 +350,7 @@ export type Database = {
           audio_duration_seconds: number | null
           audio_url: string | null
           band_name: string | null
+          comments_count: number | null
           content_type: Database["public"]["Enums"]["content_type"]
           created_at: string | null
           currency: string | null
@@ -349,6 +385,7 @@ export type Database = {
           audio_duration_seconds?: number | null
           audio_url?: string | null
           band_name?: string | null
+          comments_count?: number | null
           content_type: Database["public"]["Enums"]["content_type"]
           created_at?: string | null
           currency?: string | null
@@ -383,6 +420,7 @@ export type Database = {
           audio_duration_seconds?: number | null
           audio_url?: string | null
           band_name?: string | null
+          comments_count?: number | null
           content_type?: Database["public"]["Enums"]["content_type"]
           created_at?: string | null
           currency?: string | null

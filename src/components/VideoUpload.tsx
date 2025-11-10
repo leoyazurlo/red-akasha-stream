@@ -66,13 +66,38 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
       };
 
       video.onseeked = async () => {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+        // Configurar dimensiones máximas del thumbnail (720p máximo)
+        const MAX_WIDTH = 1280;
+        const MAX_HEIGHT = 720;
+        
+        let width = video.videoWidth;
+        let height = video.videoHeight;
+        
+        // Calcular dimensiones manteniendo aspect ratio
+        if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+          const aspectRatio = width / height;
+          
+          if (width > height) {
+            width = MAX_WIDTH;
+            height = Math.round(width / aspectRatio);
+          } else {
+            height = MAX_HEIGHT;
+            width = Math.round(height * aspectRatio);
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
         
         if (context) {
-          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          // Aplicar suavizado para mejor calidad al redimensionar
+          context.imageSmoothingEnabled = true;
+          context.imageSmoothingQuality = 'high';
           
-          // Convertir canvas a blob
+          // Dibujar el video redimensionado
+          context.drawImage(video, 0, 0, width, height);
+          
+          // Convertir canvas a blob con compresión agresiva
           canvas.toBlob(async (blob) => {
             if (!blob) {
               reject(new Error('Error al crear el blob del thumbnail'));
@@ -80,7 +105,7 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
             }
 
             try {
-              // Subir thumbnail a Storage
+              // Subir thumbnail comprimido a Storage
               const thumbnailFileName = `${userId}/thumbnails/${Date.now()}.jpg`;
               const { data, error } = await supabase.storage
                 .from('content-videos')
@@ -96,12 +121,13 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
                 .from('content-videos')
                 .getPublicUrl(data.path);
 
+              console.log(`Thumbnail comprimido: ${width}x${height}, ${(blob.size / 1024).toFixed(2)} KB`);
               resolve(publicUrl);
             } catch (error) {
               console.error('Error subiendo thumbnail:', error);
               reject(error);
             }
-          }, 'image/jpeg', 0.8);
+          }, 'image/jpeg', 0.7); // Calidad 70% para mayor compresión
         } else {
           reject(new Error('No se pudo crear el contexto del canvas'));
         }

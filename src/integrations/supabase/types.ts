@@ -286,6 +286,7 @@ export type Database = {
           comment: string
           content_id: string
           created_at: string | null
+          edited_at: string | null
           id: string
           parent_comment_id: string | null
           updated_at: string | null
@@ -295,6 +296,7 @@ export type Database = {
           comment: string
           content_id: string
           created_at?: string | null
+          edited_at?: string | null
           id?: string
           parent_comment_id?: string | null
           updated_at?: string | null
@@ -304,6 +306,7 @@ export type Database = {
           comment?: string
           content_id?: string
           created_at?: string | null
+          edited_at?: string | null
           id?: string
           parent_comment_id?: string | null
           updated_at?: string | null

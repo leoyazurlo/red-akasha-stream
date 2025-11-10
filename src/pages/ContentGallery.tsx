@@ -45,6 +45,7 @@ interface Comment {
   comment: string;
   created_at: string;
   parent_comment_id: string | null;
+  edited_at: string | null;
   profiles: {
     username: string | null;
     avatar_url: string | null;
@@ -257,7 +258,7 @@ const ContentGallery = () => {
     try {
       const { data, error } = await supabase
         .from('content_comments')
-        .select('id, content_id, user_id, comment, created_at, parent_comment_id')
+        .select('id, content_id, user_id, comment, created_at, parent_comment_id, edited_at')
         .eq('content_id', contentId)
         .order('created_at', { ascending: true });
       

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Trash2, Reply, Send, Loader2 } from "lucide-react";
+import { Trash2, Reply, Send, Loader2, Edit2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 
@@ -13,6 +13,7 @@ interface CommentData {
   comment: string;
   created_at: string;
   parent_comment_id: string | null;
+  edited_at: string | null;
   profiles: {
     username: string | null;
     avatar_url: string | null;
@@ -39,6 +40,9 @@ export const CommentThread = ({
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [posting, setPosting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editText, setEditText] = useState(comment.comment);
+  const [saving, setSaving] = useState(false);
   
   const handleReply = async () => {
     if (!currentUserId) {
@@ -70,6 +74,32 @@ export const CommentThread = ({
     }
   };
 
+  const handleEdit = async () => {
+    if (!editText.trim() || editText === comment.comment) {
+      setIsEditing(false);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('content_comments')
+        .update({
+          comment: editText.trim(),
+          edited_at: new Date().toISOString()
+        })
+        .eq('id', comment.id);
+      
+      if (error) throw error;
+      
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error editing comment:', error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const maxDepth = 3;
   const canReply = depth < maxDepth;
 
@@ -83,12 +113,19 @@ export const CommentThread = ({
         </Avatar>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2 mb-1">
-            <span className="text-sm font-medium text-foreground">
-              {comment.profiles?.username || 'Usuario'}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-foreground">
+                {comment.profiles?.username || 'Usuario'}
+              </span>
+              {comment.edited_at && (
+                <span className="text-xs text-muted-foreground italic">
+                  (editado)
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
-                {new Date(comment.created_at).toLocaleDateString('es-ES', {
+                {new Date(comment.edited_at || comment.created_at).toLocaleDateString('es-ES', {
                   day: 'numeric',
                   month: 'short',
                   hour: '2-digit',
@@ -96,22 +133,76 @@ export const CommentThread = ({
                 })}
               </span>
               {currentUserId && currentUserId === comment.user_id && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-6 p-0"
-                  onClick={() => onDelete(comment.id)}
-                >
-                  <Trash2 className="w-3 h-3" />
-                </Button>
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    onClick={() => {
+                      setIsEditing(true);
+                      setEditText(comment.comment);
+                    }}
+                  >
+                    <Edit2 className="w-3 h-3" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    onClick={() => onDelete(comment.id)}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </>
               )}
             </div>
           </div>
-          <p className="text-sm text-foreground whitespace-pre-wrap break-words">
-            {comment.comment}
-          </p>
           
-          {canReply && (
+          {isEditing ? (
+            <div className="mt-2 space-y-2">
+              <Textarea
+                value={editText}
+                onChange={(e) => setEditText(e.target.value)}
+                className="resize-none text-sm"
+                rows={3}
+              />
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={handleEdit}
+                  disabled={!editText.trim() || saving || editText === comment.comment}
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                      Guardando...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-3 h-3 mr-1" />
+                      Guardar
+                    </>
+                  )}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditText(comment.comment);
+                  }}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-foreground whitespace-pre-wrap break-words">
+              {comment.comment}
+            </p>
+          )}
+          
+          {canReply && !isEditing && (
             <Button
               variant="ghost"
               size="sm"

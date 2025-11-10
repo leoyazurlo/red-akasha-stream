@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { Loader2, CheckCircle2, XCircle, Video, Image, Music } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Video, Image, Music, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -102,6 +102,47 @@ export default function AdminContentModeration() {
       toast({
         title: "Error",
         description: error.message || "No se pudo actualizar el estado",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteContent = async (id: string) => {
+    if (!confirm('¿Estás seguro de que deseas eliminar este contenido permanentemente? Esta acción no se puede deshacer.')) {
+      return;
+    }
+
+    try {
+      const contentItem = content.find(c => c.id === id);
+
+      const { error } = await supabase
+        .from('content_uploads')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      // Registrar en el log de auditoría
+      await logAction({
+        action: 'delete_content',
+        targetType: 'content',
+        targetId: id,
+        details: {
+          title: contentItem?.title,
+          content_type: contentItem?.content_type,
+        },
+      });
+
+      toast({
+        title: "Contenido eliminado",
+        description: "El contenido ha sido eliminado permanentemente",
+      });
+
+      loadContent();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo eliminar el contenido",
         variant: "destructive",
       });
     }
@@ -273,26 +314,37 @@ export default function AdminContentModeration() {
                           )}
 
                           {/* Acciones de moderación */}
-                          {item.status === 'pending' && (
-                            <div className="flex gap-2 pt-4 border-t">
-                              <Button
-                                onClick={() => updateContentStatus(item.id, 'approved')}
-                                variant="default"
-                                size="sm"
-                              >
-                                <CheckCircle2 className="h-4 w-4 mr-2" />
-                                Aprobar
-                              </Button>
-                              <Button
-                                onClick={() => updateContentStatus(item.id, 'rejected')}
-                                variant="destructive"
-                                size="sm"
-                              >
-                                <XCircle className="h-4 w-4 mr-2" />
-                                Rechazar
-                              </Button>
-                            </div>
-                          )}
+                          <div className="flex gap-2 pt-4 border-t">
+                            {item.status === 'pending' && (
+                              <>
+                                <Button
+                                  onClick={() => updateContentStatus(item.id, 'approved')}
+                                  variant="default"
+                                  size="sm"
+                                >
+                                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                                  Aprobar
+                                </Button>
+                                <Button
+                                  onClick={() => updateContentStatus(item.id, 'rejected')}
+                                  variant="destructive"
+                                  size="sm"
+                                >
+                                  <XCircle className="h-4 w-4 mr-2" />
+                                  Rechazar
+                                </Button>
+                              </>
+                            )}
+                            <Button
+                              onClick={() => deleteContent(item.id)}
+                              variant="outline"
+                              size="sm"
+                              className="ml-auto border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Eliminar
+                            </Button>
+                          </div>
                         </CardContent>
                       </Card>
                     );

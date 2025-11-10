@@ -162,11 +162,11 @@ export default function AdminContentModeration() {
   const bulkApproveContent = async () => {
     try {
       setBulkApproving(true);
-      
+
       // Construir query con filtros
       let query = supabase
         .from('content_uploads')
-        .select('id, title, content_type')
+        .select('id, title, content_type, uploader_id')
         .eq('status', 'pending');
       
       // Aplicar filtro de tipo
@@ -223,12 +223,39 @@ export default function AdminContentModeration() {
           items: itemsToApprove.map(i => ({ id: i.id, title: i.title })),
         },
       });
-      
+
+      // Crear notificaciones para los creadores
+      const uploaderGroups = itemsToApprove.reduce((acc, item) => {
+        if (!acc[item.uploader_id]) {
+          acc[item.uploader_id] = [];
+        }
+        acc[item.uploader_id].push(item);
+        return acc;
+      }, {} as Record<string, typeof itemsToApprove>);
+
+      const notifications = Object.entries(uploaderGroups).map(([uploaderId, items]) => ({
+        user_id: uploaderId,
+        type: 'content_approved',
+        title: 'Contenido Aprobado',
+        message: items.length === 1 
+          ? `Tu contenido "${items[0].title}" ha sido aprobado y ya está visible en la plataforma.`
+          : `${items.length} de tus contenidos han sido aprobados y ya están visibles en la plataforma.`,
+        link: '/upload-content',
+      }));
+
+      const { error: notifError } = await supabase
+        .from('notifications')
+        .insert(notifications);
+
+      if (notifError) {
+        console.error('Error creando notificaciones:', notifError);
+      }
+
       toast({
         title: "Aprobación masiva exitosa",
-        description: `Se aprobaron ${itemsToApprove.length} contenido(s)`,
+        description: `Se aprobaron ${itemsToApprove.length} contenido(s) y se notificó a ${Object.keys(uploaderGroups).length} creador(es)`,
       });
-      
+
       // Limpiar filtros y recargar
       setBulkContentType("all");
       setBulkDateFrom("");
@@ -248,11 +275,11 @@ export default function AdminContentModeration() {
   const bulkRejectContent = async () => {
     try {
       setBulkRejecting(true);
-      
+
       // Construir query con filtros
       let query = supabase
         .from('content_uploads')
-        .select('id, title, content_type')
+        .select('id, title, content_type, uploader_id')
         .eq('status', 'pending');
       
       // Aplicar filtro de tipo
@@ -309,10 +336,37 @@ export default function AdminContentModeration() {
           items: itemsToReject.map(i => ({ id: i.id, title: i.title })),
         },
       });
+
+      // Crear notificaciones para los creadores
+      const uploaderGroups = itemsToReject.reduce((acc, item) => {
+        if (!acc[item.uploader_id]) {
+          acc[item.uploader_id] = [];
+        }
+        acc[item.uploader_id].push(item);
+        return acc;
+      }, {} as Record<string, typeof itemsToReject>);
+
+      const notifications = Object.entries(uploaderGroups).map(([uploaderId, items]) => ({
+        user_id: uploaderId,
+        type: 'content_rejected',
+        title: 'Contenido Rechazado',
+        message: items.length === 1 
+          ? `Tu contenido "${items[0].title}" ha sido rechazado. Por favor revisa que cumpla con los estándares de la plataforma.`
+          : `${items.length} de tus contenidos han sido rechazados. Por favor revisa que cumplan con los estándares de la plataforma.`,
+        link: '/upload-content',
+      }));
+
+      const { error: notifError } = await supabase
+        .from('notifications')
+        .insert(notifications);
+
+      if (notifError) {
+        console.error('Error creando notificaciones:', notifError);
+      }
       
       toast({
         title: "Rechazo masivo exitoso",
-        description: `Se rechazaron ${itemsToReject.length} contenido(s)`,
+        description: `Se rechazaron ${itemsToReject.length} contenido(s) y se notificó a ${Object.keys(uploaderGroups).length} creador(es)`,
         variant: "destructive",
       });
       

@@ -937,6 +937,78 @@ export type Database = {
           },
         ]
       }
+      playlist_items: {
+        Row: {
+          added_at: string
+          content_id: string
+          id: string
+          order_index: number
+          playlist_id: string
+        }
+        Insert: {
+          added_at?: string
+          content_id: string
+          id?: string
+          order_index?: number
+          playlist_id: string
+        }
+        Update: {
+          added_at?: string
+          content_id?: string
+          id?: string
+          order_index?: number
+          playlist_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playlist_items_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "content_uploads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playlist_items_playlist_id_fkey"
+            columns: ["playlist_id"]
+            isOneToOne: false
+            referencedRelation: "playlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      playlists: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean
+          name: string
+          thumbnail_url: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          name: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          name?: string
+          thumbnail_url?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       podcast_episodes: {
         Row: {
           apple_podcasts_url: string | null

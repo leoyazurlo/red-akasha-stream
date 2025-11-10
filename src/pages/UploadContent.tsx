@@ -20,6 +20,9 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Switch } from "@/components/ui/switch";
+import { VideoUpload } from "@/components/VideoUpload";
+import { AudioUpload } from "@/components/AudioUpload";
+import { ImageUpload } from "@/components/ImageUpload";
 
 interface ProfileOption {
   id: string;
@@ -396,16 +399,12 @@ const UploadContent = () => {
                           Comparte tu video musical, video clip, documental o contenido audiovisual
                         </p>
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="video_url">URL del video</Label>
-                        <Input
-                          id="video_url"
-                          name="video_url"
-                          value={formData.video_url}
-                          onChange={handleChange}
-                          placeholder="https://youtube.com/watch?v=... o URL de tu video"
-                        />
-                      </div>
+                      <VideoUpload
+                        label="Video del contenido"
+                        value={formData.video_url}
+                        onChange={(url) => setFormData(prev => ({ ...prev, video_url: url }))}
+                        description="Sube tu video en formato MP4, WebM o MOV (máx. 500MB)"
+                      />
                     </div>
                   )}
 
@@ -418,19 +417,12 @@ const UploadContent = () => {
                           Sube fotografías de conciertos, sesiones de grabación o material gráfico relacionado
                         </p>
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="photo_url">URL de la fotografía</Label>
-                        <Input
-                          id="photo_url"
-                          name="photo_url"
-                          value={formData.photo_url}
-                          onChange={handleChange}
-                          placeholder="https://... o URL de tu fotografía"
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Puedes compartir imágenes de eventos, backstage, portadas de discos, etc.
-                        </p>
-                      </div>
+                      <ImageUpload
+                        label="Fotografía del contenido"
+                        value={formData.photo_url}
+                        onChange={(url) => setFormData(prev => ({ ...prev, photo_url: url }))}
+                        description="Sube imágenes de eventos, backstage, portadas de discos, etc. (máx. 10MB)"
+                      />
                     </div>
                   )}
 
@@ -442,17 +434,13 @@ const UploadContent = () => {
                           Comparte tu podcast sobre producción, marketing, derecho de autor y más
                         </p>
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="audio_url">URL del audio *</Label>
-                        <Input
-                          id="audio_url"
-                          name="audio_url"
-                          required
-                          value={formData.audio_url}
-                          onChange={handleChange}
-                          placeholder="URL del archivo de audio"
-                        />
-                      </div>
+                      <AudioUpload
+                        label="Audio del podcast"
+                        value={formData.audio_url}
+                        onChange={(url) => setFormData(prev => ({ ...prev, audio_url: url }))}
+                        required
+                        description="Sube tu archivo de audio en formato MP3, WAV o AAC (máx. 100MB)"
+                      />
                     </div>
                   )}
 

@@ -1,9 +1,9 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
-import { OnDemandPlayer } from "@/components/OnDemandPlayer";
 import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,15 +55,13 @@ interface PlaybackHistory {
 
 const OnDemand = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [contents, setContents] = useState<Content[]>([]);
   const [filteredContents, setFilteredContents] = useState<Content[]>([]);
   const [continueWatching, setContinueWatching] = useState<PlaybackHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
-  const [selectedContent, setSelectedContent] = useState<Content | null>(null);
-  const [initialPosition, setInitialPosition] = useState(0);
-  const [playerOpen, setPlayerOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -202,42 +200,13 @@ const OnDemand = () => {
   };
 
   const handleContentClick = (content: Content) => {
-    setSelectedContent(content);
-    setInitialPosition(0); // Por defecto desde el inicio
-    setPlayerOpen(true);
-    
-    // Incrementar contador de vistas
-    supabase
-      .from('content_uploads')
-      .update({ views_count: content.views_count + 1 })
-      .eq('id', content.id)
-      .then(() => {
-        // Actualizar localmente
-        setContents(prev => 
-          prev.map(c => c.id === content.id 
-            ? { ...c, views_count: c.views_count + 1 }
-            : c
-          )
-        );
-      });
+    // Navegar a la página de detalle
+    navigate(`/video/${content.id}`);
   };
 
   const handleContinueWatching = (history: PlaybackHistory) => {
     if (!history.content) return;
-    
-    setSelectedContent(history.content as Content);
-    setInitialPosition(history.last_position);
-    setPlayerOpen(true);
-  };
-
-  const handlePlayerClose = (open: boolean) => {
-    setPlayerOpen(open);
-    // Recargar historial cuando se cierra el reproductor
-    if (!open && user) {
-      setTimeout(() => {
-        fetchContinueWatching();
-      }, 500);
-    }
+    navigate(`/video/${history.content.id}`);
   };
 
   const handlePurchase = () => {
@@ -589,18 +558,6 @@ const OnDemand = () => {
 
         <Footer />
       </div>
-
-      {/* Video/Audio Player */}
-      {selectedContent && (
-        <OnDemandPlayer
-          open={playerOpen}
-          onOpenChange={handlePlayerClose}
-          content={selectedContent}
-          initialPosition={initialPosition}
-          isPurchased={false}
-          onPurchase={handlePurchase}
-        />
-      )}
     </div>
   );
 };

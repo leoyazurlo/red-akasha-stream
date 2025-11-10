@@ -29,6 +29,8 @@ import UserProfile from "./pages/UserProfile";
 import OnDemand from "./pages/OnDemand";
 import NotFound from "./pages/NotFound";
 
+import VideoDetail from "./pages/VideoDetail";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -40,6 +42,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/on-demand" element={<OnDemand />} />
+          <Route path="/video/:id" element={<VideoDetail />} />
           <Route path="/foro" element={<Forum />} />
           <Route path="/foro/subforo/:id" element={<Subforo />} />
           <Route path="/foro/hilo/:id" element={<Thread />} />

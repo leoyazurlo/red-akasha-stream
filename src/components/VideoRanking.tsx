@@ -6,6 +6,7 @@ import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface RankingVideo {
   id: string;
@@ -41,6 +42,7 @@ export const VideoRanking = ({ videos: propVideos }: VideoRankingProps) => {
   const { elementRef, isVisible } = useScrollAnimation({ threshold: 0.1 });
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!propVideos) {
@@ -189,7 +191,10 @@ export const VideoRanking = ({ videos: propVideos }: VideoRankingProps) => {
                 </div>
 
                 {/* Video Thumbnail */}
-                <div className="relative w-24 sm:w-32 md:w-40 aspect-video shrink-0 rounded-md sm:rounded-lg overflow-hidden bg-card border border-border group cursor-pointer">
+                <div 
+                  className="relative w-24 sm:w-32 md:w-40 aspect-video shrink-0 rounded-md sm:rounded-lg overflow-hidden bg-card border border-border group cursor-pointer"
+                  onClick={() => navigate(`/video/${video.id}`)}
+                >
                   {video.thumbnail_url ? (
                     <img
                       src={video.thumbnail_url}

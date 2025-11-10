@@ -61,7 +61,6 @@ const OnDemand = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
-  const [filterPrice, setFilterPrice] = useState<string>("all");
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
   const [initialPosition, setInitialPosition] = useState(0);
   const [playerOpen, setPlayerOpen] = useState(false);
@@ -76,7 +75,7 @@ const OnDemand = () => {
 
   useEffect(() => {
     filterContents();
-  }, [searchTerm, filterType, filterPrice, contents]);
+  }, [searchTerm, filterType, contents]);
 
   const fetchContents = async () => {
     try {
@@ -152,15 +151,12 @@ const OnDemand = () => {
       filtered = filtered.filter(content => content.content_type === filterType);
     }
 
-    // Filtrar por precio
-    if (filterPrice === "free") {
-      filtered = filtered.filter(content => content.is_free);
-    } else if (filterPrice === "paid") {
-      filtered = filtered.filter(content => !content.is_free);
-    }
-
     setFilteredContents(filtered);
   };
+
+  // Separar contenido en gratuito y pago
+  const freeContents = filteredContents.filter(c => c.is_free);
+  const paidContents = filteredContents.filter(c => !c.is_free);
 
   const getContentIcon = (type: string) => {
     switch (type) {
@@ -338,7 +334,7 @@ const OnDemand = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Search */}
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -364,30 +360,11 @@ const OnDemand = () => {
                     <SelectItem value="pelicula">Películas</SelectItem>
                   </SelectContent>
                 </Select>
-
-                {/* Price Filter */}
-                <Select value={filterPrice} onValueChange={setFilterPrice}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Precio" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    <SelectItem value="free">Gratis</SelectItem>
-                    <SelectItem value="paid">De pago</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             </CardContent>
           </Card>
 
-          {/* Results Count */}
-          <div className="mb-6">
-            <p className="text-muted-foreground">
-              {loading ? "Cargando..." : `${filteredContents.length} contenido${filteredContents.length !== 1 ? 's' : ''} encontrado${filteredContents.length !== 1 ? 's' : ''}`}
-            </p>
-          </div>
-
-          {/* Content Grid */}
+          {/* Loading State */}
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[...Array(8)].map((_, i) => (
@@ -411,88 +388,192 @@ const OnDemand = () => {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredContents.map((content) => (
-                <Card 
-                  key={content.id} 
-                  className="group overflow-hidden border-border bg-card/50 backdrop-blur-sm hover:bg-card/80 transition-all cursor-pointer"
-                  onClick={() => handleContentClick(content)}
-                >
-                  {/* Thumbnail */}
-                  <div className="relative overflow-hidden bg-secondary/20">
-                    <AspectRatio ratio={16 / 9}>
-                      {content.thumbnail_url ? (
-                        <img
-                          src={content.thumbnail_url}
-                          alt={content.title}
-                          className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-secondary/30">
-                          {getContentIcon(content.content_type)}
-                        </div>
-                      )}
-                    </AspectRatio>
-                    
-                    {/* Duration Badge */}
-                    {content.duration && (
-                      <Badge className="absolute bottom-2 right-2 bg-black/70 text-white border-none">
-                        {formatDuration(content.duration)}
-                      </Badge>
-                    )}
-
-                    {/* Play Overlay */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                      <Play className="w-12 h-12 text-white" fill="white" />
+            <div className="space-y-12">
+              {/* FREE CONTENT SECTION */}
+              {freeContents.length > 0 && (
+                <section>
+                  <div className="mb-6">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="h-10 w-1 bg-gradient-to-b from-green-500 to-emerald-600 rounded-full"></div>
+                      <h2 className="text-3xl font-bold bg-gradient-to-r from-green-500 to-emerald-600 bg-clip-text text-transparent">
+                        Contenido Gratuito
+                      </h2>
                     </div>
+                    <p className="text-muted-foreground ml-7">
+                      {freeContents.length} video{freeContents.length !== 1 ? 's' : ''} disponible{freeContents.length !== 1 ? 's' : ''} sin costo
+                    </p>
                   </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {freeContents.map((content) => (
+                      <Card 
+                        key={content.id} 
+                        className="group overflow-hidden border-green-500/20 bg-gradient-to-br from-green-500/5 to-emerald-500/5 backdrop-blur-sm hover:from-green-500/10 hover:to-emerald-500/10 transition-all cursor-pointer"
+                        onClick={() => handleContentClick(content)}
+                      >
+                        {/* Thumbnail */}
+                        <div className="relative overflow-hidden bg-secondary/20">
+                          <AspectRatio ratio={16 / 9}>
+                            {content.thumbnail_url ? (
+                              <img
+                                src={content.thumbnail_url}
+                                alt={content.title}
+                                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-secondary/30">
+                                {getContentIcon(content.content_type)}
+                              </div>
+                            )}
+                          </AspectRatio>
+                          
+                          {/* Free Badge */}
+                          <Badge className="absolute top-2 left-2 bg-green-500/90 text-white border-none">
+                            GRATIS
+                          </Badge>
 
-                  {/* Content Info */}
-                  <CardHeader className="p-4">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <Badge variant="outline" className="border-primary text-primary">
-                        {getContentTypeLabel(content.content_type)}
-                      </Badge>
-                      {content.is_free ? (
-                        <Badge variant="secondary" className="bg-green-500/10 text-green-500 border-green-500/20">
-                          Gratis
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 flex items-center gap-1">
-                          <DollarSign className="w-3 h-3" />
-                          {content.price} {content.currency}
-                        </Badge>
-                      )}
-                    </div>
-                    
-                    <CardTitle className="text-base line-clamp-2">{content.title}</CardTitle>
-                    
-                    {content.description && (
-                      <CardDescription className="line-clamp-2 text-sm">
-                        {content.description}
-                      </CardDescription>
-                    )}
-                  </CardHeader>
+                          {/* Duration Badge */}
+                          {content.duration && (
+                            <Badge className="absolute bottom-2 right-2 bg-black/70 text-white border-none">
+                              {formatDuration(content.duration)}
+                            </Badge>
+                          )}
 
-                  <CardContent className="p-4 pt-0">
-                    <div className="space-y-1 text-xs text-muted-foreground">
-                      {content.band_name && (
-                        <p>Banda: {content.band_name}</p>
-                      )}
-                      {content.producer_name && (
-                        <p>Productor: {content.producer_name}</p>
-                      )}
-                      {content.venue_name && (
-                        <p>Sala: {content.venue_name}</p>
-                      )}
-                      <p className="flex items-center gap-1">
-                        <Play className="w-3 h-3" />
-                        {content.views_count} reproducciones
-                      </p>
+                          {/* Play Overlay */}
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                            <Play className="w-12 h-12 text-white" fill="white" />
+                          </div>
+                        </div>
+
+                        {/* Content Info */}
+                        <CardHeader className="p-4">
+                          <Badge variant="outline" className="border-green-500 text-green-500 w-fit mb-2">
+                            {getContentTypeLabel(content.content_type)}
+                          </Badge>
+                          
+                          <CardTitle className="text-base line-clamp-2">{content.title}</CardTitle>
+                          
+                          {content.description && (
+                            <CardDescription className="line-clamp-2 text-sm">
+                              {content.description}
+                            </CardDescription>
+                          )}
+                        </CardHeader>
+
+                        <CardContent className="p-4 pt-0">
+                          <div className="space-y-1 text-xs text-muted-foreground">
+                            {content.band_name && (
+                              <p>Banda: {content.band_name}</p>
+                            )}
+                            {content.producer_name && (
+                              <p>Productor: {content.producer_name}</p>
+                            )}
+                            <p className="flex items-center gap-1">
+                              <Play className="w-3 h-3" />
+                              {content.views_count} reproducciones
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* PREMIUM CONTENT SECTION */}
+              {paidContents.length > 0 && (
+                <section>
+                  <div className="mb-6">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="h-10 w-1 bg-gradient-to-b from-amber-500 via-yellow-500 to-orange-500 rounded-full"></div>
+                      <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 bg-clip-text text-transparent">
+                        Contenido Premium
+                      </h2>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    <p className="text-muted-foreground ml-7">
+                      {paidContents.length} video{paidContents.length !== 1 ? 's' : ''} exclusivo{paidContents.length !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {paidContents.map((content) => (
+                      <Card 
+                        key={content.id} 
+                        className="group overflow-hidden border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-yellow-500/5 to-orange-500/10 backdrop-blur-sm hover:from-amber-500/15 hover:via-yellow-500/10 hover:to-orange-500/15 transition-all cursor-pointer relative"
+                        onClick={() => handleContentClick(content)}
+                      >
+                        {/* Premium Shine Effect */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                        
+                        {/* Thumbnail */}
+                        <div className="relative overflow-hidden bg-secondary/20">
+                          <AspectRatio ratio={16 / 9}>
+                            {content.thumbnail_url ? (
+                              <img
+                                src={content.thumbnail_url}
+                                alt={content.title}
+                                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-secondary/30">
+                                {getContentIcon(content.content_type)}
+                              </div>
+                            )}
+                          </AspectRatio>
+                          
+                          {/* Premium Badge */}
+                          <Badge className="absolute top-2 left-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white border-none flex items-center gap-1">
+                            <DollarSign className="w-3 h-3" />
+                            {content.price} {content.currency}
+                          </Badge>
+
+                          {/* Duration Badge */}
+                          {content.duration && (
+                            <Badge className="absolute bottom-2 right-2 bg-black/70 text-white border-none">
+                              {formatDuration(content.duration)}
+                            </Badge>
+                          )}
+
+                          {/* Play Overlay */}
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                            <Play className="w-12 h-12 text-white" fill="white" />
+                          </div>
+                        </div>
+
+                        {/* Content Info */}
+                        <CardHeader className="p-4 relative z-10">
+                          <Badge variant="outline" className="border-amber-500 text-amber-500 w-fit mb-2">
+                            {getContentTypeLabel(content.content_type)}
+                          </Badge>
+                          
+                          <CardTitle className="text-base line-clamp-2">{content.title}</CardTitle>
+                          
+                          {content.description && (
+                            <CardDescription className="line-clamp-2 text-sm">
+                              {content.description}
+                            </CardDescription>
+                          )}
+                        </CardHeader>
+
+                        <CardContent className="p-4 pt-0 relative z-10">
+                          <div className="space-y-1 text-xs text-muted-foreground">
+                            {content.band_name && (
+                              <p>Banda: {content.band_name}</p>
+                            )}
+                            {content.producer_name && (
+                              <p>Productor: {content.producer_name}</p>
+                            )}
+                            <p className="flex items-center gap-1">
+                              <Play className="w-3 h-3" />
+                              {content.views_count} reproducciones
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </section>
+              )}
             </div>
           )}
         </main>

@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface ContentItem {
   id: string;
@@ -59,6 +60,7 @@ export default function AdminContentModeration() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [showApprovalPreview, setShowApprovalPreview] = useState(false);
   const [showRejectionPreview, setShowRejectionPreview] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!authLoading && user && isAdmin) {
@@ -107,6 +109,8 @@ export default function AdminContentModeration() {
       }
 
       setPreviewItems(items as ContentItem[]);
+      // Seleccionar todos los items por defecto
+      setSelectedItems(new Set(items.map(item => item.id)));
     } catch (error: any) {
       toast({
         title: "Error",
@@ -223,30 +227,22 @@ export default function AdminContentModeration() {
     try {
       setBulkApproving(true);
 
-      // Construir query con filtros
-      let query = supabase
+      // Filtrar solo los items seleccionados
+      const selectedIds = Array.from(selectedItems);
+      
+      if (selectedIds.length === 0) {
+        toast({
+          title: "Sin selección",
+          description: "Debes seleccionar al menos un contenido para aprobar",
+        });
+        return;
+      }
+
+      // Obtener los detalles completos de los items seleccionados
+      const { data: itemsToApprove, error: fetchError } = await supabase
         .from('content_uploads')
         .select('id, title, content_type, uploader_id')
-        .eq('status', 'pending');
-      
-      // Aplicar filtro de tipo
-      if (bulkContentType !== "all") {
-        query = query.eq('content_type', bulkContentType as any);
-      }
-      
-      // Aplicar filtro de fecha desde
-      if (bulkDateFrom) {
-        query = query.gte('created_at', new Date(bulkDateFrom).toISOString());
-      }
-      
-      // Aplicar filtro de fecha hasta
-      if (bulkDateTo) {
-        const dateTo = new Date(bulkDateTo);
-        dateTo.setHours(23, 59, 59, 999);
-        query = query.lte('created_at', dateTo.toISOString());
-      }
-      
-      const { data: itemsToApprove, error: fetchError } = await query;
+        .in('id', selectedIds);
       
       if (fetchError) throw fetchError;
       
@@ -336,30 +332,22 @@ export default function AdminContentModeration() {
     try {
       setBulkRejecting(true);
 
-      // Construir query con filtros
-      let query = supabase
+      // Filtrar solo los items seleccionados
+      const selectedIds = Array.from(selectedItems);
+      
+      if (selectedIds.length === 0) {
+        toast({
+          title: "Sin selección",
+          description: "Debes seleccionar al menos un contenido para rechazar",
+        });
+        return;
+      }
+
+      // Obtener los detalles completos de los items seleccionados
+      const { data: itemsToReject, error: fetchError } = await supabase
         .from('content_uploads')
         .select('id, title, content_type, uploader_id')
-        .eq('status', 'pending');
-      
-      // Aplicar filtro de tipo
-      if (bulkContentType !== "all") {
-        query = query.eq('content_type', bulkContentType as any);
-      }
-      
-      // Aplicar filtro de fecha desde
-      if (bulkDateFrom) {
-        query = query.gte('created_at', new Date(bulkDateFrom).toISOString());
-      }
-      
-      // Aplicar filtro de fecha hasta
-      if (bulkDateTo) {
-        const dateTo = new Date(bulkDateTo);
-        dateTo.setHours(23, 59, 59, 999);
-        query = query.lte('created_at', dateTo.toISOString());
-      }
-      
-      const { data: itemsToReject, error: fetchError } = await query;
+        .in('id', selectedIds);
       
       if (fetchError) throw fetchError;
       
@@ -641,33 +629,82 @@ export default function AdminContentModeration() {
                             <AlertDialogHeader>
                               <AlertDialogTitle>Vista Previa - Aprobar Contenido</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Se aprobarán {previewItems.length} contenido(s). Revisa la lista antes de confirmar:
+                                {selectedItems.size} de {previewItems.length} contenido(s) seleccionado(s). Desmarca los que quieras excluir:
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             
+                            {/* Controles de selección */}
+                            <div className="flex gap-2 pb-2 border-b">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setSelectedItems(new Set(previewItems.map(i => i.id)))}
+                              >
+                                Seleccionar todos
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setSelectedItems(new Set())}
+                              >
+                                Deseleccionar todos
+                              </Button>
+                            </div>
+                            
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 my-4">
                               {previewItems.map((item) => (
-                                <div key={item.id} className="border rounded-lg p-2 space-y-2">
-                                  <AspectRatio ratio={16/9} className="bg-muted rounded overflow-hidden">
-                                    {item.thumbnail_url || item.thumbnail_small ? (
-                                      <img 
-                                        src={item.thumbnail_url || item.thumbnail_small || ''} 
-                                        alt={item.title}
-                                        className="object-cover w-full h-full"
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center bg-muted">
-                                        {item.content_type === 'video_musical_vivo' || item.content_type === 'video_clip' ? (
-                                          <FileVideo className="h-8 w-8 text-muted-foreground" />
-                                        ) : item.content_type === 'podcast' ? (
-                                          <Music className="h-8 w-8 text-muted-foreground" />
+                                <div 
+                                  key={item.id} 
+                                  className={`border rounded-lg p-2 space-y-2 cursor-pointer transition-all ${
+                                    selectedItems.has(item.id) ? 'ring-2 ring-primary' : 'opacity-60'
+                                  }`}
+                                  onClick={() => {
+                                    const newSelected = new Set(selectedItems);
+                                    if (newSelected.has(item.id)) {
+                                      newSelected.delete(item.id);
+                                    } else {
+                                      newSelected.add(item.id);
+                                    }
+                                    setSelectedItems(newSelected);
+                                  }}
+                                >
+                                  <div className="flex items-start gap-2">
+                                    <Checkbox
+                                      checked={selectedItems.has(item.id)}
+                                      onCheckedChange={(checked) => {
+                                        const newSelected = new Set(selectedItems);
+                                        if (checked) {
+                                          newSelected.add(item.id);
+                                        } else {
+                                          newSelected.delete(item.id);
+                                        }
+                                        setSelectedItems(newSelected);
+                                      }}
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                    <div className="flex-1">
+                                      <AspectRatio ratio={16/9} className="bg-muted rounded overflow-hidden">
+                                        {item.thumbnail_url || item.thumbnail_small ? (
+                                          <img 
+                                            src={item.thumbnail_url || item.thumbnail_small || ''} 
+                                            alt={item.title}
+                                            className="object-cover w-full h-full"
+                                          />
                                         ) : (
-                                          <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                                          <div className="w-full h-full flex items-center justify-center bg-muted">
+                                            {item.content_type === 'video_musical_vivo' || item.content_type === 'video_clip' ? (
+                                              <FileVideo className="h-8 w-8 text-muted-foreground" />
+                                            ) : item.content_type === 'podcast' ? (
+                                              <Music className="h-8 w-8 text-muted-foreground" />
+                                            ) : (
+                                              <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                                            )}
+                                          </div>
                                         )}
-                                      </div>
-                                    )}
-                                  </AspectRatio>
-                                  <div className="space-y-1">
+                                      </AspectRatio>
+                                    </div>
+                                  </div>
+                                  <div className="space-y-1 pl-6">
                                     <p className="text-xs font-medium line-clamp-2">{item.title}</p>
                                     <Badge variant="outline" className="text-xs">
                                       {item.content_type}
@@ -690,7 +727,7 @@ export default function AdminContentModeration() {
                                   setShowApprovalPreview(false);
                                   bulkApproveContent();
                                 }}
-                                disabled={bulkApproving}
+                                disabled={bulkApproving || selectedItems.size === 0}
                               >
                                 {bulkApproving ? (
                                   <>
@@ -698,7 +735,7 @@ export default function AdminContentModeration() {
                                     Aprobando...
                                   </>
                                 ) : (
-                                  'Confirmar Aprobación'
+                                  `Aprobar ${selectedItems.size} contenido(s)`
                                 )}
                               </AlertDialogAction>
                             </AlertDialogFooter>
@@ -711,7 +748,7 @@ export default function AdminContentModeration() {
                             <AlertDialogHeader>
                               <AlertDialogTitle>Vista Previa - Rechazar Contenido</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Se rechazarán {previewItems.length} contenido(s) con el motivo: <span className="font-semibold text-destructive">
+                                {selectedItems.size} de {previewItems.length} contenido(s) seleccionado(s). Motivo: <span className="font-semibold text-destructive">
                                   {rejectionReason === "no_especificada" ? "No cumple con los estándares" :
                                    rejectionReason === "baja_calidad" ? "Baja calidad de audio/video" :
                                    rejectionReason === "contenido_inapropiado" ? "Contenido inapropiado" :
@@ -723,29 +760,78 @@ export default function AdminContentModeration() {
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             
+                            {/* Controles de selección */}
+                            <div className="flex gap-2 pb-2 border-b">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setSelectedItems(new Set(previewItems.map(i => i.id)))}
+                              >
+                                Seleccionar todos
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setSelectedItems(new Set())}
+                              >
+                                Deseleccionar todos
+                              </Button>
+                            </div>
+                            
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 my-4">
                               {previewItems.map((item) => (
-                                <div key={item.id} className="border rounded-lg p-2 space-y-2">
-                                  <AspectRatio ratio={16/9} className="bg-muted rounded overflow-hidden">
-                                    {item.thumbnail_url || item.thumbnail_small ? (
-                                      <img 
-                                        src={item.thumbnail_url || item.thumbnail_small || ''} 
-                                        alt={item.title}
-                                        className="object-cover w-full h-full"
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center bg-muted">
-                                        {item.content_type === 'video_musical_vivo' || item.content_type === 'video_clip' ? (
-                                          <FileVideo className="h-8 w-8 text-muted-foreground" />
-                                        ) : item.content_type === 'podcast' ? (
-                                          <Music className="h-8 w-8 text-muted-foreground" />
+                                <div 
+                                  key={item.id} 
+                                  className={`border rounded-lg p-2 space-y-2 cursor-pointer transition-all ${
+                                    selectedItems.has(item.id) ? 'ring-2 ring-destructive' : 'opacity-60'
+                                  }`}
+                                  onClick={() => {
+                                    const newSelected = new Set(selectedItems);
+                                    if (newSelected.has(item.id)) {
+                                      newSelected.delete(item.id);
+                                    } else {
+                                      newSelected.add(item.id);
+                                    }
+                                    setSelectedItems(newSelected);
+                                  }}
+                                >
+                                  <div className="flex items-start gap-2">
+                                    <Checkbox
+                                      checked={selectedItems.has(item.id)}
+                                      onCheckedChange={(checked) => {
+                                        const newSelected = new Set(selectedItems);
+                                        if (checked) {
+                                          newSelected.add(item.id);
+                                        } else {
+                                          newSelected.delete(item.id);
+                                        }
+                                        setSelectedItems(newSelected);
+                                      }}
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                    <div className="flex-1">
+                                      <AspectRatio ratio={16/9} className="bg-muted rounded overflow-hidden">
+                                        {item.thumbnail_url || item.thumbnail_small ? (
+                                          <img 
+                                            src={item.thumbnail_url || item.thumbnail_small || ''} 
+                                            alt={item.title}
+                                            className="object-cover w-full h-full"
+                                          />
                                         ) : (
-                                          <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                                          <div className="w-full h-full flex items-center justify-center bg-muted">
+                                            {item.content_type === 'video_musical_vivo' || item.content_type === 'video_clip' ? (
+                                              <FileVideo className="h-8 w-8 text-muted-foreground" />
+                                            ) : item.content_type === 'podcast' ? (
+                                              <Music className="h-8 w-8 text-muted-foreground" />
+                                            ) : (
+                                              <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                                            )}
+                                          </div>
                                         )}
-                                      </div>
-                                    )}
-                                  </AspectRatio>
-                                  <div className="space-y-1">
+                                      </AspectRatio>
+                                    </div>
+                                  </div>
+                                  <div className="space-y-1 pl-6">
                                     <p className="text-xs font-medium line-clamp-2">{item.title}</p>
                                     <Badge variant="outline" className="text-xs">
                                       {item.content_type}
@@ -768,7 +854,7 @@ export default function AdminContentModeration() {
                                   setShowRejectionPreview(false);
                                   bulkRejectContent();
                                 }}
-                                disabled={bulkRejecting}
+                                disabled={bulkRejecting || selectedItems.size === 0}
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                               >
                                 {bulkRejecting ? (
@@ -777,7 +863,7 @@ export default function AdminContentModeration() {
                                     Rechazando...
                                   </>
                                 ) : (
-                                  'Confirmar Rechazo'
+                                  `Rechazar ${selectedItems.size} contenido(s)`
                                 )}
                               </AlertDialogAction>
                             </AlertDialogFooter>

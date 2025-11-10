@@ -2,14 +2,113 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Radio, Film, Headphones, Calendar, Eye, Users } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Loader2, Clock, CheckCircle2, XCircle, TrendingUp, BarChart3, Video, AlertCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+
+interface ContentStats {
+  pending: number;
+  approved: number;
+  rejected: number;
+  total: number;
+}
+
+interface ContentByType {
+  type: string;
+  pending: number;
+  approved: number;
+  rejected: number;
+}
+
+interface RecentContent {
+  id: string;
+  title: string;
+  content_type: string;
+  status: string;
+  created_at: string;
+}
 
 export default function Admin() {
   const { user, loading, isAdmin } = useAuth(true);
   const navigate = useNavigate();
+  const [stats, setStats] = useState<ContentStats>({ pending: 0, approved: 0, rejected: 0, total: 0 });
+  const [contentByType, setContentByType] = useState<ContentByType[]>([]);
+  const [recentContent, setRecentContent] = useState<RecentContent[]>([]);
+  const [loadingStats, setLoadingStats] = useState(true);
 
-  if (loading) {
+  useEffect(() => {
+    if (!loading && user && isAdmin) {
+      loadDashboardData();
+    }
+  }, [loading, user, isAdmin]);
+
+  const loadDashboardData = async () => {
+    try {
+      setLoadingStats(true);
+      
+      // Obtener estadísticas generales
+      const { data: allContent, error } = await supabase
+        .from('content_uploads')
+        .select('id, status, content_type, title, created_at');
+
+      if (error) throw error;
+
+      // Calcular estadísticas por estado
+      const pending = allContent?.filter(c => c.status === 'pending').length || 0;
+      const approved = allContent?.filter(c => c.status === 'approved').length || 0;
+      const rejected = allContent?.filter(c => c.status === 'rejected').length || 0;
+
+      setStats({
+        pending,
+        approved,
+        rejected,
+        total: allContent?.length || 0,
+      });
+
+      // Calcular estadísticas por tipo de contenido
+      const typeStats: Record<string, ContentByType> = {};
+      allContent?.forEach(content => {
+        if (!typeStats[content.content_type]) {
+          typeStats[content.content_type] = {
+            type: content.content_type,
+            pending: 0,
+            approved: 0,
+            rejected: 0,
+          };
+        }
+        
+        if (content.status === 'pending') typeStats[content.content_type].pending++;
+        if (content.status === 'approved') typeStats[content.content_type].approved++;
+        if (content.status === 'rejected') typeStats[content.content_type].rejected++;
+      });
+
+      setContentByType(Object.values(typeStats));
+
+      // Obtener contenido reciente
+      const recent = allContent
+        ?.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 5)
+        .map(c => ({
+          id: c.id,
+          title: c.title,
+          content_type: c.content_type,
+          status: c.status,
+          created_at: c.created_at,
+        })) || [];
+
+      setRecentContent(recent);
+    } catch (error) {
+      console.error('Error loading dashboard:', error);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
+  if (loading || loadingStats) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -21,14 +120,47 @@ export default function Admin() {
     return <Navigate to="/foro" replace />;
   }
 
-  const stats = [
-    { title: 'Streams Activos', value: '3', icon: Radio, color: 'text-red-500' },
-    { title: 'Videos (VOD)', value: '24', icon: Film, color: 'text-blue-500' },
-    { title: 'Podcasts', value: '12', icon: Headphones, color: 'text-purple-500' },
-    { title: 'Eventos Programados', value: '8', icon: Calendar, color: 'text-green-500' },
-    { title: 'Total Espectadores', value: '1,234', icon: Eye, color: 'text-orange-500' },
-    { title: 'Usuarios Registrados', value: '567', icon: Users, color: 'text-cyan-500' },
-  ];
+  const COLORS = {
+    pending: '#f59e0b',
+    approved: '#10b981',
+    rejected: '#ef4444',
+  };
+
+  const pieData = [
+    { name: 'Pendiente', value: stats.pending, color: COLORS.pending },
+    { name: 'Aprobado', value: stats.approved, color: COLORS.approved },
+    { name: 'Rechazado', value: stats.rejected, color: COLORS.rejected },
+  ].filter(item => item.value > 0);
+
+  const getStatusBadge = (status: string) => {
+    const config = {
+      pending: { variant: 'secondary' as const, label: 'Pendiente', icon: Clock },
+      approved: { variant: 'default' as const, label: 'Aprobado', icon: CheckCircle2 },
+      rejected: { variant: 'destructive' as const, label: 'Rechazado', icon: XCircle },
+    };
+    const { variant, label, icon: Icon } = config[status as keyof typeof config] || config.pending;
+    return (
+      <Badge variant={variant} className="flex items-center gap-1 w-fit">
+        <Icon className="w-3 h-3" />
+        {label}
+      </Badge>
+    );
+  };
+
+  const getContentTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      video_musical_vivo: "Video Musical en Vivo",
+      video_clip: "Video Clip",
+      podcast: "Podcast",
+      corto: "Cortometraje",
+      documental: "Documental",
+      pelicula: "Película"
+    };
+    return labels[type] || type;
+  };
+
+  const approvalRate = stats.total > 0 ? (stats.approved / stats.total) * 100 : 0;
+  const rejectionRate = stats.total > 0 ? (stats.rejected / stats.total) * 100 : 0;
 
   return (
     <SidebarProvider>
@@ -41,62 +173,220 @@ export default function Admin() {
         <div className="flex w-full pt-14">
           <AdminSidebar />
           <main className="flex-1 p-6">
-            <div className="max-w-6xl mx-auto space-y-6">
-              <div>
-                <h2 className="text-3xl font-bold mb-2">Dashboard</h2>
-                <p className="text-muted-foreground">
-                  Resumen general de la plataforma
-                </p>
+            <div className="max-w-7xl mx-auto space-y-6">
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-3xl font-bold mb-2">Dashboard de Curaduría</h2>
+                  <p className="text-muted-foreground">
+                    Estadísticas y métricas de moderación de contenido
+                  </p>
+                </div>
+                {stats.pending > 0 && (
+                  <Badge variant="secondary" className="bg-amber-500/10 text-amber-500 border-amber-500/20">
+                    <AlertCircle className="w-4 h-4 mr-1" />
+                    {stats.pending} pendiente{stats.pending !== 1 ? 's' : ''}
+                  </Badge>
+                )}
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {stats.map((stat) => (
-                  <Card key={stat.title}>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">
-                        {stat.title}
-                      </CardTitle>
-                      <stat.icon className={`h-4 w-4 ${stat.color}`} />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{stat.value}</div>
-                    </CardContent>
-                  </Card>
-                ))}
+              {/* Stats Cards */}
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <Card 
+                  className="cursor-pointer hover:bg-accent/50 transition-colors border-amber-500/20 bg-gradient-to-br from-amber-500/5 to-orange-500/5"
+                  onClick={() => navigate('/admin/content')}
+                >
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Pendientes</CardTitle>
+                    <Clock className="h-5 w-5 text-amber-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-amber-500">{stats.pending}</div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Requieren revisión
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-green-500/20 bg-gradient-to-br from-green-500/5 to-emerald-500/5">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Aprobados</CardTitle>
+                    <CheckCircle2 className="h-5 w-5 text-green-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-green-500">{stats.approved}</div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {approvalRate.toFixed(1)}% del total
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-red-500/20 bg-gradient-to-br from-red-500/5 to-rose-500/5">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Rechazados</CardTitle>
+                    <XCircle className="h-5 w-5 text-red-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold text-red-500">{stats.rejected}</div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {rejectionRate.toFixed(1)}% del total
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-purple-500/5">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total</CardTitle>
+                    <Video className="h-5 w-5 text-primary" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-3xl font-bold">{stats.total}</div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Contenido subido
+                    </p>
+                  </CardContent>
+                </Card>
               </div>
 
+              {/* Charts Row */}
+              <div className="grid gap-6 md:grid-cols-2">
+                {/* Pie Chart */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5" />
+                      Distribución por Estado
+                    </CardTitle>
+                    <CardDescription>
+                      Proporción de contenido en cada estado
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {pieData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height={300}>
+                        <PieChart>
+                          <Pie
+                            data={pieData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={(entry) => `${entry.name}: ${entry.value}`}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {pieData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                        No hay datos disponibles
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Bar Chart by Type */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="h-5 w-5" />
+                      Contenido por Tipo
+                    </CardTitle>
+                    <CardDescription>
+                      Distribución por tipo de contenido y estado
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {contentByType.length > 0 ? (
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={contentByType}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis 
+                            dataKey="type" 
+                            angle={-45}
+                            textAnchor="end"
+                            height={100}
+                            tick={{ fontSize: 10 }}
+                          />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Bar dataKey="pending" fill={COLORS.pending} name="Pendiente" />
+                          <Bar dataKey="approved" fill={COLORS.approved} name="Aprobado" />
+                          <Bar dataKey="rejected" fill={COLORS.rejected} name="Rechazado" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                        No hay datos disponibles
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Recent Content */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Acciones Rápidas</CardTitle>
+                  <CardTitle>Contenido Reciente</CardTitle>
+                  <CardDescription>
+                    Últimas 5 subidas de contenido
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    <Card className="cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => navigate('/admin/streams')}>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-base">
-                          <Radio className="h-4 w-4" />
-                          Gestionar Streams
-                        </CardTitle>
-                      </CardHeader>
-                    </Card>
+                  {recentContent.length > 0 ? (
+                    <div className="space-y-4">
+                      {recentContent.map((content) => (
+                        <div 
+                          key={content.id}
+                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
+                          onClick={() => navigate('/admin/content')}
+                        >
+                          <div className="flex-1 min-w-0 mr-4">
+                            <p className="font-medium truncate">{content.title}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {getContentTypeLabel(content.content_type)} • {new Date(content.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                          {getStatusBadge(content.status)}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No hay contenido reciente
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-                    <Card className="cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => navigate('/admin/vod')}>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-base">
-                          <Film className="h-4 w-4" />
-                          Gestionar Videos
-                        </CardTitle>
-                      </CardHeader>
-                    </Card>
-
-                    <Card className="cursor-pointer hover:bg-accent/50 transition-colors" onClick={() => navigate('/admin/podcasts')}>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-base">
-                          <Headphones className="h-4 w-4" />
-                          Gestionar Podcasts
-                        </CardTitle>
-                      </CardHeader>
-                    </Card>
+              {/* Approval Rate Progress */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Tasa de Aprobación</CardTitle>
+                  <CardDescription>
+                    Porcentaje de contenido aprobado vs rechazado
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">Aprobados</span>
+                      <span className="text-sm text-muted-foreground">{approvalRate.toFixed(1)}%</span>
+                    </div>
+                    <Progress value={approvalRate} className="h-2 [&>div]:bg-green-500" />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">Rechazados</span>
+                      <span className="text-sm text-muted-foreground">{rejectionRate.toFixed(1)}%</span>
+                    </div>
+                    <Progress value={rejectionRate} className="h-2 [&>div]:bg-red-500" />
                   </div>
                 </CardContent>
               </Card>

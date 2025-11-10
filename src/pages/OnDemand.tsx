@@ -84,6 +84,7 @@ const OnDemand = () => {
         .from('content_uploads')
         .select('*')
         .eq('status', 'approved')
+        .in('content_type', ['video_musical_vivo', 'video_clip', 'corto', 'documental', 'pelicula'])
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -93,7 +94,7 @@ const OnDemand = () => {
       console.error('Error fetching content:', error);
       toast({
         title: "Error",
-        description: "No se pudo cargar el contenido",
+        description: "No se pudo cargar el contenido de video",
         variant: "destructive",
       });
     } finally {
@@ -255,7 +256,7 @@ const OnDemand = () => {
               On Demand
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Accede a nuestra biblioteca de contenido exclusivo. Videos, audios, fotos y podcasts cuando quieras, donde quieras.
+              Contenido de video subido por nuestros socios. Disfruta de videos musicales, clips, documentales y películas.
             </p>
           </div>
 
@@ -358,7 +359,6 @@ const OnDemand = () => {
                     <SelectItem value="all">Todos los tipos</SelectItem>
                     <SelectItem value="video_musical_vivo">Videos Musicales en Vivo</SelectItem>
                     <SelectItem value="video_clip">Video Clips</SelectItem>
-                    <SelectItem value="podcast">Podcasts</SelectItem>
                     <SelectItem value="corto">Cortometrajes</SelectItem>
                     <SelectItem value="documental">Documentales</SelectItem>
                     <SelectItem value="pelicula">Películas</SelectItem>

@@ -23,7 +23,6 @@ import Asociate from "./pages/Asociate";
 import Circuito from "./pages/Circuito";
 import Auth from "./pages/Auth";
 import UploadContent from "./pages/UploadContent";
-import ContentGallery from "./pages/ContentGallery";
 import Artists from "./pages/Artists";
 import ArtistProfile from "./pages/ArtistProfile";
 import UserProfile from "./pages/UserProfile";
@@ -48,7 +47,6 @@ const App = () => (
           <Route path="/circuito" element={<Circuito />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/subir-contenido" element={<UploadContent />} />
-          <Route path="/contenido" element={<ContentGallery />} />
           <Route path="/artistas" element={<Artists />} />
           <Route path="/artistas/:id" element={<ArtistProfile />} />
           <Route path="/perfil/:id" element={<UserProfile />} />

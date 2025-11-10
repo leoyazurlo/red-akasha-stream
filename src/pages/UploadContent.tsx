@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, Eye, Play, Music, ImageIcon, Clock, MonitorPlay, HardDrive } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
   Select,
@@ -23,6 +23,8 @@ import { Switch } from "@/components/ui/switch";
 import { VideoUpload } from "@/components/VideoUpload";
 import { AudioUpload } from "@/components/AudioUpload";
 import { ImageUpload } from "@/components/ImageUpload";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 
 interface ProfileOption {
   id: string;
@@ -45,6 +47,7 @@ const UploadContent = () => {
   const [showOtherStudio, setShowOtherStudio] = useState(false);
   const [showOtherVenue, setShowOtherVenue] = useState(false);
   const [showOtherPromoter, setShowOtherPromoter] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [formData, setFormData] = useState({
     content_type: "",
     title: "",
@@ -317,6 +320,54 @@ const UploadContent = () => {
       ...prev,
       [e.target.name]: e.target.value
     }));
+  };
+
+  const getContentTypeLabel = (type: string): string => {
+    const labels: Record<string, string> = {
+      video_musical_vivo: "Video Musical en Vivo",
+      video_clip: "Video Clip",
+      podcast: "Podcast",
+      documental: "Documental",
+      corto: "Corto",
+      pelicula: "Película"
+    };
+    return labels[type] || type;
+  };
+
+  const formatFileSize = (bytes: number | null): string => {
+    if (!bytes) return 'N/A';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  };
+
+  const formatDuration = (seconds: number | null): string => {
+    if (!seconds) return 'N/A';
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const handlePreview = () => {
+    // Validar que haya contenido mínimo para vista previa
+    if (!formData.content_type) {
+      toast({
+        title: "Falta información",
+        description: "Selecciona un tipo de contenido para ver la vista previa",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!formData.title.trim()) {
+      toast({
+        title: "Falta información",
+        description: "Ingresa un título para ver la vista previa",
+        variant: "destructive",
+      });
+      return;
+    }
+    setShowPreview(true);
   };
 
   if (checkingProfile) {
@@ -849,26 +900,157 @@ const UploadContent = () => {
                     </div>
                   </div>
 
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    size="lg"
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Subiendo...
-                      </>
-                    ) : (
-                      "Subir Contenido"
-                    )}
-                  </Button>
+                  <div className="flex gap-3">
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      className="flex-1" 
+                      size="lg"
+                      onClick={handlePreview}
+                    >
+                      <Eye className="mr-2 h-4 w-4" />
+                      Vista Previa
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      className="flex-1" 
+                      size="lg"
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Subiendo...
+                        </>
+                      ) : (
+                        "Subir Contenido"
+                      )}
+                    </Button>
+                  </div>
                 </form>
               </CardContent>
             </Card>
           </div>
         </div>
+
+        {/* Modal de Vista Previa */}
+        <Dialog open={showPreview} onOpenChange={setShowPreview}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Vista Previa</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Así es como se verá tu contenido en la galería:
+              </p>
+              
+              <Card className="border-border bg-card/50 backdrop-blur-sm hover:border-primary/50 transition-colors overflow-hidden">
+                {/* Thumbnail */}
+                <div className="relative aspect-video bg-muted">
+                  {formData.thumbnail_url || formData.photo_url ? (
+                    <img 
+                      src={formData.thumbnail_url || formData.photo_url || ''} 
+                      alt={formData.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      {formData.video_url && <Play className="w-16 h-16 text-muted-foreground" />}
+                      {formData.audio_url && !formData.video_url && <Music className="w-16 h-16 text-muted-foreground" />}
+                      {formData.photo_url && !formData.video_url && !formData.audio_url && <ImageIcon className="w-16 h-16 text-muted-foreground" />}
+                    </div>
+                  )}
+                  
+                  <div className="absolute top-2 left-2">
+                    <Badge variant="secondary" className="backdrop-blur-sm">
+                      {getContentTypeLabel(formData.content_type)}
+                    </Badge>
+                  </div>
+
+                  <div className="absolute top-2 right-2">
+                    <Badge variant="default" className="backdrop-blur-sm">
+                      Pendiente
+                    </Badge>
+                  </div>
+                </div>
+
+                <CardContent className="p-4 space-y-3">
+                  <div>
+                    <h3 className="font-semibold text-lg line-clamp-1 text-foreground">
+                      {formData.title || "Sin título"}
+                    </h3>
+                    {formData.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                        {formData.description}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2 text-xs text-muted-foreground">
+                    {formData.video_width && formData.video_height && (
+                      <div className="flex items-center gap-2">
+                        <MonitorPlay className="w-4 h-4" />
+                        <span>{formData.video_width}x{formData.video_height}</span>
+                      </div>
+                    )}
+                    
+                    {(formData.video_duration_seconds || formData.audio_duration_seconds) > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        <span>
+                          {formatDuration(formData.video_duration_seconds || formData.audio_duration_seconds)}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {formData.file_size > 0 && (
+                      <div className="flex items-center gap-2">
+                        <HardDrive className="w-4 h-4" />
+                        <span>{formatFileSize(formData.file_size)}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="flex-1"
+                      disabled
+                    >
+                      {formData.video_url && <Play className="w-4 h-4 mr-2" />}
+                      {formData.audio_url && !formData.video_url && <Music className="w-4 h-4 mr-2" />}
+                      {formData.photo_url && !formData.video_url && !formData.audio_url && <ImageIcon className="w-4 h-4 mr-2" />}
+                      Ver
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => setShowPreview(false)}
+                >
+                  Continuar Editando
+                </Button>
+                <Button 
+                  className="flex-1"
+                  onClick={() => {
+                    setShowPreview(false);
+                    // Trigger form submission
+                    document.querySelector('form')?.requestSubmit();
+                  }}
+                  disabled={loading}
+                >
+                  Publicar Ahora
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
 
       <Footer />

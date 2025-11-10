@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Image as ImageIcon, Video, Music, Trash2, Check } from "lucide-react";
+import { Loader2, Image as ImageIcon, Video, Music, Trash2, Check, Filter } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 
 interface MediaItem {
@@ -19,6 +21,8 @@ interface MediaItem {
   height: number | null;
   duration_seconds: number | null;
   created_at: string;
+  tags: string[] | null;
+  folder: string | null;
 }
 
 interface MediaLibraryProps {
@@ -34,6 +38,8 @@ export const MediaLibrary = ({ open, onOpenChange, mediaType, onSelect }: MediaL
   const [items, setItems] = useState<MediaItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [selectedFolder, setSelectedFolder] = useState<string>('all');
+  const [selectedTag, setSelectedTag] = useState<string>('all');
 
   useEffect(() => {
     if (open) {
@@ -125,6 +131,17 @@ export const MediaLibrary = ({ open, onOpenChange, mediaType, onSelect }: MediaL
     }
   };
 
+  // Get unique folders and tags
+  const folders = ['all', ...new Set(items.map(item => item.folder || 'Sin categoría'))];
+  const tags = ['all', ...new Set(items.flatMap(item => item.tags || []))];
+
+  // Filter items based on selected folder and tag
+  const filteredItems = items.filter(item => {
+    const folderMatch = selectedFolder === 'all' || (item.folder || 'Sin categoría') === selectedFolder;
+    const tagMatch = selectedTag === 'all' || (item.tags || []).includes(selectedTag);
+    return folderMatch && tagMatch;
+  });
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[80vh]">
@@ -153,9 +170,44 @@ export const MediaLibrary = ({ open, onOpenChange, mediaType, onSelect }: MediaL
           </div>
         ) : (
           <>
+            {/* Filters */}
+            <div className="flex gap-3 pb-4 border-b">
+              <div className="flex-1">
+                <label className="text-sm font-medium mb-1 block">Carpeta</label>
+                <Select value={selectedFolder} onValueChange={setSelectedFolder}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {folders.map((folder) => (
+                      <SelectItem key={folder} value={folder}>
+                        {folder === 'all' ? 'Todas las carpetas' : folder}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1">
+                <label className="text-sm font-medium mb-1 block">Etiqueta</label>
+                <Select value={selectedTag} onValueChange={setSelectedTag}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas las etiquetas</SelectItem>
+                    {tags.filter(t => t !== 'all').map((tag) => (
+                      <SelectItem key={tag} value={tag}>
+                        {tag}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
             <ScrollArea className="h-[400px] pr-4">
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {items.map((item) => (
+                {filteredItems.map((item) => (
                   <Card
                     key={item.id}
                     className={`relative cursor-pointer transition-all hover:border-primary/50 ${
@@ -218,6 +270,15 @@ export const MediaLibrary = ({ open, onOpenChange, mediaType, onSelect }: MediaL
                     {/* Info */}
                     <div className="p-2 space-y-1">
                       <p className="text-xs font-medium truncate">{item.file_name}</p>
+                      {item.tags && item.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {item.tags.slice(0, 2).map((tag) => (
+                            <Badge key={tag} variant="secondary" className="text-[10px] px-1 py-0">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <span>{formatFileSize(item.file_size)}</span>
                         {item.duration_seconds && (

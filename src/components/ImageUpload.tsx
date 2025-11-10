@@ -88,7 +88,7 @@ export const ImageUpload = ({ label, value, onChange, required, description, all
       setPreview(publicUrl);
       onChange(publicUrl);
 
-      // Guardar en biblioteca
+      // Guardar en biblioteca con tags y carpeta
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (currentUser) {
         await supabase.from('user_media_library').insert({
@@ -96,7 +96,9 @@ export const ImageUpload = ({ label, value, onChange, required, description, all
           media_type: 'image',
           file_url: publicUrl,
           file_name: file.name,
-          file_size: file.size
+          file_size: file.size,
+          tags: ['image'],
+          folder: 'Imágenes'
         });
       }
 

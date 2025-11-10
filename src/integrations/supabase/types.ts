@@ -1942,9 +1942,11 @@ export type Database = {
           file_name: string
           file_size: number
           file_url: string
+          folder: string | null
           height: number | null
           id: string
           media_type: string
+          tags: string[] | null
           thumbnail_url: string | null
           user_id: string
           width: number | null
@@ -1955,9 +1957,11 @@ export type Database = {
           file_name: string
           file_size: number
           file_url: string
+          folder?: string | null
           height?: number | null
           id?: string
           media_type: string
+          tags?: string[] | null
           thumbnail_url?: string | null
           user_id: string
           width?: number | null
@@ -1968,9 +1972,11 @@ export type Database = {
           file_name?: string
           file_size?: number
           file_url?: string
+          folder?: string | null
           height?: number | null
           id?: string
           media_type?: string
+          tags?: string[] | null
           thumbnail_url?: string | null
           user_id?: string
           width?: number | null

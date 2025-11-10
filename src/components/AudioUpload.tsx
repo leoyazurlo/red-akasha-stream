@@ -105,7 +105,7 @@ export const AudioUpload = ({ label, value, onChange, onMetadataExtracted, requi
       setPreview(publicUrl);
       onChange(publicUrl);
 
-      // Guardar en biblioteca
+      // Guardar en biblioteca con tags y carpeta
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (currentUser) {
         await supabase.from('user_media_library').insert({
@@ -114,7 +114,9 @@ export const AudioUpload = ({ label, value, onChange, onMetadataExtracted, requi
           file_url: publicUrl,
           file_name: file.name,
           file_size: file.size,
-          duration_seconds: audioMetadata.duration || null
+          duration_seconds: audioMetadata.duration || null,
+          tags: ['audio'],
+          folder: 'Audios'
         });
       }
 

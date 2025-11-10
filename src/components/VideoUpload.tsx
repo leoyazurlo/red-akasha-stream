@@ -186,7 +186,7 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
       setPreview(publicUrl);
       onChange(publicUrl);
 
-      // Guardar en biblioteca
+      // Guardar en biblioteca con tags y carpeta
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (currentUser) {
         await supabase.from('user_media_library').insert({
@@ -198,7 +198,9 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
           thumbnail_url: thumbnail || null,
           width: metadata?.width || null,
           height: metadata?.height || null,
-          duration_seconds: metadata?.duration || null
+          duration_seconds: metadata?.duration || null,
+          tags: ['video'], // Default tag
+          folder: 'Videos'
         });
       }
 

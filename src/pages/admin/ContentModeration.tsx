@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { Loader2, CheckCircle2, XCircle, Video, Image, Music, Trash2 } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Video, Image, Music, Trash2, Zap } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -11,6 +11,10 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuditLog } from "@/hooks/useAuditLog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface ContentItem {
   id: string;
@@ -40,6 +44,12 @@ export default function AdminContentModeration() {
   const [content, setContent] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
+  
+  // Estados para aprobación rápida
+  const [bulkContentType, setBulkContentType] = useState<string>("all");
+  const [bulkDateFrom, setBulkDateFrom] = useState<string>("");
+  const [bulkDateTo, setBulkDateTo] = useState<string>("");
+  const [bulkApproving, setBulkApproving] = useState(false);
 
   useEffect(() => {
     if (!authLoading && user && isAdmin) {
@@ -148,6 +158,92 @@ export default function AdminContentModeration() {
     }
   };
 
+  const bulkApproveContent = async () => {
+    try {
+      setBulkApproving(true);
+      
+      // Construir query con filtros
+      let query = supabase
+        .from('content_uploads')
+        .select('id, title, content_type')
+        .eq('status', 'pending');
+      
+      // Aplicar filtro de tipo
+      if (bulkContentType !== "all") {
+        query = query.eq('content_type', bulkContentType as any);
+      }
+      
+      // Aplicar filtro de fecha desde
+      if (bulkDateFrom) {
+        query = query.gte('created_at', new Date(bulkDateFrom).toISOString());
+      }
+      
+      // Aplicar filtro de fecha hasta
+      if (bulkDateTo) {
+        const dateTo = new Date(bulkDateTo);
+        dateTo.setHours(23, 59, 59, 999);
+        query = query.lte('created_at', dateTo.toISOString());
+      }
+      
+      const { data: itemsToApprove, error: fetchError } = await query;
+      
+      if (fetchError) throw fetchError;
+      
+      if (!itemsToApprove || itemsToApprove.length === 0) {
+        toast({
+          title: "Sin contenido",
+          description: "No hay contenido pendiente que coincida con los filtros",
+        });
+        return;
+      }
+      
+      // Aprobar todos los items
+      const ids = itemsToApprove.map(item => item.id);
+      const { error: updateError } = await supabase
+        .from('content_uploads')
+        .update({ status: 'approved' })
+        .in('id', ids);
+      
+      if (updateError) throw updateError;
+      
+      // Registrar en el log de auditoría
+      await logAction({
+        action: 'approve_content',
+        targetType: 'content',
+        targetId: 'bulk',
+        details: {
+          bulk_approval: true,
+          count: itemsToApprove.length,
+          filters: {
+            content_type: bulkContentType,
+            date_from: bulkDateFrom,
+            date_to: bulkDateTo,
+          },
+          items: itemsToApprove.map(i => ({ id: i.id, title: i.title })),
+        },
+      });
+      
+      toast({
+        title: "Aprobación masiva exitosa",
+        description: `Se aprobaron ${itemsToApprove.length} contenido(s)`,
+      });
+      
+      // Limpiar filtros y recargar
+      setBulkContentType("all");
+      setBulkDateFrom("");
+      setBulkDateTo("");
+      loadContent();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo realizar la aprobación masiva",
+        variant: "destructive",
+      });
+    } finally {
+      setBulkApproving(false);
+    }
+  };
+
   const getContentIcon = (type: string) => {
     if (type === 'podcast') return Music;
     if (type.includes('video')) return Video;
@@ -194,6 +290,110 @@ export default function AdminContentModeration() {
                   Revisa y modera el contenido subido por los usuarios
                 </p>
               </div>
+
+              {/* Panel de Aprobación Rápida */}
+              <Card className="border-primary/20 bg-primary/5">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-5 w-5 text-primary" />
+                    <CardTitle>Aprobación Rápida</CardTitle>
+                  </div>
+                  <CardDescription>
+                    Aplica filtros y aprueba contenido pendiente masivamente
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    {/* Filtro por tipo */}
+                    <div className="space-y-2">
+                      <Label htmlFor="bulk-type">Tipo de contenido</Label>
+                      <Select value={bulkContentType} onValueChange={setBulkContentType}>
+                        <SelectTrigger id="bulk-type">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos los tipos</SelectItem>
+                          <SelectItem value="video_musical_vivo">Video Musical en Vivo</SelectItem>
+                          <SelectItem value="video_clip">Video Clip</SelectItem>
+                          <SelectItem value="podcast">Podcast</SelectItem>
+                          <SelectItem value="corto">Cortometraje</SelectItem>
+                          <SelectItem value="documental">Documental</SelectItem>
+                          <SelectItem value="pelicula">Película</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* Fecha desde */}
+                    <div className="space-y-2">
+                      <Label htmlFor="bulk-date-from">Fecha desde</Label>
+                      <Input
+                        id="bulk-date-from"
+                        type="date"
+                        value={bulkDateFrom}
+                        onChange={(e) => setBulkDateFrom(e.target.value)}
+                      />
+                    </div>
+
+                    {/* Fecha hasta */}
+                    <div className="space-y-2">
+                      <Label htmlFor="bulk-date-to">Fecha hasta</Label>
+                      <Input
+                        id="bulk-date-to"
+                        type="date"
+                        value={bulkDateTo}
+                        onChange={(e) => setBulkDateTo(e.target.value)}
+                      />
+                    </div>
+
+                    {/* Botón de acción */}
+                    <div className="space-y-2">
+                      <Label className="invisible">Acción</Label>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button 
+                            className="w-full" 
+                            disabled={bulkApproving}
+                          >
+                            {bulkApproving ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Aprobando...
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle2 className="h-4 w-4 mr-2" />
+                                Aprobar Todo
+                              </>
+                            )}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>¿Aprobar contenido masivamente?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta acción aprobará todo el contenido pendiente que coincida con los filtros seleccionados:
+                              <div className="mt-3 space-y-1 text-sm font-medium">
+                                <div>• Tipo: {bulkContentType === "all" ? "Todos" : bulkContentType}</div>
+                                {bulkDateFrom && <div>• Desde: {bulkDateFrom}</div>}
+                                {bulkDateTo && <div>• Hasta: {bulkDateTo}</div>}
+                              </div>
+                              <p className="mt-3 text-muted-foreground font-normal">
+                                Esta acción no se puede deshacer. Asegúrate de revisar los filtros antes de continuar.
+                              </p>
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={bulkApproveContent}>
+                              Aprobar Todo
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
               <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
                 <TabsList>

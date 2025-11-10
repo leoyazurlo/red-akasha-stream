@@ -15,14 +15,36 @@ interface VideoUploadProps {
   description?: string;
 }
 
+interface VideoMetadata {
+  duration: number;
+  width: number;
+  height: number;
+  size: number;
+}
+
 export const VideoUpload = ({ label, value, onChange, required, description }: VideoUploadProps) => {
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [preview, setPreview] = useState<string>(value);
   const [thumbnail, setThumbnail] = useState<string>("");
+  const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  };
+
+  const formatDuration = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
 
   const extractVideoThumbnail = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -63,6 +85,35 @@ export const VideoUpload = ({ label, value, onChange, required, description }: V
     });
   };
 
+  const extractVideoMetadata = (file: File): Promise<VideoMetadata> => {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.muted = true;
+      video.playsInline = true;
+
+      video.onloadedmetadata = () => {
+        const metadata: VideoMetadata = {
+          duration: video.duration,
+          width: video.videoWidth,
+          height: video.videoHeight,
+          size: file.size
+        };
+        resolve(metadata);
+        
+        // Limpiar
+        video.src = '';
+        URL.revokeObjectURL(video.src);
+      };
+
+      video.onerror = () => {
+        reject(new Error('Error al cargar metadatos del video'));
+      };
+
+      video.src = URL.createObjectURL(file);
+    });
+  };
+
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -77,13 +128,17 @@ export const VideoUpload = ({ label, value, onChange, required, description }: V
       return;
     }
 
-    // Extraer miniatura del video
+    // Extraer miniatura y metadatos del video
     try {
-      const thumbnailUrl = await extractVideoThumbnail(file);
+      const [thumbnailUrl, videoMetadata] = await Promise.all([
+        extractVideoThumbnail(file),
+        extractVideoMetadata(file)
+      ]);
       setThumbnail(thumbnailUrl);
+      setMetadata(videoMetadata);
     } catch (error) {
-      console.error('Error al extraer miniatura:', error);
-      // Continuar sin miniatura si falla
+      console.error('Error al extraer miniatura/metadatos:', error);
+      // Continuar sin miniatura/metadatos si falla
     }
 
     setUploading(true);
@@ -149,6 +204,7 @@ export const VideoUpload = ({ label, value, onChange, required, description }: V
   const handleRemove = () => {
     setPreview("");
     setThumbnail("");
+    setMetadata(null);
     setUploadProgress(0);
     onChange("");
     if (fileInputRef.current) {
@@ -181,22 +237,48 @@ export const VideoUpload = ({ label, value, onChange, required, description }: V
         )}
 
         {!preview && thumbnail && (
-          <div className="relative w-full max-w-md rounded-lg overflow-hidden border-2 border-border">
-            <img 
-              src={thumbnail} 
-              alt="Miniatura del video"
-              className="w-full h-auto"
-            />
-            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-              <Play className="w-16 h-16 text-white opacity-80" />
+          <div className="space-y-3">
+            <div className="relative w-full max-w-md rounded-lg overflow-hidden border-2 border-border">
+              <img 
+                src={thumbnail} 
+                alt="Miniatura del video"
+                className="w-full h-auto"
+              />
+              <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                <Play className="w-16 h-16 text-white opacity-80" />
+              </div>
+              <button
+                type="button"
+                onClick={handleRemove}
+                className="absolute top-2 right-2 p-1 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={handleRemove}
-              className="absolute top-2 right-2 p-1 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90 transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            
+            {metadata && (
+              <div className="w-full max-w-md p-4 rounded-lg bg-muted border border-border">
+                <h4 className="text-sm font-semibold mb-3 text-foreground">Información del video</h4>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Duración:</span>
+                    <p className="font-medium text-foreground">{formatDuration(metadata.duration)}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Resolución:</span>
+                    <p className="font-medium text-foreground">{metadata.width}x{metadata.height}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Tamaño:</span>
+                    <p className="font-medium text-foreground">{formatFileSize(metadata.size)}</p>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Formato:</span>
+                    <p className="font-medium text-foreground">Video</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

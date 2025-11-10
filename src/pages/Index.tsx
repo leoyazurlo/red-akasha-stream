@@ -234,7 +234,7 @@ const Index = () => {
             sectionId="destacados"
           />
 
-          <VideoRanking videos={rankingVideos} />
+          <VideoRanking />
         </div>
       </main>
 

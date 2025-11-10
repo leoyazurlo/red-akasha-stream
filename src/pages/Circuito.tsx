@@ -175,7 +175,6 @@ const Circuito = () => {
         .from('public_profiles')
         .select('*')
         .eq('pais', selectedCountry.name)
-        .neq('profile_type', 'productor_audiovisual')
         .order('ciudad', { ascending: true });
 
       if (error) throw error;

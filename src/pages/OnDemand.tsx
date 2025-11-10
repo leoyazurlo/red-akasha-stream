@@ -79,12 +79,21 @@ const OnDemand = () => {
 
   const fetchContents = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('content_uploads')
         .select('*')
-        .eq('status', 'approved')
         .in('content_type', ['video_musical_vivo', 'video_clip', 'corto', 'documental', 'pelicula'])
         .order('created_at', { ascending: false });
+
+      // Si hay usuario, mostrar su contenido pendiente + todo lo aprobado
+      // Si no hay usuario, solo mostrar contenido aprobado
+      if (user) {
+        query = query.or(`status.eq.approved,and(status.eq.pending,uploader_id.eq.${user.id})`);
+      } else {
+        query = query.eq('status', 'approved');
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 

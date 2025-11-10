@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Loader2, Play, Music, Image as ImageIcon, Clock, MonitorPlay, HardDrive, X } from "lucide-react";
+import { Loader2, Play, Music, Image as ImageIcon, Clock, MonitorPlay, HardDrive, X, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface ContentItem {
@@ -108,9 +108,32 @@ const ContentGallery = () => {
     return true;
   });
 
-  const handleOpenPlayer = (item: ContentItem) => {
+  const handleOpenPlayer = async (item: ContentItem) => {
     setSelectedContent(item);
     setPlayerOpen(true);
+    
+    // Incrementar contador de visualizaciones
+    try {
+      const { error } = await supabase
+        .from('content_uploads')
+        .update({ views_count: (item.views_count || 0) + 1 })
+        .eq('id', item.id);
+      
+      if (error) {
+        console.error('Error updating views count:', error);
+      } else {
+        // Actualizar el contador localmente
+        setContent(prevContent => 
+          prevContent.map(c => 
+            c.id === item.id 
+              ? { ...c, views_count: (c.views_count || 0) + 1 }
+              : c
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error incrementing view count:', error);
+    }
   };
 
   const handleClosePlayer = () => {
@@ -250,6 +273,11 @@ const ContentGallery = () => {
                             <span>{formatFileSize(item.file_size)}</span>
                           </div>
                         )}
+
+                        <div className="flex items-center gap-2">
+                          <Eye className="w-4 h-4" />
+                          <span>{item.views_count || 0} visualizaciones</span>
+                        </div>
                       </div>
 
                       {/* Ver contenido */}
@@ -373,6 +401,14 @@ const ContentGallery = () => {
                           </p>
                         </div>
                       )}
+
+                      <div>
+                        <p className="text-muted-foreground mb-1">Visualizaciones</p>
+                        <p className="font-medium text-foreground flex items-center gap-1">
+                          <Eye className="w-4 h-4" />
+                          {selectedContent.views_count || 0}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>

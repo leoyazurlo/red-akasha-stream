@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, X, AlertCircle } from "lucide-react";
+import { Loader2, Upload, X, AlertCircle, FolderOpen } from "lucide-react";
 import { validateFile, getFileRequirements } from "@/lib/storage-validation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { MediaLibrary } from "@/components/MediaLibrary";
 
 interface ImageUploadProps {
   label: string;
@@ -25,6 +26,7 @@ export const ImageUpload = ({ label, value, onChange, required, description, all
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const requirements = getFileRequirements('image');
+  const [showLibrary, setShowLibrary] = useState(false);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -85,6 +87,18 @@ export const ImageUpload = ({ label, value, onChange, required, description, all
 
       setPreview(publicUrl);
       onChange(publicUrl);
+
+      // Guardar en biblioteca
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (currentUser) {
+        await supabase.from('user_media_library').insert({
+          user_id: currentUser.id,
+          media_type: 'image',
+          file_url: publicUrl,
+          file_name: file.name,
+          file_size: file.size
+        });
+      }
 
       toast({
         title: "¡Imagen subida!",
@@ -189,31 +203,52 @@ export const ImageUpload = ({ label, value, onChange, required, description, all
             id="avatar-upload"
             disabled={uploading}
           />
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="w-full sm:w-auto"
-          >
-            {uploading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Subiendo...
-              </>
-            ) : (
-              <>
-                <Upload className="mr-2 h-4 w-4" />
-                {preview ? "Cambiar imagen" : "Seleccionar imagen"}
-              </>
-            )}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="flex-1"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Subiendo...
+                </>
+              ) : (
+                <>
+                  <Upload className="mr-2 h-4 w-4" />
+                  {preview ? "Cambiar imagen" : "Subir nueva"}
+                </>
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowLibrary(true)}
+              disabled={uploading}
+            >
+              <FolderOpen className="mr-2 h-4 w-4" />
+              Mi Biblioteca
+            </Button>
+          </div>
         </div>
       </div>
 
       {description && (
         <p className="text-xs text-muted-foreground">{description}</p>
       )}
+
+      <MediaLibrary
+        open={showLibrary}
+        onOpenChange={setShowLibrary}
+        mediaType="image"
+        onSelect={(item) => {
+          setPreview(item.file_url);
+          onChange(item.file_url);
+        }}
+      />
     </div>
   );
 };

@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, X, Play, AlertCircle } from "lucide-react";
+import { Loader2, Upload, X, Play, AlertCircle, FolderOpen } from "lucide-react";
 import { validateFile, getFileRequirements } from "@/lib/storage-validation";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { MediaLibrary } from "@/components/MediaLibrary";
 
 interface VideoUploadProps {
   label: string;
@@ -34,6 +35,7 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const requirements = getFileRequirements('video');
+  const [showLibrary, setShowLibrary] = useState(false);
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -183,6 +185,22 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
 
       setPreview(publicUrl);
       onChange(publicUrl);
+
+      // Guardar en biblioteca
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (currentUser) {
+        await supabase.from('user_media_library').insert({
+          user_id: currentUser.id,
+          media_type: 'video',
+          file_url: publicUrl,
+          file_name: file.name,
+          file_size: file.size,
+          thumbnail_url: thumbnail || null,
+          width: metadata?.width || null,
+          height: metadata?.height || null,
+          duration_seconds: metadata?.duration || null
+        });
+      }
 
       toast({
         title: "¡Video subido!",
@@ -335,31 +353,68 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
             id="video-upload"
             disabled={uploading}
           />
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="w-full sm:w-auto"
-          >
-            {uploading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Subiendo...
-              </>
-            ) : (
-              <>
-                <Upload className="mr-2 h-4 w-4" />
-                {preview ? "Cambiar video" : "Seleccionar video"}
-              </>
-            )}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="flex-1"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Subiendo...
+                </>
+              ) : (
+                <>
+                  <Upload className="mr-2 h-4 w-4" />
+                  {preview ? "Cambiar video" : "Subir nuevo"}
+                </>
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowLibrary(true)}
+              disabled={uploading}
+            >
+              <FolderOpen className="mr-2 h-4 w-4" />
+              Mi Biblioteca
+            </Button>
+          </div>
         </div>
       </div>
 
       {description && (
         <p className="text-xs text-muted-foreground">{description}</p>
       )}
+
+      <MediaLibrary
+        open={showLibrary}
+        onOpenChange={setShowLibrary}
+        mediaType="video"
+        onSelect={(item) => {
+          setPreview(item.file_url);
+          setThumbnail(item.thumbnail_url || "");
+          setMetadata({
+            duration: item.duration_seconds || 0,
+            width: item.width || 0,
+            height: item.height || 0,
+            size: item.file_size
+          });
+          onChange(item.file_url);
+          if (onMetadataExtracted) {
+            onMetadataExtracted({
+              thumbnail: item.thumbnail_url || "",
+              width: item.width || 0,
+              height: item.height || 0,
+              size: item.file_size,
+              duration: item.duration_seconds || 0
+            });
+          }
+        }}
+      />
     </div>
   );
 };

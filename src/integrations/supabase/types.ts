@@ -1935,6 +1935,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_media_library: {
+        Row: {
+          created_at: string
+          duration_seconds: number | null
+          file_name: string
+          file_size: number
+          file_url: string
+          height: number | null
+          id: string
+          media_type: string
+          thumbnail_url: string | null
+          user_id: string
+          width: number | null
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number | null
+          file_name: string
+          file_size: number
+          file_url: string
+          height?: number | null
+          id?: string
+          media_type: string
+          thumbnail_url?: string | null
+          user_id: string
+          width?: number | null
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number | null
+          file_name?: string
+          file_size?: number
+          file_url?: string
+          height?: number | null
+          id?: string
+          media_type?: string
+          thumbnail_url?: string | null
+          user_id?: string
+          width?: number | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           assigned_at: string | null

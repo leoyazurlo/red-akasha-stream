@@ -8,8 +8,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Loader2, Play, Music, Image as ImageIcon, Clock, MonitorPlay, HardDrive, X, Eye, Heart } from "lucide-react";
+import { Loader2, Play, Music, Image as ImageIcon, Clock, MonitorPlay, HardDrive, X, Eye, Heart, MessageSquare, Send, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface ContentItem {
@@ -30,7 +33,20 @@ interface ContentItem {
   created_at: string;
   views_count: number;
   likes_count: number;
+  comments_count: number;
   uploader_id: string;
+}
+
+interface Comment {
+  id: string;
+  content_id: string;
+  user_id: string;
+  comment: string;
+  created_at: string;
+  profiles: {
+    username: string | null;
+    avatar_url: string | null;
+  } | null;
 }
 
 const ContentGallery = () => {
@@ -43,6 +59,9 @@ const ContentGallery = () => {
   const [playerOpen, setPlayerOpen] = useState(false);
   const [userLikes, setUserLikes] = useState<Set<string>>(new Set());
   const [likingContent, setLikingContent] = useState<string | null>(null);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState("");
+  const [postingComment, setPostingComment] = useState(false);
 
   useEffect(() => {
     loadContent();
@@ -204,6 +223,9 @@ const ContentGallery = () => {
     setSelectedContent(item);
     setPlayerOpen(true);
     
+    // Cargar comentarios
+    loadComments(item.id);
+    
     // Incrementar contador de visualizaciones
     try {
       const { error } = await supabase
@@ -228,8 +250,133 @@ const ContentGallery = () => {
     }
   };
 
+  const loadComments = async (contentId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('content_comments')
+        .select('*')
+        .eq('content_id', contentId)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      // Cargar perfiles de usuarios para los comentarios
+      if (data && data.length > 0) {
+        const userIds = [...new Set(data.map(c => c.user_id))];
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, username, avatar_url')
+          .in('id', userIds);
+        
+        const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
+        
+        const commentsWithProfiles = data.map(comment => ({
+          ...comment,
+          profiles: profilesMap.get(comment.user_id) || { username: null, avatar_url: null }
+        }));
+        
+        setComments(commentsWithProfiles as Comment[]);
+      } else {
+        setComments([]);
+      }
+    } catch (error) {
+      console.error('Error loading comments:', error);
+    }
+  };
+
+  const handlePostComment = async () => {
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+
+    if (!selectedContent || !newComment.trim()) return;
+
+    setPostingComment(true);
+    try {
+      const { error } = await supabase
+        .from('content_comments')
+        .insert({
+          content_id: selectedContent.id,
+          user_id: user.id,
+          comment: newComment.trim()
+        });
+      
+      if (error) throw error;
+      
+      setNewComment("");
+      // Los comentarios se actualizarán via realtime
+    } catch (error) {
+      console.error('Error posting comment:', error);
+    } finally {
+      setPostingComment(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      const { error } = await supabase
+        .from('content_comments')
+        .delete()
+        .eq('id', commentId);
+      
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+    }
+  };
+
+  // Realtime para comentarios
+  useEffect(() => {
+    if (!selectedContent) return;
+
+    const channel = supabase
+      .channel('content-comments-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'content_comments',
+          filter: `content_id=eq.${selectedContent.id}`
+        },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            loadComments(selectedContent.id);
+            // Actualizar contador
+            setContent(prevContent =>
+              prevContent.map(c =>
+                c.id === selectedContent.id
+                  ? { ...c, comments_count: c.comments_count + 1 }
+                  : c
+              )
+            );
+            setSelectedContent(prev => prev ? { ...prev, comments_count: prev.comments_count + 1 } : null);
+          } else if (payload.eventType === 'DELETE') {
+            loadComments(selectedContent.id);
+            // Actualizar contador
+            setContent(prevContent =>
+              prevContent.map(c =>
+                c.id === selectedContent.id
+                  ? { ...c, comments_count: Math.max(0, c.comments_count - 1) }
+                  : c
+              )
+            );
+            setSelectedContent(prev => prev ? { ...prev, comments_count: Math.max(0, prev.comments_count - 1) } : null);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedContent]);
+
   const handleClosePlayer = () => {
     setPlayerOpen(false);
+    setComments([]);
+    setNewComment("");
     // Pequeño delay antes de limpiar el contenido para evitar glitches visuales
     setTimeout(() => setSelectedContent(null), 300);
   };
@@ -374,6 +521,11 @@ const ContentGallery = () => {
                         <div className="flex items-center gap-2">
                           <Heart className="w-4 h-4" />
                           <span>{item.likes_count || 0} favoritos</span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <MessageSquare className="w-4 h-4" />
+                          <span>{item.comments_count || 0} comentarios</span>
                         </div>
                       </div>
 
@@ -533,6 +685,14 @@ const ContentGallery = () => {
                           {selectedContent.likes_count || 0}
                         </p>
                       </div>
+
+                      <div>
+                        <p className="text-muted-foreground mb-1">Comentarios</p>
+                        <p className="font-medium text-foreground flex items-center gap-1">
+                          <MessageSquare className="w-4 h-4" />
+                          {selectedContent.comments_count || 0}
+                        </p>
+                      </div>
                     </div>
 
                     {/* Botón de favorito en el modal */}
@@ -553,6 +713,103 @@ const ContentGallery = () => {
                             : 'Agregar a favoritos'}
                       </Button>
                     </div>
+                  </div>
+
+                  {/* Sección de Comentarios */}
+                  <div className="mt-6 pt-6 border-t border-border">
+                    <h4 className="text-sm font-semibold mb-4 text-muted-foreground uppercase tracking-wide">
+                      Comentarios ({comments.length})
+                    </h4>
+
+                    {/* Formulario para nuevo comentario */}
+                    {user ? (
+                      <div className="mb-6 space-y-3">
+                        <Textarea
+                          placeholder="Escribe un comentario..."
+                          value={newComment}
+                          onChange={(e) => setNewComment(e.target.value)}
+                          className="resize-none"
+                          rows={3}
+                        />
+                        <Button
+                          onClick={handlePostComment}
+                          disabled={!newComment.trim() || postingComment}
+                          size="sm"
+                        >
+                          {postingComment ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Publicando...
+                            </>
+                          ) : (
+                            <>
+                              <Send className="w-4 h-4 mr-2" />
+                              Publicar Comentario
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="mb-6 p-4 rounded-lg bg-muted border border-border text-center">
+                        <p className="text-sm text-muted-foreground mb-2">
+                          Inicia sesión para dejar un comentario
+                        </p>
+                        <Button size="sm" onClick={() => navigate('/auth')}>
+                          Iniciar Sesión
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Lista de comentarios */}
+                    <ScrollArea className="h-[300px]">
+                      <div className="space-y-4 pr-4">
+                        {comments.length === 0 ? (
+                          <p className="text-sm text-muted-foreground text-center py-8">
+                            No hay comentarios aún. ¡Sé el primero en comentar!
+                          </p>
+                        ) : (
+                          comments.map((comment) => (
+                            <div key={comment.id} className="flex gap-3 p-3 rounded-lg bg-muted/50">
+                              <Avatar className="w-8 h-8 flex-shrink-0">
+                                <AvatarFallback>
+                                  {comment.profiles?.username?.[0]?.toUpperCase() || 'U'}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between gap-2 mb-1">
+                                  <span className="text-sm font-medium text-foreground">
+                                    {comment.profiles?.username || 'Usuario'}
+                                  </span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs text-muted-foreground">
+                                      {new Date(comment.created_at).toLocaleDateString('es-ES', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })}
+                                    </span>
+                                    {user && (user.id === comment.user_id) && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-6 w-6 p-0"
+                                        onClick={() => handleDeleteComment(comment.id)}
+                                      >
+                                        <Trash2 className="w-3 h-3" />
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+                                <p className="text-sm text-foreground whitespace-pre-wrap break-words">
+                                  {comment.comment}
+                                </p>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </ScrollArea>
                   </div>
                 </div>
               </>

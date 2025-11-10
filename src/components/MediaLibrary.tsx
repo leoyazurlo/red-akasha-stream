@@ -9,6 +9,7 @@ import { Loader2, Image as ImageIcon, Video, Music, Trash2, Check, Filter } from
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { ResponsiveImage } from "@/components/ui/responsive-image";
 
 interface MediaItem {
   id: string;
@@ -221,9 +222,13 @@ export const MediaLibrary = ({ open, onOpenChange, mediaType, onSelect }: MediaL
                     {/* Preview */}
                     <div className="aspect-video bg-muted relative overflow-hidden rounded-t-lg">
                       {mediaType === 'video' && (item.thumbnail_medium || item.thumbnail_url) && (
-                        <img
-                          src={item.thumbnail_medium || item.thumbnail_url || ''}
+                        <ResponsiveImage
+                          src={item.thumbnail_url || ''}
+                          srcSmall={item.thumbnail_small}
+                          srcMedium={item.thumbnail_medium}
+                          srcLarge={item.thumbnail_large}
                           alt={item.file_name}
+                          sizes="(max-width: 768px) 50vw, 33vw"
                           className="w-full h-full object-cover"
                         />
                       )}
@@ -238,9 +243,13 @@ export const MediaLibrary = ({ open, onOpenChange, mediaType, onSelect }: MediaL
                         </div>
                       )}
                       {mediaType === 'image' && (
-                        <img
+                        <ResponsiveImage
                           src={item.file_url}
+                          srcSmall={item.thumbnail_small}
+                          srcMedium={item.thumbnail_medium}
+                          srcLarge={item.thumbnail_large}
                           alt={item.file_name}
+                          sizes="(max-width: 768px) 50vw, 33vw"
                           className="w-full h-full object-cover"
                         />
                       )}

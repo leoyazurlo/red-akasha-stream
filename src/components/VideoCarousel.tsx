@@ -10,6 +10,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { ResponsiveImage } from "@/components/ui/responsive-image";
 
 interface VideoItem {
   id: string;
@@ -138,9 +139,10 @@ export const VideoCarousel = ({
                         <span className="text-sm text-muted-foreground">{schedule.time}</span>
                       </div>
                       {schedule.image && (
-                        <img 
+                        <ResponsiveImage
                           src={schedule.image} 
                           alt={`${schedule.day} program`}
+                          sizes="256px"
                           className="w-full h-32 object-cover rounded-md border border-border"
                         />
                       )}
@@ -187,9 +189,10 @@ export const VideoCarousel = ({
                 >
                   <div className="relative aspect-video bg-card rounded-lg md:rounded-xl overflow-hidden border border-border hover:border-primary transition-all duration-300 hover:shadow-glow hover:scale-105">
                     {/* Thumbnail */}
-                    <img
+                    <ResponsiveImage
                       src={video.thumbnail}
                       alt={video.title}
+                      sizes="(max-width: 640px) 176px, (max-width: 768px) 208px, 224px"
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                     

@@ -25,6 +25,7 @@ import { AudioUpload } from "@/components/AudioUpload";
 import { ImageUpload } from "@/components/ImageUpload";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { ServiceWorkerStatus } from "@/components/ServiceWorkerStatus";
 
 interface ProfileOption {
   id: string;
@@ -433,7 +434,10 @@ const UploadContent = () => {
       
       <main className="relative pt-24 pb-16">
         <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-2xl mx-auto space-y-6">
+            {/* Service Worker Status */}
+            <ServiceWorkerStatus />
+            
             <Card className="border-border bg-card/50 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-2xl text-cyan-400">Subir Contenido</CardTitle>

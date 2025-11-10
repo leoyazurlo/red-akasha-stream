@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, X, Play } from "lucide-react";
-import { validateFile } from "@/lib/storage-validation";
+import { Loader2, Upload, X, Play, AlertCircle } from "lucide-react";
+import { validateFile, getFileRequirements } from "@/lib/storage-validation";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface VideoUploadProps {
   label: string;
@@ -32,6 +33,7 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
   const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const requirements = getFileRequirements('video');
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -229,6 +231,14 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
       <Label>
         {label} {required && "*"}
       </Label>
+      
+      {/* Información de requisitos */}
+      <Alert className="border-primary/20 bg-primary/5">
+        <AlertCircle className="h-4 w-4 text-primary" />
+        <AlertDescription className="text-xs">
+          <strong>Formatos:</strong> {requirements.formats} • <strong>Tamaño máx:</strong> {requirements.maxSize}
+        </AlertDescription>
+      </Alert>
       
       <div className="flex flex-col gap-4">
         {preview && (

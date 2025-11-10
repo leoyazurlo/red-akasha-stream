@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, X, Music } from "lucide-react";
-import { validateFile } from "@/lib/storage-validation";
+import { Loader2, Upload, X, Music, AlertCircle } from "lucide-react";
+import { validateFile, getFileRequirements } from "@/lib/storage-validation";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface AudioUploadProps {
   label: string;
@@ -24,6 +25,7 @@ export const AudioUpload = ({ label, value, onChange, onMetadataExtracted, requi
   const [fileName, setFileName] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const requirements = getFileRequirements('audio');
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -147,6 +149,14 @@ export const AudioUpload = ({ label, value, onChange, onMetadataExtracted, requi
       <Label>
         {label} {required && "*"}
       </Label>
+      
+      {/* Información de requisitos */}
+      <Alert className="border-primary/20 bg-primary/5">
+        <AlertCircle className="h-4 w-4 text-primary" />
+        <AlertDescription className="text-xs">
+          <strong>Formatos:</strong> {requirements.formats} • <strong>Tamaño máx:</strong> {requirements.maxSize}
+        </AlertDescription>
+      </Alert>
       
       <div className="flex flex-col gap-4">
         {preview && (

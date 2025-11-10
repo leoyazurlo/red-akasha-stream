@@ -4,15 +4,21 @@
  */
 
 export const FILE_SIZE_LIMITS = {
-  IMAGE: 5 * 1024 * 1024,    // 5MB
-  VIDEO: 50 * 1024 * 1024,   // 50MB
-  AUDIO: 10 * 1024 * 1024,   // 10MB
+  IMAGE: 10 * 1024 * 1024,    // 10MB
+  VIDEO: 500 * 1024 * 1024,   // 500MB
+  AUDIO: 50 * 1024 * 1024,    // 50MB
 } as const;
 
 export const ALLOWED_FILE_TYPES = {
   IMAGE: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'],
-  VIDEO: ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'],
-  AUDIO: ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/aac', 'audio/x-m4a'],
+  VIDEO: ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime', 'video/x-matroska'],
+  AUDIO: ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/aac', 'audio/x-m4a', 'audio/flac'],
+} as const;
+
+export const FILE_EXTENSIONS = {
+  IMAGE: ['JPG', 'JPEG', 'PNG', 'WEBP', 'GIF'],
+  VIDEO: ['MP4', 'WEBM', 'OGG', 'MOV', 'MKV'],
+  AUDIO: ['MP3', 'WAV', 'OGG', 'AAC', 'M4A', 'FLAC'],
 } as const;
 
 export type MediaType = 'image' | 'video' | 'audio';
@@ -20,6 +26,25 @@ export type MediaType = 'image' | 'video' | 'audio';
 export interface FileValidationResult {
   valid: boolean;
   error?: string;
+}
+
+/**
+ * Get human-readable file requirements
+ */
+export function getFileRequirements(mediaType: MediaType): {
+  maxSize: string;
+  formats: string;
+  maxSizeBytes: number;
+} {
+  const sizeLimit = FILE_SIZE_LIMITS[mediaType.toUpperCase() as keyof typeof FILE_SIZE_LIMITS];
+  const extensions = FILE_EXTENSIONS[mediaType.toUpperCase() as keyof typeof FILE_EXTENSIONS];
+  const limitMB = Math.round(sizeLimit / (1024 * 1024));
+  
+  return {
+    maxSize: `${limitMB}MB`,
+    formats: extensions.join(', '),
+    maxSizeBytes: sizeLimit
+  };
 }
 
 /**
@@ -36,19 +61,30 @@ export function validateFile(
   // Check file size
   if (file.size > sizeLimit) {
     const limitMB = Math.round(sizeLimit / (1024 * 1024));
+    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
     return {
       valid: false,
-      error: `El archivo es demasiado grande. El tamaño máximo para ${mediaType === 'image' ? 'imágenes' : mediaType === 'video' ? 'videos' : 'audios'} es ${limitMB}MB.`
+      error: `El archivo es demasiado grande (${fileSizeMB}MB). El tamaño máximo permitido es ${limitMB}MB.`
     };
   }
   
   // Check file type
+  const fileExtension = file.name.split('.').pop()?.toLowerCase();
   const isValidType = allowedTypes.some(type => type === file.type);
+  
   if (!isValidType) {
-    const typesList = allowedTypes.map(t => t.split('/')[1].toUpperCase()).join(', ');
+    const extensions = FILE_EXTENSIONS[mediaType.toUpperCase() as keyof typeof FILE_EXTENSIONS];
     return {
       valid: false,
-      error: `Tipo de archivo no permitido. Solo se aceptan: ${typesList}`
+      error: `Formato no permitido${fileExtension ? ` (.${fileExtension})` : ''}. Formatos aceptados: ${extensions.join(', ')}`
+    };
+  }
+  
+  // Check if file has content
+  if (file.size === 0) {
+    return {
+      valid: false,
+      error: 'El archivo está vacío. Por favor selecciona un archivo válido.'
     };
   }
   

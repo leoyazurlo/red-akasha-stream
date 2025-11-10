@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Upload, X, Play } from "lucide-react";
@@ -17,6 +18,7 @@ interface VideoUploadProps {
 export const VideoUpload = ({ label, value, onChange, required, description }: VideoUploadProps) => {
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [preview, setPreview] = useState<string>(value);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -35,6 +37,7 @@ export const VideoUpload = ({ label, value, onChange, required, description }: V
     }
 
     setUploading(true);
+    setUploadProgress(0);
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -74,11 +77,13 @@ export const VideoUpload = ({ label, value, onChange, required, description }: V
       });
     } finally {
       setUploading(false);
+      setUploadProgress(0);
     }
   };
 
   const handleRemove = () => {
     setPreview("");
+    setUploadProgress(0);
     onChange("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -106,6 +111,15 @@ export const VideoUpload = ({ label, value, onChange, required, description }: V
             >
               <X className="w-4 h-4" />
             </button>
+          </div>
+        )}
+
+        {uploading && (
+          <div className="space-y-2">
+            <Progress value={uploadProgress} className="h-2" />
+            <p className="text-sm text-muted-foreground text-center">
+              Subiendo... {Math.round(uploadProgress)}%
+            </p>
           </div>
         )}
 

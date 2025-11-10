@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Upload, X, Music } from "lucide-react";
@@ -17,6 +18,7 @@ interface AudioUploadProps {
 export const AudioUpload = ({ label, value, onChange, required, description }: AudioUploadProps) => {
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [preview, setPreview] = useState<string>(value);
   const [fileName, setFileName] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -36,6 +38,7 @@ export const AudioUpload = ({ label, value, onChange, required, description }: A
     }
 
     setUploading(true);
+    setUploadProgress(0);
     setFileName(file.name);
 
     try {
@@ -76,12 +79,14 @@ export const AudioUpload = ({ label, value, onChange, required, description }: A
       });
     } finally {
       setUploading(false);
+      setUploadProgress(0);
     }
   };
 
   const handleRemove = () => {
     setPreview("");
     setFileName("");
+    setUploadProgress(0);
     onChange("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -113,6 +118,15 @@ export const AudioUpload = ({ label, value, onChange, required, description }: A
             >
               <X className="w-4 h-4" />
             </button>
+          </div>
+        )}
+
+        {uploading && (
+          <div className="space-y-2">
+            <Progress value={uploadProgress} className="h-2" />
+            <p className="text-sm text-muted-foreground text-center">
+              Subiendo... {Math.round(uploadProgress)}%
+            </p>
           </div>
         )}
 

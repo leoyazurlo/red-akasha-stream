@@ -45,11 +45,12 @@ export default function AdminContentModeration() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
   
-  // Estados para aprobación rápida
+  // Estados para aprobación/rechazo rápido
   const [bulkContentType, setBulkContentType] = useState<string>("all");
   const [bulkDateFrom, setBulkDateFrom] = useState<string>("");
   const [bulkDateTo, setBulkDateTo] = useState<string>("");
   const [bulkApproving, setBulkApproving] = useState(false);
+  const [bulkRejecting, setBulkRejecting] = useState(false);
 
   useEffect(() => {
     if (!authLoading && user && isAdmin) {
@@ -244,6 +245,93 @@ export default function AdminContentModeration() {
     }
   };
 
+  const bulkRejectContent = async () => {
+    try {
+      setBulkRejecting(true);
+      
+      // Construir query con filtros
+      let query = supabase
+        .from('content_uploads')
+        .select('id, title, content_type')
+        .eq('status', 'pending');
+      
+      // Aplicar filtro de tipo
+      if (bulkContentType !== "all") {
+        query = query.eq('content_type', bulkContentType as any);
+      }
+      
+      // Aplicar filtro de fecha desde
+      if (bulkDateFrom) {
+        query = query.gte('created_at', new Date(bulkDateFrom).toISOString());
+      }
+      
+      // Aplicar filtro de fecha hasta
+      if (bulkDateTo) {
+        const dateTo = new Date(bulkDateTo);
+        dateTo.setHours(23, 59, 59, 999);
+        query = query.lte('created_at', dateTo.toISOString());
+      }
+      
+      const { data: itemsToReject, error: fetchError } = await query;
+      
+      if (fetchError) throw fetchError;
+      
+      if (!itemsToReject || itemsToReject.length === 0) {
+        toast({
+          title: "Sin contenido",
+          description: "No hay contenido pendiente que coincida con los filtros",
+        });
+        return;
+      }
+      
+      // Rechazar todos los items
+      const ids = itemsToReject.map(item => item.id);
+      const { error: updateError } = await supabase
+        .from('content_uploads')
+        .update({ status: 'rejected' })
+        .in('id', ids);
+      
+      if (updateError) throw updateError;
+      
+      // Registrar en el log de auditoría
+      await logAction({
+        action: 'reject_content',
+        targetType: 'content',
+        targetId: 'bulk',
+        details: {
+          bulk_rejection: true,
+          count: itemsToReject.length,
+          filters: {
+            content_type: bulkContentType,
+            date_from: bulkDateFrom,
+            date_to: bulkDateTo,
+          },
+          items: itemsToReject.map(i => ({ id: i.id, title: i.title })),
+        },
+      });
+      
+      toast({
+        title: "Rechazo masivo exitoso",
+        description: `Se rechazaron ${itemsToReject.length} contenido(s)`,
+        variant: "destructive",
+      });
+      
+      // Limpiar filtros y recargar
+      setBulkContentType("all");
+      setBulkDateFrom("");
+      setBulkDateTo("");
+      loadContent();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo realizar el rechazo masivo",
+        variant: "destructive",
+      });
+    } finally {
+      setBulkRejecting(false);
+    }
+  };
+
   const getContentIcon = (type: string) => {
     if (type === 'podcast') return Music;
     if (type.includes('video')) return Video;
@@ -345,51 +433,102 @@ export default function AdminContentModeration() {
                       />
                     </div>
 
-                    {/* Botón de acción */}
-                    <div className="space-y-2">
-                      <Label className="invisible">Acción</Label>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button 
-                            className="w-full" 
-                            disabled={bulkApproving}
-                          >
-                            {bulkApproving ? (
-                              <>
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                Aprobando...
-                              </>
-                            ) : (
-                              <>
-                                <CheckCircle2 className="h-4 w-4 mr-2" />
+                    {/* Botones de acción */}
+                    <div className="space-y-2 md:col-span-2">
+                      <Label className="invisible">Acciones</Label>
+                      <div className="flex gap-2">
+                        {/* Aprobar Todo */}
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button 
+                              className="flex-1" 
+                              disabled={bulkApproving || bulkRejecting}
+                            >
+                              {bulkApproving ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                  Aprobando...
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                                  Aprobar Todo
+                                </>
+                              )}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>¿Aprobar contenido masivamente?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Esta acción aprobará todo el contenido pendiente que coincida con los filtros seleccionados:
+                                <div className="mt-3 space-y-1 text-sm font-medium">
+                                  <div>• Tipo: {bulkContentType === "all" ? "Todos" : bulkContentType}</div>
+                                  {bulkDateFrom && <div>• Desde: {bulkDateFrom}</div>}
+                                  {bulkDateTo && <div>• Hasta: {bulkDateTo}</div>}
+                                </div>
+                                <p className="mt-3 text-muted-foreground font-normal">
+                                  Esta acción no se puede deshacer. Asegúrate de revisar los filtros antes de continuar.
+                                </p>
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={bulkApproveContent}>
                                 Aprobar Todo
-                              </>
-                            )}
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>¿Aprobar contenido masivamente?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Esta acción aprobará todo el contenido pendiente que coincida con los filtros seleccionados:
-                              <div className="mt-3 space-y-1 text-sm font-medium">
-                                <div>• Tipo: {bulkContentType === "all" ? "Todos" : bulkContentType}</div>
-                                {bulkDateFrom && <div>• Desde: {bulkDateFrom}</div>}
-                                {bulkDateTo && <div>• Hasta: {bulkDateTo}</div>}
-                              </div>
-                              <p className="mt-3 text-muted-foreground font-normal">
-                                Esta acción no se puede deshacer. Asegúrate de revisar los filtros antes de continuar.
-                              </p>
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={bulkApproveContent}>
-                              Aprobar Todo
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+
+                        {/* Rechazar Todo */}
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button 
+                              variant="destructive"
+                              className="flex-1" 
+                              disabled={bulkApproving || bulkRejecting}
+                            >
+                              {bulkRejecting ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                  Rechazando...
+                                </>
+                              ) : (
+                                <>
+                                  <XCircle className="h-4 w-4 mr-2" />
+                                  Rechazar Todo
+                                </>
+                              )}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>¿Rechazar contenido masivamente?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Esta acción rechazará todo el contenido pendiente que coincida con los filtros seleccionados:
+                                <div className="mt-3 space-y-1 text-sm font-medium">
+                                  <div>• Tipo: {bulkContentType === "all" ? "Todos" : bulkContentType}</div>
+                                  {bulkDateFrom && <div>• Desde: {bulkDateFrom}</div>}
+                                  {bulkDateTo && <div>• Hasta: {bulkDateTo}</div>}
+                                </div>
+                                <p className="mt-3 text-destructive font-normal">
+                                  Esta acción rechazará permanentemente el contenido. Asegúrate de revisar los filtros antes de continuar.
+                                </p>
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={bulkRejectContent}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Rechazar Todo
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </div>
                   </div>
                 </CardContent>

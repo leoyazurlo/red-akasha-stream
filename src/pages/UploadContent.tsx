@@ -52,6 +52,7 @@ const UploadContent = () => {
     video_url: "",
     audio_url: "",
     photo_url: "",
+    thumbnail_url: "",
     podcast_category: "",
     band_name: "",
     producer_name: "",
@@ -61,6 +62,11 @@ const UploadContent = () => {
     is_free: true,
     price: "0",
     currency: "USD",
+    video_width: 0,
+    video_height: 0,
+    file_size: 0,
+    video_duration_seconds: 0,
+    audio_duration_seconds: 0,
   });
 
   const contentTypes = [
@@ -185,10 +191,16 @@ const UploadContent = () => {
         video_url: formData.video_url || null,
         audio_url: formData.audio_url || null,
         photo_url: formData.photo_url || null,
+        thumbnail_url: formData.thumbnail_url || null,
         status: 'pending',
         is_free: formData.is_free,
         price: formData.is_free ? 0 : parseFloat(formData.price) || 0,
         currency: formData.currency,
+        video_width: formData.video_width || null,
+        video_height: formData.video_height || null,
+        file_size: formData.file_size || null,
+        video_duration_seconds: formData.video_duration_seconds || null,
+        audio_duration_seconds: formData.audio_duration_seconds || null,
       };
 
       // Agregar campos específicos según el tipo
@@ -222,6 +234,7 @@ const UploadContent = () => {
         video_url: "",
         audio_url: "",
         photo_url: "",
+        thumbnail_url: "",
         podcast_category: "",
         band_name: "",
         producer_name: "",
@@ -231,6 +244,11 @@ const UploadContent = () => {
         is_free: true,
         price: "0",
         currency: "USD",
+        video_width: 0,
+        video_height: 0,
+        file_size: 0,
+        video_duration_seconds: 0,
+        audio_duration_seconds: 0,
       });
     } catch (error: any) {
       console.error('Error al subir contenido:', error);
@@ -403,6 +421,14 @@ const UploadContent = () => {
                         label="Video del contenido"
                         value={formData.video_url}
                         onChange={(url) => setFormData(prev => ({ ...prev, video_url: url }))}
+                        onMetadataExtracted={(metadata) => setFormData(prev => ({
+                          ...prev,
+                          thumbnail_url: metadata.thumbnail,
+                          video_width: metadata.width,
+                          video_height: metadata.height,
+                          file_size: metadata.size,
+                          video_duration_seconds: metadata.duration
+                        }))}
                         description="Sube tu video en formato MP4, WebM o MOV (máx. 500MB)"
                       />
                     </div>
@@ -438,6 +464,11 @@ const UploadContent = () => {
                         label="Audio del podcast"
                         value={formData.audio_url}
                         onChange={(url) => setFormData(prev => ({ ...prev, audio_url: url }))}
+                        onMetadataExtracted={(metadata) => setFormData(prev => ({
+                          ...prev,
+                          file_size: metadata.size,
+                          audio_duration_seconds: metadata.duration
+                        }))}
                         required
                         description="Sube tu archivo de audio en formato MP3, WAV o AAC (máx. 100MB)"
                       />

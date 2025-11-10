@@ -11,6 +11,7 @@ interface VideoUploadProps {
   label: string;
   value: string;
   onChange: (url: string) => void;
+  onMetadataExtracted?: (metadata: { thumbnail: string; width: number; height: number; size: number; duration: number }) => void;
   required?: boolean;
   description?: string;
 }
@@ -22,7 +23,7 @@ interface VideoMetadata {
   size: number;
 }
 
-export const VideoUpload = ({ label, value, onChange, required, description }: VideoUploadProps) => {
+export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, required, description }: VideoUploadProps) => {
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -136,6 +137,17 @@ export const VideoUpload = ({ label, value, onChange, required, description }: V
       ]);
       setThumbnail(thumbnailUrl);
       setMetadata(videoMetadata);
+      
+      // Notificar metadatos al componente padre
+      if (onMetadataExtracted) {
+        onMetadataExtracted({
+          thumbnail: thumbnailUrl,
+          width: videoMetadata.width,
+          height: videoMetadata.height,
+          size: videoMetadata.size,
+          duration: videoMetadata.duration
+        });
+      }
     } catch (error) {
       console.error('Error al extraer miniatura/metadatos:', error);
       // Continuar sin miniatura/metadatos si falla

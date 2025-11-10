@@ -283,6 +283,7 @@ export type Database = {
       }
       content_uploads: {
         Row: {
+          audio_duration_seconds: number | null
           audio_url: string | null
           band_name: string | null
           content_type: Database["public"]["Enums"]["content_type"]
@@ -290,6 +291,7 @@ export type Database = {
           currency: string | null
           description: string | null
           duration: number | null
+          file_size: number | null
           id: string
           is_free: boolean
           photo_url: string | null
@@ -307,10 +309,14 @@ export type Database = {
           updated_at: string | null
           uploader_id: string
           venue_name: string | null
+          video_duration_seconds: number | null
+          video_height: number | null
           video_url: string | null
+          video_width: number | null
           views_count: number | null
         }
         Insert: {
+          audio_duration_seconds?: number | null
           audio_url?: string | null
           band_name?: string | null
           content_type: Database["public"]["Enums"]["content_type"]
@@ -318,6 +324,7 @@ export type Database = {
           currency?: string | null
           description?: string | null
           duration?: number | null
+          file_size?: number | null
           id?: string
           is_free?: boolean
           photo_url?: string | null
@@ -335,10 +342,14 @@ export type Database = {
           updated_at?: string | null
           uploader_id: string
           venue_name?: string | null
+          video_duration_seconds?: number | null
+          video_height?: number | null
           video_url?: string | null
+          video_width?: number | null
           views_count?: number | null
         }
         Update: {
+          audio_duration_seconds?: number | null
           audio_url?: string | null
           band_name?: string | null
           content_type?: Database["public"]["Enums"]["content_type"]
@@ -346,6 +357,7 @@ export type Database = {
           currency?: string | null
           description?: string | null
           duration?: number | null
+          file_size?: number | null
           id?: string
           is_free?: boolean
           photo_url?: string | null
@@ -363,7 +375,10 @@ export type Database = {
           updated_at?: string | null
           uploader_id?: string
           venue_name?: string | null
+          video_duration_seconds?: number | null
+          video_height?: number | null
           video_url?: string | null
+          video_width?: number | null
           views_count?: number | null
         }
         Relationships: []

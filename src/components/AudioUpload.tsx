@@ -11,11 +11,12 @@ interface AudioUploadProps {
   label: string;
   value: string;
   onChange: (url: string) => void;
+  onMetadataExtracted?: (metadata: { size: number; duration: number }) => void;
   required?: boolean;
   description?: string;
 }
 
-export const AudioUpload = ({ label, value, onChange, required, description }: AudioUploadProps) => {
+export const AudioUpload = ({ label, value, onChange, onMetadataExtracted, required, description }: AudioUploadProps) => {
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -42,6 +43,38 @@ export const AudioUpload = ({ label, value, onChange, required, description }: A
     setUploadProgress(0);
     setFileName(file.name);
     abortControllerRef.current = new AbortController();
+
+    // Extraer metadata del audio
+    const audioMetadata = {
+      size: file.size,
+      duration: 0
+    };
+
+    // Intentar obtener duración del audio
+    try {
+      const audio = document.createElement('audio');
+      audio.preload = 'metadata';
+      audio.src = URL.createObjectURL(file);
+      
+      await new Promise<void>((resolve) => {
+        audio.onloadedmetadata = () => {
+          audioMetadata.duration = audio.duration;
+          URL.revokeObjectURL(audio.src);
+          resolve();
+        };
+        audio.onerror = () => {
+          URL.revokeObjectURL(audio.src);
+          resolve(); // Continuar sin duración si falla
+        };
+      });
+    } catch (error) {
+      console.error('Error extrayendo duración:', error);
+    }
+
+    // Notificar metadatos al componente padre
+    if (onMetadataExtracted) {
+      onMetadataExtracted(audioMetadata);
+    }
 
     try {
       const { data: { user } } = await supabase.auth.getUser();

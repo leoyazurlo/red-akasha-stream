@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { Loader2, CheckCircle2, XCircle, Video, Image, Music, Trash2, Zap } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Video, Image as ImageIcon, Music, Trash2, Zap, FileVideo } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface ContentItem {
   id: string;
@@ -25,6 +26,8 @@ interface ContentItem {
   video_url?: string;
   audio_url?: string;
   photo_url?: string;
+  thumbnail_url?: string;
+  thumbnail_small?: string;
   band_name?: string;
   producer_name?: string;
   recording_studio?: string;
@@ -52,12 +55,68 @@ export default function AdminContentModeration() {
   const [bulkApproving, setBulkApproving] = useState(false);
   const [bulkRejecting, setBulkRejecting] = useState(false);
   const [rejectionReason, setRejectionReason] = useState<string>("no_especificada");
+  const [previewItems, setPreviewItems] = useState<ContentItem[]>([]);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [showApprovalPreview, setShowApprovalPreview] = useState(false);
+  const [showRejectionPreview, setShowRejectionPreview] = useState(false);
 
   useEffect(() => {
     if (!authLoading && user && isAdmin) {
       loadContent();
     }
   }, [authLoading, user, isAdmin, statusFilter]);
+
+  const loadPreviewContent = async () => {
+    try {
+      setPreviewLoading(true);
+      setPreviewItems([]);
+
+      // Construir query con filtros
+      let query = supabase
+        .from('content_uploads')
+        .select('id, title, description, content_type, status, is_free, thumbnail_url, thumbnail_small, video_url, audio_url, photo_url, uploader_id, created_at')
+        .eq('status', 'pending');
+
+      // Aplicar filtro de tipo
+      if (bulkContentType !== "all") {
+        query = query.eq('content_type', bulkContentType as any);
+      }
+
+      // Aplicar filtro de fecha desde
+      if (bulkDateFrom) {
+        query = query.gte('created_at', new Date(bulkDateFrom).toISOString());
+      }
+
+      // Aplicar filtro de fecha hasta
+      if (bulkDateTo) {
+        const dateTo = new Date(bulkDateTo);
+        dateTo.setHours(23, 59, 59, 999);
+        query = query.lte('created_at', dateTo.toISOString());
+      }
+
+      const { data: items, error } = await query.limit(20);
+
+      if (error) throw error;
+
+      if (!items || items.length === 0) {
+        toast({
+          title: "Sin contenido",
+          description: "No hay contenido pendiente que coincida con los filtros",
+        });
+        return;
+      }
+
+      setPreviewItems(items as ContentItem[]);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo cargar la vista previa",
+        variant: "destructive",
+      });
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
 
   const loadContent = async () => {
     try {
@@ -402,7 +461,7 @@ export default function AdminContentModeration() {
   const getContentIcon = (type: string) => {
     if (type === 'podcast') return Music;
     if (type.includes('video')) return Video;
-    return Image;
+    return ImageIcon;
   };
 
   const getStatusBadge = (status: string) => {
@@ -527,102 +586,199 @@ export default function AdminContentModeration() {
                     <div className="space-y-2">
                       <Label className="invisible">Acciones</Label>
                       <div className="flex gap-2">
-                        {/* Aprobar Todo */}
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button 
-                              className="flex-1" 
-                              disabled={bulkApproving || bulkRejecting}
-                            >
-                              {bulkApproving ? (
-                                <>
-                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                  Aprobando...
-                                </>
-                              ) : (
-                                <>
-                                  <CheckCircle2 className="h-4 w-4 mr-2" />
-                                  Aprobar Todo
-                                </>
-                              )}
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
+                        {/* Vista Previa para Aprobar */}
+                        <Button 
+                          className="flex-1" 
+                          disabled={bulkApproving || bulkRejecting || previewLoading}
+                          onClick={async () => {
+                            await loadPreviewContent();
+                            if (previewItems.length > 0) {
+                              setShowApprovalPreview(true);
+                            }
+                          }}
+                        >
+                          {previewLoading ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Cargando...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle2 className="h-4 w-4 mr-2" />
+                              Aprobar Todo
+                            </>
+                          )}
+                        </Button>
+
+                        {/* Vista Previa para Rechazar */}
+                        <Button 
+                          variant="destructive"
+                          className="flex-1" 
+                          disabled={bulkApproving || bulkRejecting || previewLoading}
+                          onClick={async () => {
+                            await loadPreviewContent();
+                            if (previewItems.length > 0) {
+                              setShowRejectionPreview(true);
+                            }
+                          }}
+                        >
+                          {previewLoading ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Cargando...
+                            </>
+                          ) : (
+                            <>
+                              <XCircle className="h-4 w-4 mr-2" />
+                              Rechazar Todo
+                            </>
+                          )}
+                        </Button>
+
+                        {/* Dialog de Aprobación */}
+                        <AlertDialog open={showApprovalPreview} onOpenChange={setShowApprovalPreview}>
+                          <AlertDialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
                             <AlertDialogHeader>
-                              <AlertDialogTitle>¿Aprobar contenido masivamente?</AlertDialogTitle>
+                              <AlertDialogTitle>Vista Previa - Aprobar Contenido</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Esta acción aprobará todo el contenido pendiente que coincida con los filtros seleccionados:
-                                <div className="mt-3 space-y-1 text-sm font-medium">
-                                  <div>• Tipo: {bulkContentType === "all" ? "Todos" : bulkContentType}</div>
-                                  {bulkDateFrom && <div>• Desde: {bulkDateFrom}</div>}
-                                  {bulkDateTo && <div>• Hasta: {bulkDateTo}</div>}
-                                </div>
-                                <p className="mt-3 text-muted-foreground font-normal">
-                                  Esta acción no se puede deshacer. Asegúrate de revisar los filtros antes de continuar.
-                                </p>
+                                Se aprobarán {previewItems.length} contenido(s). Revisa la lista antes de confirmar:
                               </AlertDialogDescription>
                             </AlertDialogHeader>
+                            
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 my-4">
+                              {previewItems.map((item) => (
+                                <div key={item.id} className="border rounded-lg p-2 space-y-2">
+                                  <AspectRatio ratio={16/9} className="bg-muted rounded overflow-hidden">
+                                    {item.thumbnail_url || item.thumbnail_small ? (
+                                      <img 
+                                        src={item.thumbnail_url || item.thumbnail_small || ''} 
+                                        alt={item.title}
+                                        className="object-cover w-full h-full"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center bg-muted">
+                                        {item.content_type === 'video_musical_vivo' || item.content_type === 'video_clip' ? (
+                                          <FileVideo className="h-8 w-8 text-muted-foreground" />
+                                        ) : item.content_type === 'podcast' ? (
+                                          <Music className="h-8 w-8 text-muted-foreground" />
+                                        ) : (
+                                          <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                                        )}
+                                      </div>
+                                    )}
+                                  </AspectRatio>
+                                  <div className="space-y-1">
+                                    <p className="text-xs font-medium line-clamp-2">{item.title}</p>
+                                    <Badge variant="outline" className="text-xs">
+                                      {item.content_type}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+
+                            {previewItems.length >= 20 && (
+                              <p className="text-sm text-muted-foreground">
+                                Mostrando los primeros 20 resultados. Puede haber más contenido que coincida con los filtros.
+                              </p>
+                            )}
+
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction onClick={bulkApproveContent}>
-                                Aprobar Todo
+                              <AlertDialogAction 
+                                onClick={() => {
+                                  setShowApprovalPreview(false);
+                                  bulkApproveContent();
+                                }}
+                                disabled={bulkApproving}
+                              >
+                                {bulkApproving ? (
+                                  <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Aprobando...
+                                  </>
+                                ) : (
+                                  'Confirmar Aprobación'
+                                )}
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
 
-                        {/* Rechazar Todo */}
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button 
-                              variant="destructive"
-                              className="flex-1" 
-                              disabled={bulkApproving || bulkRejecting}
-                            >
-                              {bulkRejecting ? (
-                                <>
-                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                  Rechazando...
-                                </>
-                              ) : (
-                                <>
-                                  <XCircle className="h-4 w-4 mr-2" />
-                                  Rechazar Todo
-                                </>
-                              )}
-                            </Button>
-                          </AlertDialogTrigger>
-                           <AlertDialogContent>
+                        {/* Dialog de Rechazo */}
+                        <AlertDialog open={showRejectionPreview} onOpenChange={setShowRejectionPreview}>
+                          <AlertDialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
                             <AlertDialogHeader>
-                              <AlertDialogTitle>¿Rechazar contenido masivamente?</AlertDialogTitle>
+                              <AlertDialogTitle>Vista Previa - Rechazar Contenido</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Esta acción rechazará todo el contenido pendiente que coincida con los filtros seleccionados:
-                                <div className="mt-3 space-y-1 text-sm font-medium">
-                                  <div>• Tipo: {bulkContentType === "all" ? "Todos" : bulkContentType}</div>
-                                  {bulkDateFrom && <div>• Desde: {bulkDateFrom}</div>}
-                                  {bulkDateTo && <div>• Hasta: {bulkDateTo}</div>}
-                                  <div className="text-destructive">• Motivo: {
-                                    rejectionReason === "no_especificada" ? "No cumple con los estándares" :
-                                    rejectionReason === "baja_calidad" ? "Baja calidad de audio/video" :
-                                    rejectionReason === "contenido_inapropiado" ? "Contenido inapropiado" :
-                                    rejectionReason === "derechos_autor" ? "Posible violación de derechos" :
-                                    rejectionReason === "informacion_incompleta" ? "Información incompleta" :
-                                    rejectionReason === "contenido_duplicado" ? "Contenido duplicado" :
-                                    "No cumple con los estándares"
-                                  }</div>
-                                </div>
-                                <p className="mt-3 text-destructive font-normal">
-                                  Esta acción rechazará permanentemente el contenido y notificará a los creadores con el motivo seleccionado.
-                                </p>
+                                Se rechazarán {previewItems.length} contenido(s) con el motivo: <span className="font-semibold text-destructive">
+                                  {rejectionReason === "no_especificada" ? "No cumple con los estándares" :
+                                   rejectionReason === "baja_calidad" ? "Baja calidad de audio/video" :
+                                   rejectionReason === "contenido_inapropiado" ? "Contenido inapropiado" :
+                                   rejectionReason === "derechos_autor" ? "Posible violación de derechos" :
+                                   rejectionReason === "informacion_incompleta" ? "Información incompleta" :
+                                   rejectionReason === "contenido_duplicado" ? "Contenido duplicado" :
+                                   "No cumple con los estándares"}
+                                </span>
                               </AlertDialogDescription>
                             </AlertDialogHeader>
+                            
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 my-4">
+                              {previewItems.map((item) => (
+                                <div key={item.id} className="border rounded-lg p-2 space-y-2">
+                                  <AspectRatio ratio={16/9} className="bg-muted rounded overflow-hidden">
+                                    {item.thumbnail_url || item.thumbnail_small ? (
+                                      <img 
+                                        src={item.thumbnail_url || item.thumbnail_small || ''} 
+                                        alt={item.title}
+                                        className="object-cover w-full h-full"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center bg-muted">
+                                        {item.content_type === 'video_musical_vivo' || item.content_type === 'video_clip' ? (
+                                          <FileVideo className="h-8 w-8 text-muted-foreground" />
+                                        ) : item.content_type === 'podcast' ? (
+                                          <Music className="h-8 w-8 text-muted-foreground" />
+                                        ) : (
+                                          <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                                        )}
+                                      </div>
+                                    )}
+                                  </AspectRatio>
+                                  <div className="space-y-1">
+                                    <p className="text-xs font-medium line-clamp-2">{item.title}</p>
+                                    <Badge variant="outline" className="text-xs">
+                                      {item.content_type}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+
+                            {previewItems.length >= 20 && (
+                              <p className="text-sm text-muted-foreground">
+                                Mostrando los primeros 20 resultados. Puede haber más contenido que coincida con los filtros.
+                              </p>
+                            )}
+
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancelar</AlertDialogCancel>
                               <AlertDialogAction 
-                                onClick={bulkRejectContent}
+                                onClick={() => {
+                                  setShowRejectionPreview(false);
+                                  bulkRejectContent();
+                                }}
+                                disabled={bulkRejecting}
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                               >
-                                Rechazar Todo
+                                {bulkRejecting ? (
+                                  <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Rechazando...
+                                  </>
+                                ) : (
+                                  'Confirmar Rechazo'
+                                )}
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>

@@ -22,6 +22,7 @@ export const AudioUpload = ({ label, value, onChange, required, description }: A
   const [preview, setPreview] = useState<string>(value);
   const [fileName, setFileName] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -40,6 +41,7 @@ export const AudioUpload = ({ label, value, onChange, required, description }: A
     setUploading(true);
     setUploadProgress(0);
     setFileName(file.name);
+    abortControllerRef.current = new AbortController();
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -71,15 +73,29 @@ export const AudioUpload = ({ label, value, onChange, required, description }: A
         description: "El audio se ha subido correctamente",
       });
     } catch (error: any) {
-      console.error('Error al subir audio:', error);
-      toast({
-        title: "Error",
-        description: error.message || "No se pudo subir el audio",
-        variant: "destructive",
-      });
+      if (error.name === 'AbortError') {
+        toast({
+          title: "Cancelado",
+          description: "La carga del audio fue cancelada",
+        });
+      } else {
+        console.error('Error al subir audio:', error);
+        toast({
+          title: "Error",
+          description: error.message || "No se pudo subir el audio",
+          variant: "destructive",
+        });
+      }
     } finally {
       setUploading(false);
       setUploadProgress(0);
+      abortControllerRef.current = null;
+    }
+  };
+
+  const handleCancel = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
     }
   };
 
@@ -124,9 +140,21 @@ export const AudioUpload = ({ label, value, onChange, required, description }: A
         {uploading && (
           <div className="space-y-2">
             <Progress value={uploadProgress} className="h-2" />
-            <p className="text-sm text-muted-foreground text-center">
-              Subiendo... {Math.round(uploadProgress)}%
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                Subiendo... {Math.round(uploadProgress)}%
+              </p>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleCancel}
+                className="text-destructive hover:text-destructive"
+              >
+                <X className="w-4 h-4 mr-1" />
+                Cancelar
+              </Button>
+            </div>
           </div>
         )}
 

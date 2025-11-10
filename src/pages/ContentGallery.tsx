@@ -8,7 +8,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Play, Music, Image as ImageIcon, Clock, MonitorPlay, HardDrive } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Loader2, Play, Music, Image as ImageIcon, Clock, MonitorPlay, HardDrive, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface ContentItem {
@@ -37,6 +38,8 @@ const ContentGallery = () => {
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState<ContentItem[]>([]);
   const [filter, setFilter] = useState<"all" | "videos" | "audios" | "photos">("all");
+  const [selectedContent, setSelectedContent] = useState<ContentItem | null>(null);
+  const [playerOpen, setPlayerOpen] = useState(false);
 
   useEffect(() => {
     loadContent();
@@ -104,6 +107,17 @@ const ContentGallery = () => {
     if (filter === "photos") return item.photo_url && !item.video_url && !item.audio_url;
     return true;
   });
+
+  const handleOpenPlayer = (item: ContentItem) => {
+    setSelectedContent(item);
+    setPlayerOpen(true);
+  };
+
+  const handleClosePlayer = () => {
+    setPlayerOpen(false);
+    // Pequeño delay antes de limpiar el contenido para evitar glitches visuales
+    setTimeout(() => setSelectedContent(null), 300);
+  };
 
   if (loading) {
     return (
@@ -242,12 +256,11 @@ const ContentGallery = () => {
                       <Button 
                         variant="outline" 
                         className="w-full"
-                        onClick={() => {
-                          if (item.video_url) window.open(item.video_url, '_blank');
-                          else if (item.audio_url) window.open(item.audio_url, '_blank');
-                          else if (item.photo_url) window.open(item.photo_url, '_blank');
-                        }}
+                        onClick={() => handleOpenPlayer(item)}
                       >
+                        {item.video_url && <Play className="w-4 h-4 mr-2" />}
+                        {item.audio_url && !item.video_url && <Music className="w-4 h-4 mr-2" />}
+                        {item.photo_url && !item.video_url && !item.audio_url && <ImageIcon className="w-4 h-4 mr-2" />}
                         Ver Contenido
                       </Button>
                     </CardContent>
@@ -257,6 +270,116 @@ const ContentGallery = () => {
             )}
           </div>
         </div>
+
+        {/* Modal del Reproductor */}
+        <Dialog open={playerOpen} onOpenChange={setPlayerOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden">
+            {selectedContent && (
+              <>
+                <DialogHeader className="p-6 pb-4">
+                  <DialogTitle className="text-xl font-semibold">
+                    {selectedContent.title}
+                  </DialogTitle>
+                  {selectedContent.description && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      {selectedContent.description}
+                    </p>
+                  )}
+                </DialogHeader>
+
+                <div className="px-6 pb-6">
+                  {/* Reproductor de Video */}
+                  {selectedContent.video_url && (
+                    <div className="w-full rounded-lg overflow-hidden bg-black">
+                      <video 
+                        src={selectedContent.video_url}
+                        controls
+                        autoPlay
+                        className="w-full h-auto max-h-[60vh]"
+                        controlsList="nodownload"
+                      >
+                        Tu navegador no soporta el elemento de video.
+                      </video>
+                    </div>
+                  )}
+
+                  {/* Reproductor de Audio */}
+                  {selectedContent.audio_url && !selectedContent.video_url && (
+                    <div className="w-full p-8 rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 border border-border">
+                      <div className="flex items-center justify-center mb-6">
+                        <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center">
+                          <Music className="w-12 h-12 text-primary" />
+                        </div>
+                      </div>
+                      <audio 
+                        src={selectedContent.audio_url}
+                        controls
+                        autoPlay
+                        className="w-full"
+                        controlsList="nodownload"
+                      >
+                        Tu navegador no soporta el elemento de audio.
+                      </audio>
+                    </div>
+                  )}
+
+                  {/* Visor de Imagen */}
+                  {selectedContent.photo_url && !selectedContent.video_url && !selectedContent.audio_url && (
+                    <div className="w-full rounded-lg overflow-hidden">
+                      <img 
+                        src={selectedContent.photo_url}
+                        alt={selectedContent.title}
+                        className="w-full h-auto max-h-[60vh] object-contain bg-muted"
+                      />
+                    </div>
+                  )}
+
+                  {/* Metadatos */}
+                  <div className="mt-6 pt-6 border-t border-border">
+                    <h4 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">
+                      Información Técnica
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground mb-1">Tipo</p>
+                        <p className="font-medium text-foreground">
+                          {getContentTypeLabel(selectedContent.content_type)}
+                        </p>
+                      </div>
+                      
+                      {selectedContent.video_width && selectedContent.video_height && (
+                        <div>
+                          <p className="text-muted-foreground mb-1">Resolución</p>
+                          <p className="font-medium text-foreground">
+                            {selectedContent.video_width}x{selectedContent.video_height}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {(selectedContent.video_duration_seconds || selectedContent.audio_duration_seconds) && (
+                        <div>
+                          <p className="text-muted-foreground mb-1">Duración</p>
+                          <p className="font-medium text-foreground">
+                            {formatDuration(selectedContent.video_duration_seconds || selectedContent.audio_duration_seconds)}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {selectedContent.file_size && (
+                        <div>
+                          <p className="text-muted-foreground mb-1">Tamaño</p>
+                          <p className="font-medium text-foreground">
+                            {formatFileSize(selectedContent.file_size)}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
       </main>
 
       <Footer />

@@ -169,6 +169,55 @@ const UploadContent = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validaciones antes de enviar
+    if (!formData.content_type) {
+      toast({
+        title: "Error de validación",
+        description: "Por favor selecciona un tipo de contenido",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.title.trim()) {
+      toast({
+        title: "Error de validación",
+        description: "Por favor ingresa un título para el contenido",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validar que al menos un archivo sea subido
+    if (formData.content_type === 'podcast') {
+      if (!formData.audio_url) {
+        toast({
+          title: "Error de validación",
+          description: "Por favor sube un archivo de audio para el podcast",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (!formData.podcast_category) {
+        toast({
+          title: "Error de validación",
+          description: "Por favor selecciona una categoría para el podcast",
+          variant: "destructive",
+        });
+        return;
+      }
+    } else {
+      if (!formData.video_url && !formData.photo_url) {
+        toast({
+          title: "Error de validación",
+          description: "Por favor sube al menos un video o una fotografía",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
@@ -180,6 +229,7 @@ const UploadContent = () => {
           description: "Debes iniciar sesión para subir contenido",
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
 

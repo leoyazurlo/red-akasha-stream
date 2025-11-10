@@ -25,12 +25,18 @@ interface VideoMetadata {
   size: number;
 }
 
+interface ThumbnailUrls {
+  small: string;
+  medium: string;
+  large: string;
+}
+
 export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, required, description }: VideoUploadProps) => {
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [preview, setPreview] = useState<string>(value);
-  const [thumbnail, setThumbnail] = useState<string>("");
+  const [thumbnails, setThumbnails] = useState<ThumbnailUrls | null>(null);
   const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -51,12 +57,85 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  const extractVideoThumbnail = async (file: File, userId: string): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const video = document.createElement('video');
+  const generateThumbnailSizes = async (
+    video: HTMLVideoElement,
+    userId: string
+  ): Promise<{ small: string; medium: string; large: string }> => {
+    const sizes = {
+      small: { width: 320, height: 180, quality: 0.6 },   // Para listas/previews
+      medium: { width: 640, height: 360, quality: 0.7 },  // Para grids
+      large: { width: 1280, height: 720, quality: 0.7 }   // Para vistas detalladas
+    };
+
+    const thumbnails = {
+      small: '',
+      medium: '',
+      large: ''
+    };
+
+    for (const [size, config] of Object.entries(sizes)) {
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
+      
+      if (!context) continue;
 
+      // Calcular dimensiones manteniendo aspect ratio
+      const aspectRatio = video.videoWidth / video.videoHeight;
+      let width = config.width;
+      let height = Math.round(width / aspectRatio);
+      
+      // Ajustar si la altura excede el máximo
+      if (height > config.height) {
+        height = config.height;
+        width = Math.round(height * aspectRatio);
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+
+      // Aplicar suavizado
+      context.imageSmoothingEnabled = true;
+      context.imageSmoothingQuality = 'high';
+      context.drawImage(video, 0, 0, width, height);
+
+      // Convertir a blob
+      const blob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob(resolve, 'image/jpeg', config.quality);
+      });
+
+      if (!blob) continue;
+
+      // Subir a Storage
+      const thumbnailFileName = `${userId}/thumbnails/${size}/${Date.now()}.jpg`;
+      const { data, error } = await supabase.storage
+        .from('content-videos')
+        .upload(thumbnailFileName, blob, {
+          cacheControl: '3600',
+          contentType: 'image/jpeg'
+        });
+
+      if (error) {
+        console.error(`Error subiendo thumbnail ${size}:`, error);
+        continue;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('content-videos')
+        .getPublicUrl(data.path);
+
+      thumbnails[size as keyof typeof thumbnails] = publicUrl;
+      console.log(`Thumbnail ${size}: ${width}x${height}, ${(blob.size / 1024).toFixed(2)} KB`);
+    }
+
+    return thumbnails;
+  };
+
+  const extractVideoThumbnail = async (
+    file: File,
+    userId: string
+  ): Promise<{ small: string; medium: string; large: string }> => {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement('video');
       video.preload = 'metadata';
       video.muted = true;
       video.playsInline = true;
@@ -66,75 +145,18 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
       };
 
       video.onseeked = async () => {
-        // Configurar dimensiones máximas del thumbnail (720p máximo)
-        const MAX_WIDTH = 1280;
-        const MAX_HEIGHT = 720;
-        
-        let width = video.videoWidth;
-        let height = video.videoHeight;
-        
-        // Calcular dimensiones manteniendo aspect ratio
-        if (width > MAX_WIDTH || height > MAX_HEIGHT) {
-          const aspectRatio = width / height;
+        try {
+          const thumbnails = await generateThumbnailSizes(video, userId);
           
-          if (width > height) {
-            width = MAX_WIDTH;
-            height = Math.round(width / aspectRatio);
-          } else {
-            height = MAX_HEIGHT;
-            width = Math.round(height * aspectRatio);
-          }
+          // Limpiar
+          video.src = '';
+          URL.revokeObjectURL(video.src);
+          
+          resolve(thumbnails);
+        } catch (error) {
+          console.error('Error generando thumbnails:', error);
+          reject(error);
         }
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        if (context) {
-          // Aplicar suavizado para mejor calidad al redimensionar
-          context.imageSmoothingEnabled = true;
-          context.imageSmoothingQuality = 'high';
-          
-          // Dibujar el video redimensionado
-          context.drawImage(video, 0, 0, width, height);
-          
-          // Convertir canvas a blob con compresión agresiva
-          canvas.toBlob(async (blob) => {
-            if (!blob) {
-              reject(new Error('Error al crear el blob del thumbnail'));
-              return;
-            }
-
-            try {
-              // Subir thumbnail comprimido a Storage
-              const thumbnailFileName = `${userId}/thumbnails/${Date.now()}.jpg`;
-              const { data, error } = await supabase.storage
-                .from('content-videos')
-                .upload(thumbnailFileName, blob, {
-                  cacheControl: '3600',
-                  contentType: 'image/jpeg'
-                });
-
-              if (error) throw error;
-
-              // Obtener URL pública
-              const { data: { publicUrl } } = supabase.storage
-                .from('content-videos')
-                .getPublicUrl(data.path);
-
-              console.log(`Thumbnail comprimido: ${width}x${height}, ${(blob.size / 1024).toFixed(2)} KB`);
-              resolve(publicUrl);
-            } catch (error) {
-              console.error('Error subiendo thumbnail:', error);
-              reject(error);
-            }
-          }, 'image/jpeg', 0.7); // Calidad 70% para mayor compresión
-        } else {
-          reject(new Error('No se pudo crear el contexto del canvas'));
-        }
-
-        // Limpiar
-        video.src = '';
-        URL.revokeObjectURL(video.src);
       };
 
       video.onerror = () => {
@@ -198,14 +220,14 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
       const videoMetadata = await extractVideoMetadata(file);
       setMetadata(videoMetadata);
       
-      // Extraer y subir thumbnail
-      const thumbnailUrl = await extractVideoThumbnail(file, user.id);
-      setThumbnail(thumbnailUrl);
+      // Extraer y subir thumbnails en múltiples tamaños
+      const thumbnailUrls = await extractVideoThumbnail(file, user.id);
+      setThumbnails(thumbnailUrls);
       
       // Notificar metadatos al componente padre
       if (onMetadataExtracted) {
         onMetadataExtracted({
-          thumbnail: thumbnailUrl,
+          thumbnail: thumbnailUrls.large, // Usar el thumbnail grande por defecto
           width: videoMetadata.width,
           height: videoMetadata.height,
           size: videoMetadata.size,
@@ -214,7 +236,11 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
       }
     } catch (error) {
       console.error('Error al extraer miniatura/metadatos:', error);
-      // Continuar sin miniatura/metadatos si falla
+      toast({
+        title: "Advertencia",
+        description: "No se pudieron generar las miniaturas, pero puedes continuar",
+        variant: "default",
+      });
     }
 
     setUploading(true);
@@ -255,7 +281,10 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
           file_url: publicUrl,
           file_name: file.name,
           file_size: file.size,
-          thumbnail_url: thumbnail || null,
+          thumbnail_url: thumbnails?.large || null,
+          thumbnail_small: thumbnails?.small || null,
+          thumbnail_medium: thumbnails?.medium || null,
+          thumbnail_large: thumbnails?.large || null,
           width: metadata?.width || null,
           height: metadata?.height || null,
           duration_seconds: metadata?.duration || null,
@@ -297,7 +326,7 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
 
   const handleRemove = () => {
     setPreview("");
-    setThumbnail("");
+    setThumbnails(null);
     setMetadata(null);
     setUploadProgress(0);
     onChange("");
@@ -338,11 +367,11 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
           </div>
         )}
 
-        {!preview && thumbnail && (
+        {!preview && thumbnails && (
           <div className="space-y-3">
             <div className="relative w-full max-w-md rounded-lg overflow-hidden border-2 border-border">
               <img 
-                src={thumbnail} 
+                src={thumbnails.large} 
                 alt="Miniatura del video"
                 className="w-full h-auto"
               />
@@ -458,7 +487,11 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
         mediaType="video"
         onSelect={(item) => {
           setPreview(item.file_url);
-          setThumbnail(item.thumbnail_url || "");
+          setThumbnails({
+            small: item.thumbnail_small || item.thumbnail_url || "",
+            medium: item.thumbnail_medium || item.thumbnail_url || "",
+            large: item.thumbnail_large || item.thumbnail_url || ""
+          });
           setMetadata({
             duration: item.duration_seconds || 0,
             width: item.width || 0,
@@ -468,7 +501,7 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
           onChange(item.file_url);
           if (onMetadataExtracted) {
             onMetadataExtracted({
-              thumbnail: item.thumbnail_url || "",
+              thumbnail: item.thumbnail_large || item.thumbnail_url || "",
               width: item.width || 0,
               height: item.height || 0,
               size: item.file_size,

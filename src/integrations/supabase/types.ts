@@ -383,6 +383,9 @@ export type Database = {
           recording_studio: string | null
           status: string | null
           tags: string[] | null
+          thumbnail_large: string | null
+          thumbnail_medium: string | null
+          thumbnail_small: string | null
           thumbnail_url: string | null
           title: string
           updated_at: string | null
@@ -418,6 +421,9 @@ export type Database = {
           recording_studio?: string | null
           status?: string | null
           tags?: string[] | null
+          thumbnail_large?: string | null
+          thumbnail_medium?: string | null
+          thumbnail_small?: string | null
           thumbnail_url?: string | null
           title: string
           updated_at?: string | null
@@ -453,6 +459,9 @@ export type Database = {
           recording_studio?: string | null
           status?: string | null
           tags?: string[] | null
+          thumbnail_large?: string | null
+          thumbnail_medium?: string | null
+          thumbnail_small?: string | null
           thumbnail_url?: string | null
           title?: string
           updated_at?: string | null
@@ -1947,6 +1956,9 @@ export type Database = {
           id: string
           media_type: string
           tags: string[] | null
+          thumbnail_large: string | null
+          thumbnail_medium: string | null
+          thumbnail_small: string | null
           thumbnail_url: string | null
           user_id: string
           width: number | null
@@ -1962,6 +1974,9 @@ export type Database = {
           id?: string
           media_type: string
           tags?: string[] | null
+          thumbnail_large?: string | null
+          thumbnail_medium?: string | null
+          thumbnail_small?: string | null
           thumbnail_url?: string | null
           user_id: string
           width?: number | null
@@ -1977,6 +1992,9 @@ export type Database = {
           id?: string
           media_type?: string
           tags?: string[] | null
+          thumbnail_large?: string | null
+          thumbnail_medium?: string | null
+          thumbnail_small?: string | null
           thumbnail_url?: string | null
           user_id?: string
           width?: number | null

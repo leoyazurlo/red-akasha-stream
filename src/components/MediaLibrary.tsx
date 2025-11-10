@@ -17,6 +17,9 @@ interface MediaItem {
   file_name: string;
   file_size: number;
   thumbnail_url: string | null;
+  thumbnail_small: string | null;
+  thumbnail_medium: string | null;
+  thumbnail_large: string | null;
   width: number | null;
   height: number | null;
   duration_seconds: number | null;
@@ -217,14 +220,14 @@ export const MediaLibrary = ({ open, onOpenChange, mediaType, onSelect }: MediaL
                   >
                     {/* Preview */}
                     <div className="aspect-video bg-muted relative overflow-hidden rounded-t-lg">
-                      {mediaType === 'video' && item.thumbnail_url && (
+                      {mediaType === 'video' && (item.thumbnail_medium || item.thumbnail_url) && (
                         <img
-                          src={item.thumbnail_url}
+                          src={item.thumbnail_medium || item.thumbnail_url || ''}
                           alt={item.file_name}
                           className="w-full h-full object-cover"
                         />
                       )}
-                      {mediaType === 'video' && !item.thumbnail_url && (
+                      {mediaType === 'video' && !(item.thumbnail_medium || item.thumbnail_url) && (
                         <div className="w-full h-full flex items-center justify-center">
                           <Video className="w-12 h-12 text-muted-foreground" />
                         </div>

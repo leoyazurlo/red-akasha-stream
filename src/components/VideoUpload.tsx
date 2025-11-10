@@ -51,7 +51,7 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  const extractVideoThumbnail = (file: File): Promise<string> => {
+  const extractVideoThumbnail = async (file: File, userId: string): Promise<string> => {
     return new Promise((resolve, reject) => {
       const video = document.createElement('video');
       const canvas = document.createElement('canvas');
@@ -65,14 +65,43 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
         video.currentTime = 1; // Extraer frame en el segundo 1
       };
 
-      video.onseeked = () => {
+      video.onseeked = async () => {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         
         if (context) {
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const thumbnailUrl = canvas.toDataURL('image/jpeg', 0.8);
-          resolve(thumbnailUrl);
+          
+          // Convertir canvas a blob
+          canvas.toBlob(async (blob) => {
+            if (!blob) {
+              reject(new Error('Error al crear el blob del thumbnail'));
+              return;
+            }
+
+            try {
+              // Subir thumbnail a Storage
+              const thumbnailFileName = `${userId}/thumbnails/${Date.now()}.jpg`;
+              const { data, error } = await supabase.storage
+                .from('content-videos')
+                .upload(thumbnailFileName, blob, {
+                  cacheControl: '3600',
+                  contentType: 'image/jpeg'
+                });
+
+              if (error) throw error;
+
+              // Obtener URL pública
+              const { data: { publicUrl } } = supabase.storage
+                .from('content-videos')
+                .getPublicUrl(data.path);
+
+              resolve(publicUrl);
+            } catch (error) {
+              console.error('Error subiendo thumbnail:', error);
+              reject(error);
+            }
+          }, 'image/jpeg', 0.8);
         } else {
           reject(new Error('No se pudo crear el contexto del canvas'));
         }
@@ -133,14 +162,19 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
       return;
     }
 
-    // Extraer miniatura y metadatos del video
+    // Extraer metadatos del video primero
     try {
-      const [thumbnailUrl, videoMetadata] = await Promise.all([
-        extractVideoThumbnail(file),
-        extractVideoMetadata(file)
-      ]);
-      setThumbnail(thumbnailUrl);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("Debes iniciar sesión");
+      }
+
+      const videoMetadata = await extractVideoMetadata(file);
       setMetadata(videoMetadata);
+      
+      // Extraer y subir thumbnail
+      const thumbnailUrl = await extractVideoThumbnail(file, user.id);
+      setThumbnail(thumbnailUrl);
       
       // Notificar metadatos al componente padre
       if (onMetadataExtracted) {

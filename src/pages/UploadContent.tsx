@@ -26,6 +26,7 @@ import { ImageUpload } from "@/components/ImageUpload";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { ServiceWorkerStatus } from "@/components/ServiceWorkerStatus";
+import { ThumbnailPreloadStatus } from "@/components/ThumbnailPreloadStatus";
 
 interface ProfileOption {
   id: string;
@@ -437,6 +438,9 @@ const UploadContent = () => {
           <div className="max-w-2xl mx-auto space-y-6">
             {/* Service Worker Status */}
             <ServiceWorkerStatus />
+            
+            {/* Thumbnail Preload Status */}
+            <ThumbnailPreloadStatus />
             
             <Card className="border-border bg-card/50 backdrop-blur-sm">
               <CardHeader>

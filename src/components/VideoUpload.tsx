@@ -20,8 +20,48 @@ export const VideoUpload = ({ label, value, onChange, required, description }: V
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [preview, setPreview] = useState<string>(value);
+  const [thumbnail, setThumbnail] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  const extractVideoThumbnail = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement('video');
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+
+      video.preload = 'metadata';
+      video.muted = true;
+      video.playsInline = true;
+
+      video.onloadedmetadata = () => {
+        video.currentTime = 1; // Extraer frame en el segundo 1
+      };
+
+      video.onseeked = () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        if (context) {
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const thumbnailUrl = canvas.toDataURL('image/jpeg', 0.8);
+          resolve(thumbnailUrl);
+        } else {
+          reject(new Error('No se pudo crear el contexto del canvas'));
+        }
+
+        // Limpiar
+        video.src = '';
+        URL.revokeObjectURL(video.src);
+      };
+
+      video.onerror = () => {
+        reject(new Error('Error al cargar el video'));
+      };
+
+      video.src = URL.createObjectURL(file);
+    });
+  };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -35,6 +75,15 @@ export const VideoUpload = ({ label, value, onChange, required, description }: V
         variant: "destructive",
       });
       return;
+    }
+
+    // Extraer miniatura del video
+    try {
+      const thumbnailUrl = await extractVideoThumbnail(file);
+      setThumbnail(thumbnailUrl);
+    } catch (error) {
+      console.error('Error al extraer miniatura:', error);
+      // Continuar sin miniatura si falla
     }
 
     setUploading(true);
@@ -99,6 +148,7 @@ export const VideoUpload = ({ label, value, onChange, required, description }: V
 
   const handleRemove = () => {
     setPreview("");
+    setThumbnail("");
     setUploadProgress(0);
     onChange("");
     if (fileInputRef.current) {
@@ -120,6 +170,26 @@ export const VideoUpload = ({ label, value, onChange, required, description }: V
               controls
               className="w-full h-auto"
             />
+            <button
+              type="button"
+              onClick={handleRemove}
+              className="absolute top-2 right-2 p-1 bg-destructive text-destructive-foreground rounded-full hover:bg-destructive/90 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {!preview && thumbnail && (
+          <div className="relative w-full max-w-md rounded-lg overflow-hidden border-2 border-border">
+            <img 
+              src={thumbnail} 
+              alt="Miniatura del video"
+              className="w-full h-auto"
+            />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+              <Play className="w-16 h-16 text-white opacity-80" />
+            </div>
             <button
               type="button"
               onClick={handleRemove}

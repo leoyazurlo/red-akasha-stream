@@ -8,7 +8,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Play, Video, ArrowLeft, Trash2, Loader2, GripVertical, Grid3x3, List as ListIcon, Search, X } from "lucide-react";
+import { Play, Video, ArrowLeft, Trash2, Loader2, GripVertical, Grid3x3, List as ListIcon, Search, X, Edit3, CheckSquare, Square, Move } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "@/components/ui/input";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -63,7 +63,7 @@ const PlaylistDetail = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { playlists, getPlaylistItems, removeFromPlaylist, reorderPlaylistItems } = usePlaylists();
+  const { playlists, getPlaylistItems, removeFromPlaylist, removeMultipleFromPlaylist, moveToPlaylist, reorderPlaylistItems } = usePlaylists();
   const [items, setItems] = useState<PlaylistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -73,6 +73,9 @@ const PlaylistDetail = () => {
     return (saved === 'list' ? 'list' : 'grid') as 'grid' | 'list';
   });
   const [searchQuery, setSearchQuery] = useState('');
+  const [editMode, setEditMode] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [showMoveDialog, setShowMoveDialog] = useState(false);
 
   const playlist = playlists.find(p => p.id === id);
 
@@ -159,6 +162,60 @@ const PlaylistDetail = () => {
     }
   };
 
+  const toggleEditMode = () => {
+    setEditMode(!editMode);
+    setSelectedItems(new Set());
+  };
+
+  const toggleItemSelection = (itemId: string) => {
+    const newSelected = new Set(selectedItems);
+    if (newSelected.has(itemId)) {
+      newSelected.delete(itemId);
+    } else {
+      newSelected.add(itemId);
+    }
+    setSelectedItems(newSelected);
+  };
+
+  const selectAll = () => {
+    setSelectedItems(new Set(filteredItems.map(item => item.id)));
+  };
+
+  const deselectAll = () => {
+    setSelectedItems(new Set());
+  };
+
+  const handleBulkDelete = async () => {
+    if (!id || selectedItems.size === 0) return;
+
+    const contentIds = filteredItems
+      .filter(item => selectedItems.has(item.id))
+      .map(item => item.content_id);
+
+    const success = await removeMultipleFromPlaylist(id, contentIds);
+    if (success) {
+      setSelectedItems(new Set());
+      setEditMode(false);
+      await loadPlaylistItems();
+    }
+  };
+
+  const handleBulkMove = async (targetPlaylistId: string) => {
+    if (!id || selectedItems.size === 0) return;
+
+    const contentIds = filteredItems
+      .filter(item => selectedItems.has(item.id))
+      .map(item => item.content_id);
+
+    const success = await moveToPlaylist(id, targetPlaylistId, contentIds);
+    if (success) {
+      setSelectedItems(new Set());
+      setEditMode(false);
+      setShowMoveDialog(false);
+      await loadPlaylistItems();
+    }
+  };
+
   // Filter items based on search query
   const filteredItems = searchQuery.trim() === '' 
     ? items 
@@ -210,19 +267,39 @@ const PlaylistDetail = () => {
 
                   {/* View Mode Toggle */}
                   {items.length > 0 && (
-                    <ToggleGroup 
-                      type="single" 
-                      value={viewMode} 
-                      onValueChange={handleViewModeChange}
-                      className="border border-border rounded-md"
-                    >
-                      <ToggleGroupItem value="grid" aria-label="Vista de cuadrícula">
-                        <Grid3x3 className="h-4 w-4" />
-                      </ToggleGroupItem>
-                      <ToggleGroupItem value="list" aria-label="Vista de lista">
-                        <ListIcon className="h-4 w-4" />
-                      </ToggleGroupItem>
-                    </ToggleGroup>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant={editMode ? "default" : "outline"}
+                        size="sm"
+                        onClick={toggleEditMode}
+                      >
+                        {editMode ? (
+                          <>
+                            <X className="h-4 w-4 mr-2" />
+                            Cancelar
+                          </>
+                        ) : (
+                          <>
+                            <Edit3 className="h-4 w-4 mr-2" />
+                            Editar
+                          </>
+                        )}
+                      </Button>
+
+                      <ToggleGroup 
+                        type="single" 
+                        value={viewMode} 
+                        onValueChange={handleViewModeChange}
+                        className="border border-border rounded-md"
+                      >
+                        <ToggleGroupItem value="grid" aria-label="Vista de cuadrícula">
+                          <Grid3x3 className="h-4 w-4" />
+                        </ToggleGroupItem>
+                        <ToggleGroupItem value="list" aria-label="Vista de lista">
+                          <ListIcon className="h-4 w-4" />
+                        </ToggleGroupItem>
+                      </ToggleGroup>
+                    </div>
                   )}
                 </div>
 
@@ -235,10 +312,15 @@ const PlaylistDetail = () => {
                       </span>
                     )}
                   </p>
-                  {items.length > 0 && !searchQuery && (
+                  {items.length > 0 && !searchQuery && !editMode && (
                     <p className="text-sm text-muted-foreground flex items-center gap-2">
                       <GripVertical className="h-4 w-4" />
                       Arrastra los videos para reordenarlos
+                    </p>
+                  )}
+                  {editMode && (
+                    <p className="text-sm text-primary font-medium">
+                      {selectedItems.size} seleccionado{selectedItems.size !== 1 ? 's' : ''}
                     </p>
                   )}
                 </div>
@@ -327,6 +409,9 @@ const PlaylistDetail = () => {
                         onRemove={openDeleteDialog}
                         onClick={(contentId) => navigate(`/video/${contentId}`)}
                         formatDuration={formatDuration}
+                        editMode={editMode}
+                        isSelected={selectedItems.has(item.id)}
+                        onToggleSelect={toggleItemSelection}
                       />
                     ))}
                   </div>
@@ -340,6 +425,9 @@ const PlaylistDetail = () => {
                         onRemove={openDeleteDialog}
                         onClick={(contentId) => navigate(`/video/${contentId}`)}
                         formatDuration={formatDuration}
+                        editMode={editMode}
+                        isSelected={selectedItems.has(item.id)}
+                        onToggleSelect={toggleItemSelection}
                       />
                     ))}
                   </div>
@@ -351,6 +439,102 @@ const PlaylistDetail = () => {
         
         <Footer />
       </div>
+
+      {/* Bulk Actions Bar */}
+      {editMode && selectedItems.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+          <Card className="bg-card/95 backdrop-blur-md border-border shadow-2xl">
+            <CardContent className="p-4 flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={selectedItems.size === filteredItems.length ? deselectAll : selectAll}
+                >
+                  {selectedItems.size === filteredItems.length ? (
+                    <>
+                      <Square className="h-4 w-4 mr-2" />
+                      Deseleccionar todo
+                    </>
+                  ) : (
+                    <>
+                      <CheckSquare className="h-4 w-4 mr-2" />
+                      Seleccionar todo
+                    </>
+                  )}
+                </Button>
+                
+                <div className="h-6 w-px bg-border" />
+                
+                <Badge variant="secondary" className="text-base px-3 py-1">
+                  {selectedItems.size} {selectedItems.size === 1 ? 'video' : 'videos'}
+                </Badge>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="default"
+                  onClick={() => setShowMoveDialog(true)}
+                  disabled={playlists.filter(p => p.id !== id).length === 0}
+                >
+                  <Move className="h-4 w-4 mr-2" />
+                  Mover a...
+                </Button>
+                
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={handleBulkDelete}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Eliminar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Move to Playlist Dialog */}
+      <AlertDialog open={showMoveDialog} onOpenChange={setShowMoveDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Mover a otra playlist</AlertDialogTitle>
+            <AlertDialogDescription>
+              Selecciona la playlist de destino para mover {selectedItems.size} video{selectedItems.size !== 1 ? 's' : ''}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2 max-h-[300px] overflow-y-auto py-4">
+            {playlists
+              .filter(p => p.id !== id)
+              .map((targetPlaylist) => (
+                <Button
+                  key={targetPlaylist.id}
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => handleBulkMove(targetPlaylist.id)}
+                >
+                  <ListIcon className="h-4 w-4 mr-2" />
+                  <div className="flex-1 text-left">
+                    <p className="font-medium">{targetPlaylist.name}</p>
+                    {targetPlaylist.description && (
+                      <p className="text-xs text-muted-foreground line-clamp-1">
+                        {targetPlaylist.description}
+                      </p>
+                    )}
+                  </div>
+                  <Badge variant="secondary">
+                    {targetPlaylist.items_count || 0} videos
+                  </Badge>
+                </Button>
+              ))}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete Confirmation */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

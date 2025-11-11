@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Play, Video, Trash2, GripVertical, Clock } from "lucide-react";
+import { Play, Video, Trash2, GripVertical, Clock, CheckSquare, Square } from "lucide-react";
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -27,9 +27,12 @@ interface PlaylistListViewProps {
   onClick: (id: string) => void;
   formatDuration: (seconds: number | null) => string;
   index: number;
+  editMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (id: string) => void;
 }
 
-export const PlaylistListView = ({ item, onRemove, onClick, formatDuration, index }: PlaylistListViewProps) => {
+export const PlaylistListView = ({ item, onRemove, onClick, formatDuration, index, editMode, isSelected, onToggleSelect }: PlaylistListViewProps) => {
   const {
     attributes,
     listeners,
@@ -51,21 +54,41 @@ export const PlaylistListView = ({ item, onRemove, onClick, formatDuration, inde
     <Card 
       ref={setNodeRef}
       style={style}
-      className="group overflow-hidden border-border bg-card/30 backdrop-blur-sm hover:bg-card/60 transition-all cursor-pointer"
-      onClick={() => onClick(item.content.id)}
+      className={`group overflow-hidden border-border bg-card/30 backdrop-blur-sm hover:bg-card/60 transition-all cursor-pointer ${
+        isSelected ? 'ring-2 ring-primary' : ''
+      }`}
+      onClick={() => editMode && onToggleSelect ? onToggleSelect(item.id) : onClick(item.content.id)}
     >
       <div className="flex items-center gap-4 p-4">
-        {/* Drag Handle */}
-        <Button
-          size="icon"
-          variant="ghost"
-          className="cursor-grab active:cursor-grabbing shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-          {...attributes}
-          {...listeners}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <GripVertical className="h-5 w-5" />
-        </Button>
+        {/* Drag Handle or Selection Checkbox */}
+        {editMode && onToggleSelect ? (
+          <Button
+            size="icon"
+            variant="ghost"
+            className="shrink-0"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSelect(item.id);
+            }}
+          >
+            {isSelected ? (
+              <CheckSquare className="h-5 w-5 text-primary" />
+            ) : (
+              <Square className="h-5 w-5" />
+            )}
+          </Button>
+        ) : (
+          <Button
+            size="icon"
+            variant="ghost"
+            className="cursor-grab active:cursor-grabbing shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+            {...attributes}
+            {...listeners}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <GripVertical className="h-5 w-5" />
+          </Button>
+        )}
 
         {/* Index Number */}
         <div className="text-muted-foreground font-mono text-sm w-8 shrink-0 text-center">
@@ -120,17 +143,19 @@ export const PlaylistListView = ({ item, onRemove, onClick, formatDuration, inde
         )}
 
         {/* Remove Button */}
-        <Button
-          size="icon"
-          variant="destructive"
-          className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove(item);
-          }}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        {!editMode && (
+          <Button
+            size="icon"
+            variant="destructive"
+            className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove(item);
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
       </div>
     </Card>
   );

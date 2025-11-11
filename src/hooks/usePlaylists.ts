@@ -265,6 +265,87 @@ export const usePlaylists = () => {
     }
   };
 
+  const removeMultipleFromPlaylist = async (playlistId: string, contentIds: string[]) => {
+    if (!user) return false;
+
+    try {
+      const { error } = await supabase
+        .from('playlist_items')
+        .delete()
+        .eq('playlist_id', playlistId)
+        .in('content_id', contentIds);
+
+      if (error) throw error;
+
+      toast({
+        title: "Videos eliminados",
+        description: `${contentIds.length} video${contentIds.length !== 1 ? 's' : ''} eliminado${contentIds.length !== 1 ? 's' : ''} de la playlist`,
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error removing multiple from playlist:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron eliminar los videos",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  const moveToPlaylist = async (fromPlaylistId: string, toPlaylistId: string, contentIds: string[]) => {
+    if (!user) return false;
+
+    try {
+      // Get max order index in target playlist
+      const { data: items } = await supabase
+        .from('playlist_items')
+        .select('order_index')
+        .eq('playlist_id', toPlaylistId)
+        .order('order_index', { ascending: false })
+        .limit(1);
+
+      let nextOrder = items && items.length > 0 ? items[0].order_index + 1 : 0;
+
+      // Remove from source playlist
+      await supabase
+        .from('playlist_items')
+        .delete()
+        .eq('playlist_id', fromPlaylistId)
+        .in('content_id', contentIds);
+
+      // Add to target playlist
+      const newItems = contentIds.map((contentId, index) => ({
+        playlist_id: toPlaylistId,
+        content_id: contentId,
+        order_index: nextOrder + index,
+      }));
+
+      const { error } = await supabase
+        .from('playlist_items')
+        .insert(newItems);
+
+      if (error) throw error;
+
+      toast({
+        title: "Videos movidos",
+        description: `${contentIds.length} video${contentIds.length !== 1 ? 's' : ''} movido${contentIds.length !== 1 ? 's' : ''} a la otra playlist`,
+      });
+
+      await fetchPlaylists();
+      return true;
+    } catch (error) {
+      console.error('Error moving to playlist:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron mover los videos",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
   const reorderPlaylistItems = async (playlistId: string, items: { id: string; order_index: number }[]) => {
     if (!user) return false;
 
@@ -331,6 +412,8 @@ export const usePlaylists = () => {
     deletePlaylist,
     addToPlaylist,
     removeFromPlaylist,
+    removeMultipleFromPlaylist,
+    moveToPlaylist,
     reorderPlaylistItems,
     getPlaylistItems,
     refetch: fetchPlaylists,

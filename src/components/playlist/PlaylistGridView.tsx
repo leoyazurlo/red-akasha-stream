@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Play, Video, Trash2, GripVertical } from "lucide-react";
+import { Play, Video, Trash2, GripVertical, CheckSquare, Square } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -27,9 +27,12 @@ interface PlaylistGridViewProps {
   onRemove: (item: PlaylistItem) => void;
   onClick: (id: string) => void;
   formatDuration: (seconds: number | null) => string;
+  editMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: (id: string) => void;
 }
 
-export const PlaylistGridView = ({ item, onRemove, onClick, formatDuration }: PlaylistGridViewProps) => {
+export const PlaylistGridView = ({ item, onRemove, onClick, formatDuration, editMode, isSelected, onToggleSelect }: PlaylistGridViewProps) => {
   const {
     attributes,
     listeners,
@@ -51,12 +54,14 @@ export const PlaylistGridView = ({ item, onRemove, onClick, formatDuration }: Pl
     <Card 
       ref={setNodeRef}
       style={style}
-      className="group overflow-hidden border-border bg-card/30 backdrop-blur-sm hover:bg-card/60 transition-all"
+      className={`group overflow-hidden border-border bg-card/30 backdrop-blur-sm hover:bg-card/60 transition-all ${
+        isSelected ? 'ring-2 ring-primary' : ''
+      }`}
     >
       {/* Thumbnail */}
       <div 
         className="relative overflow-hidden bg-secondary/20 cursor-pointer"
-        onClick={() => onClick(item.content.id)}
+        onClick={() => editMode && onToggleSelect ? onToggleSelect(item.id) : onClick(item.content.id)}
       >
         <AspectRatio ratio={16 / 9}>
           {item.content.thumbnail_url ? (
@@ -72,29 +77,49 @@ export const PlaylistGridView = ({ item, onRemove, onClick, formatDuration }: Pl
           )}
         </AspectRatio>
 
-        {/* Drag Handle */}
-        <Button
-          size="icon"
-          variant="secondary"
-          className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background cursor-grab active:cursor-grabbing"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical className="h-4 w-4" />
-        </Button>
+        {/* Drag Handle or Selection Checkbox */}
+        {editMode && onToggleSelect ? (
+          <Button
+            size="icon"
+            variant="secondary"
+            className="absolute top-2 left-2 bg-background/80 hover:bg-background"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSelect(item.id);
+            }}
+          >
+            {isSelected ? (
+              <CheckSquare className="h-4 w-4 text-primary" />
+            ) : (
+              <Square className="h-4 w-4" />
+            )}
+          </Button>
+        ) : (
+          <Button
+            size="icon"
+            variant="secondary"
+            className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background cursor-grab active:cursor-grabbing"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="h-4 w-4" />
+          </Button>
+        )}
 
         {/* Remove Button */}
-        <Button
-          size="icon"
-          variant="destructive"
-          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/80 hover:bg-destructive"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove(item);
-          }}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        {!editMode && (
+          <Button
+            size="icon"
+            variant="destructive"
+            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/80 hover:bg-destructive"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove(item);
+            }}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        )}
 
         {/* Duration Badge */}
         {item.content.duration && (

@@ -8,7 +8,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Play, Video, ArrowLeft, Trash2, Loader2, GripVertical, Grid3x3, List as ListIcon, Search, X, Edit3, CheckSquare, Square, Move, Eye } from "lucide-react";
+import { Play, Video, ArrowLeft, Trash2, Loader2, GripVertical, Grid3x3, List as ListIcon, Search, X, Edit3, CheckSquare, Square, Move, Eye, Shuffle } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "@/components/ui/input";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -81,6 +81,8 @@ const PlaylistDetail = () => {
   const [showPlayer, setShowPlayer] = useState(false);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [playerContent, setPlayerContent] = useState<any>(null);
+  const [shuffleMode, setShuffleMode] = useState(false);
+  const [playedVideos, setPlayedVideos] = useState<Set<number>>(new Set());
 
   const playlist = playlists.find(p => p.id === id);
 
@@ -234,23 +236,72 @@ const PlaylistDetail = () => {
       setPlayerContent(data);
       setCurrentVideoIndex(index);
       setShowPlayer(true);
+      
+      // Track played videos in shuffle mode
+      if (shuffleMode) {
+        setPlayedVideos(prev => new Set([...prev, index]));
+      }
     } catch (error) {
       console.error('Error loading video:', error);
     }
   };
 
+  const getRandomUnplayedIndex = () => {
+    // Get unplayed videos
+    const unplayedIndices = filteredItems
+      .map((_, index) => index)
+      .filter(index => !playedVideos.has(index) && index !== currentVideoIndex);
+    
+    // If all videos have been played, reset
+    if (unplayedIndices.length === 0) {
+      setPlayedVideos(new Set([currentVideoIndex]));
+      return filteredItems
+        .map((_, index) => index)
+        .filter(index => index !== currentVideoIndex)[0];
+    }
+    
+    // Pick random from unplayed
+    return unplayedIndices[Math.floor(Math.random() * unplayedIndices.length)];
+  };
+
   const handleNextVideo = () => {
-    if (currentVideoIndex < filteredItems.length - 1) {
-      const nextItem = filteredItems[currentVideoIndex + 1];
-      handlePlayVideo(nextItem.content_id, currentVideoIndex + 1);
+    if (shuffleMode) {
+      // Shuffle mode: pick random unplayed video
+      const randomIndex = getRandomUnplayedIndex();
+      if (randomIndex !== undefined) {
+        const nextItem = filteredItems[randomIndex];
+        handlePlayVideo(nextItem.content_id, randomIndex);
+      }
+    } else {
+      // Normal mode: next in sequence
+      if (currentVideoIndex < filteredItems.length - 1) {
+        const nextItem = filteredItems[currentVideoIndex + 1];
+        handlePlayVideo(nextItem.content_id, currentVideoIndex + 1);
+      }
     }
   };
 
   const handlePreviousVideo = () => {
-    if (currentVideoIndex > 0) {
-      const prevItem = filteredItems[currentVideoIndex - 1];
-      handlePlayVideo(prevItem.content_id, currentVideoIndex - 1);
+    if (shuffleMode) {
+      // In shuffle mode, previous goes to last played
+      const playedArray = Array.from(playedVideos).sort((a, b) => b - a);
+      const previousIndex = playedArray.find(idx => idx < currentVideoIndex);
+      if (previousIndex !== undefined) {
+        const prevItem = filteredItems[previousIndex];
+        handlePlayVideo(prevItem.content_id, previousIndex);
+      }
+    } else {
+      // Normal mode: previous in sequence
+      if (currentVideoIndex > 0) {
+        const prevItem = filteredItems[currentVideoIndex - 1];
+        handlePlayVideo(prevItem.content_id, currentVideoIndex - 1);
+      }
     }
+  };
+
+  const toggleShuffleMode = () => {
+    setShuffleMode(!shuffleMode);
+    setPlayedVideos(new Set([currentVideoIndex]));
   };
 
   // Filter items based on search query
@@ -305,6 +356,16 @@ const PlaylistDetail = () => {
                   {/* View Mode Toggle */}
                   {items.length > 0 && (
                     <div className="flex items-center gap-2">
+                      <Button
+                        variant={shuffleMode ? "default" : "outline"}
+                        size="sm"
+                        onClick={toggleShuffleMode}
+                        className={shuffleMode ? "bg-primary" : ""}
+                      >
+                        <Shuffle className="h-4 w-4 mr-2" />
+                        Aleatorio
+                      </Button>
+
                       <Button
                         variant={editMode ? "default" : "outline"}
                         size="sm"

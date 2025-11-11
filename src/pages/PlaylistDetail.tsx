@@ -8,8 +8,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Play, Video, ArrowLeft, Trash2, Loader2, GripVertical, Grid3x3, List as ListIcon } from "lucide-react";
+import { Play, Video, ArrowLeft, Trash2, Loader2, GripVertical, Grid3x3, List as ListIcon, Search, X } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Input } from "@/components/ui/input";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -71,6 +72,7 @@ const PlaylistDetail = () => {
     const saved = localStorage.getItem('playlist-view-mode');
     return (saved === 'list' ? 'list' : 'grid') as 'grid' | 'list';
   });
+  const [searchQuery, setSearchQuery] = useState('');
 
   const playlist = playlists.find(p => p.id === id);
 
@@ -157,6 +159,18 @@ const PlaylistDetail = () => {
     }
   };
 
+  // Filter items based on search query
+  const filteredItems = searchQuery.trim() === '' 
+    ? items 
+    : items.filter(item => {
+        const query = searchQuery.toLowerCase();
+        return (
+          item.content.title.toLowerCase().includes(query) ||
+          item.content.band_name?.toLowerCase().includes(query) ||
+          item.content.description?.toLowerCase().includes(query)
+        );
+      });
+
   if (!user) {
     return null;
   }
@@ -212,17 +226,45 @@ const PlaylistDetail = () => {
                   )}
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 mb-4">
                   <p className="text-sm text-muted-foreground">
                     {items.length} video{items.length !== 1 ? 's' : ''}
+                    {searchQuery && filteredItems.length !== items.length && (
+                      <span className="ml-2">
+                        ({filteredItems.length} {filteredItems.length === 1 ? 'resultado' : 'resultados'})
+                      </span>
+                    )}
                   </p>
-                  {items.length > 0 && (
+                  {items.length > 0 && !searchQuery && (
                     <p className="text-sm text-muted-foreground flex items-center gap-2">
                       <GripVertical className="h-4 w-4" />
                       Arrastra los videos para reordenarlos
                     </p>
                   )}
                 </div>
+
+                {/* Search Bar */}
+                {items.length > 0 && (
+                  <div className="relative max-w-md">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <Input
+                      placeholder="Buscar en esta playlist..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 pr-10"
+                    />
+                    {searchQuery && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7"
+                        onClick={() => setSearchQuery('')}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -253,6 +295,19 @@ const PlaylistDetail = () => {
                 Explorar Videos
               </Button>
             </div>
+          ) : filteredItems.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-secondary/20 flex items-center justify-center">
+                <Search className="w-10 h-10 text-muted-foreground" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">No se encontraron resultados</h3>
+              <p className="text-muted-foreground mb-6">
+                No hay videos que coincidan con "{searchQuery}"
+              </p>
+              <Button onClick={() => setSearchQuery('')} variant="outline">
+                Limpiar búsqueda
+              </Button>
+            </div>
           ) : (
             <DndContext
               sensors={sensors}
@@ -260,12 +315,12 @@ const PlaylistDetail = () => {
               onDragEnd={handleDragEnd}
             >
               <SortableContext
-                items={items.map(item => item.id)}
+                items={filteredItems.map(item => item.id)}
                 strategy={verticalListSortingStrategy}
               >
                 {viewMode === 'grid' ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {items.map((item) => (
+                    {filteredItems.map((item) => (
                       <PlaylistGridView
                         key={item.id}
                         item={item}
@@ -277,7 +332,7 @@ const PlaylistDetail = () => {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {items.map((item, index) => (
+                    {filteredItems.map((item, index) => (
                       <PlaylistListView
                         key={item.id}
                         item={item}

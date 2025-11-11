@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import { 
   Play, 
   Heart, 
@@ -498,16 +499,17 @@ const VideoDetail = () => {
                       <CollapsibleTrigger asChild>
                         <Button 
                           variant="ghost" 
-                          className="w-full flex items-center justify-between hover:bg-secondary/50"
+                          className="w-full flex items-center justify-between hover:bg-secondary/50 transition-all duration-200"
                         >
                           <span className="font-medium">
                             {showMoreInfo ? "Ver menos información" : "Ver más información"}
                           </span>
-                          {showMoreInfo ? (
-                            <ChevronUp className="w-5 h-5" />
-                          ) : (
+                          <span className={cn(
+                            "transition-transform duration-300 ease-in-out",
+                            showMoreInfo && "rotate-180"
+                          )}>
                             <ChevronDown className="w-5 h-5" />
-                          )}
+                          </span>
                         </Button>
                       </CollapsibleTrigger>
                       

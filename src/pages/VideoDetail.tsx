@@ -22,10 +22,13 @@ import {
   ArrowLeft,
   Loader2,
   Send,
-  ThumbsUp
+  ThumbsUp,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import ShareButtons from "@/components/ShareButtons";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -81,6 +84,7 @@ const VideoDetail = () => {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [hasLiked, setHasLiked] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showMoreInfo, setShowMoreInfo] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -484,24 +488,51 @@ const VideoDetail = () => {
                     />
                   </div>
 
-                  {/* Description */}
-                  {video.description && (
-                    <div className="pt-4 border-t border-border">
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                        {video.description}
-                      </p>
-                    </div>
-                  )}
+                  {/* Collapsible Info */}
+                  {(video.description || video.producer_name) && (
+                    <Collapsible 
+                      open={showMoreInfo} 
+                      onOpenChange={setShowMoreInfo}
+                      className="pt-4 border-t border-border"
+                    >
+                      <CollapsibleTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          className="w-full flex items-center justify-between hover:bg-secondary/50"
+                        >
+                          <span className="font-medium">
+                            {showMoreInfo ? "Ver menos información" : "Ver más información"}
+                          </span>
+                          {showMoreInfo ? (
+                            <ChevronUp className="w-5 h-5" />
+                          ) : (
+                            <ChevronDown className="w-5 h-5" />
+                          )}
+                        </Button>
+                      </CollapsibleTrigger>
+                      
+                      <CollapsibleContent className="space-y-4 mt-4">
+                        {/* Description */}
+                        {video.description && (
+                          <div>
+                            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                              {video.description}
+                            </p>
+                          </div>
+                        )}
 
-                  {/* Producer Info */}
-                  {video.producer_name && (
-                    <div className="pt-4 border-t border-border">
-                      <div className="flex items-center gap-2 text-sm">
-                        <User className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Producido por:</span>
-                        <span className="font-medium">{video.producer_name}</span>
-                      </div>
-                    </div>
+                        {/* Producer Info */}
+                        {video.producer_name && (
+                          <div className="pt-4 border-t border-border">
+                            <div className="flex items-center gap-2 text-sm">
+                              <User className="w-4 h-4 text-muted-foreground" />
+                              <span className="text-muted-foreground">Producido por:</span>
+                              <span className="font-medium">{video.producer_name}</span>
+                            </div>
+                          </div>
+                        )}
+                      </CollapsibleContent>
+                    </Collapsible>
                   )}
                 </CardContent>
               </Card>

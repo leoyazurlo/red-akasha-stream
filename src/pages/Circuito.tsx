@@ -14,7 +14,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CardDescription } from "@/components/ui/card";
-import { ChevronDown, Mail, Phone, MapPin, Users, Instagram, Facebook, Linkedin, ExternalLink, Loader2, AlertCircle, Search } from "lucide-react";
+import { ChevronDown, Mail, Phone, MapPin, Users, Instagram, Facebook, Linkedin, ExternalLink, Loader2, AlertCircle, Search, ArrowUpDown } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -80,6 +81,8 @@ interface PublicProfile {
   capacity: number | null;
   genre: string | null;
   technical_specs: any;
+  created_at: string;
+  updated_at: string;
 }
 
 interface LocationGroup {
@@ -111,6 +114,7 @@ const Circuito = () => {
   const [hasProfile, setHasProfile] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<PublicProfile | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<string>("name-asc");
 
   // Función para obtener el desglose de perfiles por tipo
   const getProfileTypeBreakdown = (profiles: PublicProfile[]) => {
@@ -200,18 +204,46 @@ const Circuito = () => {
     }
   };
 
-  // Filtrar perfiles en tiempo real
+  // Función para ordenar perfiles
+  const sortProfiles = (profiles: PublicProfile[]) => {
+    const sorted = [...profiles];
+    
+    switch (sortBy) {
+      case "name-asc":
+        return sorted.sort((a, b) => a.display_name.localeCompare(b.display_name));
+      case "name-desc":
+        return sorted.sort((a, b) => b.display_name.localeCompare(a.display_name));
+      case "date-newest":
+        return sorted.sort((a, b) => {
+          const dateA = new Date(a.created_at || 0).getTime();
+          const dateB = new Date(b.created_at || 0).getTime();
+          return dateB - dateA;
+        });
+      case "date-oldest":
+        return sorted.sort((a, b) => {
+          const dateA = new Date(a.created_at || 0).getTime();
+          const dateB = new Date(b.created_at || 0).getTime();
+          return dateA - dateB;
+        });
+      default:
+        return sorted;
+    }
+  };
+
+  // Filtrar y ordenar perfiles en tiempo real
   const filteredLocationGroups = locationGroups
     .map((cityGroup) => ({
       ...cityGroup,
-      profiles: cityGroup.profiles.filter((profile) => {
-        if (!searchTerm) return true;
-        const term = searchTerm.toLowerCase();
-        return (
-          profile.display_name.toLowerCase().includes(term) ||
-          profile.ciudad.toLowerCase().includes(term)
-        );
-      }),
+      profiles: sortProfiles(
+        cityGroup.profiles.filter((profile) => {
+          if (!searchTerm) return true;
+          const term = searchTerm.toLowerCase();
+          return (
+            profile.display_name.toLowerCase().includes(term) ||
+            profile.ciudad.toLowerCase().includes(term)
+          );
+        })
+      ),
     }))
     .filter((cityGroup) => cityGroup.profiles.length > 0);
 
@@ -310,18 +342,36 @@ const Circuito = () => {
               </div>
             </section>
 
-            {/* Search Bar */}
+            {/* Search Bar and Sort */}
             {!loading && allProfiles.length > 0 && (
               <section className="max-w-6xl mx-auto mb-8">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
-                  <Input
-                    type="text"
-                    placeholder="Buscar por nombre, ciudad o provincia..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-6 text-base bg-card/50 backdrop-blur-sm border-border"
-                  />
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+                    <Input
+                      type="text"
+                      placeholder="Buscar por nombre, ciudad o provincia..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 pr-4 py-6 text-base bg-card/50 backdrop-blur-sm border-border"
+                    />
+                  </div>
+                  <div className="sm:w-64">
+                    <Select value={sortBy} onValueChange={setSortBy}>
+                      <SelectTrigger className="py-6 bg-card/50 backdrop-blur-sm border-border">
+                        <div className="flex items-center gap-2">
+                          <ArrowUpDown className="w-4 h-4" />
+                          <SelectValue placeholder="Ordenar por..." />
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent className="bg-card border-border">
+                        <SelectItem value="name-asc">Nombre (A-Z)</SelectItem>
+                        <SelectItem value="name-desc">Nombre (Z-A)</SelectItem>
+                        <SelectItem value="date-newest">Más recientes</SelectItem>
+                        <SelectItem value="date-oldest">Más antiguos</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </section>
             )}

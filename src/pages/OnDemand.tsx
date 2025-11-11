@@ -18,7 +18,8 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Play, Video, Music, Image as ImageIcon, Search, Filter, DollarSign, ChevronDown, ChevronUp, Info } from "lucide-react";
+import { useFavorites } from "@/hooks/useFavorites";
+import { Play, Video, Music, Image as ImageIcon, Search, Filter, DollarSign, ChevronDown, ChevronUp, Info, Heart, Loader2 } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -65,6 +66,7 @@ const OnDemand = () => {
   const [filterType, setFilterType] = useState<string>("all");
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const { toast } = useToast();
+  const { toggleFavorite, isFavorite, loading: favLoading } = useFavorites();
 
   const toggleCardInfo = (cardId: string) => {
     setExpandedCards(prev => {
@@ -433,6 +435,26 @@ const OnDemand = () => {
                               CONTENIDO LIBERADO
                             </Badge>
 
+                            {/* Favorite Button */}
+                            <Button
+                              size="icon"
+                              variant="secondary"
+                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background z-20"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleFavorite(content.id);
+                              }}
+                              disabled={favLoading}
+                            >
+                              {favLoading ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Heart 
+                                  className={`h-4 w-4 ${isFavorite(content.id) ? 'fill-primary text-primary' : ''}`}
+                                />
+                              )}
+                            </Button>
+
                             {/* Duration Badge */}
                             {content.duration && (
                               <Badge className="absolute bottom-2 right-2 bg-black/70 text-white border-none">
@@ -557,6 +579,26 @@ const OnDemand = () => {
                               <DollarSign className="w-3 h-3" />
                               {content.price} {content.currency}
                             </Badge>
+
+                            {/* Favorite Button */}
+                            <Button
+                              size="icon"
+                              variant="secondary"
+                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background z-20"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleFavorite(content.id);
+                              }}
+                              disabled={favLoading}
+                            >
+                              {favLoading ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Heart 
+                                  className={`h-4 w-4 ${isFavorite(content.id) ? 'fill-primary text-primary' : ''}`}
+                                />
+                              )}
+                            </Button>
 
                             {/* Duration Badge */}
                             {content.duration && (

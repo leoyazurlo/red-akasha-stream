@@ -28,6 +28,7 @@ import Artists from "./pages/Artists";
 import ArtistProfile from "./pages/ArtistProfile";
 import UserProfile from "./pages/UserProfile";
 import OnDemand from "./pages/OnDemand";
+import Favorites from "./pages/Favorites";
 import NotFound from "./pages/NotFound";
 
 import VideoDetail from "./pages/VideoDetail";
@@ -43,6 +44,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/on-demand" element={<OnDemand />} />
+          <Route path="/favoritos" element={<Favorites />} />
           <Route path="/video/:id" element={<VideoDetail />} />
           <Route path="/foro" element={<Forum />} />
           <Route path="/foro/subforo/:id" element={<Subforo />} />

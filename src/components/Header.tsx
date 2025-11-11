@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, X, LogOut, User } from "lucide-react";
+import { Menu, X, LogOut, User, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logoAkasha from "@/assets/logo-akasha-cyan.png";
@@ -87,6 +87,10 @@ export const Header = () => {
                   <DropdownMenuItem onClick={() => navigate(`/perfil/${user.id}`)}>
                     <User className="mr-2 h-4 w-4" />
                     Mi Perfil
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/favoritos")}>
+                    <Heart className="mr-2 h-4 w-4" />
+                    Mis Favoritos
                   </DropdownMenuItem>
                   {isAdmin && (
                     <DropdownMenuItem onClick={() => navigate("/admin")}>
@@ -178,6 +182,17 @@ export const Header = () => {
                   >
                     <User className="mr-2 h-5 w-5" />
                     Mi Perfil
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start h-12 text-base"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      navigate("/favoritos");
+                    }}
+                  >
+                    <Heart className="mr-2 h-5 w-5" />
+                    Mis Favoritos
                   </Button>
                   {isAdmin && (
                     <Button

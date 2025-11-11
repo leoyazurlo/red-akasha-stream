@@ -8,7 +8,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Play, Video, ArrowLeft, Trash2, Loader2, GripVertical } from "lucide-react";
+import { Play, Video, ArrowLeft, Trash2, Loader2, GripVertical, Grid3x3, List as ListIcon } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -38,6 +39,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { PlaylistGridView } from "@/components/playlist/PlaylistGridView";
+import { PlaylistListView } from "@/components/playlist/PlaylistListView";
 
 interface PlaylistItem {
   id: string;
@@ -55,109 +58,6 @@ interface PlaylistItem {
   };
 }
 
-interface SortableVideoCardProps {
-  item: PlaylistItem;
-  onRemove: (item: PlaylistItem) => void;
-  onClick: (id: string) => void;
-  formatDuration: (seconds: number | null) => string;
-}
-
-const SortableVideoCard = ({ item, onRemove, onClick, formatDuration }: SortableVideoCardProps) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: item.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  const getContentIcon = () => <Video className="w-5 h-5" />;
-
-  return (
-    <Card 
-      ref={setNodeRef}
-      style={style}
-      className="group overflow-hidden border-border bg-card/30 backdrop-blur-sm hover:bg-card/60 transition-all"
-    >
-      {/* Thumbnail */}
-      <div 
-        className="relative overflow-hidden bg-secondary/20 cursor-pointer"
-        onClick={() => onClick(item.content.id)}
-      >
-        <AspectRatio ratio={16 / 9}>
-          {item.content.thumbnail_url ? (
-            <img
-              src={item.content.thumbnail_url}
-              alt={item.content.title}
-              className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-secondary/30">
-              {getContentIcon()}
-            </div>
-          )}
-        </AspectRatio>
-
-        {/* Drag Handle */}
-        <Button
-          size="icon"
-          variant="secondary"
-          className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background cursor-grab active:cursor-grabbing"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical className="h-4 w-4" />
-        </Button>
-
-        {/* Remove Button */}
-        <Button
-          size="icon"
-          variant="destructive"
-          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/80 hover:bg-destructive"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove(item);
-          }}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-
-        {/* Duration Badge */}
-        {item.content.duration && (
-          <Badge className="absolute bottom-2 right-2 bg-black/70 text-white border-none">
-            {formatDuration(item.content.duration)}
-          </Badge>
-        )}
-
-        {/* Play Overlay */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-          <Play className="w-12 h-12 text-white" fill="white" />
-        </div>
-      </div>
-
-      {/* Content Info */}
-      <CardContent className="p-4">
-        <h3 className="font-semibold text-sm line-clamp-2 mb-2 min-h-[2.5rem]">
-          {item.content.title}
-        </h3>
-        
-        {item.content.band_name && (
-          <p className="text-sm text-muted-foreground line-clamp-1">
-            {item.content.band_name}
-          </p>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
-
 const PlaylistDetail = () => {
   const { id } = useParams();
   const { user } = useAuth();
@@ -167,6 +67,10 @@ const PlaylistDetail = () => {
   const [loading, setLoading] = useState(true);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deletingItem, setDeletingItem] = useState<PlaylistItem | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+    const saved = localStorage.getItem('playlist-view-mode');
+    return (saved === 'list' ? 'list' : 'grid') as 'grid' | 'list';
+  });
 
   const playlist = playlists.find(p => p.id === id);
 
@@ -246,6 +150,13 @@ const PlaylistDetail = () => {
     setShowDeleteDialog(true);
   };
 
+  const handleViewModeChange = (value: string) => {
+    if (value === 'grid' || value === 'list') {
+      setViewMode(value);
+      localStorage.setItem('playlist-view-mode', value);
+    }
+  };
+
   if (!user) {
     return null;
   }
@@ -271,14 +182,36 @@ const PlaylistDetail = () => {
             
             {playlist && (
               <div>
-                <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
-                  {playlist.name}
-                </h1>
-                {playlist.description && (
-                  <p className="text-lg text-muted-foreground mb-2">
-                    {playlist.description}
-                  </p>
-                )}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                      {playlist.name}
+                    </h1>
+                    {playlist.description && (
+                      <p className="text-lg text-muted-foreground mb-2">
+                        {playlist.description}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* View Mode Toggle */}
+                  {items.length > 0 && (
+                    <ToggleGroup 
+                      type="single" 
+                      value={viewMode} 
+                      onValueChange={handleViewModeChange}
+                      className="border border-border rounded-md"
+                    >
+                      <ToggleGroupItem value="grid" aria-label="Vista de cuadrícula">
+                        <Grid3x3 className="h-4 w-4" />
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="list" aria-label="Vista de lista">
+                        <ListIcon className="h-4 w-4" />
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                  )}
+                </div>
+
                 <div className="flex items-center gap-4">
                   <p className="text-sm text-muted-foreground">
                     {items.length} video{items.length !== 1 ? 's' : ''}
@@ -330,17 +263,32 @@ const PlaylistDetail = () => {
                 items={items.map(item => item.id)}
                 strategy={verticalListSortingStrategy}
               >
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {items.map((item) => (
-                    <SortableVideoCard
-                      key={item.id}
-                      item={item}
-                      onRemove={openDeleteDialog}
-                      onClick={(contentId) => navigate(`/video/${contentId}`)}
-                      formatDuration={formatDuration}
-                    />
-                  ))}
-                </div>
+                {viewMode === 'grid' ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {items.map((item) => (
+                      <PlaylistGridView
+                        key={item.id}
+                        item={item}
+                        onRemove={openDeleteDialog}
+                        onClick={(contentId) => navigate(`/video/${contentId}`)}
+                        formatDuration={formatDuration}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {items.map((item, index) => (
+                      <PlaylistListView
+                        key={item.id}
+                        item={item}
+                        index={index}
+                        onRemove={openDeleteDialog}
+                        onClick={(contentId) => navigate(`/video/${contentId}`)}
+                        formatDuration={formatDuration}
+                      />
+                    ))}
+                  </div>
+                )}
               </SortableContext>
             </DndContext>
           )}

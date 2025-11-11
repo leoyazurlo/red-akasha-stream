@@ -10,7 +10,9 @@ import {
   Maximize, 
   X,
   Lock,
-  DollarSign 
+  DollarSign,
+  SkipForward,
+  SkipBack
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Slider } from "@/components/ui/slider";
@@ -39,6 +41,13 @@ interface OnDemandPlayerProps {
   isPurchased?: boolean;
   onPurchase?: () => void;
   initialPosition?: number;
+  // Playlist continuos playback
+  playlistContext?: {
+    items: Array<{ id: string; title: string }>;
+    currentIndex: number;
+    onNext?: () => void;
+    onPrevious?: () => void;
+  };
 }
 
 export const OnDemandPlayer = ({ 
@@ -47,7 +56,8 @@ export const OnDemandPlayer = ({
   content,
   isPurchased = false,
   onPurchase,
-  initialPosition = 0
+  initialPosition = 0,
+  playlistContext
 }: OnDemandPlayerProps) => {
   const { user } = useAuth();
   const [isPlaying, setIsPlaying] = useState(false);
@@ -121,6 +131,12 @@ export const OnDemandPlayer = ({
       // Marcar como completado
       if (user) {
         savePlaybackPosition(true);
+      }
+      // Auto-play next video in playlist
+      if (playlistContext?.onNext && canPlay) {
+        setTimeout(() => {
+          playlistContext.onNext?.();
+        }, 1000);
       }
     };
 
@@ -362,6 +378,19 @@ export const OnDemandPlayer = ({
               {/* Control Buttons */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
+                  {/* Playlist Previous Button */}
+                  {playlistContext && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={playlistContext.onPrevious}
+                      disabled={!playlistContext.onPrevious || playlistContext.currentIndex === 0}
+                      className="text-white hover:bg-white/20 disabled:opacity-30"
+                    >
+                      <SkipBack className="w-5 h-5" />
+                    </Button>
+                  )}
+
                   <Button
                     size="icon"
                     variant="ghost"
@@ -374,6 +403,19 @@ export const OnDemandPlayer = ({
                       <Play className="w-6 h-6" />
                     )}
                   </Button>
+
+                  {/* Playlist Next Button */}
+                  {playlistContext && (
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={playlistContext.onNext}
+                      disabled={!playlistContext.onNext || playlistContext.currentIndex === playlistContext.items.length - 1}
+                      className="text-white hover:bg-white/20 disabled:opacity-30"
+                    >
+                      <SkipForward className="w-5 h-5" />
+                    </Button>
+                  )}
 
                   <div className="flex items-center gap-2">
                     <Button
@@ -401,6 +443,13 @@ export const OnDemandPlayer = ({
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {/* Playlist info */}
+                  {playlistContext && (
+                    <div className="text-xs text-white/70 mr-2">
+                      {playlistContext.currentIndex + 1} / {playlistContext.items.length}
+                    </div>
+                  )}
+                  
                   {isVideo && (
                     <Button
                       size="icon"

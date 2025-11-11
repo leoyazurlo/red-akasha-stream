@@ -8,7 +8,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Play, Video, ArrowLeft, Trash2, Loader2, GripVertical, Grid3x3, List as ListIcon, Search, X, Edit3, CheckSquare, Square, Move } from "lucide-react";
+import { Play, Video, ArrowLeft, Trash2, Loader2, GripVertical, Grid3x3, List as ListIcon, Search, X, Edit3, CheckSquare, Square, Move, Eye } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "@/components/ui/input";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -42,6 +42,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { PlaylistGridView } from "@/components/playlist/PlaylistGridView";
 import { PlaylistListView } from "@/components/playlist/PlaylistListView";
+import { OnDemandPlayer } from "@/components/OnDemandPlayer";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PlaylistItem {
   id: string;
@@ -76,6 +78,9 @@ const PlaylistDetail = () => {
   const [editMode, setEditMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [showMoveDialog, setShowMoveDialog] = useState(false);
+  const [showPlayer, setShowPlayer] = useState(false);
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+  const [playerContent, setPlayerContent] = useState<any>(null);
 
   const playlist = playlists.find(p => p.id === id);
 
@@ -213,6 +218,38 @@ const PlaylistDetail = () => {
       setEditMode(false);
       setShowMoveDialog(false);
       await loadPlaylistItems();
+    }
+  };
+
+  const handlePlayVideo = async (contentId: string, index: number) => {
+    try {
+      const { data, error } = await supabase
+        .from('content_uploads')
+        .select('*')
+        .eq('id', contentId)
+        .single();
+
+      if (error) throw error;
+
+      setPlayerContent(data);
+      setCurrentVideoIndex(index);
+      setShowPlayer(true);
+    } catch (error) {
+      console.error('Error loading video:', error);
+    }
+  };
+
+  const handleNextVideo = () => {
+    if (currentVideoIndex < filteredItems.length - 1) {
+      const nextItem = filteredItems[currentVideoIndex + 1];
+      handlePlayVideo(nextItem.content_id, currentVideoIndex + 1);
+    }
+  };
+
+  const handlePreviousVideo = () => {
+    if (currentVideoIndex > 0) {
+      const prevItem = filteredItems[currentVideoIndex - 1];
+      handlePlayVideo(prevItem.content_id, currentVideoIndex - 1);
     }
   };
 
@@ -407,7 +444,10 @@ const PlaylistDetail = () => {
                         key={item.id}
                         item={item}
                         onRemove={openDeleteDialog}
-                        onClick={(contentId) => navigate(`/video/${contentId}`)}
+                        onClick={(contentId) => {
+                          const index = filteredItems.findIndex(i => i.content_id === contentId);
+                          handlePlayVideo(contentId, index);
+                        }}
                         formatDuration={formatDuration}
                         editMode={editMode}
                         isSelected={selectedItems.has(item.id)}
@@ -423,7 +463,10 @@ const PlaylistDetail = () => {
                         item={item}
                         index={index}
                         onRemove={openDeleteDialog}
-                        onClick={(contentId) => navigate(`/video/${contentId}`)}
+                        onClick={(contentId) => {
+                          const idx = filteredItems.findIndex(i => i.content_id === contentId);
+                          handlePlayVideo(contentId, idx);
+                        }}
                         formatDuration={formatDuration}
                         editMode={editMode}
                         isSelected={selectedItems.has(item.id)}
@@ -555,6 +598,25 @@ const PlaylistDetail = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Video Player with Playlist Context */}
+      {playerContent && (
+        <OnDemandPlayer
+          open={showPlayer}
+          onOpenChange={setShowPlayer}
+          content={playerContent}
+          isPurchased={playerContent.is_free}
+          playlistContext={{
+            items: filteredItems.map(item => ({
+              id: item.content_id,
+              title: item.content.title
+            })),
+            currentIndex: currentVideoIndex,
+            onNext: currentVideoIndex < filteredItems.length - 1 ? handleNextVideo : undefined,
+            onPrevious: currentVideoIndex > 0 ? handlePreviousVideo : undefined
+          }}
+        />
+      )}
     </div>
   );
 };

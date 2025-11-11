@@ -25,6 +25,7 @@ const streamingItems = [
   { title: "Videos (VOD)", url: "/admin/vod", icon: Film },
   { title: "Podcasts", url: "/admin/podcasts", icon: Headphones },
   { title: "Horarios", url: "/admin/program-schedules", icon: Calendar },
+  { title: "Videos YouTube", url: "/admin/youtube-videos", icon: Film },
   { title: "Estadísticas Shares", url: "/admin/share-analytics", icon: Share2 },
 ];
 

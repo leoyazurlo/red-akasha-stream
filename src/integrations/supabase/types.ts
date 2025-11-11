@@ -2287,6 +2287,45 @@ export type Database = {
         }
         Relationships: []
       }
+      youtube_videos: {
+        Row: {
+          category: string
+          created_at: string
+          duration: string
+          id: string
+          is_active: boolean
+          order_index: number
+          thumbnail: string | null
+          title: string
+          updated_at: string
+          youtube_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          duration: string
+          id?: string
+          is_active?: boolean
+          order_index?: number
+          thumbnail?: string | null
+          title: string
+          updated_at?: string
+          youtube_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          duration?: string
+          id?: string
+          is_active?: boolean
+          order_index?: number
+          thumbnail?: string | null
+          title?: string
+          updated_at?: string
+          youtube_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       public_profiles: {

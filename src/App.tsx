@@ -22,6 +22,7 @@ import AdminAuditLogs from "./pages/admin/AuditLogs";
 import AdminProgramSchedules from "./pages/admin/ProgramSchedules";
 import AdminBadges from "./pages/admin/Badges";
 import AdminShareAnalytics from "./pages/admin/ShareAnalytics";
+import AdminYouTubeVideos from "./pages/admin/YouTubeVideos";
 import Asociate from "./pages/Asociate";
 import Circuito from "./pages/Circuito";
 import Auth from "./pages/Auth";
@@ -75,6 +76,7 @@ const App = () => (
             <Route path="/admin/program-schedules" element={<AdminProgramSchedules />} />
             <Route path="/admin/badges" element={<AdminBadges />} />
             <Route path="/admin/share-analytics" element={<AdminShareAnalytics />} />
+            <Route path="/admin/youtube-videos" element={<AdminYouTubeVideos />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

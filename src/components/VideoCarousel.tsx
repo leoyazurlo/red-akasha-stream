@@ -6,6 +6,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +23,7 @@ interface VideoItem {
   title: string;
   thumbnail: string;
   duration: string;
+  youtubeId?: string; // ID del video de YouTube
 }
 
 interface ProgramSchedule {
@@ -41,6 +48,7 @@ export const VideoCarousel = ({
   loadSchedulesFromDB = false
 }: VideoCarouselProps) => {
   const [scrollPosition, setScrollPosition] = useState(0);
+  const [selectedVideo, setSelectedVideo] = useState<VideoItem | null>(null);
   const { elementRef, isVisible } = useScrollAnimation({ threshold: 0.15 });
 
   // Fetch schedules from database if enabled
@@ -180,6 +188,7 @@ export const VideoCarousel = ({
                 <div
                   key={video.id}
                   data-index={index}
+                  onClick={() => video.youtubeId && setSelectedVideo(video)}
                   className={`flex-none w-44 sm:w-52 md:w-56 group cursor-pointer transition-all duration-500 ${
                     isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
                   }`}
@@ -219,6 +228,31 @@ export const VideoCarousel = ({
           </div>
         </div>
       </div>
+
+      {/* Modal para reproducir video de YouTube */}
+      <Dialog open={!!selectedVideo} onOpenChange={() => setSelectedVideo(null)}>
+        <DialogContent className="max-w-4xl w-full p-0">
+          <DialogHeader className="px-6 pt-6">
+            <DialogTitle className="text-xl font-medium">
+              {selectedVideo?.title}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="aspect-video w-full">
+            {selectedVideo?.youtubeId && (
+              <iframe
+                width="100%"
+                height="100%"
+                src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}?autoplay=1`}
+                title={selectedVideo.title}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                className="rounded-b-lg"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };

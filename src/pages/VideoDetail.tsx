@@ -24,6 +24,7 @@ import {
   Send,
   ThumbsUp
 } from "lucide-react";
+import ShareButtons from "@/components/ShareButtons";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
@@ -88,6 +89,45 @@ const VideoDetail = () => {
       checkIfLiked();
     }
   }, [id, user]);
+
+  // Update meta tags for social sharing
+  useEffect(() => {
+    if (video) {
+      const url = `${window.location.origin}/video/${video.id}`;
+      
+      // Update Open Graph tags
+      updateMetaTag('og:title', video.title);
+      updateMetaTag('og:description', video.description || 'Mira este video en Red Akasha');
+      updateMetaTag('og:image', video.thumbnail_url || '');
+      updateMetaTag('og:url', url);
+      updateMetaTag('og:type', 'video.other');
+      
+      // Update Twitter tags
+      updateMetaTag('twitter:title', video.title);
+      updateMetaTag('twitter:description', video.description || 'Mira este video en Red Akasha');
+      updateMetaTag('twitter:image', video.thumbnail_url || '');
+      
+      // Update page title
+      document.title = `${video.title} - Red Akasha`;
+    }
+  }, [video]);
+
+  const updateMetaTag = (property: string, content: string) => {
+    let element = document.querySelector(`meta[property="${property}"]`) as HTMLMetaElement;
+    if (!element) {
+      element = document.querySelector(`meta[name="${property}"]`) as HTMLMetaElement;
+    }
+    if (!element) {
+      element = document.createElement('meta');
+      if (property.startsWith('og:') || property.startsWith('twitter:')) {
+        element.setAttribute('property', property);
+      } else {
+        element.setAttribute('name', property);
+      }
+      document.head.appendChild(element);
+    }
+    element.setAttribute('content', content);
+  };
 
   useEffect(() => {
     if (video) {
@@ -436,6 +476,12 @@ const VideoDetail = () => {
                         {formatDistanceToNow(new Date(video.created_at), { addSuffix: true, locale: es })}
                       </span>
                     </div>
+                    <ShareButtons
+                      videoId={video.id}
+                      title={video.title}
+                      description={video.description}
+                      thumbnailUrl={video.thumbnail_url}
+                    />
                   </div>
 
                   {/* Description */}

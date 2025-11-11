@@ -9,7 +9,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Play, Video, ArrowLeft, Trash2, Loader2, GripVertical, Grid3x3, List as ListIcon, Search, X, Edit3, CheckSquare, Square, Move, Eye, Shuffle, PictureInPicture } from "lucide-react";
+import { Play, Video, ArrowLeft, Trash2, Loader2, GripVertical, Grid3x3, List as ListIcon, Search, X, Edit3, CheckSquare, Square, Move, Eye, Shuffle, PictureInPicture, Repeat, Repeat1 } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "@/components/ui/input";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -85,6 +85,7 @@ const PlaylistDetail = () => {
   const [playerContent, setPlayerContent] = useState<any>(null);
   const [shuffleMode, setShuffleMode] = useState(false);
   const [playedVideos, setPlayedVideos] = useState<Set<number>>(new Set());
+  const [repeatMode, setRepeatMode] = useState<'none' | 'all' | 'one'>('none');
 
   const playlist = playlists.find(p => p.id === id);
 
@@ -297,12 +298,24 @@ const PlaylistDetail = () => {
       if (randomIndex !== undefined) {
         const nextItem = filteredItems[randomIndex];
         handlePlayVideo(nextItem.content_id, randomIndex);
+      } else if (repeatMode === 'all') {
+        // If all videos played and repeat all is on, restart
+        setPlayedVideos(new Set());
+        const randomIndex = getRandomUnplayedIndex();
+        if (randomIndex !== undefined) {
+          const nextItem = filteredItems[randomIndex];
+          handlePlayVideo(nextItem.content_id, randomIndex);
+        }
       }
     } else {
       // Normal mode: next in sequence
       if (currentVideoIndex < filteredItems.length - 1) {
         const nextItem = filteredItems[currentVideoIndex + 1];
         handlePlayVideo(nextItem.content_id, currentVideoIndex + 1);
+      } else if (repeatMode === 'all') {
+        // Loop back to first video
+        const firstItem = filteredItems[0];
+        handlePlayVideo(firstItem.content_id, 0);
       }
     }
   };
@@ -321,6 +334,10 @@ const PlaylistDetail = () => {
       if (currentVideoIndex > 0) {
         const prevItem = filteredItems[currentVideoIndex - 1];
         handlePlayVideo(prevItem.content_id, currentVideoIndex - 1);
+      } else if (repeatMode === 'all') {
+        // Loop back to last video
+        const lastItem = filteredItems[filteredItems.length - 1];
+        handlePlayVideo(lastItem.content_id, filteredItems.length - 1);
       }
     }
   };
@@ -328,6 +345,35 @@ const PlaylistDetail = () => {
   const toggleShuffleMode = () => {
     setShuffleMode(!shuffleMode);
     setPlayedVideos(new Set([currentVideoIndex]));
+  };
+
+  const toggleRepeatMode = () => {
+    const modes: Array<'none' | 'all' | 'one'> = ['none', 'all', 'one'];
+    const currentIndex = modes.indexOf(repeatMode);
+    const nextIndex = (currentIndex + 1) % modes.length;
+    setRepeatMode(modes[nextIndex]);
+  };
+
+  const getRepeatIcon = () => {
+    switch (repeatMode) {
+      case 'one':
+        return <Repeat1 className="h-4 w-4 mr-2" />;
+      case 'all':
+        return <Repeat className="h-4 w-4 mr-2" />;
+      default:
+        return <Repeat className="h-4 w-4 mr-2" />;
+    }
+  };
+
+  const getRepeatLabel = () => {
+    switch (repeatMode) {
+      case 'one':
+        return 'Repetir uno';
+      case 'all':
+        return 'Repetir todo';
+      default:
+        return 'Sin repetir';
+    }
   };
 
   // Filter items based on search query
@@ -390,6 +436,16 @@ const PlaylistDetail = () => {
                       >
                         <Shuffle className="h-4 w-4 mr-2" />
                         Aleatorio
+                      </Button>
+
+                      <Button
+                        variant={repeatMode !== 'none' ? "default" : "outline"}
+                        size="sm"
+                        onClick={toggleRepeatMode}
+                        className={repeatMode !== 'none' ? "bg-primary" : ""}
+                      >
+                        {getRepeatIcon()}
+                        {getRepeatLabel()}
                       </Button>
 
                       <Button
@@ -709,8 +765,9 @@ const PlaylistDetail = () => {
               title: item.content.title
             })),
             currentIndex: currentVideoIndex,
-            onNext: currentVideoIndex < filteredItems.length - 1 ? handleNextVideo : undefined,
-            onPrevious: currentVideoIndex > 0 ? handlePreviousVideo : undefined
+            onNext: repeatMode === 'one' ? undefined : (currentVideoIndex < filteredItems.length - 1 || repeatMode === 'all' ? handleNextVideo : undefined),
+            onPrevious: currentVideoIndex > 0 || repeatMode === 'all' ? handlePreviousVideo : undefined,
+            repeatMode: repeatMode
           }}
         />
       )}

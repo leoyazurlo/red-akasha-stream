@@ -47,6 +47,7 @@ interface OnDemandPlayerProps {
     currentIndex: number;
     onNext?: () => void;
     onPrevious?: () => void;
+    repeatMode?: 'none' | 'all' | 'one';
   };
 }
 
@@ -132,8 +133,20 @@ export const OnDemandPlayer = ({
       if (user) {
         savePlaybackPosition(true);
       }
-      // Auto-play next video in playlist
-      if (playlistContext?.onNext && canPlay) {
+      
+      // Handle repeat modes
+      if (playlistContext?.repeatMode === 'one' && canPlay) {
+        // Repeat current video
+        setTimeout(() => {
+          const media = mediaRef.current;
+          if (media) {
+            media.currentTime = 0;
+            media.play();
+            setIsPlaying(true);
+          }
+        }, 500);
+      } else if (playlistContext?.onNext && canPlay) {
+        // Auto-play next video in playlist (works for both 'all' and 'none' repeat modes)
         setTimeout(() => {
           playlistContext.onNext?.();
         }, 1000);

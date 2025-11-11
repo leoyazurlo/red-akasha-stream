@@ -9,9 +9,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { Heart, Play, Video, Loader2 } from "lucide-react";
+import { Heart, Play, Video, Loader2, ListPlus } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AddToPlaylistDialog } from "@/components/AddToPlaylistDialog";
 
 interface Content {
   id: string;
@@ -32,6 +33,8 @@ const Favorites = () => {
   const { favorites, toggleFavorite, isFavorite, loading: favLoading } = useFavorites();
   const [contents, setContents] = useState<Content[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAddToPlaylist, setShowAddToPlaylist] = useState(false);
+  const [selectedContentId, setSelectedContentId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) {
@@ -195,6 +198,20 @@ const Favorites = () => {
                       )}
                     </Button>
 
+                    {/* Add to Playlist Button */}
+                    <Button
+                      size="icon"
+                      variant="secondary"
+                      className="absolute top-2 right-12 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedContentId(content.id);
+                        setShowAddToPlaylist(true);
+                      }}
+                    >
+                      <ListPlus className="h-4 w-4" />
+                    </Button>
+
                     {/* Duration Badge */}
                     {content.duration && (
                       <Badge className="absolute bottom-2 right-2 bg-black/70 text-white border-none">
@@ -228,6 +245,15 @@ const Favorites = () => {
         
         <Footer />
       </div>
+
+      {/* Add to Playlist Dialog */}
+      {selectedContentId && (
+        <AddToPlaylistDialog
+          open={showAddToPlaylist}
+          onOpenChange={setShowAddToPlaylist}
+          contentId={selectedContentId}
+        />
+      )}
     </div>
   );
 };

@@ -265,6 +265,44 @@ export const usePlaylists = () => {
     }
   };
 
+  const reorderPlaylistItems = async (playlistId: string, items: { id: string; order_index: number }[]) => {
+    if (!user) return false;
+
+    try {
+      // Update order_index for all items
+      const updates = items.map(item => 
+        supabase
+          .from('playlist_items')
+          .update({ order_index: item.order_index })
+          .eq('id', item.id)
+          .eq('playlist_id', playlistId)
+      );
+
+      const results = await Promise.all(updates);
+      
+      // Check if any update failed
+      const hasError = results.some(result => result.error);
+      if (hasError) {
+        throw new Error('Failed to update order');
+      }
+
+      toast({
+        title: "Orden actualizado",
+        description: "El orden de los videos fue actualizado",
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error reordering playlist items:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el orden",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
   const getPlaylistItems = async (playlistId: string) => {
     try {
       const { data, error } = await supabase
@@ -293,6 +331,7 @@ export const usePlaylists = () => {
     deletePlaylist,
     addToPlaylist,
     removeFromPlaylist,
+    reorderPlaylistItems,
     getPlaylistItems,
     refetch: fetchPlaylists,
   };

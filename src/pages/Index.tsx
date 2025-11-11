@@ -7,185 +7,109 @@ import { CosmicBackground } from "@/components/CosmicBackground";
 import { ScrollProgressBar } from "@/components/ScrollProgressBar";
 import akashaBg from "@/assets/akasha-bg.png";
 
-// Mock data for video carousels
+// Videos de YouTube para el carrusel de Programas
 const programasVideos = [
   {
     id: "p1",
     title: "Arte Urbano: Nuevas Expresiones",
-    thumbnail: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&h=225&fit=crop",
+    thumbnail: "https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
     duration: "45:30",
   },
   {
     id: "p2",
     title: "Entrevista con Productores Emergentes",
-    thumbnail: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=400&h=225&fit=crop",
+    thumbnail: "https://img.youtube.com/vi/9bZkp7q19f0/maxresdefault.jpg",
     duration: "38:15",
   },
   {
     id: "p3",
     title: "Espacios Creativos: Estudios de Grabación",
-    thumbnail: "https://images.unsplash.com/photo-1598653222000-6b7b7a552625?w=400&h=225&fit=crop",
+    thumbnail: "https://img.youtube.com/vi/kJQP7kiw5Fk/maxresdefault.jpg",
     duration: "52:40",
   },
   {
     id: "p4",
     title: "Producción Musical en Vivo",
-    thumbnail: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=225&fit=crop",
+    thumbnail: "https://img.youtube.com/vi/JGwWNGJdvx8/maxresdefault.jpg",
     duration: "41:20",
   },
   {
     id: "p5",
     title: "Tecnología en el Arte Contemporáneo",
-    thumbnail: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=400&h=225&fit=crop",
+    thumbnail: "https://img.youtube.com/vi/Zi_XLOBDo_Y/maxresdefault.jpg",
     duration: "36:45",
   },
 ];
 
+// Videos de YouTube para el carrusel de Shorts
 const shortVideos = [
   {
     id: "s1",
     title: "Tips de Producción: Ecualización",
-    thumbnail: "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=400&h=225&fit=crop",
+    thumbnail: "https://img.youtube.com/vi/3tmd-ClpJxA/maxresdefault.jpg",
     duration: "3:45",
   },
   {
     id: "s2",
     title: "Detrás de Cámaras: Sesión Fotográfica",
-    thumbnail: "https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=400&h=225&fit=crop",
+    thumbnail: "https://img.youtube.com/vi/YQHsXMglC9A/maxresdefault.jpg",
     duration: "2:30",
   },
   {
     id: "s3",
     title: "Setup de Estudio en Casa",
-    thumbnail: "https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?w=400&h=225&fit=crop",
+    thumbnail: "https://img.youtube.com/vi/LXb3EKWsInQ/maxresdefault.jpg",
     duration: "4:15",
   },
   {
     id: "s4",
     title: "Técnicas de Mezcla Rápida",
-    thumbnail: "https://images.unsplash.com/photo-1487180144351-b8472da7d491?w=400&h=225&fit=crop",
+    thumbnail: "https://img.youtube.com/vi/fJ9rUzIMcZQ/maxresdefault.jpg",
     duration: "3:20",
   },
   {
     id: "s5",
     title: "Iluminación para Video",
-    thumbnail: "https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?w=400&h=225&fit=crop",
+    thumbnail: "https://img.youtube.com/vi/V-fRuoMIfpw/maxresdefault.jpg",
     duration: "2:55",
   },
 ];
 
+// Videos de YouTube para el carrusel de Destacados
 const destacadosVideos = [
   {
     id: "d1",
     title: "Concierto Acústico: Sala Íntima",
-    thumbnail: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=225&fit=crop",
+    thumbnail: "https://img.youtube.com/vi/OPf0YbXqDm0/maxresdefault.jpg",
     duration: "1:15:30",
   },
   {
     id: "d2",
     title: "Festival Red Akasha 2024",
-    thumbnail: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=400&h=225&fit=crop",
+    thumbnail: "https://img.youtube.com/vi/hTWKbfoikeg/maxresdefault.jpg",
     duration: "2:30:45",
   },
   {
     id: "d3",
     title: "Documental: La Escena Underground",
-    thumbnail: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=225&fit=crop",
+    thumbnail: "https://img.youtube.com/vi/djV11Xbc914/maxresdefault.jpg",
     duration: "58:20",
   },
   {
     id: "d4",
     title: "Masterclass de Producción",
-    thumbnail: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&h=225&fit=crop",
+    thumbnail: "https://img.youtube.com/vi/M7lc1UVf-VE/maxresdefault.jpg",
     duration: "1:42:15",
   },
   {
     id: "d5",
     title: "Showcase de Artistas Nuevos",
-    thumbnail: "https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=400&h=225&fit=crop",
+    thumbnail: "https://img.youtube.com/vi/RgKAFK5djSk/maxresdefault.jpg",
     duration: "1:05:30",
   },
 ];
 
-const rankingVideos = [
-  {
-    id: "r1",
-    rank: 1,
-    thumbnail: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=225&fit=crop",
-    artist: "Los Nocheros del Sur",
-    genre: "Folklore Urbano",
-    country: "Argentina",
-    countryFlag: "🇦🇷",
-    rating: 4.8,
-    totalVotes: 342,
-  },
-  {
-    id: "r2",
-    rank: 2,
-    thumbnail: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=225&fit=crop",
-    artist: "María Paz & Banda",
-    genre: "Rock Alternativo",
-    country: "México",
-    countryFlag: "🇲🇽",
-    rating: 4.7,
-    totalVotes: 298,
-  },
-  {
-    id: "r3",
-    rank: 3,
-    thumbnail: "https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&h=225&fit=crop",
-    artist: "Daniela Soares",
-    genre: "Bossa Nova Fusion",
-    country: "Brasil",
-    countryFlag: "🇧🇷",
-    rating: 4.6,
-    totalVotes: 275,
-  },
-  {
-    id: "r4",
-    rank: 4,
-    thumbnail: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=400&h=225&fit=crop",
-    artist: "Colectivo Raíz",
-    genre: "Cumbia Experimental",
-    country: "Colombia",
-    countryFlag: "🇨🇴",
-    rating: 4.5,
-    totalVotes: 261,
-  },
-  {
-    id: "r5",
-    rank: 5,
-    thumbnail: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=400&h=225&fit=crop",
-    artist: "Inti Wayra",
-    genre: "Andino Contemporáneo",
-    country: "Perú",
-    countryFlag: "🇵🇪",
-    rating: 4.4,
-    totalVotes: 247,
-  },
-  {
-    id: "r6",
-    rank: 6,
-    thumbnail: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=400&h=225&fit=crop",
-    artist: "Pablo Montero Trío",
-    genre: "Jazz Latino",
-    country: "España",
-    countryFlag: "🇪🇸",
-    rating: 4.3,
-    totalVotes: 233,
-  },
-  {
-    id: "r7",
-    rank: 7,
-    thumbnail: "https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?w=400&h=225&fit=crop",
-    artist: "Electro Mapuche",
-    genre: "Electrónica Ancestral",
-    country: "Chile",
-    countryFlag: "🇨🇱",
-    rating: 4.2,
-    totalVotes: 219,
-  },
-];
+// Este mock data ya no se usa - VideoRanking ahora carga contenido real de usuarios desde la BD
 
 const Index = () => {
   return (

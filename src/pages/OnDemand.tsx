@@ -409,16 +409,14 @@ const OnDemand = () => {
                           key={content.id} 
                           className="group overflow-hidden border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 to-cyan-600/5 backdrop-blur-sm hover:from-cyan-500/10 hover:to-cyan-600/10 transition-all"
                         >
-                          {/* Thumbnail con marco esfumado cyan */}
+                          {/* Thumbnail con marco cyan en bordes */}
                           <div 
-                            className="relative overflow-hidden bg-secondary/20 cursor-pointer"
+                            className="relative overflow-hidden bg-secondary/20 cursor-pointer border-2 border-cyan-500/40 rounded-t-lg"
                             onClick={() => handleContentClick(content)}
+                            style={{
+                              boxShadow: '0 0 15px rgba(6, 182, 212, 0.25)'
+                            }}
                           >
-                            {/* Marco esfumado cyan moderno */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-transparent to-cyan-500/20 pointer-events-none z-10" />
-                            <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/20 via-transparent to-cyan-500/20 pointer-events-none z-10" />
-                            <div className="absolute inset-0 shadow-[inset_0_0_30px_rgba(6,182,212,0.3)] pointer-events-none z-10" />
-                            
                             <AspectRatio ratio={16 / 9}>
                               {content.thumbnail_url ? (
                                 <img
@@ -432,11 +430,6 @@ const OnDemand = () => {
                                 </div>
                               )}
                             </AspectRatio>
-                            
-                            {/* Badge Contenido Liberado */}
-                            <Badge className="absolute top-2 left-2 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white border-none shadow-lg shadow-cyan-500/50">
-                              CONTENIDO LIBERADO
-                            </Badge>
 
                             {/* Favorite Button */}
                             <Button

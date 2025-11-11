@@ -560,16 +560,14 @@ const OnDemand = () => {
                           {/* Premium Shine Effect */}
                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                           
-                          {/* Thumbnail con marco esfumado amber */}
+                          {/* Thumbnail con borde cyan */}
                           <div 
-                            className="relative overflow-hidden bg-secondary/20 cursor-pointer"
+                            className="relative overflow-hidden bg-secondary/20 cursor-pointer border-2 border-cyan-500/40 rounded-t-lg"
                             onClick={() => handleContentClick(content)}
+                            style={{
+                              boxShadow: '0 0 15px rgba(6, 182, 212, 0.25)'
+                            }}
                           >
-                            {/* Marco esfumado amber moderno */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 via-transparent to-amber-500/20 pointer-events-none z-10" />
-                            <div className="absolute inset-0 bg-gradient-to-b from-amber-500/20 via-transparent to-amber-500/20 pointer-events-none z-10" />
-                            <div className="absolute inset-0 shadow-[inset_0_0_30px_rgba(251,191,36,0.3)] pointer-events-none z-10" />
-                            
                             <AspectRatio ratio={16 / 9}>
                               {content.thumbnail_url ? (
                                 <img

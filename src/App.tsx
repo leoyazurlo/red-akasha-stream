@@ -29,6 +29,8 @@ import ArtistProfile from "./pages/ArtistProfile";
 import UserProfile from "./pages/UserProfile";
 import OnDemand from "./pages/OnDemand";
 import Favorites from "./pages/Favorites";
+import Playlists from "./pages/Playlists";
+import PlaylistDetail from "./pages/PlaylistDetail";
 import NotFound from "./pages/NotFound";
 
 import VideoDetail from "./pages/VideoDetail";
@@ -45,6 +47,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/on-demand" element={<OnDemand />} />
           <Route path="/favoritos" element={<Favorites />} />
+          <Route path="/playlists" element={<Playlists />} />
+          <Route path="/playlist/:id" element={<PlaylistDetail />} />
           <Route path="/video/:id" element={<VideoDetail />} />
           <Route path="/foro" element={<Forum />} />
           <Route path="/foro/subforo/:id" element={<Subforo />} />

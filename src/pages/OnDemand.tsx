@@ -19,7 +19,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useFavorites } from "@/hooks/useFavorites";
-import { Play, Video, Music, Image as ImageIcon, Search, Filter, DollarSign, ChevronDown, ChevronUp, Info, Heart, Loader2 } from "lucide-react";
+import { Play, Video, Music, Image as ImageIcon, Search, Filter, DollarSign, ChevronDown, ChevronUp, Info, Heart, Loader2, ListPlus } from "lucide-react";
+import { AddToPlaylistDialog } from "@/components/AddToPlaylistDialog";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -65,6 +66,8 @@ const OnDemand = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+  const [showAddToPlaylist, setShowAddToPlaylist] = useState(false);
+  const [selectedContentId, setSelectedContentId] = useState<string | null>(null);
   const { toast } = useToast();
   const { toggleFavorite, isFavorite, loading: favLoading } = useFavorites();
 
@@ -455,6 +458,20 @@ const OnDemand = () => {
                               )}
                             </Button>
 
+                            {/* Add to Playlist Button */}
+                            <Button
+                              size="icon"
+                              variant="secondary"
+                              className="absolute top-2 right-12 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background z-20"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedContentId(content.id);
+                                setShowAddToPlaylist(true);
+                              }}
+                            >
+                              <ListPlus className="h-4 w-4" />
+                            </Button>
+
                             {/* Duration Badge */}
                             {content.duration && (
                               <Badge className="absolute bottom-2 right-2 bg-black/70 text-white border-none">
@@ -600,6 +617,20 @@ const OnDemand = () => {
                               )}
                             </Button>
 
+                            {/* Add to Playlist Button */}
+                            <Button
+                              size="icon"
+                              variant="secondary"
+                              className="absolute top-2 right-12 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background z-20"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedContentId(content.id);
+                                setShowAddToPlaylist(true);
+                              }}
+                            >
+                              <ListPlus className="h-4 w-4" />
+                            </Button>
+
                             {/* Duration Badge */}
                             {content.duration && (
                               <Badge className="absolute bottom-2 right-2 bg-black/70 text-white border-none">
@@ -674,6 +705,15 @@ const OnDemand = () => {
 
         <Footer />
       </div>
+
+      {/* Add to Playlist Dialog */}
+      {selectedContentId && (
+        <AddToPlaylistDialog
+          open={showAddToPlaylist}
+          onOpenChange={setShowAddToPlaylist}
+          contentId={selectedContentId}
+        />
+      )}
     </div>
   );
 };

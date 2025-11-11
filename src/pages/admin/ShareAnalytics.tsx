@@ -3,9 +3,18 @@ import { Navigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2, Share2, TrendingUp, Video, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, Share2, TrendingUp, Video, Users, Download } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import * as XLSX from 'xlsx';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { 
   BarChart, 
   Bar, 
@@ -75,6 +84,7 @@ const PLATFORM_LABELS: Record<string, string> = {
 
 export default function ShareAnalytics() {
   const { user, loading, isAdmin } = useAuth(true);
+  const { toast } = useToast();
   const [stats, setStats] = useState<ShareStats>({ 
     totalShares: 0, 
     totalVideos: 0, 
@@ -86,6 +96,7 @@ export default function ShareAnalytics() {
   const [sharesByDay, setSharesByDay] = useState<SharesByDay[]>([]);
   const [loadingStats, setLoadingStats] = useState(true);
   const [dateRange, setDateRange] = useState(30); // últimos 30 días
+  const [allSharesData, setAllSharesData] = useState<any[]>([]); // Para exportación
 
   useEffect(() => {
     if (!loading && user && isAdmin) {
@@ -105,6 +116,9 @@ export default function ShareAnalytics() {
         .gte('created_at', startDate.toISOString());
 
       if (sharesError) throw sharesError;
+
+      // Guardar datos completos para exportación
+      setAllSharesData(allShares || []);
 
       // Estadísticas generales
       const totalShares = allShares?.length || 0;
@@ -173,6 +187,180 @@ export default function ShareAnalytics() {
     }
   };
 
+  const exportToCSV = async (type: 'all' | 'platform' | 'videos' | 'daily') => {
+    try {
+      let csvContent = '';
+      let filename = '';
+
+      switch (type) {
+        case 'all':
+          // Exportar todos los shares con detalles
+          const { data: detailedShares, error } = await supabase
+            .from('content_shares')
+            .select(`
+              id,
+              created_at,
+              platform,
+              content_id,
+              content_uploads(title, content_type),
+              user_id,
+              profiles(username)
+            `)
+            .gte('created_at', startOfDay(subDays(new Date(), dateRange)).toISOString())
+            .order('created_at', { ascending: false });
+
+          if (error) throw error;
+
+          csvContent = 'ID,Fecha,Hora,Plataforma,Video,Tipo de Contenido,Usuario\n';
+          detailedShares?.forEach((share: any) => {
+            const date = new Date(share.created_at);
+            csvContent += `${share.id},${format(date, 'yyyy-MM-dd')},${format(date, 'HH:mm:ss')},${PLATFORM_LABELS[share.platform] || share.platform},"${share.content_uploads?.title || 'N/A'}",${share.content_uploads?.content_type || 'N/A'},${share.profiles?.username || 'Anónimo'}\n`;
+          });
+          filename = `shares_detallado_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+          break;
+
+        case 'platform':
+          csvContent = 'Plataforma,Cantidad,Porcentaje\n';
+          sharesByPlatform.forEach((platform) => {
+            csvContent += `${platform.platform},${platform.count},${platform.percentage.toFixed(2)}%\n`;
+          });
+          filename = `shares_por_plataforma_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+          break;
+
+        case 'videos':
+          csvContent = 'Posición,Video,Tipo de Contenido,Cantidad de Shares\n';
+          topVideos.forEach((video, index) => {
+            csvContent += `${index + 1},"${video.title}",${video.content_type},${video.shares_count}\n`;
+          });
+          filename = `top_videos_compartidos_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+          break;
+
+        case 'daily':
+          csvContent = 'Fecha,Cantidad de Shares\n';
+          sharesByDay.forEach((day) => {
+            csvContent += `${day.date},${day.count}\n`;
+          });
+          filename = `shares_diarios_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+          break;
+      }
+
+      // Crear y descargar el archivo
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+
+      toast({
+        title: "Exportación exitosa",
+        description: `Archivo CSV descargado: ${filename}`,
+      });
+    } catch (error) {
+      console.error('Error exporting to CSV:', error);
+      toast({
+        title: "Error al exportar",
+        description: "No se pudo generar el archivo CSV",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const exportToExcel = async () => {
+    try {
+      // Obtener datos detallados para el Excel
+      const { data: detailedShares, error } = await supabase
+        .from('content_shares')
+        .select(`
+          id,
+          created_at,
+          platform,
+          content_id,
+          content_uploads(title, content_type),
+          user_id,
+          profiles(username)
+        `)
+        .gte('created_at', startOfDay(subDays(new Date(), dateRange)).toISOString())
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Crear workbook con múltiples hojas
+      const wb = XLSX.utils.book_new();
+
+      // Hoja 1: Resumen
+      const summaryData = [
+        ['Estadísticas de Shares'],
+        [''],
+        ['Métrica', 'Valor'],
+        ['Total de Shares', stats.totalShares],
+        ['Videos Compartidos', stats.totalVideos],
+        ['Usuarios Activos', stats.totalUsers],
+        ['Promedio por Video', stats.averageSharesPerVideo.toFixed(2)],
+        [''],
+        ['Período', `Últimos ${dateRange} días`],
+        ['Fecha de Exportación', format(new Date(), 'yyyy-MM-dd HH:mm:ss')],
+      ];
+      const ws1 = XLSX.utils.aoa_to_sheet(summaryData);
+      XLSX.utils.book_append_sheet(wb, ws1, 'Resumen');
+
+      // Hoja 2: Shares Detallados
+      const detailedData = detailedShares?.map((share: any) => ({
+        'ID': share.id,
+        'Fecha': format(new Date(share.created_at), 'yyyy-MM-dd'),
+        'Hora': format(new Date(share.created_at), 'HH:mm:ss'),
+        'Plataforma': PLATFORM_LABELS[share.platform] || share.platform,
+        'Video': share.content_uploads?.title || 'N/A',
+        'Tipo de Contenido': share.content_uploads?.content_type || 'N/A',
+        'Usuario': share.profiles?.username || 'Anónimo',
+      })) || [];
+      const ws2 = XLSX.utils.json_to_sheet(detailedData);
+      XLSX.utils.book_append_sheet(wb, ws2, 'Shares Detallados');
+
+      // Hoja 3: Por Plataforma
+      const platformData = sharesByPlatform.map(p => ({
+        'Plataforma': p.platform,
+        'Cantidad': p.count,
+        'Porcentaje': `${p.percentage.toFixed(2)}%`,
+      }));
+      const ws3 = XLSX.utils.json_to_sheet(platformData);
+      XLSX.utils.book_append_sheet(wb, ws3, 'Por Plataforma');
+
+      // Hoja 4: Top Videos
+      const videosData = topVideos.map((v, i) => ({
+        'Posición': i + 1,
+        'Video': v.title,
+        'Tipo': v.content_type,
+        'Shares': v.shares_count,
+      }));
+      const ws4 = XLSX.utils.json_to_sheet(videosData);
+      XLSX.utils.book_append_sheet(wb, ws4, 'Top Videos');
+
+      // Hoja 5: Shares Diarios
+      const dailyData = sharesByDay.map(d => ({
+        'Fecha': d.date,
+        'Cantidad': d.count,
+      }));
+      const ws5 = XLSX.utils.json_to_sheet(dailyData);
+      XLSX.utils.book_append_sheet(wb, ws5, 'Shares Diarios');
+
+      // Descargar archivo
+      const filename = `estadisticas_shares_${format(new Date(), 'yyyy-MM-dd_HHmmss')}.xlsx`;
+      XLSX.writeFile(wb, filename);
+
+      toast({
+        title: "Exportación exitosa",
+        description: `Archivo Excel descargado: ${filename}`,
+      });
+    } catch (error) {
+      console.error('Error exporting to Excel:', error);
+      toast({
+        title: "Error al exportar",
+        description: "No se pudo generar el archivo Excel",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading || loadingStats) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -222,6 +410,37 @@ export default function ShareAnalytics() {
                     <option value={90}>Últimos 90 días</option>
                     <option value={365}>Último año</option>
                   </select>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="gap-2">
+                        <Download className="w-4 h-4" />
+                        Exportar
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuItem onClick={exportToExcel}>
+                        <Download className="w-4 h-4 mr-2" />
+                        Excel Completo (.xlsx)
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => exportToCSV('all')}>
+                        <Download className="w-4 h-4 mr-2" />
+                        CSV - Todos los Shares
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => exportToCSV('platform')}>
+                        <Download className="w-4 h-4 mr-2" />
+                        CSV - Por Plataforma
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => exportToCSV('videos')}>
+                        <Download className="w-4 h-4 mr-2" />
+                        CSV - Top Videos
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => exportToCSV('daily')}>
+                        <Download className="w-4 h-4 mr-2" />
+                        CSV - Shares Diarios
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
 

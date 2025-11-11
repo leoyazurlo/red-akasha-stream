@@ -25,7 +25,7 @@ import {
   Send,
   ThumbsUp,
   ChevronDown,
-  ChevronUp
+  Share2
 } from "lucide-react";
 import ShareButtons from "@/components/ShareButtons";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -45,6 +45,7 @@ interface VideoDetail {
   views_count: number;
   likes_count: number;
   comments_count: number;
+  shares_count: number;
   created_at: string;
   uploader_id: string;
   is_free: boolean;
@@ -474,6 +475,10 @@ const VideoDetail = () => {
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <MessageCircle className="w-5 h-5" />
                       <span className="text-sm">{video.comments_count} comentarios</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Share2 className="w-5 h-5" />
+                      <span className="text-sm">{video.shares_count || 0} compartidos</span>
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Calendar className="w-5 h-5" />

@@ -358,6 +358,44 @@ export type Database = {
           },
         ]
       }
+      content_shares: {
+        Row: {
+          content_id: string
+          created_at: string
+          id: string
+          ip_address: string | null
+          platform: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content_id: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          platform: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content_id?: string
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          platform?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_shares_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "content_uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_uploads: {
         Row: {
           audio_duration_seconds: number | null
@@ -381,6 +419,7 @@ export type Database = {
           producer_name: string | null
           promoter_name: string | null
           recording_studio: string | null
+          shares_count: number | null
           status: string | null
           tags: string[] | null
           thumbnail_large: string | null
@@ -419,6 +458,7 @@ export type Database = {
           producer_name?: string | null
           promoter_name?: string | null
           recording_studio?: string | null
+          shares_count?: number | null
           status?: string | null
           tags?: string[] | null
           thumbnail_large?: string | null
@@ -457,6 +497,7 @@ export type Database = {
           producer_name?: string | null
           promoter_name?: string | null
           recording_studio?: string | null
+          shares_count?: number | null
           status?: string | null
           tags?: string[] | null
           thumbnail_large?: string | null

@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Share2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,10 +19,32 @@ interface ShareButtonsProps {
 
 const ShareButtons = ({ videoId, title, description, thumbnailUrl }: ShareButtonsProps) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const currentUrl = `${window.location.origin}/video/${videoId}`;
   const shareText = `${title}${description ? ' - ' + description.slice(0, 100) : ''}`;
 
+  // Función para registrar el share en la base de datos
+  const trackShare = async (platform: string) => {
+    try {
+      const { error } = await supabase
+        .from('content_shares')
+        .insert({
+          content_id: videoId,
+          user_id: user?.id || null,
+          platform: platform,
+          user_agent: navigator.userAgent,
+        });
+
+      if (error) {
+        console.error('Error tracking share:', error);
+      }
+    } catch (error) {
+      console.error('Error tracking share:', error);
+    }
+  };
+
   const shareOnWhatsApp = () => {
+    trackShare('whatsapp');
     const url = `https://wa.me/?text=${encodeURIComponent(shareText + ' ' + currentUrl)}`;
     window.open(url, '_blank');
     toast({
@@ -30,6 +54,7 @@ const ShareButtons = ({ videoId, title, description, thumbnailUrl }: ShareButton
   };
 
   const shareOnFacebook = () => {
+    trackShare('facebook');
     const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`;
     window.open(url, '_blank', 'width=600,height=400');
     toast({
@@ -39,6 +64,7 @@ const ShareButtons = ({ videoId, title, description, thumbnailUrl }: ShareButton
   };
 
   const shareOnTwitter = () => {
+    trackShare('twitter');
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(currentUrl)}`;
     window.open(url, '_blank', 'width=600,height=400');
     toast({
@@ -48,6 +74,7 @@ const ShareButtons = ({ videoId, title, description, thumbnailUrl }: ShareButton
   };
 
   const shareOnLinkedIn = () => {
+    trackShare('linkedin');
     const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}`;
     window.open(url, '_blank', 'width=600,height=400');
     toast({
@@ -57,6 +84,7 @@ const ShareButtons = ({ videoId, title, description, thumbnailUrl }: ShareButton
   };
 
   const shareOnTelegram = () => {
+    trackShare('telegram');
     const url = `https://t.me/share/url?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(shareText)}`;
     window.open(url, '_blank', 'width=600,height=400');
     toast({
@@ -66,6 +94,7 @@ const ShareButtons = ({ videoId, title, description, thumbnailUrl }: ShareButton
   };
 
   const shareOnInstagram = () => {
+    trackShare('instagram');
     // Instagram no tiene API de compartir directo, copiamos el link
     navigator.clipboard.writeText(currentUrl);
     toast({
@@ -75,6 +104,7 @@ const ShareButtons = ({ videoId, title, description, thumbnailUrl }: ShareButton
   };
 
   const copyLink = () => {
+    trackShare('copy_link');
     navigator.clipboard.writeText(currentUrl);
     toast({
       title: "Link copiado",

@@ -2,6 +2,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { useAuth } from "@/hooks/useAuth";
+import { useMiniPlayer } from "@/contexts/MiniPlayerContext";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,7 +26,8 @@ import {
   Send,
   ThumbsUp,
   ChevronDown,
-  Share2
+  Share2,
+  PictureInPicture
 } from "lucide-react";
 import ShareButtons from "@/components/ShareButtons";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -77,6 +79,7 @@ const VideoDetail = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { openMiniPlayer } = useMiniPlayer();
   
   const [video, setVideo] = useState<VideoDetail | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -87,6 +90,25 @@ const VideoDetail = () => {
   const [hasLiked, setHasLiked] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showMoreInfo, setShowMoreInfo] = useState(false);
+
+  const handleOpenMiniPlayer = () => {
+    if (!video) return;
+    
+    openMiniPlayer({
+      id: video.id,
+      title: video.title,
+      video_url: video.video_url,
+      audio_url: null,
+      thumbnail_url: video.thumbnail_url,
+      content_type: video.content_type,
+      band_name: video.band_name,
+    });
+
+    toast({
+      title: "Minireproductor activado",
+      description: "Puedes navegar libremente mientras ves el video",
+    });
+  };
 
   useEffect(() => {
     if (id) {
@@ -486,6 +508,15 @@ const VideoDetail = () => {
                         {formatDistanceToNow(new Date(video.created_at), { addSuffix: true, locale: es })}
                       </span>
                     </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleOpenMiniPlayer}
+                      className="flex items-center gap-2"
+                    >
+                      <PictureInPicture className="w-4 h-4" />
+                      Minireproductor
+                    </Button>
                     <ShareButtons
                       videoId={video.id}
                       title={video.title}

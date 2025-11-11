@@ -3,12 +3,13 @@ import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { useAuth } from "@/hooks/useAuth";
 import { usePlaylists } from "@/hooks/usePlaylists";
+import { useMiniPlayer } from "@/contexts/MiniPlayerContext";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Play, Video, ArrowLeft, Trash2, Loader2, GripVertical, Grid3x3, List as ListIcon, Search, X, Edit3, CheckSquare, Square, Move, Eye, Shuffle } from "lucide-react";
+import { Play, Video, ArrowLeft, Trash2, Loader2, GripVertical, Grid3x3, List as ListIcon, Search, X, Edit3, CheckSquare, Square, Move, Eye, Shuffle, PictureInPicture } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "@/components/ui/input";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -65,6 +66,7 @@ const PlaylistDetail = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { openMiniPlayer } = useMiniPlayer();
   const { playlists, getPlaylistItems, removeFromPlaylist, removeMultipleFromPlaylist, moveToPlaylist, reorderPlaylistItems } = usePlaylists();
   const [items, setItems] = useState<PlaylistItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -246,6 +248,30 @@ const PlaylistDetail = () => {
     }
   };
 
+  const handlePlayInMiniPlayer = async (contentId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('content_uploads')
+        .select('*')
+        .eq('id', contentId)
+        .single();
+
+      if (error) throw error;
+
+      openMiniPlayer({
+        id: data.id,
+        title: data.title,
+        video_url: data.video_url,
+        audio_url: data.audio_url,
+        thumbnail_url: data.thumbnail_url,
+        content_type: data.content_type,
+        band_name: data.band_name,
+      });
+    } catch (error) {
+      console.error('Error loading video for mini player:', error);
+    }
+  };
+
   const getRandomUnplayedIndex = () => {
     // Get unplayed videos
     const unplayedIndices = filteredItems
@@ -420,6 +446,16 @@ const PlaylistDetail = () => {
                     <p className="text-sm text-primary font-medium">
                       {selectedItems.size} seleccionado{selectedItems.size !== 1 ? 's' : ''}
                     </p>
+                  )}
+                  {items.length > 0 && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePlayInMiniPlayer(filteredItems[0].content_id)}
+                    >
+                      <PictureInPicture className="h-4 w-4 mr-2" />
+                      Reproducir en minireproductor
+                    </Button>
                   )}
                 </div>
 

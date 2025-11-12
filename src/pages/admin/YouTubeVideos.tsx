@@ -372,6 +372,22 @@ const YouTubeVideos = () => {
                   placeholder="dQw4w9WgXcQ"
                   required
                 />
+                {formData.youtube_id && (
+                  <div className="mt-4 space-y-2">
+                    <Label>Vista previa del thumbnail</Label>
+                    <div className="relative aspect-video w-full overflow-hidden rounded-lg border bg-muted">
+                      <img
+                        src={`https://img.youtube.com/vi/${formData.youtube_id}/maxresdefault.jpg`}
+                        alt="Thumbnail preview"
+                        className="h-full w-full object-cover"
+                        onError={(e) => {
+                          // Fallback to medium quality if maxres doesn't exist
+                          e.currentTarget.src = `https://img.youtube.com/vi/${formData.youtube_id}/hqdefault.jpg`;
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="duration">Duración</Label>

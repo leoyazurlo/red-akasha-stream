@@ -2332,83 +2332,53 @@ export type Database = {
         Row: {
           avatar_url: string | null
           bio: string | null
-          capacity: number | null
           ciudad: string | null
           created_at: string | null
           display_name: string | null
+          email: string | null
           facebook: string | null
-          formation_date: string | null
-          genre: Database["public"]["Enums"]["music_genre"] | null
           id: string | null
           instagram: string | null
-          latitude: number | null
           linkedin: string | null
-          longitude: number | null
-          map_location: string | null
-          members: Json | null
           pais: string | null
-          produced_artists: Json | null
           profile_type: Database["public"]["Enums"]["profile_type"] | null
-          recorded_at: string | null
-          technical_specs: Json | null
+          provincia: string | null
           updated_at: string | null
           user_id: string | null
-          venue_type: Database["public"]["Enums"]["sala_type"] | null
-          venues_produced: Json | null
         }
         Insert: {
           avatar_url?: string | null
           bio?: string | null
-          capacity?: number | null
           ciudad?: string | null
           created_at?: string | null
           display_name?: string | null
+          email?: string | null
           facebook?: string | null
-          formation_date?: string | null
-          genre?: Database["public"]["Enums"]["music_genre"] | null
           id?: string | null
           instagram?: string | null
-          latitude?: number | null
           linkedin?: string | null
-          longitude?: number | null
-          map_location?: string | null
-          members?: Json | null
           pais?: string | null
-          produced_artists?: Json | null
           profile_type?: Database["public"]["Enums"]["profile_type"] | null
-          recorded_at?: string | null
-          technical_specs?: Json | null
+          provincia?: string | null
           updated_at?: string | null
           user_id?: string | null
-          venue_type?: Database["public"]["Enums"]["sala_type"] | null
-          venues_produced?: Json | null
         }
         Update: {
           avatar_url?: string | null
           bio?: string | null
-          capacity?: number | null
           ciudad?: string | null
           created_at?: string | null
           display_name?: string | null
+          email?: string | null
           facebook?: string | null
-          formation_date?: string | null
-          genre?: Database["public"]["Enums"]["music_genre"] | null
           id?: string | null
           instagram?: string | null
-          latitude?: number | null
           linkedin?: string | null
-          longitude?: number | null
-          map_location?: string | null
-          members?: Json | null
           pais?: string | null
-          produced_artists?: Json | null
           profile_type?: Database["public"]["Enums"]["profile_type"] | null
-          recorded_at?: string | null
-          technical_specs?: Json | null
+          provincia?: string | null
           updated_at?: string | null
           user_id?: string | null
-          venue_type?: Database["public"]["Enums"]["sala_type"] | null
-          venues_produced?: Json | null
         }
         Relationships: []
       }
@@ -2503,6 +2473,16 @@ export type Database = {
         | "promotor_artistico"
         | "sala_concierto"
         | "agrupacion_musical"
+        | "marketing_digital"
+        | "musico"
+        | "sello_discografico"
+        | "perfil_contenido"
+        | "arte_digital"
+        | "management"
+        | "me_gusta_arte"
+        | "representante"
+        | "dj"
+        | "vj"
       report_status: "pending" | "reviewing" | "resolved" | "dismissed"
       sala_type:
         | "teatro"
@@ -2734,6 +2714,16 @@ export const Constants = {
         "promotor_artistico",
         "sala_concierto",
         "agrupacion_musical",
+        "marketing_digital",
+        "musico",
+        "sello_discografico",
+        "perfil_contenido",
+        "arte_digital",
+        "management",
+        "me_gusta_arte",
+        "representante",
+        "dj",
+        "vj",
       ],
       report_status: ["pending", "reviewing", "resolved", "dismissed"],
       sala_type: [

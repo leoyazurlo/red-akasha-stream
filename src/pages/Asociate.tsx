@@ -17,6 +17,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Autocomplete } from "@/components/ui/autocomplete";
+import { ContenidoForm } from "@/components/profile-forms/ContenidoForm";
+import { ArteDigitalForm } from "@/components/profile-forms/ArteDigitalForm";
+import { ManagementForm } from "@/components/profile-forms/ManagementForm";
+import { DJForm } from "@/components/profile-forms/DJForm";
+import { VJForm } from "@/components/profile-forms/VJForm";
 import { MusicLoverForm } from "@/components/profile-forms/MusicLoverForm";
 import { RecordingStudioForm } from "@/components/profile-forms/RecordingStudioForm";
 import { VenueForm } from "@/components/profile-forms/VenueForm";
@@ -128,18 +133,26 @@ const Asociate = () => {
   });
 
   const perfilOptions = [
+    { value: "perfil_contenido", label: "Perfil que disfrutan del buen contenido" },
     { value: "agrupacion_musical", label: "Agrupación musical" },
+    { value: "arte_digital", label: "Arte digital" },
+    { value: "dj", label: "DJ" },
     { value: "estudio_grabacion", label: "Estudio de grabación" },
+    { value: "management", label: "Management" },
     { value: "marketing_digital", label: "Marketing digital" },
+    { value: "me_gusta_arte", label: "Me gusta el Arte" },
     { value: "musico", label: "Músico" },
     { value: "productor_artistico", label: "Productor artístico" },
     { value: "productor_audiovisual", label: "Productor audiovisual" },
     { value: "promotor_artistico", label: "Promotor artístico" },
+    { value: "representante", label: "Representante" },
     { value: "sala_concierto", label: "Sala de concierto" },
-    { value: "sello_discografico", label: "Sello discográfico" }
+    { value: "sello_discografico", label: "Sello discográfico" },
+    { value: "vj", label: "VJ" }
   ];
 
   const profileTypeMap: Record<string, string> = {
+    "perfil_contenido": "perfil_contenido",
     "productor_audiovisual": "productor_audiovisual",
     "productor_artistico": "productor_artistico",
     "estudio_grabacion": "estudio_grabacion",
@@ -148,7 +161,13 @@ const Asociate = () => {
     "agrupacion_musical": "agrupacion_musical",
     "marketing_digital": "marketing_digital",
     "sello_discografico": "sello_discografico",
-    "musico": "musico"
+    "musico": "musico",
+    "arte_digital": "arte_digital",
+    "management": "management",
+    "me_gusta_arte": "me_gusta_arte",
+    "representante": "representante",
+    "dj": "dj",
+    "vj": "vj"
   };
 
   // Preparar opciones de ciudades para autocompletado
@@ -508,6 +527,9 @@ const Asociate = () => {
 
   const renderProfileForm = () => {
     switch (selectedProfile) {
+      case "perfil_contenido":
+      case "me_gusta_arte":
+        return <ContenidoForm formData={formData} onChange={handleProfileFieldChange} />;
       case "productor_audiovisual":
         return <MusicLoverForm formData={formData} onChange={handleProfileFieldChange} />;
       case "estudio_grabacion":
@@ -526,6 +548,15 @@ const Asociate = () => {
         return <MusicianForm formData={formData} onChange={handleProfileFieldChange} />;
       case "sello_discografico":
         return <RecordLabelForm formData={formData} onChange={handleProfileFieldChange} />;
+      case "arte_digital":
+        return <ArteDigitalForm formData={formData} onChange={handleProfileFieldChange} />;
+      case "management":
+      case "representante":
+        return <ManagementForm formData={formData} onChange={handleProfileFieldChange} />;
+      case "dj":
+        return <DJForm formData={formData} onChange={handleProfileFieldChange} />;
+      case "vj":
+        return <VJForm formData={formData} onChange={handleProfileFieldChange} />;
       default:
         return null;
     }

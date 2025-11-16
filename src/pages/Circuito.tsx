@@ -68,19 +68,18 @@ interface ProfileDetail {
 // Tipo para la vista pública sin información sensible
 interface PublicProfile {
   id: string;
+  user_id: string;
   display_name: string;
   avatar_url: string | null;
   profile_type: string;
   pais: string;
+  provincia: string | null;
   ciudad: string;
   bio: string | null;
   instagram: string | null;
   facebook: string | null;
   linkedin: string | null;
-  venue_type: string | null;
-  capacity: number | null;
-  genre: string | null;
-  technical_specs: any;
+  email: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -455,36 +454,12 @@ const Circuito = () => {
                                   <Badge variant="outline" className="mb-2 border-primary text-primary">
                                     {profileTypeLabels[profile.profile_type] || profile.profile_type}
                                   </Badge>
-                                  {profile.venue_type && (
-                                    <p className="text-sm text-muted-foreground capitalize">
-                                      {profile.venue_type}
-                                    </p>
-                                  )}
-                                  {profile.genre && (
-                                    <p className="text-sm text-muted-foreground">
-                                      Género: {profile.genre}
-                                    </p>
-                                  )}
                                 </div>
                               </div>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                              {profile.bio && (
+                                   {profile.bio && (
                                 <p className="text-sm text-muted-foreground">{profile.bio}</p>
-                              )}
-
-                              {profile.capacity && (
-                                <div className="flex items-center gap-2 text-sm">
-                                  <Users className="w-4 h-4 text-primary" />
-                                  <span>Capacidad: {profile.capacity} personas</span>
-                                </div>
-                              )}
-
-                              {profile.technical_specs && (
-                                <div className="bg-secondary/20 p-3 rounded-md">
-                                  <p className="text-xs font-semibold text-muted-foreground mb-1">Ficha Técnica:</p>
-                                  <p className="text-sm whitespace-pre-wrap">{JSON.stringify(profile.technical_specs, null, 2)}</p>
-                                </div>
                               )}
 
                               {/* Social Media */}

@@ -56,24 +56,30 @@ const Index = () => {
   });
 
   const { data: destacadosVideos = [] } = useQuery({
-    queryKey: ["youtube-videos", "destacados"],
+    queryKey: ["content-destacados"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("youtube_videos")
+        .from("content_uploads")
         .select("*")
-        .eq("category", "destacados")
-        .eq("is_active", true)
-        .order("order_index");
+        .eq("status", "approved")
+        .order("likes_count", { ascending: false })
+        .limit(10);
       
       if (error) throw error;
       
-      return data.map((v) => ({
-        id: v.id,
-        title: v.title,
-        thumbnail: v.thumbnail || `https://img.youtube.com/vi/${v.youtube_id}/maxresdefault.jpg`,
-        duration: v.duration,
-        youtubeId: v.youtube_id,
-      }));
+      return data.map((v) => {
+        const durationInSeconds = v.video_duration_seconds || v.audio_duration_seconds || 0;
+        const minutes = Math.floor(durationInSeconds / 60);
+        const seconds = Math.floor(durationInSeconds % 60);
+        const duration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        return {
+          id: v.id,
+          title: v.title,
+          thumbnail: v.thumbnail_url || v.thumbnail_large || v.thumbnail_medium || v.thumbnail_small || '',
+          duration: duration,
+        };
+      });
     },
   });
 

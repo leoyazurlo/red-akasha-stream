@@ -33,5 +33,32 @@
   },
   "language": {
     "select": "Sprache auswählen"
+  },
+  "ranking": {
+    "title": "Inhalts-Rankings",
+    "subtitle": "Von der Community am meisten gewählte Inhalte",
+    "all": "Alle",
+    "videoClip": "Musikvideo",
+    "liveMusic": "Live-Musikvideo",
+    "podcast": "Podcast",
+    "documentary": "Dokumentarfilm",
+    "short": "Kurzfilme",
+    "movie": "Filme",
+    "noContent": "Kein Inhalt in dieser Kategorie",
+    "loginRequired": "Anmeldung erforderlich",
+    "loginToRate": "Melden Sie sich an, um zu bewerten",
+    "ratingSaved": "Bewertung gespeichert!",
+    "ratingRegistered": "Ihre Bewertung wurde registriert",
+    "ratingError": "Bewertung konnte nicht gespeichert werden",
+    "vote": "Stimme",
+    "votes": "Stimmen",
+    "types": {
+      "video_clip": "Musikvideo",
+      "video_musical_vivo": "Live-Musikvideo",
+      "podcast": "Podcast",
+      "documental": "Dokumentarfilm",
+      "corto": "Kurzfilm",
+      "pelicula": "Film"
+    }
   }
 }

@@ -33,5 +33,32 @@
   },
   "language": {
     "select": "Select language"
+  },
+  "ranking": {
+    "title": "Content Rankings",
+    "subtitle": "Most voted content by the community",
+    "all": "All",
+    "videoClip": "Music Video",
+    "liveMusic": "Live Music Video",
+    "podcast": "Podcast",
+    "documentary": "Documentary",
+    "short": "Shorts",
+    "movie": "Movies",
+    "noContent": "No content in this category",
+    "loginRequired": "Login required",
+    "loginToRate": "You must login to rate",
+    "ratingSaved": "Rating saved!",
+    "ratingRegistered": "Your rating has been registered",
+    "ratingError": "Could not save your rating",
+    "vote": "vote",
+    "votes": "votes",
+    "types": {
+      "video_clip": "Music Video",
+      "video_musical_vivo": "Live Music Video",
+      "podcast": "Podcast",
+      "documental": "Documentary",
+      "corto": "Short",
+      "pelicula": "Movie"
+    }
   }
 }

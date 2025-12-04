@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { ResponsiveImage } from "@/components/ui/responsive-image";
@@ -50,6 +51,7 @@ export const VideoCarousel = ({
   const [scrollPosition, setScrollPosition] = useState(0);
   const [selectedVideo, setSelectedVideo] = useState<VideoItem | null>(null);
   const { elementRef, isVisible } = useScrollAnimation({ threshold: 0.15 });
+  const navigate = useNavigate();
 
   // Fetch schedules from database if enabled
   const { data: dbSchedules } = useQuery({
@@ -188,7 +190,14 @@ export const VideoCarousel = ({
                 <div
                   key={video.id}
                   data-index={index}
-                  onClick={() => video.youtubeId && setSelectedVideo(video)}
+                  onClick={() => {
+                    if (video.youtubeId) {
+                      setSelectedVideo(video);
+                    } else {
+                      // Navigate to video detail page for content_uploads
+                      navigate(`/video/${video.id}`);
+                    }
+                  }}
                   className={`flex-none w-44 sm:w-52 md:w-56 group cursor-pointer transition-all duration-500 ${
                     isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
                   }`}

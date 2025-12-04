@@ -1,0 +1,37 @@
+{
+  "nav": {
+    "home": "홈",
+    "onDemand": "온디맨드",
+    "artists": "아티스트",
+    "circuit": "서킷",
+    "join": "가입",
+    "upload": "콘텐츠 업로드",
+    "forum": "포럼"
+  },
+  "auth": {
+    "login": "로그인",
+    "logout": "로그아웃",
+    "profile": "내 프로필",
+    "favorites": "내 즐겨찾기",
+    "playlists": "내 재생목록",
+    "controlPanel": "제어판",
+    "sessionClosed": "세션 종료",
+    "sessionClosedDesc": "성공적으로 로그아웃되었습니다."
+  },
+  "common": {
+    "loading": "로딩 중...",
+    "error": "오류",
+    "success": "성공",
+    "cancel": "취소",
+    "save": "저장",
+    "delete": "삭제",
+    "edit": "편집",
+    "search": "검색",
+    "noResults": "결과 없음",
+    "viewMore": "더 보기",
+    "viewAll": "전체 보기"
+  },
+  "language": {
+    "select": "언어 선택"
+  }
+}

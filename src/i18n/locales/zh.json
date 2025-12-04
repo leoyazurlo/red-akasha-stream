@@ -33,5 +33,32 @@
   },
   "language": {
     "select": "选择语言"
+  },
+  "ranking": {
+    "title": "内容排行榜",
+    "subtitle": "社区最受欢迎的内容",
+    "all": "全部",
+    "videoClip": "音乐视频",
+    "liveMusic": "现场音乐视频",
+    "podcast": "播客",
+    "documentary": "纪录片",
+    "short": "短片",
+    "movie": "电影",
+    "noContent": "此类别暂无内容",
+    "loginRequired": "请登录",
+    "loginToRate": "您必须登录才能评分",
+    "ratingSaved": "评分已保存！",
+    "ratingRegistered": "您的评分已记录",
+    "ratingError": "无法保存您的评分",
+    "vote": "票",
+    "votes": "票",
+    "types": {
+      "video_clip": "音乐视频",
+      "video_musical_vivo": "现场音乐视频",
+      "podcast": "播客",
+      "documental": "纪录片",
+      "corto": "短片",
+      "pelicula": "电影"
+    }
   }
 }

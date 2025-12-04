@@ -33,5 +33,32 @@
   },
   "language": {
     "select": "언어 선택"
+  },
+  "ranking": {
+    "title": "콘텐츠 랭킹",
+    "subtitle": "커뮤니티가 가장 많이 투표한 콘텐츠",
+    "all": "전체",
+    "videoClip": "뮤직비디오",
+    "liveMusic": "라이브 공연",
+    "podcast": "팟캐스트",
+    "documentary": "다큐멘터리",
+    "short": "단편",
+    "movie": "영화",
+    "noContent": "이 카테고리에 콘텐츠가 없습니다",
+    "loginRequired": "로그인 필요",
+    "loginToRate": "평가하려면 로그인하세요",
+    "ratingSaved": "평가 저장됨!",
+    "ratingRegistered": "평가가 등록되었습니다",
+    "ratingError": "평가를 저장할 수 없습니다",
+    "vote": "표",
+    "votes": "표",
+    "types": {
+      "video_clip": "뮤직비디오",
+      "video_musical_vivo": "라이브 공연",
+      "podcast": "팟캐스트",
+      "documental": "다큐멘터리",
+      "corto": "단편",
+      "pelicula": "영화"
+    }
   }
 }

@@ -1,0 +1,37 @@
+{
+  "nav": {
+    "home": "Início",
+    "onDemand": "On Demand",
+    "artists": "Artistas",
+    "circuit": "Circuito",
+    "join": "Associar-se",
+    "upload": "Enviar Conteúdo",
+    "forum": "Fórum"
+  },
+  "auth": {
+    "login": "Entrar",
+    "logout": "Sair",
+    "profile": "Meu Perfil",
+    "favorites": "Meus Favoritos",
+    "playlists": "Minhas Playlists",
+    "controlPanel": "Painel de Controle",
+    "sessionClosed": "Sessão encerrada",
+    "sessionClosedDesc": "Você saiu com sucesso."
+  },
+  "common": {
+    "loading": "Carregando...",
+    "error": "Erro",
+    "success": "Sucesso",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "edit": "Editar",
+    "search": "Buscar",
+    "noResults": "Sem resultados",
+    "viewMore": "Ver mais",
+    "viewAll": "Ver tudo"
+  },
+  "language": {
+    "select": "Selecionar idioma"
+  }
+}

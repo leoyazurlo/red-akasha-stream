@@ -1,0 +1,37 @@
+{
+  "nav": {
+    "home": "首页",
+    "onDemand": "点播",
+    "artists": "艺术家",
+    "circuit": "巡回",
+    "join": "加入",
+    "upload": "上传内容",
+    "forum": "论坛"
+  },
+  "auth": {
+    "login": "登录",
+    "logout": "退出登录",
+    "profile": "我的资料",
+    "favorites": "我的收藏",
+    "playlists": "我的播放列表",
+    "controlPanel": "控制面板",
+    "sessionClosed": "会话已关闭",
+    "sessionClosedDesc": "您已成功退出登录。"
+  },
+  "common": {
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "cancel": "取消",
+    "save": "保存",
+    "delete": "删除",
+    "edit": "编辑",
+    "search": "搜索",
+    "noResults": "无结果",
+    "viewMore": "查看更多",
+    "viewAll": "查看全部"
+  },
+  "language": {
+    "select": "选择语言"
+  }
+}

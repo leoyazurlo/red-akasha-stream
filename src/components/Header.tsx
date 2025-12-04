@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Menu, X, LogOut, User, Heart, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import logoAkasha from "@/assets/logo-akasha-cyan.png";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,16 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
-
-const navItems = [
-  { name: "Home", href: "/", isRoute: true },
-  { name: "On Demand", href: "/on-demand", isRoute: true },
-  { name: "Artistas", href: "/artistas", isRoute: true },
-  { name: "Circuito", href: "/circuito", isRoute: true },
-  { name: "Asociate", href: "/asociate", isRoute: true },
-  { name: "Subir Contenido", href: "/subir-contenido", isRoute: true },
-  { name: "Foro", href: "/foro", isRoute: true },
-];
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -30,6 +22,17 @@ export const Header = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, isAdmin } = useAuth();
+  const { t } = useTranslation();
+
+  const navItems = [
+    { name: t('nav.home'), href: "/", isRoute: true },
+    { name: t('nav.onDemand'), href: "/on-demand", isRoute: true },
+    { name: t('nav.artists'), href: "/artistas", isRoute: true },
+    { name: t('nav.circuit'), href: "/circuito", isRoute: true },
+    { name: t('nav.join'), href: "/asociate", isRoute: true },
+    { name: t('nav.upload'), href: "/subir-contenido", isRoute: true },
+    { name: t('nav.forum'), href: "/foro", isRoute: true },
+  ];
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/95 backdrop-blur-md">
@@ -54,7 +57,7 @@ export const Header = () => {
               const isActive = item.isRoute && location.pathname === item.href;
               return item.isRoute ? (
                 <Link
-                  key={item.name}
+                  key={item.href}
                   to={item.href}
                   className={`px-4 py-2 text-sm font-light transition-colors rounded-lg hover:bg-secondary ${
                     isActive ? 'text-primary' : 'text-foreground hover:text-primary'
@@ -64,7 +67,7 @@ export const Header = () => {
                 </Link>
               ) : (
                 <a
-                  key={item.name}
+                  key={item.href}
                   href={item.href}
                   className="px-4 py-2 text-sm font-light text-foreground hover:text-primary transition-colors rounded-lg hover:bg-secondary"
                 >
@@ -72,6 +75,9 @@ export const Header = () => {
                 </a>
               );
             })}
+
+            {/* Language Selector */}
+            <LanguageSelector />
 
             {/* Auth Section */}
             {user ? (
@@ -86,33 +92,33 @@ export const Header = () => {
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => navigate(`/perfil/${user.id}`)}>
                     <User className="mr-2 h-4 w-4" />
-                    Mi Perfil
+                    {t('auth.profile')}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/favoritos")}>
                     <Heart className="mr-2 h-4 w-4" />
-                    Mis Favoritos
+                    {t('auth.favorites')}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/playlists")}>
                     <List className="mr-2 h-4 w-4" />
-                    Mis Playlists
+                    {t('auth.playlists')}
                   </DropdownMenuItem>
                   {isAdmin && (
                     <DropdownMenuItem onClick={() => navigate("/admin")}>
-                      Panel de Control
+                      {t('auth.controlPanel')}
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem
                     onClick={async () => {
                       await supabase.auth.signOut();
                       toast({
-                        title: "Sesión cerrada",
-                        description: "Has cerrado sesión correctamente.",
+                        title: t('auth.sessionClosed'),
+                        description: t('auth.sessionClosedDesc'),
                       });
                       navigate("/");
                     }}
                   >
                     <LogOut className="mr-2 h-4 w-4" />
-                    Cerrar Sesión
+                    {t('auth.logout')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -124,24 +130,27 @@ export const Header = () => {
                 className="ml-2"
                 onClick={() => navigate("/auth")}
               >
-                Iniciar Sesión
+                {t('auth.login')}
               </Button>
             )}
           </nav>
 
           {/* Mobile Menu Button - Larger for better touch */}
-          <Button
-            variant="ghost"
-            size="lg"
-            className="md:hidden h-12 w-12 p-0"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? (
-              <X className="h-8 w-8" />
-            ) : (
-              <Menu className="h-8 w-8" />
-            )}
-          </Button>
+          <div className="flex items-center gap-2 md:hidden">
+            <LanguageSelector />
+            <Button
+              variant="ghost"
+              size="lg"
+              className="h-12 w-12 p-0"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? (
+                <X className="h-8 w-8" />
+              ) : (
+                <Menu className="h-8 w-8" />
+              )}
+            </Button>
+          </div>
         </div>
 
         {/* Mobile Navigation - Larger touch targets */}
@@ -151,7 +160,7 @@ export const Header = () => {
               const isActive = item.isRoute && location.pathname === item.href;
               return item.isRoute ? (
                 <Link
-                  key={item.name}
+                  key={item.href}
                   to={item.href}
                   onClick={() => setMobileMenuOpen(false)}
                   className={`block px-4 py-3 text-base font-light transition-colors rounded-lg hover:bg-secondary ${
@@ -162,7 +171,7 @@ export const Header = () => {
                 </Link>
               ) : (
                 <a
-                  key={item.name}
+                  key={item.href}
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
                   className="block px-4 py-3 text-base font-light text-foreground hover:text-primary transition-colors rounded-lg hover:bg-secondary"
@@ -185,7 +194,7 @@ export const Header = () => {
                     }}
                   >
                     <User className="mr-2 h-5 w-5" />
-                    Mi Perfil
+                    {t('auth.profile')}
                   </Button>
                   <Button
                     variant="ghost"
@@ -196,7 +205,7 @@ export const Header = () => {
                     }}
                   >
                     <Heart className="mr-2 h-5 w-5" />
-                    Mis Favoritos
+                    {t('auth.favorites')}
                   </Button>
                   <Button
                     variant="ghost"
@@ -207,7 +216,7 @@ export const Header = () => {
                     }}
                   >
                     <List className="mr-2 h-5 w-5" />
-                    Mis Playlists
+                    {t('auth.playlists')}
                   </Button>
                   {isAdmin && (
                     <Button
@@ -218,7 +227,7 @@ export const Header = () => {
                         navigate("/admin");
                       }}
                     >
-                      Panel de Control
+                      {t('auth.controlPanel')}
                     </Button>
                   )}
                   <Button
@@ -227,15 +236,15 @@ export const Header = () => {
                     onClick={async () => {
                       await supabase.auth.signOut();
                       toast({
-                        title: "Sesión cerrada",
-                        description: "Has cerrado sesión correctamente.",
+                        title: t('auth.sessionClosed'),
+                        description: t('auth.sessionClosedDesc'),
                       });
                       setMobileMenuOpen(false);
                       navigate("/");
                     }}
                   >
                     <LogOut className="mr-2 h-5 w-5" />
-                    Cerrar Sesión
+                    {t('auth.logout')}
                   </Button>
                 </>
               ) : (
@@ -247,7 +256,7 @@ export const Header = () => {
                     navigate("/auth");
                   }}
                 >
-                  Iniciar Sesión
+                  {t('auth.login')}
                 </Button>
               )}
             </div>

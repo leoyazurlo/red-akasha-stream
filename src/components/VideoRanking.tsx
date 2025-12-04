@@ -39,7 +39,7 @@ export const VideoRanking = ({ videos: propVideos }: VideoRankingProps) => {
   const [videos, setVideos] = useState<RankingVideo[]>(propVideos || []);
   const [loading, setLoading] = useState(!propVideos);
   const [userRatings, setUserRatings] = useState<{ [key: string]: number }>({});
-  const { elementRef, isVisible } = useScrollAnimation({ threshold: 0.1 });
+  const { elementRef } = useScrollAnimation({ threshold: 0.1 });
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -152,17 +152,13 @@ export const VideoRanking = ({ videos: propVideos }: VideoRankingProps) => {
   return (
     <section 
       ref={elementRef}
-      className={`py-8 md:py-12 transition-all duration-700 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-      }`}
+      className="py-8 md:py-12"
       id="ranking"
     >
       <div className="container mx-auto px-2 sm:px-4">
         <div className="relative mb-6 md:mb-8">
           <div className="absolute inset-0 bg-gradient-glow opacity-20 blur-3xl" />
-          <h2 className={`text-2xl sm:text-3xl md:text-4xl font-poppins font-medium tracking-wide text-foreground text-center relative px-4 transition-all duration-700 delay-200 ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'
-          }`}>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-poppins font-medium tracking-wide text-foreground text-center relative px-4">
             Rankings de Videos
           </h2>
           <p className="text-center text-sm text-muted-foreground mt-2">
@@ -175,12 +171,7 @@ export const VideoRanking = ({ videos: propVideos }: VideoRankingProps) => {
             <Card 
               key={video.id} 
               data-index={index}
-              className={`p-3 sm:p-4 hover:shadow-glow transition-all duration-500 backdrop-blur-sm bg-card/50 hover:scale-[1.02] ${
-                isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'
-              }`}
-              style={{ 
-                transitionDelay: isVisible ? `${(index * 100) + 300}ms` : '0ms'
-              }}
+              className="p-3 sm:p-4 hover:shadow-glow transition-all duration-500 backdrop-blur-sm bg-card/50 hover:scale-[1.02]"
             >
               <div className="flex gap-2 sm:gap-4">
                 {/* Rank Number */}

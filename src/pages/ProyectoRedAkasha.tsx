@@ -1,10 +1,9 @@
-import { Users, Music, Vote, Building2, Heart, MessageSquare, Sparkles, Target, HandHeart, ArrowRight } from "lucide-react";
+import { Users, Music, Vote, Building2, Heart, MessageSquare, Sparkles, Target, HandHeart, ArrowRight, Globe } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import logoAkasha from "@/assets/logo-akasha-cyan.png";
 
 const ProyectoRedAkasha = () => {
   const { elementRef: heroRef, isVisible: heroVisible } = useScrollAnimation();
@@ -52,12 +51,12 @@ const ProyectoRedAkasha = () => {
         ref={heroRef}
         className="relative min-h-[90vh] flex items-center justify-center"
       >
-        {/* Animated Background */}
+        {/* Animated Background - Purple Theme */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-cyan-900/20" />
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/30 rounded-full blur-[120px] animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-cyan-500/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[150px]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/40 via-background to-purple-800/20" />
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/30 rounded-full blur-[120px] animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/15 rounded-full blur-[150px]" />
         </div>
 
         {/* Grid Pattern Overlay */}
@@ -72,15 +71,13 @@ const ProyectoRedAkasha = () => {
             heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
         >
-          {/* Logo */}
+          {/* Purple Globe Icon */}
           <div className="flex justify-center mb-8">
             <div className="relative">
-              <div className="absolute inset-0 bg-primary/50 blur-3xl rounded-full scale-150" />
-              <img 
-                src={logoAkasha} 
-                alt="Red Akasha" 
-                className="w-32 h-32 md:w-40 md:h-40 object-contain relative z-10 drop-shadow-[0_0_30px_rgba(0,255,255,0.5)]"
-              />
+              <div className="absolute inset-0 bg-purple-500/40 blur-3xl rounded-full scale-150" />
+              <div className="w-32 h-32 md:w-40 md:h-40 relative z-10">
+                <Globe className="w-full h-full text-purple-400 stroke-[0.5]" />
+              </div>
             </div>
           </div>
 

@@ -15,6 +15,7 @@ import {
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { ResponsiveImage } from "@/components/ui/responsive-image";
@@ -24,7 +25,7 @@ interface VideoItem {
   title: string;
   thumbnail: string;
   duration: string;
-  youtubeId?: string; // ID del video de YouTube
+  youtubeId?: string;
 }
 
 interface ProgramSchedule {
@@ -48,6 +49,7 @@ export const VideoCarousel = ({
   showSchedule = false,
   loadSchedulesFromDB = false
 }: VideoCarouselProps) => {
+  const { t } = useTranslation();
   const [scrollPosition, setScrollPosition] = useState(0);
   const [selectedVideo, setSelectedVideo] = useState<VideoItem | null>(null);
   const { elementRef, isVisible } = useScrollAnimation({ threshold: 0.15 });
@@ -132,7 +134,7 @@ export const VideoCarousel = ({
                     className="flex items-center gap-1 sm:gap-2 bg-card/80 backdrop-blur-sm border-primary/30 hover:border-primary hover:bg-card z-50 h-9 md:h-10 px-2 sm:px-3 text-xs sm:text-sm flex-shrink-0"
                   >
                     <Clock className="h-4 w-4 text-primary" />
-                    <span className="hidden sm:inline">Horarios</span>
+                    <span className="hidden sm:inline">{t('home.schedules')}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent 

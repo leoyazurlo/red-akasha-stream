@@ -19,11 +19,69 @@ interface RankingVideo {
   content_type: string;
   likes_count: number;
   uploader_id: string;
+  country?: string | null;
 }
 
 interface VideoRankingProps {
   videos?: RankingVideo[];
 }
+
+const COUNTRY_FLAGS: Record<string, string> = {
+  'Argentina': '🇦🇷',
+  'Bolivia': '🇧🇴',
+  'Brasil': '🇧🇷',
+  'Brazil': '🇧🇷',
+  'Chile': '🇨🇱',
+  'Colombia': '🇨🇴',
+  'Costa Rica': '🇨🇷',
+  'Cuba': '🇨🇺',
+  'Ecuador': '🇪🇨',
+  'El Salvador': '🇸🇻',
+  'España': '🇪🇸',
+  'Spain': '🇪🇸',
+  'Estados Unidos': '🇺🇸',
+  'United States': '🇺🇸',
+  'USA': '🇺🇸',
+  'Guatemala': '🇬🇹',
+  'Honduras': '🇭🇳',
+  'México': '🇲🇽',
+  'Mexico': '🇲🇽',
+  'Nicaragua': '🇳🇮',
+  'Panamá': '🇵🇦',
+  'Panama': '🇵🇦',
+  'Paraguay': '🇵🇾',
+  'Perú': '🇵🇪',
+  'Peru': '🇵🇪',
+  'Puerto Rico': '🇵🇷',
+  'República Dominicana': '🇩🇴',
+  'Dominican Republic': '🇩🇴',
+  'Uruguay': '🇺🇾',
+  'Venezuela': '🇻🇪',
+  'Alemania': '🇩🇪',
+  'Germany': '🇩🇪',
+  'Francia': '🇫🇷',
+  'France': '🇫🇷',
+  'Italia': '🇮🇹',
+  'Italy': '🇮🇹',
+  'Portugal': '🇵🇹',
+  'Reino Unido': '🇬🇧',
+  'United Kingdom': '🇬🇧',
+  'UK': '🇬🇧',
+  'Canadá': '🇨🇦',
+  'Canada': '🇨🇦',
+  'China': '🇨🇳',
+  'Japón': '🇯🇵',
+  'Japan': '🇯🇵',
+  'Corea del Sur': '🇰🇷',
+  'South Korea': '🇰🇷',
+  'Rusia': '🇷🇺',
+  'Russia': '🇷🇺',
+};
+
+const getCountryFlag = (country: string | null | undefined): string => {
+  if (!country) return '🌎';
+  return COUNTRY_FLAGS[country] || '🌎';
+};
 
 const CATEGORIES = [
   { key: 'all', label: 'ranking.all', types: [] as string[] },
@@ -54,16 +112,43 @@ export const VideoRanking = ({ videos: propVideos }: VideoRankingProps) => {
 
   const fetchRankingVideos = async () => {
     try {
-      const { data, error } = await supabase
+      // First get the content
+      const { data: contentData, error: contentError } = await supabase
         .from('content_uploads')
         .select('id, title, thumbnail_url, band_name, content_type, likes_count, uploader_id')
         .eq('status', 'approved')
         .order('likes_count', { ascending: false })
         .limit(50);
 
-      if (error) throw error;
+      if (contentError) throw contentError;
 
-      setVideos(data || []);
+      if (!contentData || contentData.length === 0) {
+        setVideos([]);
+        return;
+      }
+
+      // Get unique uploader IDs
+      const uploaderIds = [...new Set(contentData.map(v => v.uploader_id))];
+
+      // Fetch countries from profile_details
+      const { data: profilesData } = await supabase
+        .from('profile_details')
+        .select('user_id, pais')
+        .in('user_id', uploaderIds);
+
+      // Create a map of user_id to country
+      const countryMap: Record<string, string> = {};
+      profilesData?.forEach(p => {
+        if (p.pais) countryMap[p.user_id] = p.pais;
+      });
+
+      // Merge country data into videos
+      const videosWithCountry = contentData.map(video => ({
+        ...video,
+        country: countryMap[video.uploader_id] || null
+      }));
+
+      setVideos(videosWithCountry);
     } catch (error) {
       console.error('Error fetching ranking:', error);
     } finally {
@@ -241,8 +326,11 @@ export const VideoRanking = ({ videos: propVideos }: VideoRankingProps) => {
                               </Button>
                             ))}
                           </div>
-                          <span className="text-xs sm:text-sm font-light text-muted-foreground">
+                          <span className="text-xs sm:text-sm font-light text-muted-foreground flex items-center gap-1">
                             {video.likes_count} {video.likes_count === 1 ? t('ranking.vote') : t('ranking.votes')}
+                            <span className="text-base ml-1" title={video.country || undefined}>
+                              {getCountryFlag(video.country)}
+                            </span>
                           </span>
                         </div>
                       </div>

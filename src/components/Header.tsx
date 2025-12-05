@@ -102,22 +102,30 @@ export const Header = () => {
                       <User className="h-5 w-5" />
                     </Button>
                   </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onSelect={() => navigate(`/perfil/${user.id}`)}>
-                    <User className="mr-2 h-4 w-4" />
-                    {t('auth.profile')}
+                <DropdownMenuContent align="end" className="z-50 bg-popover">
+                  <DropdownMenuItem asChild>
+                    <Link to={`/perfil/${user.id}`} className="flex items-center cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      {t('auth.profile')}
+                    </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => navigate("/favoritos")}>
-                    <Heart className="mr-2 h-4 w-4" />
-                    {t('auth.favorites')}
+                  <DropdownMenuItem asChild>
+                    <Link to="/favoritos" className="flex items-center cursor-pointer">
+                      <Heart className="mr-2 h-4 w-4" />
+                      {t('auth.favorites')}
+                    </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => navigate("/playlists")}>
-                    <List className="mr-2 h-4 w-4" />
-                    {t('auth.playlists')}
+                  <DropdownMenuItem asChild>
+                    <Link to="/playlists" className="flex items-center cursor-pointer">
+                      <List className="mr-2 h-4 w-4" />
+                      {t('auth.playlists')}
+                    </Link>
                   </DropdownMenuItem>
                   {isAdmin && (
-                    <DropdownMenuItem onSelect={() => navigate("/admin")}>
-                      {t('auth.controlPanel')}
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="flex items-center cursor-pointer">
+                        {t('auth.controlPanel')}
+                      </Link>
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem

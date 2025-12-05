@@ -103,25 +103,25 @@ export const Header = () => {
                     </Button>
                   </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => navigate(`/perfil/${user.id}`)}>
+                  <DropdownMenuItem onSelect={() => navigate(`/perfil/${user.id}`)}>
                     <User className="mr-2 h-4 w-4" />
                     {t('auth.profile')}
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/favoritos")}>
+                  <DropdownMenuItem onSelect={() => navigate("/favoritos")}>
                     <Heart className="mr-2 h-4 w-4" />
                     {t('auth.favorites')}
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/playlists")}>
+                  <DropdownMenuItem onSelect={() => navigate("/playlists")}>
                     <List className="mr-2 h-4 w-4" />
                     {t('auth.playlists')}
                   </DropdownMenuItem>
                   {isAdmin && (
-                    <DropdownMenuItem onClick={() => navigate("/admin")}>
+                    <DropdownMenuItem onSelect={() => navigate("/admin")}>
                       {t('auth.controlPanel')}
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem
-                    onClick={async () => {
+                    onSelect={async () => {
                       await supabase.auth.signOut();
                       toast({
                         title: t('auth.sessionClosed'),

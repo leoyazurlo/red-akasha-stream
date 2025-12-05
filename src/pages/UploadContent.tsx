@@ -677,7 +677,7 @@ const UploadContent = () => {
                             }}
                           >
                             <SelectTrigger className="bg-card">
-                              <SelectValue placeholder="Selecciona una banda" />
+                              <SelectValue placeholder={formData.content_type === 'video_musical_vivo' ? "Selecciona el artista" : "Selecciona una banda"} />
                             </SelectTrigger>
                             <SelectContent className="bg-card border-border z-50">
                               {bands.map((band) => (
@@ -695,7 +695,7 @@ const UploadContent = () => {
                             <Input
                               value={formData.band_name}
                               onChange={(e) => setFormData(prev => ({ ...prev, band_name: e.target.value }))}
-                              placeholder="Escribe el nombre de la banda"
+                              placeholder={formData.content_type === 'video_musical_vivo' ? "Escribe el nombre del artista" : "Escribe el nombre de la banda"}
                             />
                             <Button
                               type="button"

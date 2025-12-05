@@ -81,16 +81,7 @@ export const Header = () => {
             {/* Auth Section */}
             {user ? (
               <>
-                <NotificationBell />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => navigate("/playlists")}
-                  className="relative"
-                  title={t('auth.playlists')}
-                >
-                  <List className="h-5 w-5" />
-                </Button>
+            <NotificationBell />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="ml-2">

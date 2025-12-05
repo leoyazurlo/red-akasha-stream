@@ -125,43 +125,27 @@ const ProyectoRedAkasha = () => {
           }`}
         >
           <div className="max-w-5xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-primary to-cyan-500 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-500" />
-                <div className="relative p-8 bg-card rounded-2xl border border-border h-full">
-                  <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center mb-6">
-                    <Sparkles className="w-6 h-6 text-primary" />
-                  </div>
-                  <p className="text-lg text-foreground/90 leading-relaxed">
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/60 via-primary/40 to-cyan-500/60 rounded-3xl blur-xl opacity-40 group-hover:opacity-60 transition duration-500" />
+              <div className="relative p-8 md:p-12 bg-card/80 backdrop-blur-sm rounded-3xl border border-cyan-500/30">
+                <div className="space-y-8 text-center">
+                  <p className="text-lg md:text-xl text-foreground/90 leading-relaxed">
                     En un mundo donde demasiadas veces el talento queda silenciado por la falta de oportunidades, 
                     <span className="text-primary font-semibold"> Red Akasha</span> nace como un espacio libre, abierto y colaborativo.
                   </p>
-                </div>
-              </div>
-              
-              <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-primary rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-500" />
-                <div className="relative p-8 bg-card rounded-2xl border border-border h-full">
-                  <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center mb-6">
-                    <Music className="w-6 h-6 text-primary" />
-                  </div>
-                  <p className="text-lg text-foreground/90 leading-relaxed">
+                  
+                  <p className="text-lg md:text-xl text-foreground/90 leading-relaxed">
                     Una plataforma digital de contenidos audiovisuales que une a músicos, productores, estudios, teatros 
                     y venues en torno a un mismo sueño: <span className="text-primary font-semibold">dar voz y voto a los artistas emergentes.</span>
                   </p>
+                  
+                  <p className="text-lg md:text-xl text-foreground/80 leading-relaxed">
+                    No se trata solo de escuchar música: se trata de{" "}
+                    <span className="text-primary font-semibold">participar en la creación de una nueva industria cultural</span>, 
+                    donde el valor del contenido se mide por el aporte de la comunidad y el apoyo de quienes 
+                    creen en un futuro más justo y colaborativo.
+                  </p>
                 </div>
-              </div>
-            </div>
-
-            <div className="mt-8 relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-primary via-cyan-500 to-primary rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-500" />
-              <div className="relative p-8 md:p-10 bg-card rounded-2xl border border-border text-center">
-                <p className="text-lg md:text-xl text-foreground/80 leading-relaxed">
-                  No se trata solo de escuchar música: se trata de{" "}
-                  <span className="text-primary font-semibold">participar en la creación de una nueva industria cultural</span>, 
-                  donde el valor del contenido se mide por el aporte de la comunidad y el apoyo de quienes 
-                  creen en un futuro más justo y colaborativo.
-                </p>
               </div>
             </div>
           </div>

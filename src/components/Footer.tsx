@@ -1,31 +1,26 @@
-import { Music, Vote, UserPlus, Palette, Share2 } from "lucide-react";
+import { Vote, UserPlus, Palette, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const footerActions = [
   {
-    icon: Music,
-    label: "Música en Vivo",
-    href: "#musica-vivo",
-  },
-  {
     icon: Vote,
-    label: "Votar",
-    href: "#votar",
+    label: "Contacto / Quiénes Somos",
+    href: "#contacto",
   },
   {
     icon: UserPlus,
-    label: "Inscribirse",
-    href: "#inscribirse",
+    label: "Asóciate Gratis",
+    href: "/asociate",
   },
   {
     icon: Palette,
-    label: "Artistas",
+    label: "Proyecto Red Akasha",
     href: "/artistas",
   },
   {
     icon: Share2,
-    label: "Compartir Proyectos",
+    label: "Compartir Página",
     href: "#compartir",
   },
 ];
@@ -42,7 +37,7 @@ export const Footer = () => {
     >
       <div className="container mx-auto px-4 py-8 md:py-12">
         {/* Action Buttons - Better mobile layout */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4 mb-8 md:mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mb-8 md:mb-12">
           {footerActions.map((action, index) => {
             const Icon = action.icon;
             return (
@@ -57,11 +52,11 @@ export const Footer = () => {
                   transitionDelay: isVisible ? `${index * 100}ms` : '0ms'
                 }}
               >
-                <div className="flex flex-col items-center gap-2 md:gap-3 p-4 md:p-6 bg-secondary rounded-xl border border-border hover:border-primary transition-all duration-300 hover:shadow-glow hover:scale-105">
-                  <div className="w-10 h-10 md:w-12 md:h-12 bg-primary/20 rounded-full flex items-center justify-center group-hover:bg-primary/30 transition-all duration-300 group-hover:animate-float">
-                    <Icon className="w-5 h-5 md:w-6 md:h-6 text-primary" />
+                <div className="flex flex-col items-center gap-1.5 md:gap-2 p-2 md:p-3 bg-secondary rounded-lg border border-border hover:border-primary transition-all duration-300 hover:shadow-glow hover:scale-105">
+                  <div className="w-7 h-7 md:w-8 md:h-8 bg-primary/20 rounded-full flex items-center justify-center group-hover:bg-primary/30 transition-all duration-300 group-hover:animate-float">
+                    <Icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary" />
                   </div>
-                  <span className="text-xs md:text-sm font-light text-center text-foreground group-hover:text-primary transition-colors">
+                  <span className="text-[10px] md:text-xs font-light text-center text-foreground group-hover:text-primary transition-colors leading-tight">
                     {action.label}
                   </span>
                 </div>

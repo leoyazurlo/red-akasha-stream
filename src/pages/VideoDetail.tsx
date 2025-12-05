@@ -27,13 +27,71 @@ import {
   ThumbsUp,
   ChevronDown,
   Share2,
-  PictureInPicture
+  PictureInPicture,
+  MapPin
 } from "lucide-react";
 import ShareButtons from "@/components/ShareButtons";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
+
+const COUNTRY_FLAGS: Record<string, string> = {
+  'Argentina': '🇦🇷',
+  'Bolivia': '🇧🇴',
+  'Brasil': '🇧🇷',
+  'Brazil': '🇧🇷',
+  'Chile': '🇨🇱',
+  'Colombia': '🇨🇴',
+  'Costa Rica': '🇨🇷',
+  'Cuba': '🇨🇺',
+  'Ecuador': '🇪🇨',
+  'El Salvador': '🇸🇻',
+  'España': '🇪🇸',
+  'Spain': '🇪🇸',
+  'Estados Unidos': '🇺🇸',
+  'United States': '🇺🇸',
+  'USA': '🇺🇸',
+  'Guatemala': '🇬🇹',
+  'Honduras': '🇭🇳',
+  'México': '🇲🇽',
+  'Mexico': '🇲🇽',
+  'Nicaragua': '🇳🇮',
+  'Panamá': '🇵🇦',
+  'Panama': '🇵🇦',
+  'Paraguay': '🇵🇾',
+  'Perú': '🇵🇪',
+  'Peru': '🇵🇪',
+  'Puerto Rico': '🇵🇷',
+  'República Dominicana': '🇩🇴',
+  'Dominican Republic': '🇩🇴',
+  'Uruguay': '🇺🇾',
+  'Venezuela': '🇻🇪',
+  'Alemania': '🇩🇪',
+  'Germany': '🇩🇪',
+  'Francia': '🇫🇷',
+  'France': '🇫🇷',
+  'Italia': '🇮🇹',
+  'Italy': '🇮🇹',
+  'Portugal': '🇵🇹',
+  'Reino Unido': '🇬🇧',
+  'United Kingdom': '🇬🇧',
+  'UK': '🇬🇧',
+  'Canadá': '🇨🇦',
+  'Canada': '🇨🇦',
+  'China': '🇨🇳',
+  'Japón': '🇯🇵',
+  'Japan': '🇯🇵',
+  'Corea del Sur': '🇰🇷',
+  'South Korea': '🇰🇷',
+  'Rusia': '🇷🇺',
+  'Russia': '🇷🇺',
+};
+
+const getCountryFlag = (country: string | null | undefined): string => {
+  if (!country) return '🌎';
+  return COUNTRY_FLAGS[country] || '🌎';
+};
 
 interface VideoDetail {
   id: string;
@@ -52,6 +110,7 @@ interface VideoDetail {
   uploader_id: string;
   is_free: boolean;
   price: number;
+  country?: string | null;
 }
 
 interface Comment {
@@ -173,10 +232,20 @@ const VideoDetail = () => {
 
       if (error) throw error;
 
-      setVideo(data);
-      
-      // Incrementar vistas
       if (data) {
+        // Fetch country from uploader's profile
+        const { data: profileData } = await supabase
+          .from('profile_details')
+          .select('pais')
+          .eq('user_id', data.uploader_id)
+          .single();
+
+        setVideo({
+          ...data,
+          country: profileData?.pais || null
+        });
+        
+        // Incrementar vistas
         await supabase
           .from('content_uploads')
           .update({ views_count: data.views_count + 1 })
@@ -466,12 +535,18 @@ const VideoDetail = () => {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <CardTitle className="text-2xl mb-2">{video.title}</CardTitle>
-                      {video.band_name && (
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Music2 className="w-4 h-4" />
-                          <span className="font-medium">{video.band_name}</span>
+                      <div className="flex items-center gap-4 text-muted-foreground">
+                        {video.band_name && (
+                          <div className="flex items-center gap-2">
+                            <Music2 className="w-4 h-4" />
+                            <span className="font-medium">{video.band_name}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1" title={video.country || 'País desconocido'}>
+                          <span className="text-xl">{getCountryFlag(video.country)}</span>
+                          {video.country && <span className="text-sm">{video.country}</span>}
                         </div>
-                      )}
+                      </div>
                     </div>
                     <Badge variant="outline" className="shrink-0">
                       {video.content_type.replace('_', ' ')}

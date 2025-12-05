@@ -89,24 +89,24 @@ export const Header = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="z-50 bg-popover">
-                    <DropdownMenuItem onClick={() => navigate(`/perfil/${user.id}`)} className="cursor-pointer">
+                    <DropdownMenuItem onSelect={() => navigate(`/perfil/${user.id}`)} className="cursor-pointer">
                       <User className="mr-2 h-4 w-4" />
                       {t('auth.profile')}
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/favoritos")} className="cursor-pointer">
+                    <DropdownMenuItem onSelect={() => navigate("/favoritos")} className="cursor-pointer">
                       <Heart className="mr-2 h-4 w-4" />
                       {t('auth.favorites')}
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate("/playlists")} className="cursor-pointer">
+                    <DropdownMenuItem onSelect={() => navigate("/playlists")} className="cursor-pointer">
                       <List className="mr-2 h-4 w-4" />
                       {t('auth.playlists')}
                     </DropdownMenuItem>
                     {isAdmin && (
-                      <DropdownMenuItem onClick={() => navigate("/admin")} className="cursor-pointer">
+                      <DropdownMenuItem onSelect={() => navigate("/admin")} className="cursor-pointer">
                         {t('auth.controlPanel')}
                       </DropdownMenuItem>
                     )}
-                    <DropdownMenuItem onClick={handleLogout}>
+                    <DropdownMenuItem onSelect={handleLogout}>
                       <LogOut className="mr-2 h-4 w-4" />
                       {t('auth.logout')}
                     </DropdownMenuItem>

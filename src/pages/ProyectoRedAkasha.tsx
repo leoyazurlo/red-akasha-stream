@@ -1,9 +1,10 @@
-import { Users, Music, Vote, Building2, Heart, MessageSquare, Sparkles, Target, HandHeart, ArrowRight, Globe } from "lucide-react";
+import { Users, Music, Vote, Building2, Heart, MessageSquare, Sparkles, Target, HandHeart, ArrowRight } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import logoAkasha from "@/assets/logo-akasha-cyan.png";
 
 const ProyectoRedAkasha = () => {
   const { elementRef: heroRef, isVisible: heroVisible } = useScrollAnimation();
@@ -71,13 +72,15 @@ const ProyectoRedAkasha = () => {
             heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
         >
-          {/* Purple Globe Icon */}
+          {/* Logo Cyan */}
           <div className="flex justify-center mb-8">
             <div className="relative">
-              <div className="absolute inset-0 bg-purple-500/40 blur-3xl rounded-full scale-150" />
-              <div className="w-32 h-32 md:w-40 md:h-40 relative z-10">
-                <Globe className="w-full h-full text-purple-400 stroke-[0.5]" />
-              </div>
+              <div className="absolute inset-0 bg-cyan-500/40 blur-3xl rounded-full scale-150" />
+              <img 
+                src={logoAkasha} 
+                alt="Red Akasha" 
+                className="w-32 h-32 md:w-40 md:h-40 object-contain relative z-10 drop-shadow-[0_0_30px_rgba(0,255,255,0.5)]"
+              />
             </div>
           </div>
 

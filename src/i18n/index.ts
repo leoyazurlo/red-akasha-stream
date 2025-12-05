@@ -40,12 +40,15 @@ i18n
       ko: { translation: ko },
     },
     fallbackLng: 'es',
+    supportedLngs: ['es', 'en', 'pt', 'fr', 'zh', 'de', 'it', 'ru', 'ko'],
+    load: 'languageOnly',
     interpolation: {
       escapeValue: false,
     },
     detection: {
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],
+      lookupLocalStorage: 'i18nextLng',
     },
   });
 

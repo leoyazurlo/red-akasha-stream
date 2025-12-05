@@ -4,6 +4,7 @@ import { CosmicBackground } from "@/components/CosmicBackground";
 import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -57,6 +58,7 @@ interface PlaybackHistory {
 }
 
 const OnDemand = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [contents, setContents] = useState<Content[]>([]);
@@ -118,8 +120,8 @@ const OnDemand = () => {
     } catch (error) {
       console.error('Error fetching content:', error);
       toast({
-        title: "Error",
-        description: "No se pudo cargar el contenido de video",
+        title: t('common.error'),
+        description: t('onDemand.errorLoadingContent'),
         variant: "destructive",
       });
     } finally {
@@ -207,15 +209,7 @@ const OnDemand = () => {
   };
 
   const getContentTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      video_musical_vivo: "Video Musical en Vivo",
-      video_clip: "Video Clip",
-      podcast: "Podcast",
-      corto: "Cortometraje",
-      documental: "Documental",
-      pelicula: "Película"
-    };
-    return labels[type] || type;
+    return t(`onDemand.types.${type}`, type);
   };
 
   const handleContentClick = (content: Content) => {
@@ -230,8 +224,8 @@ const OnDemand = () => {
 
   const handlePurchase = () => {
     toast({
-      title: "Próximamente",
-      description: "El sistema de pagos estará disponible pronto",
+      title: t('onDemand.comingSoon'),
+      description: t('onDemand.paymentSoon'),
     });
   };
 
@@ -246,10 +240,10 @@ const OnDemand = () => {
           {/* Hero Section */}
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
-              On Demand
+              {t('onDemand.title')}
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Contenido de video subido por nuestros socios. Disfruta de videos musicales, clips, documentales y películas.
+              {t('onDemand.subtitle')}
             </p>
           </div>
 
@@ -259,10 +253,10 @@ const OnDemand = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Play className="w-5 h-5" />
-                  Continuar Viendo
+                  {t('onDemand.continueWatching')}
                 </CardTitle>
                 <CardDescription>
-                  Retoma donde lo dejaste
+                  {t('onDemand.resumeWhere')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -327,7 +321,7 @@ const OnDemand = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Filter className="w-5 h-5" />
-                Filtros
+                {t('onDemand.filters')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -336,7 +330,7 @@ const OnDemand = () => {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                   <Input
-                    placeholder="Buscar contenido..."
+                    placeholder={t('onDemand.searchPlaceholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
@@ -346,15 +340,15 @@ const OnDemand = () => {
                 {/* Type Filter */}
                 <Select value={filterType} onValueChange={setFilterType}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Tipo de contenido" />
+                    <SelectValue placeholder={t('onDemand.contentType')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos los tipos</SelectItem>
-                    <SelectItem value="video_musical_vivo">Videos Musicales en Vivo</SelectItem>
-                    <SelectItem value="video_clip">Video Clips</SelectItem>
-                    <SelectItem value="corto">Cortometrajes</SelectItem>
-                    <SelectItem value="documental">Documentales</SelectItem>
-                    <SelectItem value="pelicula">Películas</SelectItem>
+                    <SelectItem value="all">{t('onDemand.allTypes')}</SelectItem>
+                    <SelectItem value="video_musical_vivo">{t('onDemand.liveMusicalVideos')}</SelectItem>
+                    <SelectItem value="video_clip">{t('onDemand.videoClips')}</SelectItem>
+                    <SelectItem value="corto">{t('onDemand.shorts')}</SelectItem>
+                    <SelectItem value="documental">{t('onDemand.documentaries')}</SelectItem>
+                    <SelectItem value="pelicula">{t('onDemand.movies')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -379,9 +373,9 @@ const OnDemand = () => {
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-secondary/20 flex items-center justify-center">
                 <Search className="w-8 h-8 text-muted-foreground" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">No se encontró contenido</h3>
+              <h3 className="text-xl font-semibold mb-2">{t('onDemand.noContent')}</h3>
               <p className="text-muted-foreground">
-                Intenta ajustar los filtros o realizar una búsqueda diferente
+                {t('onDemand.adjustFilters')}
               </p>
             </div>
           ) : (
@@ -393,11 +387,11 @@ const OnDemand = () => {
                     <div className="flex items-center gap-3 mb-2">
                       <div className="h-10 w-1 bg-gradient-to-b from-cyan-500 to-cyan-600 rounded-full"></div>
                       <h2 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-cyan-500 bg-clip-text text-transparent">
-                        Contenido Liberado
+                        {t('onDemand.freeContent')}
                       </h2>
                     </div>
                     <p className="text-muted-foreground ml-7">
-                      {freeContents.length} video{freeContents.length !== 1 ? 's' : ''} disponible{freeContents.length !== 1 ? 's' : ''} sin costo
+                      {freeContents.length} {t('onDemand.videosAvailable')}
                     </p>
                   </div>
                   
@@ -541,11 +535,11 @@ const OnDemand = () => {
                     <div className="flex items-center gap-3 mb-2">
                       <div className="h-10 w-1 bg-gradient-to-b from-amber-500 via-yellow-500 to-orange-500 rounded-full"></div>
                       <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 bg-clip-text text-transparent">
-                        Contenido Premium
+                        {t('onDemand.premiumContent')}
                       </h2>
                     </div>
                     <p className="text-muted-foreground ml-7">
-                      {paidContents.length} video{paidContents.length !== 1 ? 's' : ''} exclusivo{paidContents.length !== 1 ? 's' : ''}
+                      {paidContents.length} {t('onDemand.exclusiveVideos')}
                     </p>
                   </div>
                   

@@ -75,11 +75,12 @@ const ProyectoRedAkasha = () => {
           {/* Logo Cyan */}
           <div className="flex justify-center mb-8">
             <div className="relative">
-              <div className="absolute inset-0 bg-cyan-500/40 blur-3xl rounded-full scale-150" />
+              <div className="absolute inset-0 bg-cyan-400/60 blur-3xl rounded-full scale-150" />
+              <div className="absolute inset-0 bg-cyan-300/40 blur-2xl rounded-full scale-125" />
               <img 
                 src={logoAkasha} 
                 alt="Red Akasha" 
-                className="w-32 h-32 md:w-40 md:h-40 object-contain relative z-10 drop-shadow-[0_0_30px_rgba(0,255,255,0.5)]"
+                className="w-32 h-32 md:w-40 md:h-40 object-contain relative z-10 drop-shadow-[0_0_40px_rgba(0,255,255,0.7)] brightness-110"
               />
             </div>
           </div>

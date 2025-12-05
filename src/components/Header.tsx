@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Menu, X, LogOut, User, Heart, List } from "lucide-react";
+import { LogOut, User, Heart, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -17,7 +16,6 @@ import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { LanguageSelector } from "@/components/LanguageSelector";
 
 export const Header = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -25,20 +23,29 @@ export const Header = () => {
   const { t } = useTranslation();
 
   const navItems = [
-    { name: t('nav.home'), href: "/", isRoute: true },
-    { name: t('nav.onDemand'), href: "/on-demand", isRoute: true },
-    { name: t('nav.artists'), href: "/artistas", isRoute: true },
-    { name: t('nav.circuit'), href: "/circuito", isRoute: true },
-    { name: t('nav.join'), href: "/asociate", isRoute: true },
-    { name: t('nav.upload'), href: "/subir-contenido", isRoute: true },
-    { name: t('nav.forum'), href: "/foro", isRoute: true },
+    { name: t('nav.home'), href: "/" },
+    { name: t('nav.onDemand'), href: "/on-demand" },
+    { name: t('nav.artists'), href: "/artistas" },
+    { name: t('nav.circuit'), href: "/circuito" },
+    { name: t('nav.join'), href: "/asociate" },
+    { name: t('nav.upload'), href: "/subir-contenido" },
+    { name: t('nav.forum'), href: "/foro" },
   ];
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast({
+      title: t('auth.sessionClosed'),
+      description: t('auth.sessionClosedDesc'),
+    });
+    navigate("/");
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/95 backdrop-blur-md">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo - Responsive sizes */}
+          {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 sm:space-x-3">
             <span className="text-lg sm:text-xl md:text-2xl font-light tracking-wider bg-gradient-primary bg-clip-text text-transparent">
               RED AKASHA
@@ -51,28 +58,20 @@ export const Header = () => {
             />
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1">
+          {/* Navigation */}
+          <nav className="flex items-center space-x-1">
             {navItems.map((item) => {
-              const isActive = item.isRoute && location.pathname === item.href;
-              return item.isRoute ? (
+              const isActive = location.pathname === item.href;
+              return (
                 <Link
                   key={item.href}
                   to={item.href}
-                  className={`px-4 py-2 text-sm font-light transition-colors rounded-lg hover:bg-secondary ${
+                  className={`hidden md:block px-4 py-2 text-sm font-light transition-colors rounded-lg hover:bg-secondary ${
                     isActive ? 'text-primary' : 'text-foreground hover:text-primary'
                   }`}
                 >
                   {item.name}
                 </Link>
-              ) : (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className="px-4 py-2 text-sm font-light text-foreground hover:text-primary transition-colors rounded-lg hover:bg-secondary"
-                >
-                  {item.name}
-                </a>
               );
             })}
 
@@ -86,11 +85,7 @@ export const Header = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    navigate("/playlists");
-                  }}
+                  onClick={() => navigate("/playlists")}
                   className="relative"
                   title={t('auth.playlists')}
                 >
@@ -102,47 +97,38 @@ export const Header = () => {
                       <User className="h-5 w-5" />
                     </Button>
                   </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="z-50 bg-popover">
-                  <DropdownMenuItem asChild>
-                    <Link to={`/perfil/${user.id}`} className="flex items-center cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
-                      {t('auth.profile')}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/favoritos" className="flex items-center cursor-pointer">
-                      <Heart className="mr-2 h-4 w-4" />
-                      {t('auth.favorites')}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/playlists" className="flex items-center cursor-pointer">
-                      <List className="mr-2 h-4 w-4" />
-                      {t('auth.playlists')}
-                    </Link>
-                  </DropdownMenuItem>
-                  {isAdmin && (
+                  <DropdownMenuContent align="end" className="z-50 bg-popover">
                     <DropdownMenuItem asChild>
-                      <Link to="/admin" className="flex items-center cursor-pointer">
-                        {t('auth.controlPanel')}
+                      <Link to={`/perfil/${user.id}`} className="flex items-center cursor-pointer">
+                        <User className="mr-2 h-4 w-4" />
+                        {t('auth.profile')}
                       </Link>
                     </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem
-                    onSelect={async () => {
-                      await supabase.auth.signOut();
-                      toast({
-                        title: t('auth.sessionClosed'),
-                        description: t('auth.sessionClosedDesc'),
-                      });
-                      navigate("/");
-                    }}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    {t('auth.logout')}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    <DropdownMenuItem asChild>
+                      <Link to="/favoritos" className="flex items-center cursor-pointer">
+                        <Heart className="mr-2 h-4 w-4" />
+                        {t('auth.favorites')}
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/playlists" className="flex items-center cursor-pointer">
+                        <List className="mr-2 h-4 w-4" />
+                        {t('auth.playlists')}
+                      </Link>
+                    </DropdownMenuItem>
+                    {isAdmin && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin" className="flex items-center cursor-pointer">
+                          {t('auth.controlPanel')}
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem onSelect={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      {t('auth.logout')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             ) : (
               <Button
@@ -155,134 +141,7 @@ export const Header = () => {
               </Button>
             )}
           </nav>
-
-          {/* Mobile Menu Button - Larger for better touch */}
-          <div className="flex items-center gap-2 md:hidden">
-            <LanguageSelector />
-            <Button
-              variant="ghost"
-              size="lg"
-              className="h-12 w-12 p-0"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? (
-                <X className="h-8 w-8" />
-              ) : (
-                <Menu className="h-8 w-8" />
-              )}
-            </Button>
-          </div>
         </div>
-
-        {/* Mobile Navigation - Larger touch targets */}
-        {mobileMenuOpen && (
-          <nav className="md:hidden py-4 space-y-1 animate-slide-in">
-            {navItems.map((item) => {
-              const isActive = item.isRoute && location.pathname === item.href;
-              return item.isRoute ? (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`block px-4 py-3 text-base font-light transition-colors rounded-lg hover:bg-secondary ${
-                    isActive ? 'text-primary bg-secondary/50' : 'text-foreground hover:text-primary'
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              ) : (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-3 text-base font-light text-foreground hover:text-primary transition-colors rounded-lg hover:bg-secondary"
-                >
-                  {item.name}
-                </a>
-              );
-            })}
-            
-            {/* Mobile Auth Section - Larger buttons */}
-            <div className="pt-2 space-y-2 border-t border-border/50 mt-2">
-              {user ? (
-                <>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start h-12 text-base"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      navigate(`/perfil/${user.id}`);
-                    }}
-                  >
-                    <User className="mr-2 h-5 w-5" />
-                    {t('auth.profile')}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start h-12 text-base"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      navigate("/favoritos");
-                    }}
-                  >
-                    <Heart className="mr-2 h-5 w-5" />
-                    {t('auth.favorites')}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start h-12 text-base"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      navigate("/playlists");
-                    }}
-                  >
-                    <List className="mr-2 h-5 w-5" />
-                    {t('auth.playlists')}
-                  </Button>
-                  {isAdmin && (
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start h-12 text-base"
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        navigate("/admin");
-                      }}
-                    >
-                      {t('auth.controlPanel')}
-                    </Button>
-                  )}
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start h-12 text-base"
-                    onClick={async () => {
-                      await supabase.auth.signOut();
-                      toast({
-                        title: t('auth.sessionClosed'),
-                        description: t('auth.sessionClosedDesc'),
-                      });
-                      setMobileMenuOpen(false);
-                      navigate("/");
-                    }}
-                  >
-                    <LogOut className="mr-2 h-5 w-5" />
-                    {t('auth.logout')}
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  variant="default"
-                  className="w-full h-12 text-base"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    navigate("/auth");
-                  }}
-                >
-                  {t('auth.login')}
-                </Button>
-              )}
-            </div>
-          </nav>
-        )}
       </div>
     </header>
   );

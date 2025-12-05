@@ -16,7 +16,7 @@ const footerActions = [
   {
     icon: Palette,
     label: "Proyecto Red Akasha",
-    href: "/artistas",
+    href: "/proyecto",
   },
   {
     icon: Share2,

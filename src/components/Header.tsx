@@ -86,7 +86,11 @@ export const Header = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => navigate("/playlists")}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    navigate("/playlists");
+                  }}
                   className="relative"
                   title={t('auth.playlists')}
                 >

@@ -34,6 +34,37 @@
   "language": {
     "select": "언어 선택"
   },
+  "home": {
+    "programs": "프로그램",
+    "shorts": "쇼츠",
+    "featured": "추천",
+    "schedules": "일정"
+  },
+  "artists": {
+    "title": "아티스트 탐색",
+    "subtitle": "다양한 예술 장르의 콘텐츠 창작자를 발견하세요",
+    "searchPlaceholder": "아티스트 검색...",
+    "noResults": "선택한 필터에 맞는 아티스트가 없습니다",
+    "areYouArtist": "아티스트이신가요?",
+    "joinCommunity": "커뮤니티에 가입하고 수천 명의 사람들과 콘텐츠를 공유하세요",
+    "joinNow": "지금 가입",
+    "all": "전체",
+    "musicalBands": "밴드",
+    "soloMusicians": "솔로 뮤지션",
+    "podcasts": "팟캐스트",
+    "documentaries": "다큐멘터리",
+    "shorts": "단편",
+    "photography": "사진",
+    "radioShows": "라디오 쇼"
+  },
+  "footer": {
+    "contact": "연락처 / 소개",
+    "joinFree": "무료 가입",
+    "project": "Red Akasha 프로젝트",
+    "share": "페이지 공유",
+    "tagline": "아티스트와 프로듀서를 위한 협업 플랫폼",
+    "rights": "© 2024 Red Akasha. 모든 권리 보유."
+  },
   "ranking": {
     "title": "콘텐츠 랭킹",
     "subtitle": "커뮤니티가 가장 많이 투표한 콘텐츠",

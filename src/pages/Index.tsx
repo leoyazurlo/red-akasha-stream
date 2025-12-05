@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Header } from "@/components/Header";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { VideoCarousel } from "@/components/VideoCarousel";
@@ -10,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import akashaBg from "@/assets/akasha-bg.png";
 
 const Index = () => {
+  const { t } = useTranslation();
+
   // Cargar videos de YouTube desde la base de datos
   const { data: programasVideos = [] } = useQuery({
     queryKey: ["youtube-videos", "programas"],
@@ -110,7 +113,7 @@ const Index = () => {
         
         <div className="space-y-8 pb-8">
           <VideoCarousel
-            title="Programas"
+            title={t('home.programs')}
             videos={programasVideos}
             sectionId="programas"
             showSchedule={true}
@@ -118,13 +121,13 @@ const Index = () => {
           />
           
       <VideoCarousel 
-        title="Shorts" 
+        title={t('home.shorts')} 
         videos={shortVideos} 
         sectionId="short"
       />
           
           <VideoCarousel
-            title="Destacados"
+            title={t('home.featured')}
             videos={destacadosVideos}
             sectionId="destacados"
           />

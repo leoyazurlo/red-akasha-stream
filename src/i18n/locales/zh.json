@@ -34,6 +34,37 @@
   "language": {
     "select": "选择语言"
   },
+  "home": {
+    "programs": "节目",
+    "shorts": "短视频",
+    "featured": "精选",
+    "schedules": "时间表"
+  },
+  "artists": {
+    "title": "探索艺术家",
+    "subtitle": "发现不同艺术类型的内容创作者",
+    "searchPlaceholder": "搜索艺术家...",
+    "noResults": "没有找到符合所选筛选条件的艺术家",
+    "areYouArtist": "你是艺术家吗？",
+    "joinCommunity": "加入我们的社区，与数千人分享您的内容",
+    "joinNow": "立即加入",
+    "all": "全部",
+    "musicalBands": "乐队",
+    "soloMusicians": "独立音乐人",
+    "podcasts": "播客",
+    "documentaries": "纪录片",
+    "shorts": "短片",
+    "photography": "摄影",
+    "radioShows": "广播节目"
+  },
+  "footer": {
+    "contact": "联系我们 / 关于我们",
+    "joinFree": "免费加入",
+    "project": "Red Akasha 项目",
+    "share": "分享页面",
+    "tagline": "艺术家和制作人协作平台",
+    "rights": "© 2024 Red Akasha. 保留所有权利。"
+  },
   "ranking": {
     "title": "内容排行榜",
     "subtitle": "社区最受欢迎的内容",

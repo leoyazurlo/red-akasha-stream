@@ -34,6 +34,12 @@
   "language": {
     "select": "Seleccionar idioma"
   },
+  "home": {
+    "programs": "Programas",
+    "shorts": "Shorts",
+    "featured": "Destacados",
+    "schedules": "Horarios"
+  },
   "artists": {
     "title": "Explora Artistas",
     "subtitle": "Descubre creadores de contenido en diferentes géneros artísticos",
@@ -50,6 +56,14 @@
     "shorts": "Cortos",
     "photography": "Fotografía",
     "radioShows": "Radio Shows"
+  },
+  "footer": {
+    "contact": "Contacto / Quiénes Somos",
+    "joinFree": "Asóciate Gratis",
+    "project": "Proyecto Red Akasha",
+    "share": "Compartir Página",
+    "tagline": "Plataforma colaborativa para artistas y productores",
+    "rights": "© 2024 Red Akasha. Todos los derechos reservados."
   },
   "ranking": {
     "title": "Rankings de Contenido",

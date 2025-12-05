@@ -34,6 +34,37 @@
   "language": {
     "select": "Choisir la langue"
   },
+  "home": {
+    "programs": "Programmes",
+    "shorts": "Shorts",
+    "featured": "En vedette",
+    "schedules": "Horaires"
+  },
+  "artists": {
+    "title": "Explorer les artistes",
+    "subtitle": "Découvrez des créateurs de contenu dans différents genres artistiques",
+    "searchPlaceholder": "Rechercher des artistes...",
+    "noResults": "Aucun artiste trouvé avec les filtres sélectionnés",
+    "areYouArtist": "Êtes-vous un artiste?",
+    "joinCommunity": "Rejoignez notre communauté et partagez votre contenu avec des milliers de personnes",
+    "joinNow": "Rejoindre maintenant",
+    "all": "Tous",
+    "musicalBands": "Groupes musicaux",
+    "soloMusicians": "Musiciens solo",
+    "podcasts": "Podcasts",
+    "documentaries": "Documentaires",
+    "shorts": "Courts métrages",
+    "photography": "Photographie",
+    "radioShows": "Émissions de radio"
+  },
+  "footer": {
+    "contact": "Contact / À propos",
+    "joinFree": "Rejoindre gratuitement",
+    "project": "Projet Red Akasha",
+    "share": "Partager la page",
+    "tagline": "Plateforme collaborative pour artistes et producteurs",
+    "rights": "© 2024 Red Akasha. Tous droits réservés."
+  },
   "ranking": {
     "title": "Classement du Contenu",
     "subtitle": "Contenu le plus voté par la communauté",

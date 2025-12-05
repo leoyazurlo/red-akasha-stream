@@ -34,6 +34,23 @@
   "language": {
     "select": "Seleccionar idioma"
   },
+  "artists": {
+    "title": "Explora Artistas",
+    "subtitle": "Descubre creadores de contenido en diferentes géneros artísticos",
+    "searchPlaceholder": "Buscar artistas...",
+    "noResults": "No se encontraron artistas con los filtros seleccionados",
+    "areYouArtist": "¿Eres un artista?",
+    "joinCommunity": "Únete a nuestra comunidad y comparte tu contenido con miles de personas",
+    "joinNow": "Asociate Ahora",
+    "all": "Todos",
+    "musicalBands": "Bandas Musicales",
+    "soloMusicians": "Músicos Solistas",
+    "podcasts": "Podcasts",
+    "documentaries": "Documentales",
+    "shorts": "Cortos",
+    "photography": "Fotografía",
+    "radioShows": "Radio Shows"
+  },
   "ranking": {
     "title": "Rankings de Contenido",
     "subtitle": "El contenido más votado por la comunidad",

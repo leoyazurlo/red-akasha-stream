@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,62 +12,63 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { ScrollProgressBar } from "@/components/ScrollProgressBar";
 
-const genres: Array<{ id: ArtistType | "all"; label: string; icon: any; color: string }> = [
-  { 
-    id: "all", 
-    label: "Todos", 
-    icon: Search, 
-    color: "bg-primary/10 hover:bg-primary/20" 
-  },
-  { 
-    id: "banda_musical", 
-    label: "Bandas Musicales", 
-    icon: Music, 
-    color: "bg-purple-500/10 hover:bg-purple-500/20" 
-  },
-  { 
-    id: "musico_solista", 
-    label: "Músicos Solistas", 
-    icon: Music, 
-    color: "bg-indigo-500/10 hover:bg-indigo-500/20" 
-  },
-  { 
-    id: "podcast", 
-    label: "Podcasts", 
-    icon: Mic, 
-    color: "bg-blue-500/10 hover:bg-blue-500/20" 
-  },
-  { 
-    id: "documental", 
-    label: "Documentales", 
-    icon: Film, 
-    color: "bg-green-500/10 hover:bg-green-500/20" 
-  },
-  { 
-    id: "cortometraje", 
-    label: "Cortos", 
-    icon: FileVideo, 
-    color: "bg-orange-500/10 hover:bg-orange-500/20" 
-  },
-  { 
-    id: "fotografia", 
-    label: "Fotografía", 
-    icon: Camera, 
-    color: "bg-pink-500/10 hover:bg-pink-500/20" 
-  },
-  { 
-    id: "radio_show", 
-    label: "Radio Shows", 
-    icon: Radio, 
-    color: "bg-cyan-500/10 hover:bg-cyan-500/20" 
-  },
-];
-
 const Artists = () => {
+  const { t } = useTranslation();
   const [selectedGenre, setSelectedGenre] = useState<ArtistType | "all">("all");
   const [searchTerm, setSearchTerm] = useState("");
   const { elementRef: heroRef, isVisible: heroVisible } = useScrollAnimation({ threshold: 0.2 });
   const { elementRef: gridRef, isVisible: gridVisible } = useScrollAnimation({ threshold: 0.1 });
+
+  const genres: Array<{ id: ArtistType | "all"; labelKey: string; icon: any; color: string }> = [
+    { 
+      id: "all", 
+      labelKey: "artists.all", 
+      icon: Search, 
+      color: "bg-primary/10 hover:bg-primary/20" 
+    },
+    { 
+      id: "banda_musical", 
+      labelKey: "artists.musicalBands", 
+      icon: Music, 
+      color: "bg-purple-500/10 hover:bg-purple-500/20" 
+    },
+    { 
+      id: "musico_solista", 
+      labelKey: "artists.soloMusicians", 
+      icon: Music, 
+      color: "bg-indigo-500/10 hover:bg-indigo-500/20" 
+    },
+    { 
+      id: "podcast", 
+      labelKey: "artists.podcasts", 
+      icon: Mic, 
+      color: "bg-blue-500/10 hover:bg-blue-500/20" 
+    },
+    { 
+      id: "documental", 
+      labelKey: "artists.documentaries", 
+      icon: Film, 
+      color: "bg-green-500/10 hover:bg-green-500/20" 
+    },
+    { 
+      id: "cortometraje", 
+      labelKey: "artists.shorts", 
+      icon: FileVideo, 
+      color: "bg-orange-500/10 hover:bg-orange-500/20" 
+    },
+    { 
+      id: "fotografia", 
+      labelKey: "artists.photography", 
+      icon: Camera, 
+      color: "bg-pink-500/10 hover:bg-pink-500/20" 
+    },
+    { 
+      id: "radio_show", 
+      labelKey: "artists.radioShows", 
+      icon: Radio, 
+      color: "bg-cyan-500/10 hover:bg-cyan-500/20" 
+    },
+  ];
 
   const { data: artists = [], isLoading } = useArtists(selectedGenre === "all" ? undefined : selectedGenre);
 
@@ -90,10 +92,10 @@ const Artists = () => {
           }`}
         >
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 md:mb-4 bg-gradient-primary bg-clip-text text-transparent">
-            Explora Artistas
+            {t('artists.title')}
           </h1>
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
-            Descubre creadores de contenido en diferentes géneros artísticos
+            {t('artists.subtitle')}
           </p>
         </section>
 
@@ -103,7 +105,7 @@ const Artists = () => {
             <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Buscar artistas..."
+              placeholder={t('artists.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 md:pl-12 h-12 md:h-14 text-base md:text-lg border-2 focus-visible:ring-primary/50"
@@ -135,7 +137,7 @@ const Artists = () => {
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 <Icon className="mr-1.5 md:mr-2 h-4 w-4 md:h-5 md:w-5 transition-transform group-hover:rotate-12" />
-                <span className="whitespace-nowrap">{genre.label}</span>
+                <span className="whitespace-nowrap">{t(genre.labelKey)}</span>
                 {isSelected && (
                   <span className="ml-1.5 md:ml-2 bg-background/30 px-1.5 md:px-2 py-0.5 rounded-full text-xs">
                     {filteredArtists.length}
@@ -164,7 +166,7 @@ const Artists = () => {
           ) : filteredArtists.length === 0 ? (
             <div className="col-span-full text-center py-12 md:py-16">
               <p className="text-muted-foreground text-base md:text-lg px-4">
-                No se encontraron artistas con los filtros seleccionados
+                {t('artists.noResults')}
               </p>
             </div>
           ) : (
@@ -172,7 +174,7 @@ const Artists = () => {
               <ArtistCard
                 key={artist.id}
                 artist={artist}
-                genreLabel={genres.find(g => g.id === artist.artist_type)?.label || artist.artist_type}
+                genreLabel={t(genres.find(g => g.id === artist.artist_type)?.labelKey || 'artists.all')}
                 index={index}
               />
             ))
@@ -184,16 +186,16 @@ const Artists = () => {
           <Card className="max-w-2xl mx-auto border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
             <CardContent className="p-6 md:p-8">
               <h2 className="text-xl md:text-2xl font-bold mb-3 md:mb-4">
-                ¿Eres un artista?
+                {t('artists.areYouArtist')}
               </h2>
               <p className="text-sm md:text-base text-muted-foreground mb-4 md:mb-6 px-2">
-                Únete a nuestra comunidad y comparte tu contenido con miles de personas
+                {t('artists.joinCommunity')}
               </p>
               <Button 
                 size="lg" 
                 className="hover:scale-105 transition-transform w-full sm:w-auto"
               >
-                Asociate Ahora
+                {t('artists.joinNow')}
               </Button>
             </CardContent>
           </Card>

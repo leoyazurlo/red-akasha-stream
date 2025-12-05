@@ -12,7 +12,10 @@ import { Globe } from 'lucide-react';
 export const LanguageSelector = () => {
   const { i18n, t } = useTranslation();
 
-  const currentLanguage = languages.find(lang => lang.code === i18n.language) || languages[0];
+  // Obtener código base del idioma (ej: 'en-US' -> 'en')
+  const getBaseLanguage = (lang: string) => lang.split('-')[0];
+  
+  const currentLanguage = languages.find(lang => lang.code === getBaseLanguage(i18n.language)) || languages[0];
 
   const changeLanguage = (code: string) => {
     i18n.changeLanguage(code);

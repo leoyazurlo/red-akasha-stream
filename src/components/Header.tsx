@@ -89,32 +89,24 @@ export const Header = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="z-50 bg-popover">
-                    <DropdownMenuItem asChild>
-                      <Link to={`/perfil/${user.id}`} className="flex items-center cursor-pointer">
-                        <User className="mr-2 h-4 w-4" />
-                        {t('auth.profile')}
-                      </Link>
+                    <DropdownMenuItem onClick={() => navigate(`/perfil/${user.id}`)} className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      {t('auth.profile')}
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/favoritos" className="flex items-center cursor-pointer">
-                        <Heart className="mr-2 h-4 w-4" />
-                        {t('auth.favorites')}
-                      </Link>
+                    <DropdownMenuItem onClick={() => navigate("/favoritos")} className="cursor-pointer">
+                      <Heart className="mr-2 h-4 w-4" />
+                      {t('auth.favorites')}
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/playlists" className="flex items-center cursor-pointer">
-                        <List className="mr-2 h-4 w-4" />
-                        {t('auth.playlists')}
-                      </Link>
+                    <DropdownMenuItem onClick={() => navigate("/playlists")} className="cursor-pointer">
+                      <List className="mr-2 h-4 w-4" />
+                      {t('auth.playlists')}
                     </DropdownMenuItem>
                     {isAdmin && (
-                      <DropdownMenuItem asChild>
-                        <Link to="/admin" className="flex items-center cursor-pointer">
-                          {t('auth.controlPanel')}
-                        </Link>
+                      <DropdownMenuItem onClick={() => navigate("/admin")} className="cursor-pointer">
+                        {t('auth.controlPanel')}
                       </DropdownMenuItem>
                     )}
-                    <DropdownMenuItem onSelect={handleLogout}>
+                    <DropdownMenuItem onClick={handleLogout}>
                       <LogOut className="mr-2 h-4 w-4" />
                       {t('auth.logout')}
                     </DropdownMenuItem>

@@ -79,8 +79,8 @@ const UploadContent = () => {
     { value: "video_clip", label: "Video Clip" },
     { value: "podcast", label: "Podcast" },
     { value: "documental", label: "Documental" },
-    { value: "corto", label: "Corto" },
-    { value: "pelicula", label: "Película" }
+    { value: "corto", label: "Cortos" },
+    { value: "pelicula", label: "Películas" }
   ];
 
   const podcastCategories = [
@@ -330,8 +330,8 @@ const UploadContent = () => {
       video_clip: "Video Clip",
       podcast: "Podcast",
       documental: "Documental",
-      corto: "Corto",
-      pelicula: "Película"
+      corto: "Cortos",
+      pelicula: "Películas"
     };
     return labels[type] || type;
   };

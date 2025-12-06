@@ -325,5 +325,15 @@
       "management": "Management",
       "composicion": "Composición"
     }
+  },
+  "forum": {
+    "title": "Foro de la Comunidad",
+    "subtitle": "Conecta, colabora y comparte con artistas y profesionales",
+    "associationRequired": "Asociación Requerida",
+    "associationRequiredDesc": "Para participar en el foro, primero debes asociarte a la plataforma",
+    "noProfile": "No tienes un perfil creado",
+    "noProfileDesc": "Para poder participar en el foro y colaborar con la comunidad, necesitas completar el proceso de asociación y crear tu perfil primero.",
+    "joinNow": "Asociarme Ahora",
+    "backToHome": "Volver al Inicio"
   }
 }

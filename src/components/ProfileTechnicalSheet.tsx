@@ -108,7 +108,7 @@ export const ProfileTechnicalSheet = ({
   const { user } = useAuth();
   const [copied, setCopied] = useState(false);
 
-  const profileUrl = `${window.location.origin}/perfil/${profileId}`;
+  const profileUrl = `${window.location.origin}/circuito/perfil/${profileId}`;
 
   const handleCopyLink = async () => {
     try {

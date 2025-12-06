@@ -25,6 +25,7 @@ import AdminShareAnalytics from "./pages/admin/ShareAnalytics";
 import AdminYouTubeVideos from "./pages/admin/YouTubeVideos";
 import Asociate from "./pages/Asociate";
 import Circuito from "./pages/Circuito";
+import PublicProfile from "./pages/PublicProfile";
 import Auth from "./pages/Auth";
 import UploadContent from "./pages/UploadContent";
 import Artists from "./pages/Artists";
@@ -62,6 +63,7 @@ const App = () => (
             <Route path="/foro/hilo/:id" element={<Thread />} />
             <Route path="/asociate" element={<Asociate />} />
             <Route path="/circuito" element={<Circuito />} />
+            <Route path="/circuito/perfil/:id" element={<PublicProfile />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/subir-contenido" element={<UploadContent />} />
             <Route path="/artistas" element={<Artists />} />

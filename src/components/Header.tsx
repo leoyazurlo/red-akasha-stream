@@ -1,4 +1,4 @@
-import { LogOut, User, Library } from "lucide-react";
+import { LogOut, User, Library, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -93,6 +93,12 @@ export const Header = () => {
                       <Link to={`/perfil/${user.id}`} className="flex items-center w-full">
                         <User className="mr-2 h-4 w-4" />
                         {t('auth.profile')}
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild className="cursor-pointer">
+                      <Link to="/mi-perfil" className="flex items-center w-full">
+                        <Settings className="mr-2 h-4 w-4" />
+                        Mi Perfil Circuito
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild className="cursor-pointer">

@@ -431,7 +431,7 @@ const Circuito = () => {
                         {cityGroup.profiles.map((profile) => (
                           <Card 
                             key={profile.id} 
-                            className="border-border bg-card/50 backdrop-blur-sm hover:border-cyan-400 hover:shadow-[0_0_25px_hsl(180_100%_50%/0.4),0_0_50px_hsl(180_100%_50%/0.2)] transition-all duration-300 cursor-pointer group"
+                            className="border-cyan-400 bg-card/50 backdrop-blur-sm shadow-[0_0_25px_hsl(180_100%_50%/0.4),0_0_50px_hsl(180_100%_50%/0.2)] hover:shadow-[0_0_35px_hsl(180_100%_50%/0.6),0_0_70px_hsl(180_100%_50%/0.3)] transition-all duration-300 cursor-pointer group"
                             onClick={() => setSelectedProfile(profile)}
                           >
                             <CardHeader>

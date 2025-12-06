@@ -1,7 +1,6 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Loader2, CheckCircle2, XCircle, Video, Image as ImageIcon, Music, Trash2, Zap, FileVideo } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -475,23 +474,14 @@ export default function AdminContentModeration() {
   }
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        <header className="fixed top-0 left-0 right-0 h-14 flex items-center border-b bg-background z-50 px-4">
-          <SidebarTrigger />
-          <h1 className="ml-4 text-lg font-semibold">Red Akasha - Administración</h1>
-        </header>
-
-        <div className="flex w-full pt-14">
-          <AdminSidebar />
-          <main className="flex-1 p-6">
-            <div className="max-w-6xl mx-auto space-y-6">
-              <div>
-                <h2 className="text-3xl font-bold mb-2">Curaduría de Contenido</h2>
-                <p className="text-muted-foreground">
-                  Revisa y modera el contenido subido por los usuarios
-                </p>
-              </div>
+    <AdminLayout>
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold mb-2">Curaduría de Contenido</h2>
+          <p className="text-muted-foreground">
+            Revisa y modera el contenido subido por los usuarios
+          </p>
+        </div>
 
               {/* Panel de Aprobación Rápida */}
               <Card className="border-primary/20 bg-primary/5">
@@ -1036,11 +1026,8 @@ export default function AdminContentModeration() {
                     </div>
                   )}
                 </TabsContent>
-              </Tabs>
-            </div>
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
-  );
+            </Tabs>
+          </div>
+        </AdminLayout>
+      );
 }

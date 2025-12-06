@@ -334,6 +334,12 @@
     "noProfile": "You don't have a profile",
     "noProfileDesc": "To participate in the forum and collaborate with the community, you need to complete the association process and create your profile first.",
     "joinNow": "Join Now",
-    "backToHome": "Back to Home"
+    "backToHome": "Back to Home",
+    "stats": {
+      "members": "Members",
+      "debates": "Debates",
+      "replies": "Replies"
+    },
+    "noCategories": "No categories available yet. Administrators can create categories from the admin panel."
   }
 }

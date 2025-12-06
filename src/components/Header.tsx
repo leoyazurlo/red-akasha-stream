@@ -89,17 +89,23 @@ export const Header = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="z-50 bg-popover">
-                    <DropdownMenuItem onSelect={() => navigate(`/perfil/${user.id}`)} className="cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
-                      {t('auth.profile')}
+                    <DropdownMenuItem asChild className="cursor-pointer">
+                      <Link to={`/perfil/${user.id}`} className="flex items-center w-full">
+                        <User className="mr-2 h-4 w-4" />
+                        {t('auth.profile')}
+                      </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => navigate("/mi-coleccion")} className="cursor-pointer">
-                      <Library className="mr-2 h-4 w-4" />
-                      {t('auth.myCollection') || 'Mi Colección'}
+                    <DropdownMenuItem asChild className="cursor-pointer">
+                      <Link to="/mi-coleccion" className="flex items-center w-full">
+                        <Library className="mr-2 h-4 w-4" />
+                        {t('auth.myCollection') || 'Mi Colección'}
+                      </Link>
                     </DropdownMenuItem>
                     {isAdmin && (
-                      <DropdownMenuItem onSelect={() => navigate("/admin")} className="cursor-pointer">
-                        {t('auth.controlPanel')}
+                      <DropdownMenuItem asChild className="cursor-pointer">
+                        <Link to="/admin" className="flex items-center w-full">
+                          {t('auth.controlPanel')}
+                        </Link>
                       </DropdownMenuItem>
                     )}
                     <DropdownMenuItem onSelect={handleLogout}>

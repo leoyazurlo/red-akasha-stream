@@ -58,6 +58,7 @@ const UploadContent = () => {
     audio_url: "",
     photo_url: "",
     thumbnail_url: "",
+    custom_thumbnail_url: "",
     podcast_category: "",
     band_name: "",
     producer_name: "",
@@ -246,7 +247,8 @@ const UploadContent = () => {
         video_url: formData.video_url || null,
         audio_url: formData.audio_url || null,
         photo_url: formData.photo_url || null,
-        thumbnail_url: formData.thumbnail_url || null,
+        // Priorizar miniatura personalizada sobre la extraída del video
+        thumbnail_url: formData.custom_thumbnail_url || formData.thumbnail_url || null,
         status: 'pending',
         is_free: formData.is_free,
         price: formData.is_free ? 0 : parseFloat(formData.price) || 0,
@@ -290,6 +292,7 @@ const UploadContent = () => {
         audio_url: "",
         photo_url: "",
         thumbnail_url: "",
+        custom_thumbnail_url: "",
         podcast_category: "",
         band_name: "",
         producer_name: "",
@@ -541,6 +544,88 @@ const UploadContent = () => {
                           video_duration_seconds: metadata.duration
                         }))}
                         description="Sube tu video en formato MP4, WebM o MOV (máx. 500MB)"
+                      />
+                    </div>
+                  )}
+
+                  {/* Sección de Miniatura Personalizada - estilo YouTube */}
+                  {formData.content_type !== 'podcast' && formData.video_url && (
+                    <div className="border-t pt-6 space-y-4">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-2 text-cyan-400">Miniatura Personalizada</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Sube una imagen de portada para tu video (como en YouTube). Si no subes una, se usará un fotograma del video.
+                        </p>
+                      </div>
+                      
+                      {/* Preview de miniaturas */}
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* Miniatura extraída del video */}
+                        {formData.thumbnail_url && (
+                          <div 
+                            className={`relative rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${
+                              !formData.custom_thumbnail_url 
+                                ? 'border-cyan-400 ring-2 ring-cyan-400/30' 
+                                : 'border-border hover:border-muted-foreground'
+                            }`}
+                            onClick={() => setFormData(prev => ({ ...prev, custom_thumbnail_url: "" }))}
+                          >
+                            <div className="aspect-video">
+                              <img 
+                                src={formData.thumbnail_url} 
+                                alt="Miniatura del video" 
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <div className="absolute bottom-0 left-0 right-0 bg-black/70 px-2 py-1">
+                              <p className="text-xs text-white text-center">Fotograma del video</p>
+                            </div>
+                            {!formData.custom_thumbnail_url && (
+                              <div className="absolute top-2 right-2 bg-cyan-400 text-black text-xs px-2 py-1 rounded font-semibold">
+                                Seleccionada
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        
+                        {/* Miniatura personalizada */}
+                        <div 
+                          className={`relative rounded-lg overflow-hidden border-2 transition-all ${
+                            formData.custom_thumbnail_url 
+                              ? 'border-cyan-400 ring-2 ring-cyan-400/30' 
+                              : 'border-dashed border-border'
+                          }`}
+                        >
+                          {formData.custom_thumbnail_url ? (
+                            <>
+                              <div className="aspect-video">
+                                <img 
+                                  src={formData.custom_thumbnail_url} 
+                                  alt="Miniatura personalizada" 
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <div className="absolute bottom-0 left-0 right-0 bg-black/70 px-2 py-1">
+                                <p className="text-xs text-white text-center">Miniatura personalizada</p>
+                              </div>
+                              <div className="absolute top-2 right-2 bg-cyan-400 text-black text-xs px-2 py-1 rounded font-semibold">
+                                Seleccionada
+                              </div>
+                            </>
+                          ) : (
+                            <div className="aspect-video flex flex-col items-center justify-center bg-card/50 p-4">
+                              <ImageIcon className="w-8 h-8 text-muted-foreground mb-2" />
+                              <p className="text-xs text-muted-foreground text-center">Subir miniatura</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <ImageUpload
+                        label="Subir miniatura personalizada"
+                        value={formData.custom_thumbnail_url}
+                        onChange={(url) => setFormData(prev => ({ ...prev, custom_thumbnail_url: url }))}
+                        description="Imagen 16:9 recomendada (1280x720 o superior). Formatos: JPG, PNG, WebP (máx. 10MB)"
                       />
                     </div>
                   )}

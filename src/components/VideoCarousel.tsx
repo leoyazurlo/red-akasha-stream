@@ -104,20 +104,10 @@ export const VideoCarousel = ({
       id={sectionId}
     >
       <div className="container mx-auto px-2 sm:px-4">
-        {/* Section Title with Navigation Arrows on Sides */}
-        <div className="flex items-center justify-between md:justify-center gap-2 sm:gap-4 mb-4 md:mb-8 max-w-4xl mx-auto">
-          {/* Left Arrow - Larger on mobile */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => scroll("left")}
-            className="hover:bg-secondary hover:scale-110 transition-all duration-300 flex-shrink-0 h-10 w-10 md:h-12 md:w-12"
-          >
-            <ChevronLeft className="h-6 w-6 md:h-5 md:w-5 text-primary" />
-          </Button>
-
+        {/* Section Title */}
+        <div className="flex items-center justify-center gap-2 sm:gap-4 mb-4 md:mb-8 max-w-4xl mx-auto">
           {/* Title and Schedule Dropdown */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-1 justify-center overflow-hidden">
+          <div className="flex items-center gap-2 sm:gap-3 justify-center overflow-hidden">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-glow opacity-20 blur-3xl" />
               <h2 className="text-xl sm:text-2xl md:text-3xl font-poppins font-medium tracking-wide text-foreground relative animate-slide-in truncate">
@@ -164,16 +154,6 @@ export const VideoCarousel = ({
               </DropdownMenu>
             )}
           </div>
-
-          {/* Right Arrow - Larger on mobile */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => scroll("right")}
-            className="hover:bg-secondary hover:scale-110 transition-all duration-300 flex-shrink-0 h-10 w-10 md:h-12 md:w-12"
-          >
-            <ChevronRight className="h-6 w-6 md:h-5 md:w-5 text-primary" />
-          </Button>
         </div>
 
         {/* Carousel Container with Glow Effect - Responsive padding */}
@@ -181,11 +161,31 @@ export const VideoCarousel = ({
           {/* Outer glow container */}
           <div className="absolute inset-0 bg-gradient-glow opacity-10 rounded-2xl md:rounded-3xl blur-2xl" />
           
+          {/* Left Arrow - Over videos */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => scroll("left")}
+            className="absolute left-1 md:left-2 top-1/2 -translate-y-1/2 z-20 bg-black/60 hover:bg-black/80 backdrop-blur-sm h-10 w-10 md:h-12 md:w-12 rounded-full border border-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:shadow-[0_0_25px_rgba(34,211,238,0.6)] transition-all duration-300"
+          >
+            <ChevronLeft className="h-6 w-6 md:h-7 md:w-7 text-cyan-400" />
+          </Button>
+
+          {/* Right Arrow - Over videos */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => scroll("right")}
+            className="absolute right-1 md:right-2 top-1/2 -translate-y-1/2 z-20 bg-black/60 hover:bg-black/80 backdrop-blur-sm h-10 w-10 md:h-12 md:w-12 rounded-full border border-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:shadow-[0_0_25px_rgba(34,211,238,0.6)] transition-all duration-300"
+          >
+            <ChevronRight className="h-6 w-6 md:h-7 md:w-7 text-cyan-400" />
+          </Button>
+          
           {/* Inner container with border */}
           <div className="relative bg-card/30 backdrop-blur-sm rounded-xl md:rounded-2xl border border-border/50 p-3 sm:p-4 md:p-6 shadow-glow">
             <div
               id={`carousel-${sectionId}`}
-              className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide scroll-smooth"
+              className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide scroll-smooth px-8 md:px-10"
               style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
             >
               {videos.map((video, index) => (

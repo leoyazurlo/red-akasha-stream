@@ -494,7 +494,7 @@ const VideoDetail = () => {
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
               {/* Video Player */}
-              <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-border">
+              <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-2 border-cyan-400/40 shadow-[0_0_30px_hsl(180_100%_50%/0.35)]">
                 <AspectRatio ratio={16 / 9} className="bg-black">
                   {isPlaying && video.video_url ? (
                     <video

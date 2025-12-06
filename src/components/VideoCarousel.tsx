@@ -207,7 +207,7 @@ export const VideoCarousel = ({
                     transitionDelay: isVisible ? `${index * 75}ms` : '0ms'
                   }}
                 >
-                  <div className="relative aspect-video bg-card rounded-lg md:rounded-xl overflow-hidden border border-border hover:border-primary transition-all duration-300 hover:shadow-glow hover:scale-105">
+                  <div className="relative aspect-video bg-card rounded-lg md:rounded-xl overflow-hidden border border-cyan-400/40 transition-all duration-300 hover:border-cyan-400 hover:scale-105 shadow-[0_0_20px_hsl(180_100%_50%/0.3)] hover:shadow-[0_0_30px_hsl(180_100%_50%/0.5)]">
                     {/* Thumbnail */}
                     <ResponsiveImage
                       src={video.thumbnail}

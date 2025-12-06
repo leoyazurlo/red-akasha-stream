@@ -739,11 +739,12 @@ const Asociate = () => {
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="telefono" className="text-sm font-medium">{t('asociate.phone')}</Label>
+                          <Label htmlFor="telefono" className="text-sm font-medium">{t('asociate.phone')} *</Label>
                           <Input
                             id="telefono"
                             name="telefono"
                             type="tel"
+                            required
                             value={formData.telefono}
                             onChange={handleChange}
                             placeholder={t('asociate.phonePlaceholder')}

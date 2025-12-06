@@ -228,9 +228,7 @@ const Artists = () => {
               >
                 <Icon className="h-4 w-4 md:h-5 md:w-5 transition-transform group-hover:rotate-12" />
                 <span className="whitespace-nowrap">{t(category.labelKey)}</span>
-                <span className={`px-1.5 md:px-2 py-0.5 rounded-full text-xs font-medium ${
-                  isSelected ? 'bg-background/30' : 'bg-primary/20 text-primary'
-                }`}>
+                <span className="px-1.5 md:px-2 py-0.5 rounded-full text-xs font-bold text-cyan-400">
                   {getCategoryCount(category.id)}
                 </span>
               </Button>

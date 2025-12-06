@@ -400,7 +400,7 @@ const UploadContent = () => {
         
         <main className="relative pt-24 pb-16">
           <div className="container mx-auto px-4">
-            <Card className="max-w-2xl mx-auto border-border bg-card/50 backdrop-blur-sm">
+            <Card className="max-w-2xl mx-auto border-cyan-400 bg-card/50 backdrop-blur-sm shadow-[0_0_25px_hsl(180_100%_50%/0.4),0_0_50px_hsl(180_100%_50%/0.2)]">
               <CardHeader>
                 <CardTitle className="text-2xl">{t('upload.associationRequired')}</CardTitle>
                 <CardDescription>
@@ -447,7 +447,7 @@ const UploadContent = () => {
             {/* Thumbnail Preload Status */}
             <ThumbnailPreloadStatus />
             
-            <Card className="border-border bg-card/50 backdrop-blur-sm">
+            <Card className="border-cyan-400 bg-card/50 backdrop-blur-sm shadow-[0_0_25px_hsl(180_100%_50%/0.4),0_0_50px_hsl(180_100%_50%/0.2)]">
               <CardHeader>
                 <CardTitle className="text-2xl text-cyan-400">{t('upload.title')}</CardTitle>
                 <CardDescription>

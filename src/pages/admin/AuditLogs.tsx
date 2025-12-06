@@ -1,8 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AdminSidebar } from "@/components/admin/AdminSidebar";
-import { Loader2, FileText, User, UserCheck, Filter } from "lucide-react";
+import { AdminLayout } from "@/components/admin/AdminLayout";
+import { Loader2, FileText, User, UserCheck } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -113,123 +112,111 @@ export default function AdminAuditLogs() {
   }
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        <header className="fixed top-0 left-0 right-0 h-14 flex items-center border-b bg-background z-50 px-4">
-          <SidebarTrigger />
-          <h1 className="ml-4 text-lg font-semibold">Red Akasha - Administración</h1>
-        </header>
+    <AdminLayout>
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold mb-2">Registro de Auditoría</h2>
+          <p className="text-muted-foreground">
+            Historial de todas las acciones administrativas realizadas en la plataforma
+          </p>
+        </div>
 
-        <div className="flex w-full pt-14">
-          <AdminSidebar />
-          <main className="flex-1 p-6">
-            <div className="max-w-6xl mx-auto space-y-6">
-              <div>
-                <h2 className="text-3xl font-bold mb-2">Registro de Auditoría</h2>
-                <p className="text-muted-foreground">
-                  Historial de todas las acciones administrativas realizadas en la plataforma
-                </p>
-              </div>
+        {/* Filtros */}
+        <div className="flex gap-4 items-end">
+          <div className="flex-1">
+            <label className="text-sm font-medium mb-2 block">Tipo de Acción</label>
+            <Select value={filterAction} onValueChange={setFilterAction}>
+              <SelectTrigger>
+                <SelectValue placeholder="Todas las acciones" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las acciones</SelectItem>
+                <SelectItem value="approve_content">Contenido Aprobado</SelectItem>
+                <SelectItem value="reject_content">Contenido Rechazado</SelectItem>
+                <SelectItem value="delete_user">Usuario Eliminado</SelectItem>
+                <SelectItem value="approve_request">Solicitud Aprobada</SelectItem>
+                <SelectItem value="reject_request">Solicitud Rechazada</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-              {/* Filtros */}
-              <div className="flex gap-4 items-end">
-                <div className="flex-1">
-                  <label className="text-sm font-medium mb-2 block">Tipo de Acción</label>
-                  <Select value={filterAction} onValueChange={setFilterAction}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todas las acciones" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todas las acciones</SelectItem>
-                      <SelectItem value="approve_content">Contenido Aprobado</SelectItem>
-                      <SelectItem value="reject_content">Contenido Rechazado</SelectItem>
-                      <SelectItem value="delete_user">Usuario Eliminado</SelectItem>
-                      <SelectItem value="approve_request">Solicitud Aprobada</SelectItem>
-                      <SelectItem value="reject_request">Solicitud Rechazada</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+          <div className="flex-1">
+            <label className="text-sm font-medium mb-2 block">Tipo de Objetivo</label>
+            <Select value={filterTarget} onValueChange={setFilterTarget}>
+              <SelectTrigger>
+                <SelectValue placeholder="Todos los tipos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los tipos</SelectItem>
+                <SelectItem value="content">Contenido</SelectItem>
+                <SelectItem value="user">Usuario</SelectItem>
+                <SelectItem value="registration_request">Solicitud de Registro</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
-                <div className="flex-1">
-                  <label className="text-sm font-medium mb-2 block">Tipo de Objetivo</label>
-                  <Select value={filterTarget} onValueChange={setFilterTarget}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todos los tipos" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos los tipos</SelectItem>
-                      <SelectItem value="content">Contenido</SelectItem>
-                      <SelectItem value="user">Usuario</SelectItem>
-                      <SelectItem value="registration_request">Solicitud de Registro</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+        {/* Lista de Logs */}
+        <div className="space-y-3">
+          {logs.map((log) => {
+            const Icon = getTargetIcon(log.target_type);
+            const adminId = log.admin_id.substring(0, 8);
+            
+            return (
+              <Card key={log.id} className="hover:bg-accent/5 transition-colors">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-4">
+                    <div className="mt-1">
+                      <Icon className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {getActionBadge(log.action_type)}
+                        <Badge variant="outline">{log.target_type}</Badge>
+                        <span className="text-sm text-muted-foreground">
+                          por Admin <code className="bg-muted px-1 rounded text-xs">{adminId}</code>
+                        </span>
+                      </div>
 
-              {/* Lista de Logs */}
-              <div className="space-y-3">
-                {logs.map((log) => {
-                  const Icon = getTargetIcon(log.target_type);
-                  const adminId = log.admin_id.substring(0, 8);
-                  
-                  return (
-                    <Card key={log.id} className="hover:bg-accent/5 transition-colors">
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-4">
-                          <div className="mt-1">
-                            <Icon className="h-5 w-5 text-muted-foreground" />
-                          </div>
-                          
-                          <div className="flex-1 space-y-2">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              {getActionBadge(log.action_type)}
-                              <Badge variant="outline">{log.target_type}</Badge>
-                              <span className="text-sm text-muted-foreground">
-                                por Admin <code className="bg-muted px-1 rounded text-xs">{adminId}</code>
-                              </span>
-                            </div>
+                      <div className="text-sm">
+                        <p className="text-muted-foreground">
+                          <span className="font-medium">Fecha:</span>{' '}
+                          {new Date(log.created_at).toLocaleString('es-ES', {
+                            dateStyle: 'long',
+                            timeStyle: 'medium',
+                          })}
+                        </p>
+                        <p className="text-muted-foreground">
+                          <span className="font-medium">ID del objetivo:</span>{' '}
+                          <code className="bg-muted px-1 py-0.5 rounded text-xs">
+                            {log.target_id.substring(0, 8)}...
+                          </code>
+                        </p>
+                      </div>
 
-                            <div className="text-sm">
-                              <p className="text-muted-foreground">
-                                <span className="font-medium">Fecha:</span>{' '}
-                                {new Date(log.created_at).toLocaleString('es-ES', {
-                                  dateStyle: 'long',
-                                  timeStyle: 'medium',
-                                })}
-                              </p>
-                              <p className="text-muted-foreground">
-                                <span className="font-medium">ID del objetivo:</span>{' '}
-                                <code className="bg-muted px-1 py-0.5 rounded text-xs">
-                                  {log.target_id.substring(0, 8)}...
-                                </code>
-                              </p>
-                            </div>
-
-                            {log.details && Object.keys(log.details).length > 0 && (
-                              <div className="mt-2 p-2 bg-muted/30 rounded text-xs">
-                                <p className="font-medium mb-1">Detalles:</p>
-                                <pre className="overflow-x-auto">
-                                  {JSON.stringify(log.details, null, 2)}
-                                </pre>
-                              </div>
-                            )}
-                          </div>
+                      {log.details && Object.keys(log.details).length > 0 && (
+                        <div className="mt-2 p-2 bg-muted/30 rounded text-xs">
+                          <p className="font-medium mb-1">Detalles:</p>
+                          <pre className="overflow-x-auto">
+                            {JSON.stringify(log.details, null, 2)}
+                          </pre>
                         </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-
-                {logs.length === 0 && (
-                  <div className="text-center py-12 text-muted-foreground">
-                    No hay registros de auditoría con los filtros seleccionados
+                      )}
+                    </div>
                   </div>
-                )}
-              </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+
+          {logs.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground">
+              No hay registros de auditoría con los filtros seleccionados
             </div>
-          </main>
+          )}
         </div>
       </div>
-    </SidebarProvider>
+    </AdminLayout>
   );
 }

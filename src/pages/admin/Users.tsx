@@ -1,7 +1,6 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Loader2, Trash2, Shield, User, Search, X, CalendarIcon, Download, FileText, MessageSquare, Video, ArrowUpDown, UserCog, Ban, AlertTriangle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -698,33 +697,24 @@ export default function AdminUsers() {
   }
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        <header className="fixed top-0 left-0 right-0 h-14 flex items-center border-b bg-background z-50 px-4">
-          <SidebarTrigger />
-          <h1 className="ml-4 text-lg font-semibold">Red Akasha - Administración</h1>
-        </header>
-
-        <div className="flex w-full pt-14">
-          <AdminSidebar />
-          <main className="flex-1 p-6">
-            <div className="max-w-6xl mx-auto space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-3xl font-bold mb-2">Gestión de Usuarios</h2>
-                  <p className="text-muted-foreground">
-                    Administra los usuarios registrados en la plataforma
-                  </p>
-                </div>
-                <Button
-                  onClick={() => exportToCSV()}
-                  variant="outline"
-                  className="gap-2"
-                  disabled={users.length === 0}
-                >
-                  <Download className="h-4 w-4" />
-                  Exportar CSV
-                </Button>
+    <AdminLayout>
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold mb-2">Gestión de Usuarios</h2>
+            <p className="text-muted-foreground">
+              Administra los usuarios registrados en la plataforma
+            </p>
+          </div>
+        <Button
+          onClick={() => exportToCSV()}
+          variant="outline"
+          className="gap-2"
+          disabled={users.length === 0}
+        >
+          <Download className="h-4 w-4" />
+          Exportar CSV
+        </Button>
               </div>
 
               {/* Filters Section */}
@@ -1157,11 +1147,8 @@ export default function AdminUsers() {
                 </div>
               )}
             </div>
-          </main>
-        </div>
-      </div>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
@@ -1292,6 +1279,6 @@ export default function AdminUsers() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </SidebarProvider>
+      </AdminLayout>
   );
 }

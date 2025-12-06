@@ -1,7 +1,6 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -129,26 +128,17 @@ export default function AdminRegistrationRequests() {
   }
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        <header className="fixed top-0 left-0 right-0 h-14 flex items-center border-b bg-background z-50 px-4">
-          <SidebarTrigger />
-          <h1 className="ml-4 text-lg font-semibold">Red Akasha - Administración</h1>
-        </header>
+    <AdminLayout>
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div>
+          <h2 className="text-3xl font-bold mb-2">Solicitudes de Registro</h2>
+          <p className="text-muted-foreground">
+            Revisa y aprueba las solicitudes de nuevos usuarios
+          </p>
+        </div>
 
-        <div className="flex w-full pt-14">
-          <AdminSidebar />
-          <main className="flex-1 p-6">
-            <div className="max-w-6xl mx-auto space-y-6">
-              <div>
-                <h2 className="text-3xl font-bold mb-2">Solicitudes de Registro</h2>
-                <p className="text-muted-foreground">
-                  Revisa y aprueba las solicitudes de nuevos usuarios
-                </p>
-              </div>
-
-              <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
-                <TabsList>
+        <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
+          <TabsList>
                   <TabsTrigger value="pending">Pendientes</TabsTrigger>
                   <TabsTrigger value="approved">Aprobadas</TabsTrigger>
                   <TabsTrigger value="rejected">Rechazadas</TabsTrigger>
@@ -255,11 +245,8 @@ export default function AdminRegistrationRequests() {
                     </div>
                   )}
                 </TabsContent>
-              </Tabs>
-            </div>
-          </main>
+          </Tabs>
         </div>
-      </div>
-    </SidebarProvider>
-  );
+      </AdminLayout>
+    );
 }

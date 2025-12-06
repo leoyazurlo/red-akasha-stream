@@ -24,6 +24,7 @@ export interface ContentWithCreator {
   creator_name: string;
   creator_avatar: string | null;
   creator_profile_type: string;
+  creator_country: string | null;
 }
 
 export const useContentByCreatorProfile = (profileType?: CreatorProfileType) => {
@@ -32,7 +33,7 @@ export const useContentByCreatorProfile = (profileType?: CreatorProfileType) => 
     queryFn: async () => {
       let profileQuery = supabase
         .from('profile_details')
-        .select('user_id, display_name, avatar_url, profile_type');
+        .select('user_id, display_name, avatar_url, profile_type, pais');
 
       if (profileType) {
         profileQuery = profileQuery.eq('profile_type', profileType);
@@ -71,7 +72,8 @@ export const useContentByCreatorProfile = (profileType?: CreatorProfileType) => 
           uploader_id: item.uploader_id,
           creator_name: creator?.display_name || 'Unknown',
           creator_avatar: creator?.avatar_url,
-          creator_profile_type: creator?.profile_type || ''
+          creator_profile_type: creator?.profile_type || '',
+          creator_country: creator?.pais || null
         };
       });
 

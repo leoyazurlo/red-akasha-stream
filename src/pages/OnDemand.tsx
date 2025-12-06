@@ -429,7 +429,9 @@ const OnDemand = () => {
                             <Button
                               size="icon"
                               variant="secondary"
-                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background z-20"
+                              className={`absolute top-2 right-2 transition-opacity bg-background/80 hover:bg-background z-20 ${
+                                isFavorite(content.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                              }`}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 toggleFavorite(content.id);
@@ -440,7 +442,7 @@ const OnDemand = () => {
                                 <Loader2 className="h-4 w-4 animate-spin" />
                               ) : (
                                 <Heart 
-                                  className={`h-4 w-4 ${isFavorite(content.id) ? 'fill-primary text-primary' : ''}`}
+                                  className={`h-4 w-4 ${isFavorite(content.id) ? 'fill-red-500 text-red-500' : ''}`}
                                 />
                               )}
                             </Button>
@@ -586,7 +588,9 @@ const OnDemand = () => {
                             <Button
                               size="icon"
                               variant="secondary"
-                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background z-20"
+                              className={`absolute top-2 right-2 transition-opacity bg-background/80 hover:bg-background z-20 ${
+                                isFavorite(content.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                              }`}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 toggleFavorite(content.id);
@@ -597,7 +601,7 @@ const OnDemand = () => {
                                 <Loader2 className="h-4 w-4 animate-spin" />
                               ) : (
                                 <Heart 
-                                  className={`h-4 w-4 ${isFavorite(content.id) ? 'fill-primary text-primary' : ''}`}
+                                  className={`h-4 w-4 ${isFavorite(content.id) ? 'fill-red-500 text-red-500' : ''}`}
                                 />
                               )}
                             </Button>

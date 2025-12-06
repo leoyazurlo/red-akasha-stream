@@ -4,6 +4,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2, Clock, CheckCircle2, XCircle, TrendingUp, BarChart3, Video, AlertCircle } from "lucide-react";
+import logoAkasha from "@/assets/logo-akasha-cyan.png";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -167,7 +168,13 @@ export default function Admin() {
       <div className="min-h-screen flex w-full bg-background">
         <header className="fixed top-0 left-0 right-0 h-14 flex items-center border-b bg-background z-50 px-4">
           <SidebarTrigger />
-          <h1 className="ml-4 text-lg font-semibold">Red Akasha - Administración</h1>
+          <img 
+            src={logoAkasha} 
+            alt="Logo Akasha" 
+            className="h-8 w-8 ml-4"
+            style={{ filter: 'brightness(0) saturate(100%) invert(70%) sepia(100%) saturate(2500%) hue-rotate(160deg) brightness(120%) contrast(110%)' }}
+          />
+          <h1 className="ml-3 text-lg font-semibold">Red Akasha - Administración</h1>
         </header>
 
         <div className="flex w-full pt-14">

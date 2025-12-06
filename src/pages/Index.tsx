@@ -61,7 +61,8 @@ const Index = () => {
   const { data: destacadosVideos = [] } = useQuery({
     queryKey: ["content-destacados"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Obtener contenido aprobado
+      const { data: content, error } = await supabase
         .from("content_uploads")
         .select("*")
         .eq("status", "approved")
@@ -70,17 +71,29 @@ const Index = () => {
       
       if (error) throw error;
       
-      return data.map((v) => {
+      // Obtener los uploader_ids únicos
+      const uploaderIds = [...new Set(content.map(c => c.uploader_id))];
+      
+      // Obtener información de perfiles
+      const { data: profiles } = await supabase
+        .from("profile_details")
+        .select("user_id, pais")
+        .in("user_id", uploaderIds);
+      
+      return content.map((v) => {
         const durationInSeconds = v.video_duration_seconds || v.audio_duration_seconds || 0;
         const minutes = Math.floor(durationInSeconds / 60);
         const seconds = Math.floor(durationInSeconds % 60);
         const duration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        const profile = profiles?.find(p => p.user_id === v.uploader_id);
         
         return {
           id: v.id,
           title: v.title,
           thumbnail: v.thumbnail_url || v.thumbnail_large || v.thumbnail_medium || v.thumbnail_small || '',
           duration: duration,
+          country: profile?.pais || null,
         };
       });
     },

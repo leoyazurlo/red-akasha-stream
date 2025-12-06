@@ -598,7 +598,7 @@ const Asociate = () => {
           </div>
 
           {/* Registration Form */}
-          <Card className="border border-border/50 bg-gradient-card backdrop-blur-xl shadow-elegant hover:shadow-glow transition-all duration-500 animate-scale-in">
+          <Card className="border border-cyan-400 bg-gradient-card backdrop-blur-xl shadow-[0_0_25px_hsl(180_100%_50%/0.4),0_0_50px_hsl(180_100%_50%/0.2)] hover:shadow-[0_0_35px_hsl(180_100%_50%/0.6),0_0_70px_hsl(180_100%_50%/0.3)] transition-all duration-500 animate-scale-in">
             <CardHeader className="space-y-3 pb-6">
               <div className="w-16 h-1 bg-gradient-primary rounded-full mx-auto"></div>
               <CardTitle className="text-2xl md:text-3xl text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">

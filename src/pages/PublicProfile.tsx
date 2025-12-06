@@ -288,7 +288,7 @@ const PublicProfile = () => {
     }
   };
 
-  const shareText = `¡Mira el perfil de ${profile?.display_name} en Red Akasha! La red de música latinoamericana.`;
+  const shareText = `Somos RedAkasha.org te comparte este perfil para que puedas disfrutar del contenido de ${profile?.display_name}. Si te gusta, podés asociarte a la Red Akasha.`;
 
   const shareToWhatsApp = () => {
     const url = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${profileUrl}`)}`;

@@ -2335,7 +2335,6 @@ export type Database = {
           ciudad: string | null
           created_at: string | null
           display_name: string | null
-          email: string | null
           facebook: string | null
           id: string | null
           instagram: string | null
@@ -2352,7 +2351,6 @@ export type Database = {
           ciudad?: string | null
           created_at?: string | null
           display_name?: string | null
-          email?: string | null
           facebook?: string | null
           id?: string | null
           instagram?: string | null
@@ -2369,7 +2367,6 @@ export type Database = {
           ciudad?: string | null
           created_at?: string | null
           display_name?: string | null
-          email?: string | null
           facebook?: string | null
           id?: string | null
           instagram?: string | null

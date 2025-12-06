@@ -43,7 +43,7 @@ export function AdminSidebar() {
     <Sidebar className={!open ? "w-14" : "w-60"} collapsible="icon">
       <SidebarContent className="pt-4">
         <SidebarGroup>
-          <SidebarGroupLabel>General</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-cyan-400/70 text-xs uppercase tracking-wider">General</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {generalItems.map((item) => (
@@ -54,8 +54,8 @@ export function AdminSidebar() {
                       end
                       className={({ isActive }) =>
                         isActive
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "hover:bg-muted/50"
+                          ? "bg-cyan-500/10 text-cyan-400 font-medium drop-shadow-[0_0_8px_hsl(180,100%,50%)]"
+                          : "text-cyan-300/80 hover:text-cyan-300 hover:bg-cyan-500/10 hover:drop-shadow-[0_0_6px_hsl(180,100%,50%)] transition-all duration-200"
                       }
                     >
                       <item.icon className="h-4 w-4" />
@@ -69,7 +69,7 @@ export function AdminSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Streaming</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-cyan-400/70 text-xs uppercase tracking-wider">Streaming</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {streamingItems.map((item) => (
@@ -80,8 +80,8 @@ export function AdminSidebar() {
                       end
                       className={({ isActive }) =>
                         isActive
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "hover:bg-muted/50"
+                          ? "bg-cyan-500/10 text-cyan-400 font-medium drop-shadow-[0_0_8px_hsl(180,100%,50%)]"
+                          : "text-cyan-300/80 hover:text-cyan-300 hover:bg-cyan-500/10 hover:drop-shadow-[0_0_6px_hsl(180,100%,50%)] transition-all duration-200"
                       }
                     >
                       <item.icon className="h-4 w-4" />
@@ -95,7 +95,7 @@ export function AdminSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Foro</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-cyan-400/70 text-xs uppercase tracking-wider">Foro</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {forumItems.map((item) => (
@@ -106,8 +106,8 @@ export function AdminSidebar() {
                       end
                       className={({ isActive }) =>
                         isActive
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "hover:bg-muted/50"
+                          ? "bg-cyan-500/10 text-cyan-400 font-medium drop-shadow-[0_0_8px_hsl(180,100%,50%)]"
+                          : "text-cyan-300/80 hover:text-cyan-300 hover:bg-cyan-500/10 hover:drop-shadow-[0_0_6px_hsl(180,100%,50%)] transition-all duration-200"
                       }
                     >
                       <item.icon className="h-4 w-4" />

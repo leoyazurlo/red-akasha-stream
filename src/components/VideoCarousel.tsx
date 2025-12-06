@@ -216,7 +216,17 @@ export const VideoCarousel = ({
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                     
-                    {/* Overlay */}
+                    {/* Dark overlay for text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                    
+                    {/* Centered Title */}
+                    <div className="absolute inset-0 flex items-center justify-center p-2">
+                      <h3 className="text-xs sm:text-sm font-medium text-white text-center line-clamp-2 drop-shadow-lg">
+                        {video.title}
+                      </h3>
+                    </div>
+                    
+                    {/* Play button on hover */}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                       <div className="w-12 h-12 md:w-14 md:h-14 bg-primary/90 rounded-full flex items-center justify-center group-hover:animate-float">
                         <Play className="w-5 h-5 md:w-6 md:h-6 text-primary-foreground fill-primary-foreground ml-0.5" />
@@ -228,11 +238,6 @@ export const VideoCarousel = ({
                       {video.duration}
                     </div>
                   </div>
-
-                  {/* Title */}
-                  <h3 className="mt-2 md:mt-3 text-xs sm:text-sm font-light text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-                    {video.title}
-                  </h3>
                 </div>
               ))}
             </div>

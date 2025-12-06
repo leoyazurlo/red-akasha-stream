@@ -8,6 +8,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -29,7 +35,10 @@ import {
   Music2,
   Video,
   Image as ImageIcon,
-  UserPlus
+  UserPlus,
+  MessageCircle,
+  Twitter,
+  Send
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
@@ -279,22 +288,51 @@ const PublicProfile = () => {
     }
   };
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `Perfil de ${profile?.display_name} en Red Akasha`,
-          text: `Mira el perfil de ${profile?.display_name} en Red Akasha - La red de música latinoamericana`,
-          url: profileUrl
-        });
-      } catch (error) {
-        if ((error as Error).name !== 'AbortError') {
-          handleCopyLink();
-        }
-      }
-    } else {
-      handleCopyLink();
-    }
+  const shareText = `¡Mira el perfil de ${profile?.display_name} en Red Akasha! La red de música latinoamericana.`;
+
+  const shareToWhatsApp = () => {
+    const url = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${profileUrl}`)}`;
+    window.open(url, "_blank");
+    toast({
+      title: "Compartiendo en WhatsApp",
+      description: "Se abrió WhatsApp para compartir"
+    });
+  };
+
+  const shareToFacebook = () => {
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(profileUrl)}`;
+    window.open(url, "_blank", "width=600,height=400");
+    toast({
+      title: "Compartiendo en Facebook",
+      description: "Se abrió Facebook para compartir"
+    });
+  };
+
+  const shareToTwitter = () => {
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(profileUrl)}`;
+    window.open(url, "_blank", "width=600,height=400");
+    toast({
+      title: "Compartiendo en Twitter",
+      description: "Se abrió Twitter para compartir"
+    });
+  };
+
+  const shareToLinkedIn = () => {
+    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(profileUrl)}`;
+    window.open(url, "_blank", "width=600,height=400");
+    toast({
+      title: "Compartiendo en LinkedIn",
+      description: "Se abrió LinkedIn para compartir"
+    });
+  };
+
+  const shareToTelegram = () => {
+    const url = `https://t.me/share/url?url=${encodeURIComponent(profileUrl)}&text=${encodeURIComponent(shareText)}`;
+    window.open(url, "_blank");
+    toast({
+      title: "Compartiendo en Telegram",
+      description: "Se abrió Telegram para compartir"
+    });
   };
 
   const photos = gallery.filter(item => item.media_type === 'photo' || item.media_type === 'image');
@@ -455,14 +493,49 @@ const PublicProfile = () => {
 
                   {/* Actions */}
                   <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-                    <Button onClick={handleShare} variant="outline" className="border-primary/30">
-                      <Share2 className="w-4 h-4 mr-2" />
-                      Compartir
-                    </Button>
-                    <Button onClick={handleCopyLink} variant="outline" className="border-primary/30">
-                      {copied ? <Check className="w-4 h-4 mr-2" /> : <Copy className="w-4 h-4 mr-2" />}
-                      {copied ? 'Copiado' : 'Copiar enlace'}
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/20 hover:text-cyan-300 hover:border-cyan-400">
+                          <Share2 className="w-4 h-4 mr-2" />
+                          Compartir
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-56 bg-card border-primary/20">
+                        <DropdownMenuItem onClick={shareToWhatsApp} className="cursor-pointer">
+                          <MessageCircle className="h-4 w-4 mr-2 text-green-500" />
+                          Compartir en WhatsApp
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={shareToFacebook} className="cursor-pointer">
+                          <Facebook className="h-4 w-4 mr-2 text-blue-500" />
+                          Compartir en Facebook
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={shareToTwitter} className="cursor-pointer">
+                          <Twitter className="h-4 w-4 mr-2 text-sky-400" />
+                          Compartir en Twitter
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={shareToLinkedIn} className="cursor-pointer">
+                          <Linkedin className="h-4 w-4 mr-2 text-blue-600" />
+                          Compartir en LinkedIn
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={shareToTelegram} className="cursor-pointer">
+                          <Send className="h-4 w-4 mr-2 text-sky-500" />
+                          Compartir en Telegram
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleCopyLink} className="cursor-pointer">
+                          {copied ? (
+                            <>
+                              <Check className="h-4 w-4 mr-2 text-green-500" />
+                              ¡Enlace copiado!
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-4 w-4 mr-2" />
+                              Copiar enlace
+                            </>
+                          )}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
               </div>

@@ -207,7 +207,8 @@ export const VideoCarousel = ({
                     transitionDelay: isVisible ? `${index * 75}ms` : '0ms'
                   }}
                 >
-                  <div className="relative aspect-video bg-card rounded-lg md:rounded-xl overflow-hidden border border-cyan-400/50 transition-all duration-300 hover:border-cyan-400 hover:scale-105" style={{ boxShadow: '0 0 20px rgba(34, 211, 238, 0.3)' }}>
+                <div className="p-1">
+                  <div className="relative aspect-video bg-card rounded-lg md:rounded-xl overflow-hidden border-2 border-cyan-400/50 transition-all duration-300 group-hover:border-cyan-400 group-hover:shadow-[0_0_30px_rgba(34,211,238,0.5)]" style={{ boxShadow: '0 0 20px rgba(34, 211, 238, 0.3)' }}>
                     {/* Thumbnail */}
                     <ResponsiveImage
                       src={video.thumbnail}
@@ -226,7 +227,8 @@ export const VideoCarousel = ({
                     {/* Duration */}
                     <div className="absolute bottom-1.5 right-1.5 md:bottom-2 md:right-2 bg-black/80 px-1.5 py-0.5 md:px-2 md:py-1 rounded text-xs font-light backdrop-blur-sm">
                       {video.duration}
-                    </div>
+                  </div>
+                </div>
                   </div>
 
                   {/* Title - Centered below video */}

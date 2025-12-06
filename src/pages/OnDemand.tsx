@@ -101,7 +101,7 @@ const OnDemand = () => {
       let query = supabase
         .from('content_uploads')
         .select('*')
-        .in('content_type', ['video_musical_vivo', 'video_clip', 'corto', 'documental', 'pelicula'])
+        .in('content_type', ['video_musical_vivo', 'video_clip', 'podcast', 'corto', 'documental', 'pelicula'])
         .order('created_at', { ascending: false });
 
       // Si hay usuario, mostrar su contenido pendiente + todo lo aprobado
@@ -344,11 +344,12 @@ const OnDemand = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t('onDemand.allTypes')}</SelectItem>
-                    <SelectItem value="video_musical_vivo">{t('onDemand.liveMusicalVideos')}</SelectItem>
-                    <SelectItem value="video_clip">{t('onDemand.videoClips')}</SelectItem>
                     <SelectItem value="corto">{t('onDemand.shorts')}</SelectItem>
                     <SelectItem value="documental">{t('onDemand.documentaries')}</SelectItem>
+                    <SelectItem value="video_musical_vivo">{t('onDemand.liveMusicalVideos')}</SelectItem>
                     <SelectItem value="pelicula">{t('onDemand.movies')}</SelectItem>
+                    <SelectItem value="podcast">{t('onDemand.podcasts')}</SelectItem>
+                    <SelectItem value="video_clip">{t('onDemand.videoClips')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

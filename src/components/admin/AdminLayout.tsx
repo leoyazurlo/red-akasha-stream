@@ -71,7 +71,7 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
                 style={{ filter: 'brightness(0) saturate(100%) invert(70%) sepia(100%) saturate(2500%) hue-rotate(160deg) brightness(120%) contrast(110%)' }}
               />
               <span className="text-base sm:text-lg font-light tracking-wider text-foreground">
-                Red Akasha - <span className="text-primary">Administración</span>
+                Red Akasha - <span className="text-cyan-400 drop-shadow-[0_0_8px_hsl(180,100%,50%)]">Administración</span>
               </span>
             </Link>
 

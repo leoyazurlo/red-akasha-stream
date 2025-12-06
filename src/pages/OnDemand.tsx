@@ -408,7 +408,7 @@ const OnDemand = () => {
                         >
                           {/* Thumbnail */}
                           <div 
-                            className="relative overflow-hidden bg-secondary/20 cursor-pointer rounded-t-md"
+                            className="relative overflow-hidden bg-secondary/20 cursor-pointer m-1 rounded-md"
                             onClick={() => handleContentClick(content)}
                           >
                             <AspectRatio ratio={16 / 9}>
@@ -561,7 +561,7 @@ const OnDemand = () => {
                           
                           {/* Thumbnail */}
                           <div 
-                            className="relative overflow-hidden bg-secondary/20 cursor-pointer rounded-t-md"
+                            className="relative overflow-hidden bg-secondary/20 cursor-pointer m-1 rounded-md"
                             onClick={() => handleContentClick(content)}
                           >
                             <AspectRatio ratio={16 / 9}>

@@ -124,7 +124,7 @@ const Index = () => {
       <main className="pt-16">
         <VideoPlayer />
         
-        <div className="space-y-2 pb-8">
+        <div className="space-y-0 pb-8">
           <VideoCarousel
             title={t('home.programs')}
             videos={programasVideos}

@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -86,6 +87,7 @@ const latinAmericanCountries = [
 ];
 
 const Asociate = () => {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -134,25 +136,25 @@ const Asociate = () => {
     services: "",
   });
 
-  // Ordenados alfabéticamente
-  const perfilOptions = [
-    { value: "agrupacion_musical", label: "Agrupación Musical" },
-    { value: "arte_digital", label: "Arte Digital" },
-    { value: "danza", label: "Danza" },
-    { value: "dj", label: "DJ" },
-    { value: "estudio_grabacion", label: "Estudio de Grabación" },
-    { value: "management", label: "Management" },
-    { value: "marketing_digital", label: "Marketing Digital" },
-    { value: "musico", label: "Músico" },
-    { value: "percusion", label: "Percusión" },
-    { value: "productor_artistico", label: "Productor Artístico" },
-    { value: "promotor_artistico", label: "Promotor" },
-    { value: "representante", label: "Representante" },
-    { value: "sala_concierto", label: "Sala de Conciertos" },
-    { value: "sello_discografico", label: "Sello Discográfico" },
-    { value: "perfil_contenido", label: "Usuario que disfruta del buen contenido" },
-    { value: "vj", label: "VJ" }
-  ];
+  // Profile options usando traducciones - ordenados alfabéticamente por value
+  const perfilOptions = useMemo(() => [
+    { value: "agrupacion_musical", label: t('asociate.profiles.agrupacion_musical') },
+    { value: "arte_digital", label: t('asociate.profiles.arte_digital') },
+    { value: "danza", label: t('asociate.profiles.danza') },
+    { value: "dj", label: t('asociate.profiles.dj') },
+    { value: "estudio_grabacion", label: t('asociate.profiles.estudio_grabacion') },
+    { value: "management", label: t('asociate.profiles.management') },
+    { value: "marketing_digital", label: t('asociate.profiles.marketing_digital') },
+    { value: "musico", label: t('asociate.profiles.musico') },
+    { value: "percusion", label: t('asociate.profiles.percusion') },
+    { value: "productor_artistico", label: t('asociate.profiles.productor_artistico') },
+    { value: "promotor_artistico", label: t('asociate.profiles.promotor_artistico') },
+    { value: "representante", label: t('asociate.profiles.representante') },
+    { value: "sala_concierto", label: t('asociate.profiles.sala_concierto') },
+    { value: "sello_discografico", label: t('asociate.profiles.sello_discografico') },
+    { value: "perfil_contenido", label: t('asociate.profiles.perfil_contenido') },
+    { value: "vj", label: t('asociate.profiles.vj') }
+  ], [t]);
 
   const profileTypeMap: Record<string, string> = {
     "perfil_contenido": "perfil_contenido",
@@ -577,10 +579,10 @@ const Asociate = () => {
           {/* Hero Section */}
           <div className="text-center mb-12 animate-fade-in">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-primary-glow to-accent bg-clip-text text-transparent">
-              Inscripción Asociados
+              {t('asociate.title')}
             </h1>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Únete a nuestra comunidad creativa. Colabora, conecta y crece junto a otros profesionales.
+              {t('asociate.subtitle')}
             </p>
           </div>
 
@@ -589,10 +591,10 @@ const Asociate = () => {
             <CardHeader className="space-y-3 pb-6">
               <div className="w-16 h-1 bg-gradient-primary rounded-full mx-auto"></div>
               <CardTitle className="text-2xl md:text-3xl text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Comienza Tu Registro
+                {t('asociate.step1')}
               </CardTitle>
               <CardDescription className="text-center text-base">
-                Completa el formulario para formar parte de Red Akasha
+                {t('asociate.subtitle')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -603,9 +605,9 @@ const Asociate = () => {
                       <CheckCircle2 className="w-20 h-20 text-primary mx-auto relative" />
                     </div>
                     <h3 className="text-3xl font-bold mb-3 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                      ¡Bienvenido a Red Akasha!
+                      {t('asociate.successTitle')}
                     </h3>
-                    <p className="text-muted-foreground text-lg">Tu registro se ha completado exitosamente</p>
+                    <p className="text-muted-foreground text-lg">{t('asociate.successMessage')}</p>
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-8">
@@ -613,7 +615,7 @@ const Asociate = () => {
                     <div className="space-y-3 p-6 rounded-xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all duration-300">
                       <Label htmlFor="profileType" className="text-base font-semibold flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                        Selecciona tu perfil *
+                        {t('asociate.profileType')} *
                       </Label>
                       <Select
                         value={selectedProfile}
@@ -621,7 +623,7 @@ const Asociate = () => {
                         required
                       >
                         <SelectTrigger className="h-12 text-base hover:border-primary/50 transition-colors">
-                          <SelectValue placeholder="¿Cuál es tu perfil?" />
+                          <SelectValue placeholder={t('asociate.selectProfile')} />
                         </SelectTrigger>
                         <SelectContent>
                           {perfilOptions.map((option) => (
@@ -637,7 +639,7 @@ const Asociate = () => {
                       <div className="border-t border-border/50 pt-8 animate-fade-in">
                         <div className="flex items-center gap-3 mb-6">
                           <div className="w-1 h-6 bg-gradient-primary rounded-full"></div>
-                          <h3 className="text-xl font-semibold">Foto de perfil</h3>
+                          <h3 className="text-xl font-semibold">{t('asociate.profilePhoto')}</h3>
                         </div>
                         {renderProfileForm()}
                       </div>
@@ -646,25 +648,25 @@ const Asociate = () => {
                     <div className="border-t border-border/50 pt-8">
                       <div className="flex items-center gap-3 mb-6">
                         <div className="w-1 h-6 bg-gradient-primary rounded-full"></div>
-                        <h3 className="text-xl font-semibold">Datos personales</h3>
+                        <h3 className="text-xl font-semibold">{t('asociate.step1')}</h3>
                       </div>
                       
                        <div className="grid gap-6 md:grid-cols-2">
                         <div className="space-y-2 md:col-span-2">
-                          <Label htmlFor="nombre" className="text-sm font-medium">Nombre Completo *</Label>
+                          <Label htmlFor="nombre" className="text-sm font-medium">{t('asociate.fullName')} *</Label>
                           <Input
                             id="nombre"
                             name="nombre"
                             required
                             value={formData.nombre}
                             onChange={handleChange}
-                            placeholder="Tu nombre completo"
+                            placeholder={t('asociate.fullNamePlaceholder')}
                             className="h-11 hover:border-primary/50 focus:border-primary transition-colors"
                           />
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="email" className="text-sm font-medium">Email *</Label>
+                          <Label htmlFor="email" className="text-sm font-medium">{t('asociate.email')} *</Label>
                           <Input
                             id="email"
                             name="email"
@@ -672,26 +674,26 @@ const Asociate = () => {
                             required
                             value={formData.email}
                             onChange={handleChange}
-                            placeholder="tu@email.com"
+                            placeholder={t('asociate.emailPlaceholder')}
                             className="h-11 hover:border-primary/50 focus:border-primary transition-colors"
                           />
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="telefono" className="text-sm font-medium">Teléfono</Label>
+                          <Label htmlFor="telefono" className="text-sm font-medium">{t('asociate.phone')}</Label>
                           <Input
                             id="telefono"
                             name="telefono"
                             type="tel"
                             value={formData.telefono}
                             onChange={handleChange}
-                            placeholder="+54 9 11 1234-5678"
+                            placeholder={t('asociate.phonePlaceholder')}
                             className="h-11 hover:border-primary/50 focus:border-primary transition-colors"
                           />
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="password" className="text-sm font-medium">Contraseña *</Label>
+                          <Label htmlFor="password" className="text-sm font-medium">{t('asociate.password')} *</Label>
                           <Input
                             id="password"
                             name="password"
@@ -699,13 +701,13 @@ const Asociate = () => {
                             required
                             value={formData.password}
                             onChange={handleChange}
-                            placeholder="Mínimo 6 caracteres"
+                            placeholder={t('asociate.passwordPlaceholder')}
                             className="h-11 hover:border-primary/50 focus:border-primary transition-colors"
                           />
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirmar Contraseña *</Label>
+                          <Label htmlFor="confirmPassword" className="text-sm font-medium">{t('asociate.confirmPassword')} *</Label>
                           <Input
                             id="confirmPassword"
                             name="confirmPassword"
@@ -713,20 +715,20 @@ const Asociate = () => {
                             required
                             value={formData.confirmPassword}
                             onChange={handleChange}
-                            placeholder="Repite tu contraseña"
+                            placeholder={t('asociate.confirmPasswordPlaceholder')}
                             className="h-11 hover:border-primary/50 focus:border-primary transition-colors"
                           />
                         </div>
 
                         <div className="space-y-2 md:col-span-2">
-                          <Label htmlFor="pais" className="text-sm font-medium">País *</Label>
+                          <Label htmlFor="pais" className="text-sm font-medium">{t('asociate.country')} *</Label>
                           <Select
                             value={formData.pais}
                             onValueChange={(value) => setFormData(prev => ({ ...prev, pais: value, provincia: "", ciudad: "" }))}
                             required
                           >
                             <SelectTrigger className="h-11 hover:border-primary/50 transition-colors">
-                              <SelectValue placeholder="Selecciona tu país" />
+                              <SelectValue placeholder={t('asociate.selectCountry')} />
                             </SelectTrigger>
                             <SelectContent>
                               {latinAmericanCountries.map((country) => (
@@ -743,14 +745,14 @@ const Asociate = () => {
 
                         {formData.pais === "Argentina" && (
                           <div className="space-y-2 md:col-span-2 animate-fade-in">
-                            <Label htmlFor="provincia" className="text-sm font-medium">Provincia *</Label>
+                            <Label htmlFor="provincia" className="text-sm font-medium">{t('asociate.province')} *</Label>
                             <Select
                               value={formData.provincia}
                               onValueChange={(value) => setFormData(prev => ({ ...prev, provincia: value, ciudad: "" }))}
                               required
                             >
                               <SelectTrigger className="h-11 hover:border-primary/50 transition-colors">
-                                <SelectValue placeholder="Selecciona tu provincia" />
+                                <SelectValue placeholder={t('asociate.selectProvince')} />
                               </SelectTrigger>
                               <SelectContent>
                                 {argentinaProvincias.map((provincia) => (
@@ -765,14 +767,14 @@ const Asociate = () => {
 
                         {formData.pais && (formData.pais !== "Argentina" || formData.provincia) && (
                           <div className="space-y-2 md:col-span-2 animate-fade-in">
-                            <Label htmlFor="ciudad" className="text-sm font-medium">Ciudad *</Label>
+                            <Label htmlFor="ciudad" className="text-sm font-medium">{t('asociate.city')} *</Label>
                             <Autocomplete
                               options={cityOptions}
                               value={formData.ciudad}
                               onValueChange={(value) => setFormData(prev => ({ ...prev, ciudad: value }))}
-                              placeholder="Busca o selecciona tu ciudad"
-                              searchPlaceholder="Escribe para buscar..."
-                              emptyMessage="No se encontró esa ciudad"
+                              placeholder={t('asociate.selectCity')}
+                              searchPlaceholder={t('common.search')}
+                              emptyMessage={t('common.noResults')}
                               className="hover:border-primary/50 transition-colors"
                             />
                           </div>
@@ -784,17 +786,17 @@ const Asociate = () => {
                       <div className="border-t border-border/50 pt-8 animate-fade-in">
                         <div className="flex items-center gap-3 mb-6">
                           <div className="w-1 h-6 bg-gradient-primary rounded-full"></div>
-                          <h3 className="text-xl font-semibold">Multimedia (Opcional)</h3>
+                          <h3 className="text-xl font-semibold">{t('asociate.uploadMedia')}</h3>
                         </div>
                         <p className="text-muted-foreground mb-6">
-                          Sube videos, imágenes y audios para enriquecer tu perfil
+                          {t('asociate.uploadMediaDesc')}
                         </p>
                         
                         {/* Upload Videos */}
                         <div className="space-y-3 mb-6 p-4 rounded-xl bg-muted/20 border border-border/50">
                           <Label className="flex items-center gap-2 text-base font-medium">
                             <Video className="w-5 h-5 text-primary" />
-                            Videos
+                            {t('asociate.videos')}
                           </Label>
                           <Input
                             type="file"
@@ -808,7 +810,7 @@ const Asociate = () => {
                                 const validation = validateFile(file, 'video');
                                 if (!validation.valid) {
                                   toast({
-                                    title: "Archivo rechazado",
+                                    title: t('common.error'),
                                     description: `${file.name}: ${validation.error}`,
                                     variant: "destructive",
                                   });
@@ -845,7 +847,7 @@ const Asociate = () => {
                         <div className="space-y-3 mb-6 p-4 rounded-xl bg-muted/20 border border-border/50">
                           <Label className="flex items-center gap-2 text-base font-medium">
                             <ImageIcon className="w-5 h-5 text-primary" />
-                            Imágenes
+                            {t('asociate.images')}
                           </Label>
                           <Input
                             type="file"
@@ -859,7 +861,7 @@ const Asociate = () => {
                                 const validation = validateFile(file, 'image');
                                 if (!validation.valid) {
                                   toast({
-                                    title: "Archivo rechazado",
+                                    title: t('common.error'),
                                     description: `${file.name}: ${validation.error}`,
                                     variant: "destructive",
                                   });
@@ -896,7 +898,7 @@ const Asociate = () => {
                         <div className="space-y-3 p-4 rounded-xl bg-muted/20 border border-border/50">
                           <Label className="flex items-center gap-2 text-base font-medium">
                             <Music className="w-5 h-5 text-primary" />
-                            Audio (Playlist)
+                            {t('asociate.audios')}
                           </Label>
                           <Input
                             type="file"
@@ -910,7 +912,7 @@ const Asociate = () => {
                                 const validation = validateFile(file, 'audio');
                                 if (!validation.valid) {
                                   toast({
-                                    title: "Archivo rechazado",
+                                    title: t('common.error'),
                                     description: `${file.name}: ${validation.error}`,
                                     variant: "destructive",
                                   });
@@ -953,10 +955,10 @@ const Asociate = () => {
                       {loading ? (
                         <>
                           <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                          Enviando...
+                          {t('asociate.submitting')}
                         </>
                       ) : (
-                        "Completar Inscripción"
+                        t('asociate.submit')
                       )}
                     </Button>
                   </form>

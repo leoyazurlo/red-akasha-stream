@@ -30,6 +30,8 @@ import {
   Check,
   MessageCircle,
   Twitter,
+  Maximize2,
+  X,
   Send
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
@@ -115,6 +117,8 @@ export const ProfileTechnicalSheet = ({
   const audioRef = useRef<HTMLAudioElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+  const [expandedPhoto, setExpandedPhoto] = useState<number | null>(null);
+  const [expandedVideo, setExpandedVideo] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
 
   const profileUrl = `${window.location.origin}/circuito/perfil/${profileId}`;
@@ -685,6 +689,16 @@ export const ProfileTechnicalSheet = ({
                         }`}
                       />
                       
+                      {/* Expand button */}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setExpandedPhoto(currentPhotoIndex)}
+                        className="absolute top-2 right-2 bg-background/90 backdrop-blur-md hover:bg-primary/80 text-foreground hover:text-primary-foreground opacity-0 group-hover:opacity-100 transition-all duration-300 border border-primary/20"
+                      >
+                        <Maximize2 className="w-4 h-4" />
+                      </Button>
+                      
                       {/* Navigation arrows */}
                       {photos.length > 1 && (
                         <>
@@ -741,6 +755,16 @@ export const ProfileTechnicalSheet = ({
                       >
                         <source src={videos[currentVideoIndex].url} type="video/mp4" />
                       </video>
+                      
+                      {/* Expand button */}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setExpandedVideo(currentVideoIndex)}
+                        className="absolute top-2 right-2 bg-background/90 backdrop-blur-md hover:bg-primary/80 text-foreground hover:text-primary-foreground opacity-0 group-hover:opacity-100 transition-all duration-300 border border-primary/20 z-10"
+                      >
+                        <Maximize2 className="w-4 h-4" />
+                      </Button>
                       
                       {/* Navigation arrows */}
                       {videos.length > 1 && (
@@ -948,6 +972,119 @@ export const ProfileTechnicalSheet = ({
           </div>
         </div>
       </div>
+
+      {/* Expanded Photo Modal */}
+      {expandedPhoto !== null && photos.length > 0 && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+          onClick={() => setExpandedPhoto(null)}
+        >
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setExpandedPhoto(null)}
+            className="absolute top-4 right-4 text-white hover:bg-white/20 z-50"
+          >
+            <X className="w-8 h-8" />
+          </Button>
+
+          {photos.length > 1 && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExpandedPhoto((prev) => prev !== null ? (prev - 1 + photos.length) % photos.length : 0);
+                }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white z-50"
+              >
+                <ChevronLeft className="w-8 h-8" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExpandedPhoto((prev) => prev !== null ? (prev + 1) % photos.length : 0);
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white z-50"
+              >
+                <ChevronRight className="w-8 h-8" />
+              </Button>
+            </>
+          )}
+
+          <img 
+            src={photos[expandedPhoto].url} 
+            alt={photos[expandedPhoto].title || 'Foto ampliada'} 
+            className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 px-4 py-2 rounded-full text-white text-sm font-medium">
+            {expandedPhoto + 1} / {photos.length}
+          </div>
+        </div>
+      )}
+
+      {/* Expanded Video Modal */}
+      {expandedVideo !== null && videos.length > 0 && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+          onClick={() => setExpandedVideo(null)}
+        >
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setExpandedVideo(null)}
+            className="absolute top-4 right-4 text-white hover:bg-white/20 z-50"
+          >
+            <X className="w-8 h-8" />
+          </Button>
+
+          {videos.length > 1 && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExpandedVideo((prev) => prev !== null ? (prev - 1 + videos.length) % videos.length : 0);
+                }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white z-50"
+              >
+                <ChevronLeft className="w-8 h-8" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExpandedVideo((prev) => prev !== null ? (prev + 1) % videos.length : 0);
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/20 text-white z-50"
+              >
+                <ChevronRight className="w-8 h-8" />
+              </Button>
+            </>
+          )}
+
+          <video 
+            key={videos[expandedVideo].url}
+            controls 
+            autoPlay
+            className="max-w-full max-h-[90vh] rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <source src={videos[expandedVideo].url} type="video/mp4" />
+          </video>
+
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 px-4 py-2 rounded-full text-white text-sm font-medium">
+            {expandedVideo + 1} / {videos.length}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

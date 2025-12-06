@@ -53,11 +53,11 @@ export const Footer = () => {
                   transitionDelay: isVisible ? `${index * 100}ms` : '0ms'
                 }}
               >
-                <div className="flex flex-col items-center gap-1.5 md:gap-2 p-2 md:p-3 bg-secondary rounded-lg border border-border hover:border-primary transition-all duration-300 hover:shadow-glow hover:scale-105">
-                  <div className="w-7 h-7 md:w-8 md:h-8 bg-primary/20 rounded-full flex items-center justify-center group-hover:bg-primary/30 transition-all duration-300 group-hover:animate-float">
-                    <Icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary" />
+                <div className="flex flex-col items-center gap-1.5 md:gap-2 p-2 md:p-3 bg-secondary rounded-lg border border-border hover:border-cyan-400 transition-all duration-300 hover:shadow-[0_0_25px_hsl(180_100%_50%/0.4),0_0_50px_hsl(180_100%_50%/0.2)] hover:scale-105">
+                  <div className="w-7 h-7 md:w-8 md:h-8 bg-primary/20 rounded-full flex items-center justify-center group-hover:bg-cyan-400/30 transition-all duration-300 group-hover:animate-float">
+                    <Icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary group-hover:text-cyan-400 transition-colors" />
                   </div>
-                  <span className="text-[10px] md:text-xs font-light text-center text-foreground group-hover:text-primary transition-colors leading-tight">
+                  <span className="text-[10px] md:text-xs font-light text-center text-foreground group-hover:text-cyan-400 transition-colors leading-tight">
                     {t(action.labelKey)}
                   </span>
                 </div>

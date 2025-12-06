@@ -497,8 +497,20 @@ const UploadContent = () => {
                   )}
 
                   <div className="space-y-2">
+                    <Label htmlFor="band_name">Artista *</Label>
+                    <Input
+                      id="band_name"
+                      name="band_name"
+                      required
+                      value={formData.band_name}
+                      onChange={handleChange}
+                      placeholder="Nombre del artista o banda"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
                     <Label htmlFor="title">
-                      {formData.content_type === 'video_musical_vivo' ? 'Nombre del Tema *' : 'Título *'}
+                      {formData.content_type === 'video_musical_vivo' ? 'Título de la Canción *' : 'Título *'}
                     </Label>
                     <Input
                       id="title"
@@ -506,7 +518,7 @@ const UploadContent = () => {
                       required
                       value={formData.title}
                       onChange={handleChange}
-                      placeholder={formData.content_type === 'video_musical_vivo' ? 'Nombre del tema musical' : 'Título del contenido'}
+                      placeholder={formData.content_type === 'video_musical_vivo' ? 'Nombre de la canción' : 'Título del contenido'}
                     />
                   </div>
 

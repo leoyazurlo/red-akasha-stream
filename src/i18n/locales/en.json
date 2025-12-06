@@ -14,6 +14,7 @@
     "profile": "My Profile",
     "favorites": "My Favorites",
     "playlists": "My Playlists",
+    "myCollection": "My Collection",
     "controlPanel": "Control Panel",
     "sessionClosed": "Session closed",
     "sessionClosedDesc": "You have logged out successfully."

@@ -79,7 +79,6 @@ interface PublicProfile {
   instagram: string | null;
   facebook: string | null;
   linkedin: string | null;
-  email: string | null;
   created_at: string;
   updated_at: string;
 }

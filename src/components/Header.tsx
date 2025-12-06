@@ -1,4 +1,4 @@
-import { LogOut, User, Heart, List } from "lucide-react";
+import { LogOut, User, Library } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -93,13 +93,9 @@ export const Header = () => {
                       <User className="mr-2 h-4 w-4" />
                       {t('auth.profile')}
                     </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => navigate("/favoritos")} className="cursor-pointer">
-                      <Heart className="mr-2 h-4 w-4" />
-                      {t('auth.favorites')}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => navigate("/playlists")} className="cursor-pointer">
-                      <List className="mr-2 h-4 w-4" />
-                      {t('auth.playlists')}
+                    <DropdownMenuItem onSelect={() => navigate("/mi-coleccion")} className="cursor-pointer">
+                      <Library className="mr-2 h-4 w-4" />
+                      {t('auth.myCollection') || 'Mi Colección'}
                     </DropdownMenuItem>
                     {isAdmin && (
                       <DropdownMenuItem onSelect={() => navigate("/admin")} className="cursor-pointer">

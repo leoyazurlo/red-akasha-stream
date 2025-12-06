@@ -59,6 +59,9 @@ export const useFavorites = () => {
 
         if (error) throw error;
 
+        // Decrement likes_count
+        await supabase.rpc('decrement_likes', { content_id: contentId }).catch(console.error);
+
         setFavorites(prev => {
           const newSet = new Set(prev);
           newSet.delete(contentId);
@@ -79,6 +82,9 @@ export const useFavorites = () => {
           });
 
         if (error) throw error;
+
+        // Increment likes_count
+        await supabase.rpc('increment_likes', { content_id: contentId }).catch(console.error);
 
         setFavorites(prev => new Set(prev).add(contentId));
 

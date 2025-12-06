@@ -31,6 +31,8 @@ import { BandForm } from "@/components/profile-forms/BandForm";
 import { MarketingDigitalForm } from "@/components/profile-forms/MarketingDigitalForm";
 import { MusicianForm } from "@/components/profile-forms/MusicianForm";
 import { RecordLabelForm } from "@/components/profile-forms/RecordLabelForm";
+import { PercusionForm } from "@/components/profile-forms/PercusionForm";
+import { DanzaForm } from "@/components/profile-forms/DanzaForm";
 import { z } from "zod";
 import { validateFile, formatFileSize } from "@/lib/storage-validation";
 
@@ -132,28 +134,28 @@ const Asociate = () => {
     services: "",
   });
 
+  // Ordenados alfabéticamente
   const perfilOptions = [
-    { value: "perfil_contenido", label: "Perfil que disfrutan del buen contenido" },
-    { value: "agrupacion_musical", label: "Agrupación musical" },
-    { value: "arte_digital", label: "Arte digital" },
+    { value: "agrupacion_musical", label: "Agrupación Musical" },
+    { value: "arte_digital", label: "Arte Digital" },
+    { value: "danza", label: "Danza" },
     { value: "dj", label: "DJ" },
-    { value: "estudio_grabacion", label: "Estudio de grabación" },
+    { value: "estudio_grabacion", label: "Estudio de Grabación" },
     { value: "management", label: "Management" },
-    { value: "marketing_digital", label: "Marketing digital" },
-    { value: "me_gusta_arte", label: "Me gusta el Arte" },
+    { value: "marketing_digital", label: "Marketing Digital" },
     { value: "musico", label: "Músico" },
-    { value: "productor_artistico", label: "Productor artístico" },
-    { value: "productor_audiovisual", label: "Productor audiovisual" },
-    { value: "promotor_artistico", label: "Promotor artístico" },
+    { value: "percusion", label: "Percusión" },
+    { value: "productor_artistico", label: "Productor Artístico" },
+    { value: "promotor_artistico", label: "Promotor" },
     { value: "representante", label: "Representante" },
-    { value: "sala_concierto", label: "Sala de concierto" },
-    { value: "sello_discografico", label: "Sello discográfico" },
+    { value: "sala_concierto", label: "Sala de Conciertos" },
+    { value: "sello_discografico", label: "Sello Discográfico" },
+    { value: "perfil_contenido", label: "Usuario que disfruta del buen contenido" },
     { value: "vj", label: "VJ" }
   ];
 
   const profileTypeMap: Record<string, string> = {
     "perfil_contenido": "perfil_contenido",
-    "productor_audiovisual": "productor_audiovisual",
     "productor_artistico": "productor_artistico",
     "estudio_grabacion": "estudio_grabacion",
     "promotor_artistico": "promotor_artistico",
@@ -164,10 +166,11 @@ const Asociate = () => {
     "musico": "musico",
     "arte_digital": "arte_digital",
     "management": "management",
-    "me_gusta_arte": "me_gusta_arte",
     "representante": "representante",
     "dj": "dj",
-    "vj": "vj"
+    "vj": "vj",
+    "percusion": "percusion",
+    "danza": "danza"
   };
 
   // Preparar opciones de ciudades para autocompletado
@@ -528,10 +531,7 @@ const Asociate = () => {
   const renderProfileForm = () => {
     switch (selectedProfile) {
       case "perfil_contenido":
-      case "me_gusta_arte":
         return <ContenidoForm formData={formData} onChange={handleProfileFieldChange} />;
-      case "productor_audiovisual":
-        return <MusicLoverForm formData={formData} onChange={handleProfileFieldChange} />;
       case "estudio_grabacion":
         return <RecordingStudioForm formData={formData} onChange={handleProfileFieldChange} />;
       case "sala_concierto":
@@ -557,6 +557,10 @@ const Asociate = () => {
         return <DJForm formData={formData} onChange={handleProfileFieldChange} />;
       case "vj":
         return <VJForm formData={formData} onChange={handleProfileFieldChange} />;
+      case "percusion":
+        return <PercusionForm formData={formData} onChange={handleProfileFieldChange} />;
+      case "danza":
+        return <DanzaForm formData={formData} onChange={handleProfileFieldChange} />;
       default:
         return null;
     }

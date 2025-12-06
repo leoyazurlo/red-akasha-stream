@@ -24,7 +24,7 @@ export const VideoPlayer = () => {
         </div>
 
         {/* Video Player */}
-        <div className="relative aspect-video bg-card rounded-lg sm:rounded-xl overflow-hidden shadow-glow border border-border group">
+        <div className="relative aspect-video bg-card rounded-lg sm:rounded-xl overflow-hidden border-2 border-cyan-400/40 group shadow-[0_0_30px_hsl(180_100%_50%/0.35)] hover:shadow-[0_0_45px_hsl(180_100%_50%/0.5)] transition-shadow duration-300">
           {/* Placeholder for video player */}
           <div className="absolute inset-0 bg-gradient-dark flex items-center justify-center p-4">
             <div className="text-center space-y-2 sm:space-y-3">

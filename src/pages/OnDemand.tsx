@@ -401,15 +401,15 @@ const OnDemand = () => {
                       return (
                         <Card 
                           key={content.id} 
-                          className="group overflow-hidden border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 to-cyan-600/5 backdrop-blur-sm hover:from-cyan-500/10 hover:to-cyan-600/10 transition-all"
+                          className="group border-2 border-cyan-500/40 bg-gradient-to-br from-cyan-500/5 to-cyan-600/5 backdrop-blur-sm hover:from-cyan-500/10 hover:to-cyan-600/10 hover:border-cyan-500/60 transition-all"
+                          style={{
+                            boxShadow: '0 0 15px rgba(6, 182, 212, 0.25)'
+                          }}
                         >
-                          {/* Thumbnail con marco cyan en bordes */}
+                          {/* Thumbnail */}
                           <div 
-                            className="relative overflow-hidden bg-secondary/20 cursor-pointer border-2 border-cyan-500/40 rounded-t-lg"
+                            className="relative overflow-hidden bg-secondary/20 cursor-pointer rounded-t-md"
                             onClick={() => handleContentClick(content)}
-                            style={{
-                              boxShadow: '0 0 15px rgba(6, 182, 212, 0.25)'
-                            }}
                           >
                             <AspectRatio ratio={16 / 9}>
                               {content.thumbnail_url ? (
@@ -551,18 +551,18 @@ const OnDemand = () => {
                       return (
                         <Card 
                           key={content.id} 
-                          className="group overflow-hidden border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-yellow-500/5 to-orange-500/10 backdrop-blur-sm hover:from-amber-500/15 hover:via-yellow-500/10 hover:to-orange-500/15 transition-all relative"
+                          className="group border-2 border-cyan-500/40 bg-gradient-to-br from-amber-500/10 via-yellow-500/5 to-orange-500/10 backdrop-blur-sm hover:from-amber-500/15 hover:via-yellow-500/10 hover:to-orange-500/15 hover:border-cyan-500/60 transition-all relative"
+                          style={{
+                            boxShadow: '0 0 15px rgba(6, 182, 212, 0.25)'
+                          }}
                         >
                           {/* Premium Shine Effect */}
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none"></div>
                           
-                          {/* Thumbnail con borde cyan */}
+                          {/* Thumbnail */}
                           <div 
-                            className="relative overflow-hidden bg-secondary/20 cursor-pointer border-2 border-cyan-500/40 rounded-t-lg"
+                            className="relative overflow-hidden bg-secondary/20 cursor-pointer rounded-t-md"
                             onClick={() => handleContentClick(content)}
-                            style={{
-                              boxShadow: '0 0 15px rgba(6, 182, 212, 0.25)'
-                            }}
                           >
                             <AspectRatio ratio={16 / 9}>
                               {content.thumbnail_url ? (

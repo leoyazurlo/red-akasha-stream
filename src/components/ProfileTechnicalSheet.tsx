@@ -18,7 +18,10 @@ import {
   ExternalLink,
   ChevronLeft,
   ChevronRight,
-  Star
+  Star,
+  Share2,
+  Copy,
+  Check
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -103,6 +106,45 @@ export const ProfileTechnicalSheet = ({
   const audioRef = useRef<HTMLAudioElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+  const [copied, setCopied] = useState(false);
+
+  const profileUrl = `${window.location.origin}/perfil/${profileId}`;
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(profileUrl);
+      setCopied(true);
+      toast({
+        title: "¡Enlace copiado!",
+        description: "El enlace del perfil se ha copiado al portapapeles"
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo copiar el enlace",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Perfil de ${displayName}`,
+          text: `Mira el perfil de ${displayName} en Red Akasha`,
+          url: profileUrl
+        });
+      } catch (error) {
+        if ((error as Error).name !== 'AbortError') {
+          handleCopyLink();
+        }
+      }
+    } else {
+      handleCopyLink();
+    }
+  };
 
   useEffect(() => {
     fetchGallery();
@@ -511,14 +553,46 @@ export const ProfileTechnicalSheet = ({
             </div>
 
             {/* Avatar with Artistic Design */}
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-primary rounded-full blur-xl opacity-60 group-hover:opacity-90 transition-opacity duration-500" />
-              <Avatar className="relative w-32 h-32 sm:w-40 sm:h-40 border-4 border-primary/30 ring-4 ring-primary/10 shadow-glow">
-                <AvatarImage src={avatarUrl || ''} alt={displayName} className="object-cover" />
-                <AvatarFallback className="bg-gradient-primary text-primary-foreground text-4xl sm:text-6xl font-bold">
-                  {displayName.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+            <div className="flex flex-col items-center gap-4">
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-primary rounded-full blur-xl opacity-60 group-hover:opacity-90 transition-opacity duration-500" />
+                <Avatar className="relative w-32 h-32 sm:w-40 sm:h-40 border-4 border-primary/30 ring-4 ring-primary/10 shadow-glow">
+                  <AvatarImage src={avatarUrl || ''} alt={displayName} className="object-cover" />
+                  <AvatarFallback className="bg-gradient-primary text-primary-foreground text-4xl sm:text-6xl font-bold">
+                    {displayName.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
+              
+              {/* Share Button */}
+              <Button
+                onClick={handleShare}
+                variant="outline"
+                className="gap-2 border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/20 hover:text-cyan-300 hover:border-cyan-400 transition-all duration-300"
+              >
+                <Share2 className="w-4 h-4" />
+                Compartir Perfil
+              </Button>
+              
+              {/* Copy Link Button */}
+              <Button
+                onClick={handleCopyLink}
+                variant="ghost"
+                size="sm"
+                className="gap-2 text-muted-foreground hover:text-cyan-400 transition-colors"
+              >
+                {copied ? (
+                  <>
+                    <Check className="w-4 h-4 text-green-500" />
+                    <span className="text-green-500">¡Copiado!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4" />
+                    Copiar enlace
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         </div>

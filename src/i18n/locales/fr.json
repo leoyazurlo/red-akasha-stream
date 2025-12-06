@@ -14,6 +14,7 @@
     "profile": "Mon Profil",
     "favorites": "Mes Favoris",
     "playlists": "Mes Playlists",
+    "myCollection": "Ma Collection",
     "controlPanel": "Panneau de contrôle",
     "sessionClosed": "Session terminée",
     "sessionClosedDesc": "Vous avez été déconnecté avec succès."
@@ -29,7 +30,9 @@
     "search": "Rechercher",
     "noResults": "Aucun résultat",
     "viewMore": "Voir plus",
-    "viewAll": "Voir tout"
+    "viewAll": "Voir tout",
+    "goBack": "Retour",
+    "clearSearch": "Effacer la recherche"
   },
   "language": {
     "select": "Choisir la langue"
@@ -39,6 +42,40 @@
     "shorts": "Shorts",
     "featured": "En vedette",
     "schedules": "Horaires"
+  },
+  "onDemand": {
+    "title": "À la demande",
+    "subtitle": "Contenu vidéo téléchargé par nos partenaires. Profitez de vidéos musicales, clips, documentaires et films.",
+    "continueWatching": "Continuer à regarder",
+    "resumeWhere": "Reprendre là où vous vous êtes arrêté",
+    "filters": "Filtres",
+    "searchPlaceholder": "Rechercher du contenu...",
+    "contentType": "Type de contenu",
+    "allTypes": "Tous les types",
+    "liveMusicalVideos": "Vidéos Musicales Live",
+    "videoClips": "Clips Vidéo",
+    "shorts": "Courts métrages",
+    "documentaries": "Documentaires",
+    "movies": "Films",
+    "noContent": "Aucun contenu trouvé",
+    "adjustFilters": "Essayez d'ajuster les filtres ou d'effectuer une recherche différente",
+    "freeContent": "Contenu Gratuit",
+    "videosAvailable": "vidéo(s) disponible(s) gratuitement",
+    "premiumContent": "Contenu Premium",
+    "exclusiveVideos": "vidéo(s) exclusive(s)",
+    "watchFree": "Regarder Gratuitement",
+    "buy": "Acheter",
+    "comingSoon": "Prochainement",
+    "paymentSoon": "Le système de paiement sera bientôt disponible",
+    "errorLoadingContent": "Impossible de charger le contenu vidéo",
+    "types": {
+      "video_musical_vivo": "Vidéo Musicale Live",
+      "video_clip": "Clip Vidéo",
+      "podcast": "Podcast",
+      "corto": "Court métrage",
+      "documental": "Documentaire",
+      "pelicula": "Film"
+    }
   },
   "artists": {
     "title": "Explorer les artistes",
@@ -56,6 +93,35 @@
     "shorts": "Courts métrages",
     "photography": "Photographie",
     "radioShows": "Émissions de radio"
+  },
+  "circuit": {
+    "title": "Circuit",
+    "subtitle": "Dans cette section, vous pouvez accéder à la base de données et aux connaissances du circuit de production de l'industrie",
+    "selectCountry": "Sélectionnez votre pays",
+    "loading": "Chargement des profils...",
+    "noResults": "Aucun résultat trouvé",
+    "noResultsFor": "Aucun profil ne correspond à votre recherche",
+    "noProfiles": "Il n'y a pas encore de profils enregistrés dans",
+    "beFirst": "Voulez-vous être le premier?",
+    "joinNetwork": "Rejoignez le réseau Red Akasha et apparaissez dans le circuit de votre pays.",
+    "profiles": "Profils",
+    "showingResults": "Affichage des résultats pour",
+    "findSpaces": "Trouvez des espaces culturels, studios d'enregistrement, groupes, producteurs et plus",
+    "searchPlaceholder": "Rechercher par nom, ville ou province...",
+    "sortNameAsc": "Nom (A-Z)",
+    "sortNameDesc": "Nom (Z-A)",
+    "sortNewest": "Plus récents",
+    "sortOldest": "Plus anciens",
+    "joinRequired": "Pour voir la base de données, vous devez vous inscrire.",
+    "joinNow": "Rejoindre Maintenant",
+    "profileTypes": {
+      "agrupacion_musical": "Groupe Musical",
+      "sala_concierto": "Salle de Concert",
+      "estudio_grabacion": "Studio d'Enregistrement",
+      "productor_artistico": "Producteur Artistique",
+      "promotor_artistico": "Promoteur Artistique",
+      "productor_audiovisual": "Producteur Audiovisuel"
+    }
   },
   "footer": {
     "contact": "Contact / À propos",

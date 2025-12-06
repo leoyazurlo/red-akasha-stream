@@ -14,6 +14,7 @@
     "profile": "Il mio Profilo",
     "favorites": "I miei Preferiti",
     "playlists": "Le mie Playlist",
+    "myCollection": "La mia Collezione",
     "controlPanel": "Pannello di controllo",
     "sessionClosed": "Sessione terminata",
     "sessionClosedDesc": "Hai effettuato il logout con successo."
@@ -29,7 +30,9 @@
     "search": "Cerca",
     "noResults": "Nessun risultato",
     "viewMore": "Vedi altro",
-    "viewAll": "Vedi tutto"
+    "viewAll": "Vedi tutto",
+    "goBack": "Indietro",
+    "clearSearch": "Cancella ricerca"
   },
   "language": {
     "select": "Seleziona lingua"
@@ -56,6 +59,35 @@
     "shorts": "Cortometraggi",
     "photography": "Fotografia",
     "radioShows": "Programmi Radio"
+  },
+  "circuit": {
+    "title": "Circuito",
+    "subtitle": "In questa sezione puoi accedere al database e alle conoscenze del circuito di produzione dell'industria",
+    "selectCountry": "Seleziona il tuo paese",
+    "loading": "Caricamento profili...",
+    "noResults": "Nessun risultato trovato",
+    "noResultsFor": "Nessun profilo corrisponde alla tua ricerca",
+    "noProfiles": "Non ci sono ancora profili registrati in",
+    "beFirst": "Vuoi essere il primo?",
+    "joinNetwork": "Unisciti alla rete Red Akasha e appari nel circuito del tuo paese.",
+    "profiles": "Profili",
+    "showingResults": "Mostrando risultati per",
+    "findSpaces": "Trova spazi culturali, studi di registrazione, band, produttori e altro",
+    "searchPlaceholder": "Cerca per nome, città o provincia...",
+    "sortNameAsc": "Nome (A-Z)",
+    "sortNameDesc": "Nome (Z-A)",
+    "sortNewest": "Più recenti",
+    "sortOldest": "Più vecchi",
+    "joinRequired": "Per vedere il database devi iscriverti.",
+    "joinNow": "Iscriviti Ora",
+    "profileTypes": {
+      "agrupacion_musical": "Gruppo Musicale",
+      "sala_concierto": "Sala Concerti",
+      "estudio_grabacion": "Studio di Registrazione",
+      "productor_artistico": "Produttore Artistico",
+      "promotor_artistico": "Promotore Artistico",
+      "productor_audiovisual": "Produttore Audiovisivo"
+    }
   },
   "footer": {
     "contact": "Contatti / Chi siamo",

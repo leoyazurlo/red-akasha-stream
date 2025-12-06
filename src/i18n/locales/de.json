@@ -14,6 +14,7 @@
     "profile": "Mein Profil",
     "favorites": "Meine Favoriten",
     "playlists": "Meine Playlists",
+    "myCollection": "Meine Sammlung",
     "controlPanel": "Kontrollzentrum",
     "sessionClosed": "Sitzung beendet",
     "sessionClosedDesc": "Sie haben sich erfolgreich abgemeldet."
@@ -29,7 +30,9 @@
     "search": "Suchen",
     "noResults": "Keine Ergebnisse",
     "viewMore": "Mehr anzeigen",
-    "viewAll": "Alle anzeigen"
+    "viewAll": "Alle anzeigen",
+    "goBack": "Zurück",
+    "clearSearch": "Suche löschen"
   },
   "language": {
     "select": "Sprache auswählen"
@@ -56,6 +59,35 @@
     "shorts": "Kurzfilme",
     "photography": "Fotografie",
     "radioShows": "Radiosendungen"
+  },
+  "circuit": {
+    "title": "Kreislauf",
+    "subtitle": "In diesem Bereich können Sie auf die Datenbank und das Wissen des Produktionskreislaufs der Industrie zugreifen",
+    "selectCountry": "Wählen Sie Ihr Land",
+    "loading": "Profile werden geladen...",
+    "noResults": "Keine Ergebnisse gefunden",
+    "noResultsFor": "Keine Profile entsprechen Ihrer Suche",
+    "noProfiles": "Es sind noch keine Profile registriert in",
+    "beFirst": "Möchten Sie der Erste sein?",
+    "joinNetwork": "Treten Sie dem Red Akasha Netzwerk bei und erscheinen Sie im Kreislauf Ihres Landes.",
+    "profiles": "Profile",
+    "showingResults": "Ergebnisse anzeigen für",
+    "findSpaces": "Finden Sie Kulturräume, Aufnahmestudios, Bands, Produzenten und mehr",
+    "searchPlaceholder": "Nach Name, Stadt oder Provinz suchen...",
+    "sortNameAsc": "Name (A-Z)",
+    "sortNameDesc": "Name (Z-A)",
+    "sortNewest": "Neueste",
+    "sortOldest": "Älteste",
+    "joinRequired": "Um die Datenbank anzuzeigen, müssen Sie beitreten.",
+    "joinNow": "Jetzt Beitreten",
+    "profileTypes": {
+      "agrupacion_musical": "Musikgruppe",
+      "sala_concierto": "Konzertsaal",
+      "estudio_grabacion": "Aufnahmestudio",
+      "productor_artistico": "Künstlerischer Produzent",
+      "promotor_artistico": "Künstlerischer Promoter",
+      "productor_audiovisual": "Audiovisueller Produzent"
+    }
   },
   "footer": {
     "contact": "Kontakt / Über uns",

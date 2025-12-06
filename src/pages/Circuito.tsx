@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { ProfileTechnicalSheet } from "@/components/ProfileTechnicalSheet";
+import { useTranslation } from "react-i18next";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -93,17 +94,10 @@ interface CityGroup {
   profiles: PublicProfile[];
 }
 
-const profileTypeLabels: Record<string, string> = {
-  agrupacion_musical: "Agrupación Musical",
-  sala_concierto: "Sala de Concierto",
-  estudio_grabacion: "Estudio de Grabación",
-  productor_artistico: "Productor Artístico",
-  promotor_artistico: "Promotor Artístico",
-  productor_audiovisual: "Productor Audiovisual"
-};
 
 const Circuito = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [selectedCountry, setSelectedCountry] = useState(latinAmericanCountries[0]);
   const [locationGroups, setLocationGroups] = useState<CityGroup[]>([]);
   const [allProfiles, setAllProfiles] = useState<PublicProfile[]>([]);
@@ -125,7 +119,7 @@ const Circuito = () => {
 
     return Object.entries(typeCounts)
       .map(([type, count]) => {
-        const label = profileTypeLabels[type] || type;
+        const label = t(`circuit.profileTypes.${type}`, { defaultValue: type });
         return `${count} ${label}${count !== 1 ? 's' : ''}`;
       })
       .join(', ');
@@ -273,15 +267,15 @@ const Circuito = () => {
             <div className="container mx-auto px-4">
               <Card className="max-w-2xl mx-auto border-border bg-card/50 backdrop-blur-sm">
                 <CardHeader>
-                  <CardTitle className="text-2xl">Para ver la base de datos deberías asociarte.</CardTitle>
+                  <CardTitle className="text-2xl">{t('circuit.joinRequired')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="mt-6 flex gap-4">
                     <Button onClick={() => navigate("/asociate")} className="flex-1">
-                      Asociarme Ahora
+                      {t('circuit.joinNow')}
                     </Button>
                     <Button onClick={() => navigate("/")} variant="outline" className="flex-1">
-                      Volver al Inicio
+                      {t('common.goBack')}
                     </Button>
                   </div>
                 </CardContent>
@@ -306,12 +300,12 @@ const Circuito = () => {
             {/* Hero Section */}
             <section className="text-center mb-16">
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-                En esta sección podrás acceder a la base de datos y conocimiento del circuito de producción de la industria
+                {t('circuit.subtitle')}
               </p>
 
               {/* Country Selector */}
               <div className="flex justify-center items-center gap-4">
-                <span className="text-foreground">Selecciona tu país:</span>
+                <span className="text-foreground">{t('circuit.selectCountry')}:</span>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="min-w-[200px] justify-between">
@@ -348,7 +342,7 @@ const Circuito = () => {
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                     <Input
                       type="text"
-                      placeholder="Buscar por nombre, ciudad o provincia..."
+                      placeholder={t('circuit.searchPlaceholder')}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10 pr-4 py-6 text-base bg-card/50 backdrop-blur-sm border-border"
@@ -359,14 +353,14 @@ const Circuito = () => {
                       <SelectTrigger className="py-6 bg-card/50 backdrop-blur-sm border-border">
                         <div className="flex items-center gap-2">
                           <ArrowUpDown className="w-4 h-4" />
-                          <SelectValue placeholder="Ordenar por..." />
+                          <SelectValue placeholder={t('common.search')} />
                         </div>
                       </SelectTrigger>
                       <SelectContent className="bg-card border-border">
-                        <SelectItem value="name-asc">Nombre (A-Z)</SelectItem>
-                        <SelectItem value="name-desc">Nombre (Z-A)</SelectItem>
-                        <SelectItem value="date-newest">Más recientes</SelectItem>
-                        <SelectItem value="date-oldest">Más antiguos</SelectItem>
+                        <SelectItem value="name-asc">{t('circuit.sortNameAsc')}</SelectItem>
+                        <SelectItem value="name-desc">{t('circuit.sortNameDesc')}</SelectItem>
+                        <SelectItem value="date-newest">{t('circuit.sortNewest')}</SelectItem>
+                        <SelectItem value="date-oldest">{t('circuit.sortOldest')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -379,18 +373,18 @@ const Circuito = () => {
               {loading ? (
                 <div className="text-center py-12">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-                  <p className="text-muted-foreground mt-4">Cargando perfiles...</p>
+                  <p className="text-muted-foreground mt-4">{t('circuit.loading')}</p>
                 </div>
               ) : filteredLocationGroups.length === 0 ? (
                 <div className="bg-card/50 backdrop-blur-sm rounded-lg border border-border p-8 text-center">
                   <h2 className="text-2xl font-bold mb-4 text-primary">
-                    No se encontraron resultados
+                    {t('circuit.noResults')}
                   </h2>
                   <p className="text-muted-foreground mb-6">
-                    No hay perfiles que coincidan con tu búsqueda "{searchTerm}".
+                    {t('circuit.noResultsFor')} "{searchTerm}".
                   </p>
                   <Button onClick={() => setSearchTerm("")} variant="outline">
-                    Limpiar búsqueda
+                    {t('common.clearSearch')}
                   </Button>
                 </div>
               ) : locationGroups.length === 0 ? (
@@ -399,12 +393,12 @@ const Circuito = () => {
                     {selectedCountry.name} {selectedCountry.flag}
                   </h2>
                   <p className="text-muted-foreground mb-6">
-                    Aún no hay perfiles registrados en {selectedCountry.name}.
+                    {t('circuit.noProfiles')} {selectedCountry.name}.
                   </p>
                   <div className="p-6 bg-secondary/30 rounded-lg border border-border inline-block">
-                    <h3 className="text-xl font-semibold mb-2">¿Quieres ser el primero?</h3>
+                    <h3 className="text-xl font-semibold mb-2">{t('circuit.beFirst')}</h3>
                     <p className="text-muted-foreground">
-                      Únete a la Red Akasha y aparece en el circuito de tu país.
+                      {t('circuit.joinNetwork')}
                     </p>
                   </div>
                 </div>
@@ -412,12 +406,12 @@ const Circuito = () => {
                 <div className="space-y-12">
                  <div className="text-center mb-8">
                   <h2 className="text-3xl font-bold mb-2 text-primary">
-                    Perfiles - {selectedCountry.name} {selectedCountry.flag}
+                    {t('circuit.profiles')} - {selectedCountry.name} {selectedCountry.flag}
                   </h2>
                   <p className="text-muted-foreground">
                     {searchTerm
-                      ? `Mostrando resultados para "${searchTerm}"`
-                      : "Encuentra espacios culturales, salas de grabación, bandas, productores y más"}
+                      ? `${t('circuit.showingResults')} "${searchTerm}"`
+                      : t('circuit.findSpaces')}
                   </p>
                 </div>
 
@@ -451,7 +445,7 @@ const Circuito = () => {
                                 <div className="flex-1 min-w-0">
                                   <CardTitle className="text-lg mb-1">{profile.display_name}</CardTitle>
                                   <Badge variant="outline" className="mb-2 border-primary text-primary">
-                                    {profileTypeLabels[profile.profile_type] || profile.profile_type}
+                                    {t(`circuit.profileTypes.${profile.profile_type}`, { defaultValue: profile.profile_type })}
                                   </Badge>
                                 </div>
                               </div>

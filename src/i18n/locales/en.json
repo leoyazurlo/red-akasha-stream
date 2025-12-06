@@ -30,7 +30,9 @@
     "search": "Search",
     "noResults": "No results",
     "viewMore": "View more",
-    "viewAll": "View all"
+    "viewAll": "View all",
+    "goBack": "Go Back",
+    "clearSearch": "Clear search"
   },
   "language": {
     "select": "Select language"
@@ -91,6 +93,35 @@
     "shorts": "Shorts",
     "photography": "Photography",
     "radioShows": "Radio Shows"
+  },
+  "circuit": {
+    "title": "Circuit",
+    "subtitle": "In this section you can access the database and knowledge of the industry production circuit",
+    "selectCountry": "Select your country",
+    "loading": "Loading profiles...",
+    "noResults": "No results found",
+    "noResultsFor": "No profiles match your search",
+    "noProfiles": "There are no registered profiles in",
+    "beFirst": "Do you want to be the first?",
+    "joinNetwork": "Join the Red Akasha network and appear in your country's circuit.",
+    "profiles": "Profiles",
+    "showingResults": "Showing results for",
+    "findSpaces": "Find cultural spaces, recording studios, bands, producers and more",
+    "searchPlaceholder": "Search by name, city or province...",
+    "sortNameAsc": "Name (A-Z)",
+    "sortNameDesc": "Name (Z-A)",
+    "sortNewest": "Newest",
+    "sortOldest": "Oldest",
+    "joinRequired": "To view the database you need to join.",
+    "joinNow": "Join Now",
+    "profileTypes": {
+      "agrupacion_musical": "Musical Group",
+      "sala_concierto": "Concert Hall",
+      "estudio_grabacion": "Recording Studio",
+      "productor_artistico": "Artistic Producer",
+      "promotor_artistico": "Artistic Promoter",
+      "productor_audiovisual": "Audiovisual Producer"
+    }
   },
   "footer": {
     "contact": "Contact / About Us",

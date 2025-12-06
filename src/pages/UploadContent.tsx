@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ interface ProfileOption {
 }
 
 const UploadContent = () => {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -75,22 +77,22 @@ const UploadContent = () => {
     audio_duration_seconds: 0,
   });
 
-  const contentTypes = [
-    { value: "video_musical_vivo", label: "Video Musical en Vivo" },
-    { value: "video_clip", label: "Video Clip" },
-    { value: "podcast", label: "Podcast" },
-    { value: "documental", label: "Documental" },
-    { value: "corto", label: "Cortos" },
-    { value: "pelicula", label: "Películas" }
-  ];
+  const contentTypes = useMemo(() => [
+    { value: "video_musical_vivo", label: t('upload.contentTypes.video_musical_vivo') },
+    { value: "video_clip", label: t('upload.contentTypes.video_clip') },
+    { value: "podcast", label: t('upload.contentTypes.podcast') },
+    { value: "documental", label: t('upload.contentTypes.documental') },
+    { value: "corto", label: t('upload.contentTypes.corto') },
+    { value: "pelicula", label: t('upload.contentTypes.pelicula') }
+  ], [t]);
 
-  const podcastCategories = [
-    { value: "produccion", label: "Producción" },
-    { value: "marketing_digital", label: "Marketing Digital" },
-    { value: "derecho_autor", label: "Derecho de Autor" },
-    { value: "management", label: "Management" },
-    { value: "composicion", label: "Composición" }
-  ];
+  const podcastCategories = useMemo(() => [
+    { value: "produccion", label: t('upload.podcastCategories.produccion') },
+    { value: "marketing_digital", label: t('upload.podcastCategories.marketing_digital') },
+    { value: "derecho_autor", label: t('upload.podcastCategories.derecho_autor') },
+    { value: "management", label: t('upload.podcastCategories.management') },
+    { value: "composicion", label: t('upload.podcastCategories.composicion') }
+  ], [t]);
 
   useEffect(() => {
     checkUserProfile();
@@ -179,8 +181,8 @@ const UploadContent = () => {
     // Validaciones antes de enviar
     if (!formData.content_type) {
       toast({
-        title: "Error de validación",
-        description: "Por favor selecciona un tipo de contenido",
+        title: t('upload.validationError'),
+        description: t('upload.selectContentTypeError'),
         variant: "destructive",
       });
       return;
@@ -188,8 +190,8 @@ const UploadContent = () => {
 
     if (!formData.title.trim()) {
       toast({
-        title: "Error de validación",
-        description: "Por favor ingresa un título para el contenido",
+        title: t('upload.validationError'),
+        description: t('upload.enterTitleError'),
         variant: "destructive",
       });
       return;
@@ -199,16 +201,16 @@ const UploadContent = () => {
     if (formData.content_type === 'podcast') {
       if (!formData.audio_url) {
         toast({
-          title: "Error de validación",
-          description: "Por favor sube un archivo de audio para el podcast",
+          title: t('upload.validationError'),
+          description: t('upload.uploadAudioError'),
           variant: "destructive",
         });
         return;
       }
       if (!formData.podcast_category) {
         toast({
-          title: "Error de validación",
-          description: "Por favor selecciona una categoría para el podcast",
+          title: t('upload.validationError'),
+          description: t('upload.selectCategoryError'),
           variant: "destructive",
         });
         return;
@@ -216,8 +218,8 @@ const UploadContent = () => {
     } else {
       if (!formData.video_url && !formData.photo_url) {
         toast({
-          title: "Error de validación",
-          description: "Por favor sube al menos un video o una fotografía",
+          title: t('upload.validationError'),
+          description: t('upload.uploadMediaError'),
           variant: "destructive",
         });
         return;
@@ -231,8 +233,8 @@ const UploadContent = () => {
       
       if (!user) {
         toast({
-          title: "Error",
-          description: "Debes iniciar sesión para subir contenido",
+          title: t('common.error'),
+          description: t('upload.loginRequired'),
           variant: "destructive",
         });
         setLoading(false);
@@ -279,8 +281,8 @@ const UploadContent = () => {
       if (error) throw error;
       
       toast({
-        title: "¡Contenido subido!",
-        description: "Tu contenido está en revisión y será publicado pronto.",
+        title: t('upload.contentUploaded'),
+        description: t('upload.contentUploadedDesc'),
       });
 
       // Limpiar formulario
@@ -311,8 +313,8 @@ const UploadContent = () => {
     } catch (error: any) {
       console.error('Error al subir contenido:', error);
       toast({
-        title: "Error",
-        description: error.message || "Hubo un problema al subir tu contenido. Intenta de nuevo.",
+        title: t('common.error'),
+        description: error.message || t('upload.uploadError'),
         variant: "destructive",
       });
     } finally {
@@ -329,12 +331,12 @@ const UploadContent = () => {
 
   const getContentTypeLabel = (type: string): string => {
     const labels: Record<string, string> = {
-      video_musical_vivo: "Video Musical en Vivo",
-      video_clip: "Video Clip",
-      podcast: "Podcast",
-      documental: "Documental",
-      corto: "Cortos",
-      pelicula: "Películas"
+      video_musical_vivo: t('upload.contentTypes.video_musical_vivo'),
+      video_clip: t('upload.contentTypes.video_clip'),
+      podcast: t('upload.contentTypes.podcast'),
+      documental: t('upload.contentTypes.documental'),
+      corto: t('upload.contentTypes.corto'),
+      pelicula: t('upload.contentTypes.pelicula')
     };
     return labels[type] || type;
   };
@@ -358,16 +360,16 @@ const UploadContent = () => {
     // Validar que haya contenido mínimo para vista previa
     if (!formData.content_type) {
       toast({
-        title: "Falta información",
-        description: "Selecciona un tipo de contenido para ver la vista previa",
+        title: t('upload.missingInfo'),
+        description: t('upload.selectTypePreview'),
         variant: "destructive",
       });
       return;
     }
     if (!formData.title.trim()) {
       toast({
-        title: "Falta información",
-        description: "Ingresa un título para ver la vista previa",
+        title: t('upload.missingInfo'),
+        description: t('upload.enterTitlePreview'),
         variant: "destructive",
       });
       return;
@@ -400,25 +402,25 @@ const UploadContent = () => {
           <div className="container mx-auto px-4">
             <Card className="max-w-2xl mx-auto border-border bg-card/50 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-2xl">Asociación Requerida</CardTitle>
+                <CardTitle className="text-2xl">{t('upload.associationRequired')}</CardTitle>
                 <CardDescription>
-                  Para subir contenido, primero debes asociarte a la plataforma
+                  {t('upload.associationRequiredDesc')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>No tienes un perfil creado</AlertTitle>
+                  <AlertTitle>{t('upload.noProfile')}</AlertTitle>
                   <AlertDescription>
-                    Para poder subir contenido a la plataforma, necesitas completar el proceso de asociación y crear tu perfil primero.
+                    {t('upload.noProfileDesc')}
                   </AlertDescription>
                 </Alert>
                 <div className="mt-6 flex gap-4">
                   <Button onClick={() => navigate("/asociate")} className="flex-1">
-                    Asociarme Ahora
+                    {t('upload.joinNow')}
                   </Button>
                   <Button onClick={() => navigate("/")} variant="outline" className="flex-1">
-                    Volver al Inicio
+                    {t('upload.backToHome')}
                   </Button>
                 </div>
               </CardContent>
@@ -447,22 +449,22 @@ const UploadContent = () => {
             
             <Card className="border-border bg-card/50 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-2xl text-cyan-400">Subir Contenido</CardTitle>
+                <CardTitle className="text-2xl text-cyan-400">{t('upload.title')}</CardTitle>
                 <CardDescription>
-                  Comparte tus videos y fotografías con la comunidad de Red Akasha
+                  {t('upload.subtitle')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="content_type">Tipo de contenido *</Label>
+                    <Label htmlFor="content_type">{t('upload.contentType')} *</Label>
                     <Select
                       value={formData.content_type}
                       onValueChange={(value) => setFormData(prev => ({ ...prev, content_type: value }))}
                       required
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecciona el tipo de contenido" />
+                        <SelectValue placeholder={t('upload.selectContentType')} />
                       </SelectTrigger>
                       <SelectContent>
                         {contentTypes.map((type) => (
@@ -476,14 +478,14 @@ const UploadContent = () => {
 
                   {formData.content_type === 'podcast' && (
                     <div className="space-y-2">
-                      <Label htmlFor="podcast_category">Categoría del podcast *</Label>
+                      <Label htmlFor="podcast_category">{t('upload.podcastCategory')} *</Label>
                       <Select
                         value={formData.podcast_category}
                         onValueChange={(value) => setFormData(prev => ({ ...prev, podcast_category: value }))}
                         required
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecciona la categoría" />
+                          <SelectValue placeholder={t('upload.selectCategory')} />
                         </SelectTrigger>
                         <SelectContent>
                           {podcastCategories.map((cat) => (
@@ -497,20 +499,20 @@ const UploadContent = () => {
                   )}
 
                   <div className="space-y-2">
-                    <Label htmlFor="band_name">Artista *</Label>
+                    <Label htmlFor="band_name">{t('upload.artist')} *</Label>
                     <Input
                       id="band_name"
                       name="band_name"
                       required
                       value={formData.band_name}
                       onChange={handleChange}
-                      placeholder="Nombre del artista o banda"
+                      placeholder={t('upload.artistPlaceholder')}
                     />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="title">
-                      {formData.content_type === 'video_musical_vivo' ? 'Título de la Canción *' : 'Título *'}
+                      {formData.content_type === 'video_musical_vivo' ? t('upload.songTitle') + ' *' : t('upload.contentTitle') + ' *'}
                     </Label>
                     <Input
                       id="title"
@@ -518,18 +520,18 @@ const UploadContent = () => {
                       required
                       value={formData.title}
                       onChange={handleChange}
-                      placeholder={formData.content_type === 'video_musical_vivo' ? 'Nombre de la canción' : 'Título del contenido'}
+                      placeholder={formData.content_type === 'video_musical_vivo' ? t('upload.songPlaceholder') : t('upload.contentPlaceholder')}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="description">Descripción</Label>
+                    <Label htmlFor="description">{t('upload.description')}</Label>
                     <Textarea
                       id="description"
                       name="description"
                       value={formData.description}
                       onChange={handleChange}
-                      placeholder="Describe tu contenido..."
+                      placeholder={t('upload.descriptionPlaceholder')}
                       className="min-h-32"
                     />
                   </div>
@@ -538,13 +540,13 @@ const UploadContent = () => {
                   {formData.content_type !== 'podcast' && (
                     <div className="border-t pt-6 space-y-4">
                       <div>
-                        <h3 className="text-lg font-semibold mb-2 text-cyan-400">Video</h3>
+                        <h3 className="text-lg font-semibold mb-2 text-cyan-400">{t('upload.video')}</h3>
                         <p className="text-sm text-muted-foreground mb-4">
-                          Comparte tu video musical, video clip, documental o contenido audiovisual
+                          {t('upload.videoDesc')}
                         </p>
                       </div>
                       <VideoUpload
-                        label="Video del contenido"
+                        label={t('upload.video')}
                         value={formData.video_url}
                         onChange={(url) => setFormData(prev => ({ ...prev, video_url: url }))}
                         onMetadataExtracted={(metadata) => setFormData(prev => ({
@@ -555,7 +557,7 @@ const UploadContent = () => {
                           file_size: metadata.size,
                           video_duration_seconds: metadata.duration
                         }))}
-                        description="Sube tu video en formato MP4, WebM o MOV (máx. 500MB)"
+                        description={t('upload.videoUploadDesc')}
                       />
                     </div>
                   )}
@@ -564,9 +566,9 @@ const UploadContent = () => {
                   {formData.content_type !== 'podcast' && formData.video_url && (
                     <div className="border-t pt-6 space-y-4">
                       <div>
-                        <h3 className="text-lg font-semibold mb-2 text-cyan-400">Miniatura Personalizada</h3>
+                        <h3 className="text-lg font-semibold mb-2 text-cyan-400">{t('upload.customThumbnail')}</h3>
                         <p className="text-sm text-muted-foreground mb-4">
-                          Sube una imagen de portada para tu video (como en YouTube). Si no subes una, se usará un fotograma del video.
+                          {t('upload.customThumbnailDesc')}
                         </p>
                       </div>
                       
@@ -585,16 +587,16 @@ const UploadContent = () => {
                             <div className="aspect-video">
                               <img 
                                 src={formData.thumbnail_url} 
-                                alt="Miniatura del video" 
+                                alt={t('upload.videoFrame')} 
                                 className="w-full h-full object-cover"
                               />
                             </div>
                             <div className="absolute bottom-0 left-0 right-0 bg-black/70 px-2 py-1">
-                              <p className="text-xs text-white text-center">Fotograma del video</p>
+                              <p className="text-xs text-white text-center">{t('upload.videoFrame')}</p>
                             </div>
                             {!formData.custom_thumbnail_url && (
                               <div className="absolute top-2 right-2 bg-cyan-400 text-black text-xs px-2 py-1 rounded font-semibold">
-                                Seleccionada
+                                {t('upload.selected')}
                               </div>
                             )}
                           </div>
@@ -613,31 +615,31 @@ const UploadContent = () => {
                               <div className="aspect-video">
                                 <img 
                                   src={formData.custom_thumbnail_url} 
-                                  alt="Miniatura personalizada" 
+                                  alt={t('upload.customThumbnailLabel')} 
                                   className="w-full h-full object-cover"
                                 />
                               </div>
                               <div className="absolute bottom-0 left-0 right-0 bg-black/70 px-2 py-1">
-                                <p className="text-xs text-white text-center">Miniatura personalizada</p>
+                                <p className="text-xs text-white text-center">{t('upload.customThumbnailLabel')}</p>
                               </div>
                               <div className="absolute top-2 right-2 bg-cyan-400 text-black text-xs px-2 py-1 rounded font-semibold">
-                                Seleccionada
+                                {t('upload.selected')}
                               </div>
                             </>
                           ) : (
                             <div className="aspect-video flex flex-col items-center justify-center bg-card/50 p-4">
                               <ImageIcon className="w-8 h-8 text-muted-foreground mb-2" />
-                              <p className="text-xs text-muted-foreground text-center">Subir miniatura</p>
+                              <p className="text-xs text-muted-foreground text-center">{t('upload.uploadThumbnail')}</p>
                             </div>
                           )}
                         </div>
                       </div>
 
                       <ImageUpload
-                        label="Subir miniatura personalizada"
+                        label={t('upload.uploadCustomThumbnail')}
                         value={formData.custom_thumbnail_url}
                         onChange={(url) => setFormData(prev => ({ ...prev, custom_thumbnail_url: url }))}
-                        description="Imagen 16:9 recomendada (1280x720 o superior). Formatos: JPG, PNG, WebP (máx. 10MB)"
+                        description={t('upload.thumbnailDesc')}
                       />
                     </div>
                   )}
@@ -646,16 +648,16 @@ const UploadContent = () => {
                   {formData.content_type !== 'podcast' && (
                     <div className="border-t pt-6 space-y-4">
                       <div>
-                        <h3 className="text-lg font-semibold mb-2 text-cyan-400">Fotografía</h3>
+                        <h3 className="text-lg font-semibold mb-2 text-cyan-400">{t('upload.photography')}</h3>
                         <p className="text-sm text-muted-foreground mb-4">
-                          Sube fotografías de conciertos, sesiones de grabación o material gráfico relacionado
+                          {t('upload.photographyDesc')}
                         </p>
                       </div>
                       <ImageUpload
-                        label="Fotografía del contenido"
+                        label={t('upload.photography')}
                         value={formData.photo_url}
                         onChange={(url) => setFormData(prev => ({ ...prev, photo_url: url }))}
-                        description="Sube imágenes de eventos, backstage, portadas de discos, etc. (máx. 10MB)"
+                        description={t('upload.photoUploadDesc')}
                       />
                     </div>
                   )}
@@ -663,13 +665,13 @@ const UploadContent = () => {
                   {formData.content_type === 'podcast' && (
                     <div className="border-t pt-6 space-y-4">
                       <div>
-                        <h3 className="text-lg font-semibold mb-2 text-cyan-400">Audio</h3>
+                        <h3 className="text-lg font-semibold mb-2 text-cyan-400">{t('upload.audio')}</h3>
                         <p className="text-sm text-muted-foreground mb-4">
-                          Comparte tu podcast sobre producción, marketing, derecho de autor y más
+                          {t('upload.audioDesc')}
                         </p>
                       </div>
                       <AudioUpload
-                        label="Audio del podcast"
+                        label={t('upload.audio')}
                         value={formData.audio_url}
                         onChange={(url) => setFormData(prev => ({ ...prev, audio_url: url }))}
                         onMetadataExtracted={(metadata) => setFormData(prev => ({
@@ -678,7 +680,7 @@ const UploadContent = () => {
                           audio_duration_seconds: metadata.duration
                         }))}
                         required
-                        description="Sube tu archivo de audio en formato MP3, WAV o AAC (máx. 100MB)"
+                        description={t('upload.audioUploadDesc')}
                       />
                     </div>
                   )}
@@ -686,21 +688,21 @@ const UploadContent = () => {
                   {/* Sección de Monetización */}
                   <div className="border-t pt-6 space-y-4">
                     <div>
-                      <h3 className="text-lg font-semibold mb-2 text-cyan-400">Monetización</h3>
+                      <h3 className="text-lg font-semibold mb-2 text-cyan-400">{t('upload.monetization')}</h3>
                       <p className="text-sm text-muted-foreground mb-4">
-                        Configura si tu contenido será gratuito o de pago
+                        {t('upload.monetizationDesc')}
                       </p>
                     </div>
 
                     <div className="flex items-center justify-between rounded-lg border border-border bg-card p-4">
                       <div className="space-y-0.5">
                         <Label htmlFor="is_free" className="text-base">
-                          Contenido Gratuito
+                          {t('upload.freeContent')}
                         </Label>
                         <p className="text-sm text-muted-foreground">
                           {formData.is_free 
-                            ? "El contenido será visible para todos sin costo" 
-                            : "Los usuarios deberán pagar para acceder al contenido"}
+                            ? t('upload.freeContentDesc')
+                            : t('upload.paidContentDesc')}
                         </p>
                       </div>
                       <Switch
@@ -715,7 +717,7 @@ const UploadContent = () => {
                     {!formData.is_free && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-lg border border-border bg-card/50">
                         <div className="space-y-2">
-                          <Label htmlFor="price">Precio *</Label>
+                          <Label htmlFor="price">{t('upload.price')} *</Label>
                           <Input
                             id="price"
                             name="price"
@@ -729,16 +731,16 @@ const UploadContent = () => {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="currency">Moneda</Label>
+                          <Label htmlFor="currency">{t('upload.currency')}</Label>
                           <Select
                             value={formData.currency}
                             onValueChange={(value) => setFormData(prev => ({ ...prev, currency: value }))}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Selecciona moneda" />
+                              <SelectValue placeholder={t('upload.selectCurrency')} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="USD">USD - Dólar</SelectItem>
+                              <SelectItem value="USD">USD - Dollar</SelectItem>
                               <SelectItem value="EUR">EUR - Euro</SelectItem>
                               <SelectItem value="ARS">ARS - Peso Argentino</SelectItem>
                               <SelectItem value="MXN">MXN - Peso Mexicano</SelectItem>
@@ -753,13 +755,13 @@ const UploadContent = () => {
 
                   <div className="border-t pt-6">
                     <h3 className="text-lg font-semibold mb-4 text-cyan-400">
-                      {formData.content_type === 'video_musical_vivo' ? 'Información del Artista' : 'Ficha Técnica'}
+                      {formData.content_type === 'video_musical_vivo' ? t('upload.artistInfo') : t('upload.technicalSheet')}
                     </h3>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="band_name">
-                          {formData.content_type === 'video_musical_vivo' ? 'Artista *' : 'Banda'}
+                          {formData.content_type === 'video_musical_vivo' ? t('upload.artist') + ' *' : t('upload.band')}
                         </Label>
                         {!showOtherBand ? (
                           <Select
@@ -774,7 +776,7 @@ const UploadContent = () => {
                             }}
                           >
                             <SelectTrigger className="bg-card">
-                              <SelectValue placeholder={formData.content_type === 'video_musical_vivo' ? "Selecciona el artista" : "Selecciona una banda"} />
+                              <SelectValue placeholder={formData.content_type === 'video_musical_vivo' ? t('upload.selectArtist') : t('upload.selectBand')} />
                             </SelectTrigger>
                             <SelectContent className="bg-card border-border z-50">
                               {bands.map((band) => (
@@ -783,7 +785,7 @@ const UploadContent = () => {
                                 </SelectItem>
                               ))}
                               <SelectItem value="__otro__" className="text-cyan-400 font-semibold">
-                                ✏️ Otro (escribir manualmente)
+                                ✏️ {t('upload.other')}
                               </SelectItem>
                             </SelectContent>
                           </Select>
@@ -792,7 +794,7 @@ const UploadContent = () => {
                             <Input
                               value={formData.band_name}
                               onChange={(e) => setFormData(prev => ({ ...prev, band_name: e.target.value }))}
-                              placeholder={formData.content_type === 'video_musical_vivo' ? "Escribe el nombre del artista" : "Escribe el nombre de la banda"}
+                              placeholder={formData.content_type === 'video_musical_vivo' ? t('upload.writeArtist') : t('upload.writeBand')}
                             />
                             <Button
                               type="button"
@@ -811,7 +813,7 @@ const UploadContent = () => {
 
                       {formData.content_type !== 'video_musical_vivo' && (
                         <div className="space-y-2">
-                          <Label htmlFor="producer_name">Productor Artístico</Label>
+                          <Label htmlFor="producer_name">{t('upload.producer')}</Label>
                           {!showOtherProducer ? (
                             <Select
                               value={formData.producer_name}
@@ -825,7 +827,7 @@ const UploadContent = () => {
                               }}
                             >
                               <SelectTrigger className="bg-card">
-                                <SelectValue placeholder="Selecciona un productor" />
+                                <SelectValue placeholder={t('upload.selectProducer')} />
                               </SelectTrigger>
                               <SelectContent className="bg-card border-border z-50">
                                 {producers.map((producer) => (
@@ -834,16 +836,16 @@ const UploadContent = () => {
                                   </SelectItem>
                                 ))}
                                 <SelectItem value="__otro__" className="text-cyan-400 font-semibold">
-                                  ✏️ Otro (escribir manualmente)
+                                  ✏️ {t('upload.other')}
                                 </SelectItem>
                               </SelectContent>
                             </Select>
                           ) : (
-                            <div className="flex gap-2">
-                              <Input
-                                value={formData.producer_name}
-                                onChange={(e) => setFormData(prev => ({ ...prev, producer_name: e.target.value }))}
-                                placeholder="Escribe el nombre del productor"
+                          <div className="flex gap-2">
+                            <Input
+                              value={formData.producer_name}
+                              onChange={(e) => setFormData(prev => ({ ...prev, producer_name: e.target.value }))}
+                              placeholder={t('upload.writeProducer')}
                               />
                               <Button
                                 type="button"
@@ -1028,7 +1030,7 @@ const UploadContent = () => {
                       onClick={handlePreview}
                     >
                       <Eye className="mr-2 h-4 w-4" />
-                      Vista Previa
+                      {t('upload.preview')}
                     </Button>
                     <Button 
                       type="submit" 
@@ -1039,10 +1041,10 @@ const UploadContent = () => {
                       {loading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Subiendo...
+                          {t('upload.uploading')}
                         </>
                       ) : (
-                        "Subir Contenido"
+                        t('upload.uploadContent')
                       )}
                     </Button>
                   </div>
@@ -1056,12 +1058,12 @@ const UploadContent = () => {
         <Dialog open={showPreview} onOpenChange={setShowPreview}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Vista Previa</DialogTitle>
+              <DialogTitle>{t('upload.previewTitle')}</DialogTitle>
             </DialogHeader>
             
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Así es como se verá tu contenido en la galería:
+                {t('upload.previewDesc')}
               </p>
               
               <Card className="border-border bg-card/50 backdrop-blur-sm hover:border-primary/50 transition-colors overflow-hidden">
@@ -1089,7 +1091,7 @@ const UploadContent = () => {
 
                   <div className="absolute top-2 right-2">
                     <Badge variant="default" className="backdrop-blur-sm">
-                      Pendiente
+                      {t('upload.pending')}
                     </Badge>
                   </div>
                 </div>
@@ -1097,7 +1099,7 @@ const UploadContent = () => {
                 <CardContent className="p-4 space-y-3">
                   <div>
                     <h3 className="font-semibold text-lg line-clamp-1 text-foreground">
-                      {formData.title || "Sin título"}
+                      {formData.title || t('upload.noTitle')}
                     </h3>
                     {formData.description && (
                       <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
@@ -1153,18 +1155,17 @@ const UploadContent = () => {
                   className="flex-1"
                   onClick={() => setShowPreview(false)}
                 >
-                  Continuar Editando
+                  {t('upload.continueEditing')}
                 </Button>
                 <Button 
                   className="flex-1"
                   onClick={() => {
                     setShowPreview(false);
-                    // Trigger form submission
                     document.querySelector('form')?.requestSubmit();
                   }}
                   disabled={loading}
                 >
-                  Publicar Ahora
+                  {t('upload.publishNow')}
                 </Button>
               </div>
             </div>

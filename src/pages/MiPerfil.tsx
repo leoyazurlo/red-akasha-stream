@@ -1,0 +1,735 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { CosmicBackground } from "@/components/CosmicBackground";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { 
+  Loader2, 
+  Upload, 
+  X, 
+  Video, 
+  Image as ImageIcon, 
+  Music, 
+  Plus,
+  Trash2,
+  Eye,
+  Save
+} from "lucide-react";
+import { validateFile, formatFileSize } from "@/lib/storage-validation";
+
+interface ProfileData {
+  id: string;
+  display_name: string;
+  profile_type: string;
+  bio: string | null;
+  avatar_url: string | null;
+  ciudad: string;
+  pais: string;
+  instagram: string | null;
+  facebook: string | null;
+  linkedin: string | null;
+}
+
+interface GalleryItem {
+  id: string;
+  url: string;
+  title: string | null;
+  media_type: string;
+  order_index: number;
+}
+
+interface AudioTrack {
+  id: string;
+  title: string;
+  audio_url: string;
+  duration: number | null;
+  order_index: number;
+}
+
+const profileTypeLabels: Record<string, string> = {
+  agrupacion_musical: "Agrupación Musical",
+  sala_concierto: "Sala de Concierto",
+  estudio_grabacion: "Estudio de Grabación",
+  productor_artistico: "Productor Artístico",
+  promotor_artistico: "Promotor Artístico",
+  productor_audiovisual: "Productor Audiovisual",
+  musico: "Músico",
+  dj: "DJ",
+  vj: "VJ",
+  sello_discografico: "Sello Discográfico",
+  management: "Management",
+  representante: "Representante",
+  marketing_digital: "Marketing Digital",
+  contenido: "Creador de Contenido",
+  arte_digital: "Arte Digital",
+  percusion: "Percusión",
+  danza: "Danza",
+  melomano: "Melómano"
+};
+
+const MiPerfil = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
+  
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
+  const [audioPlaylist, setAudioPlaylist] = useState<AudioTrack[]>([]);
+  
+  // New uploads
+  const [newVideos, setNewVideos] = useState<File[]>([]);
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const [newAudios, setNewAudios] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/auth");
+    } else if (user) {
+      fetchProfile();
+    }
+  }, [user, authLoading]);
+
+  const fetchProfile = async () => {
+    try {
+      const { data: profileData, error: profileError } = await supabase
+        .from("profile_details")
+        .select("*")
+        .eq("user_id", user?.id)
+        .single();
+
+      if (profileError) {
+        if (profileError.code === 'PGRST116') {
+          // No profile found
+          navigate("/asociate");
+          return;
+        }
+        throw profileError;
+      }
+
+      setProfile(profileData);
+
+      // Fetch gallery
+      const { data: galleryData } = await supabase
+        .from("profile_galleries")
+        .select("*")
+        .eq("profile_id", profileData.id)
+        .order("order_index");
+
+      setGallery(galleryData || []);
+
+      // Fetch audio
+      const { data: audioData } = await supabase
+        .from("audio_playlist")
+        .select("*")
+        .eq("profile_id", profileData.id)
+        .order("order_index");
+
+      setAudioPlaylist(audioData || []);
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo cargar tu perfil",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles: File[] = [];
+
+    files.forEach(file => {
+      const validation = validateFile(file, 'video');
+      if (validation.valid) {
+        validFiles.push(file);
+      } else {
+        toast({
+          title: "Archivo no válido",
+          description: validation.error,
+          variant: "destructive"
+        });
+      }
+    });
+
+    setNewVideos(prev => [...prev, ...validFiles]);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles: File[] = [];
+
+    files.forEach(file => {
+      const validation = validateFile(file, 'image');
+      if (validation.valid) {
+        validFiles.push(file);
+      } else {
+        toast({
+          title: "Archivo no válido",
+          description: validation.error,
+          variant: "destructive"
+        });
+      }
+    });
+
+    setNewImages(prev => [...prev, ...validFiles]);
+  };
+
+  const handleAudioUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles: File[] = [];
+
+    files.forEach(file => {
+      const validation = validateFile(file, 'audio');
+      if (validation.valid) {
+        validFiles.push(file);
+      } else {
+        toast({
+          title: "Archivo no válido",
+          description: validation.error,
+          variant: "destructive"
+        });
+      }
+    });
+
+    setNewAudios(prev => [...prev, ...validFiles]);
+  };
+
+  const removeNewVideo = (index: number) => {
+    setNewVideos(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeNewImage = (index: number) => {
+    setNewImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeNewAudio = (index: number) => {
+    setNewAudios(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const deleteGalleryItem = async (itemId: string) => {
+    try {
+      const { error } = await supabase
+        .from("profile_galleries")
+        .delete()
+        .eq("id", itemId);
+
+      if (error) throw error;
+
+      setGallery(prev => prev.filter(item => item.id !== itemId));
+      toast({
+        title: "Eliminado",
+        description: "El contenido se eliminó correctamente"
+      });
+    } catch (error) {
+      console.error("Error deleting gallery item:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el contenido",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const deleteAudioTrack = async (trackId: string) => {
+    try {
+      const { error } = await supabase
+        .from("audio_playlist")
+        .delete()
+        .eq("id", trackId);
+
+      if (error) throw error;
+
+      setAudioPlaylist(prev => prev.filter(track => track.id !== trackId));
+      toast({
+        title: "Eliminado",
+        description: "El audio se eliminó correctamente"
+      });
+    } catch (error) {
+      console.error("Error deleting audio track:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el audio",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const uploadNewContent = async () => {
+    if (!profile) return;
+    
+    if (newVideos.length === 0 && newImages.length === 0 && newAudios.length === 0) {
+      toast({
+        title: "Sin contenido nuevo",
+        description: "Selecciona archivos para subir"
+      });
+      return;
+    }
+
+    setUploading(true);
+    
+    try {
+      const currentMaxIndex = Math.max(
+        ...gallery.map(g => g.order_index),
+        ...audioPlaylist.map(a => a.order_index),
+        -1
+      );
+      let orderIndex = currentMaxIndex + 1;
+
+      // Upload videos
+      for (const file of newVideos) {
+        const fileName = `${profile.id}/${Date.now()}-${file.name}`;
+        const { data: videoData, error: videoError } = await supabase.storage
+          .from("profile-avatars")
+          .upload(fileName, file);
+
+        if (videoError) throw videoError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from("profile-avatars")
+          .getPublicUrl(videoData.path);
+
+        await supabase.from("profile_galleries").insert({
+          profile_id: profile.id,
+          url: publicUrl,
+          media_type: "video",
+          order_index: orderIndex++
+        });
+      }
+
+      // Upload images
+      for (const file of newImages) {
+        const fileName = `${profile.id}/${Date.now()}-${file.name}`;
+        const { data: imageData, error: imageError } = await supabase.storage
+          .from("profile-avatars")
+          .upload(fileName, file);
+
+        if (imageError) throw imageError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from("profile-avatars")
+          .getPublicUrl(imageData.path);
+
+        await supabase.from("profile_galleries").insert({
+          profile_id: profile.id,
+          url: publicUrl,
+          media_type: "photo",
+          order_index: orderIndex++
+        });
+      }
+
+      // Upload audios
+      for (const file of newAudios) {
+        const fileName = `${profile.id}/${Date.now()}-${file.name}`;
+        const { data: audioData, error: audioError } = await supabase.storage
+          .from("profile-avatars")
+          .upload(fileName, file);
+
+        if (audioError) throw audioError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from("profile-avatars")
+          .getPublicUrl(audioData.path);
+
+        await supabase.from("audio_playlist").insert({
+          profile_id: profile.id,
+          title: file.name.replace(/\.[^/.]+$/, ""),
+          audio_url: publicUrl,
+          order_index: orderIndex++
+        });
+      }
+
+      // Clear new files and refresh
+      setNewVideos([]);
+      setNewImages([]);
+      setNewAudios([]);
+      await fetchProfile();
+
+      toast({
+        title: "¡Contenido subido!",
+        description: "Tu nuevo contenido se agregó correctamente a tu perfil"
+      });
+    } catch (error) {
+      console.error("Error uploading content:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo subir el contenido",
+        variant: "destructive"
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const photos = gallery.filter(item => item.media_type === "photo" || item.media_type === "image");
+  const videos = gallery.filter(item => item.media_type === "video");
+
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen bg-background relative">
+        <CosmicBackground />
+        <Header />
+        <main className="relative z-10 pt-24 pb-16">
+          <div className="container mx-auto px-4 flex items-center justify-center min-h-[50vh]">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen bg-background relative">
+        <CosmicBackground />
+        <Header />
+        <main className="relative z-10 pt-24 pb-16">
+          <div className="container mx-auto px-4 text-center">
+            <h1 className="text-2xl font-bold mb-4">No tienes un perfil</h1>
+            <p className="text-muted-foreground mb-6">Crea tu perfil para aparecer en el circuito.</p>
+            <Button onClick={() => navigate("/asociate")}>Crear Perfil</Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
+      <CosmicBackground />
+      <Header />
+
+      <main className="relative z-10 pt-24 pb-16">
+        <div className="container mx-auto px-4 max-w-4xl">
+          <h1 className="text-3xl font-bold mb-8 bg-gradient-to-r from-primary-glow to-accent bg-clip-text text-transparent">
+            Mi Perfil
+          </h1>
+
+          {/* Profile Summary */}
+          <Card className="mb-8 bg-card/50 backdrop-blur-sm border-primary/20">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-6">
+                <Avatar className="h-24 w-24 border-4 border-primary/30">
+                  <AvatarImage src={profile.avatar_url || undefined} />
+                  <AvatarFallback className="text-2xl bg-primary/20 text-primary">
+                    {profile.display_name?.[0]?.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <Badge className="mb-2 bg-primary/20 text-primary border-primary/30">
+                    {profileTypeLabels[profile.profile_type] || profile.profile_type}
+                  </Badge>
+                  <h2 className="text-2xl font-bold">{profile.display_name}</h2>
+                  <p className="text-muted-foreground">{profile.ciudad}, {profile.pais}</p>
+                </div>
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate(`/circuito/perfil/${profile.id}`)}
+                  className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/20"
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  Ver Perfil Público
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Content Management */}
+          <Tabs defaultValue="gallery" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-3 bg-card/50">
+              <TabsTrigger value="gallery">
+                <ImageIcon className="w-4 h-4 mr-2" />
+                Fotos ({photos.length})
+              </TabsTrigger>
+              <TabsTrigger value="videos">
+                <Video className="w-4 h-4 mr-2" />
+                Videos ({videos.length})
+              </TabsTrigger>
+              <TabsTrigger value="audio">
+                <Music className="w-4 h-4 mr-2" />
+                Audio ({audioPlaylist.length})
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Photos Tab */}
+            <TabsContent value="gallery">
+              <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
+                <CardHeader>
+                  <CardTitle>Galería de Fotos</CardTitle>
+                  <CardDescription>Administra las fotos de tu perfil</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Existing Photos */}
+                  {photos.length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {photos.map((photo) => (
+                        <div key={photo.id} className="relative group">
+                          <img
+                            src={photo.url}
+                            alt={photo.title || "Foto"}
+                            className="w-full h-32 object-cover rounded-lg"
+                          />
+                          <Button
+                            size="icon"
+                            variant="destructive"
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
+                            onClick={() => deleteGalleryItem(photo.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* New Photos Preview */}
+                  {newImages.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium mb-2 text-muted-foreground">Nuevas fotos por subir:</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {newImages.map((file, index) => (
+                          <div key={index} className="relative">
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt={file.name}
+                              className="w-full h-32 object-cover rounded-lg border-2 border-dashed border-primary/50"
+                            />
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 h-6 w-6"
+                              onClick={() => removeNewImage(index)}
+                            >
+                              <X className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Upload Button */}
+                  <div>
+                    <Label htmlFor="new-images" className="cursor-pointer">
+                      <div className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-primary/30 rounded-lg hover:border-primary/50 transition-colors">
+                        <Plus className="w-5 h-5 text-primary" />
+                        <span className="text-primary">Agregar Fotos</span>
+                      </div>
+                    </Label>
+                    <Input
+                      id="new-images"
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleImageUpload}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Videos Tab */}
+            <TabsContent value="videos">
+              <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
+                <CardHeader>
+                  <CardTitle>Videos</CardTitle>
+                  <CardDescription>Administra los videos de tu perfil</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Existing Videos */}
+                  {videos.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {videos.map((video) => (
+                        <div key={video.id} className="relative group">
+                          <video
+                            src={video.url}
+                            className="w-full h-40 object-cover rounded-lg"
+                          />
+                          <Button
+                            size="icon"
+                            variant="destructive"
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
+                            onClick={() => deleteGalleryItem(video.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* New Videos Preview */}
+                  {newVideos.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium mb-2 text-muted-foreground">Nuevos videos por subir:</h4>
+                      <div className="space-y-2">
+                        {newVideos.map((file, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-background/50 rounded-lg border border-primary/20">
+                            <div className="flex items-center gap-3">
+                              <Video className="w-5 h-5 text-primary" />
+                              <span className="text-sm truncate max-w-[200px]">{file.name}</span>
+                              <span className="text-xs text-muted-foreground">{formatFileSize(file.size)}</span>
+                            </div>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-6 w-6"
+                              onClick={() => removeNewVideo(index)}
+                            >
+                              <X className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Upload Button */}
+                  <div>
+                    <Label htmlFor="new-videos" className="cursor-pointer">
+                      <div className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-primary/30 rounded-lg hover:border-primary/50 transition-colors">
+                        <Plus className="w-5 h-5 text-primary" />
+                        <span className="text-primary">Agregar Videos</span>
+                      </div>
+                    </Label>
+                    <Input
+                      id="new-videos"
+                      type="file"
+                      accept="video/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleVideoUpload}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Audio Tab */}
+            <TabsContent value="audio">
+              <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
+                <CardHeader>
+                  <CardTitle>Playlist de Audio</CardTitle>
+                  <CardDescription>Administra las pistas de audio de tu perfil</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Existing Audio */}
+                  {audioPlaylist.length > 0 && (
+                    <div className="space-y-2">
+                      {audioPlaylist.map((track) => (
+                        <div key={track.id} className="flex items-center justify-between p-3 bg-background/50 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <Music className="w-5 h-5 text-primary" />
+                            <span className="text-sm">{track.title}</span>
+                          </div>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-destructive hover:text-destructive"
+                            onClick={() => deleteAudioTrack(track.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* New Audios Preview */}
+                  {newAudios.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-medium mb-2 text-muted-foreground">Nuevos audios por subir:</h4>
+                      <div className="space-y-2">
+                        {newAudios.map((file, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-background/50 rounded-lg border border-primary/20">
+                            <div className="flex items-center gap-3">
+                              <Music className="w-5 h-5 text-primary" />
+                              <span className="text-sm truncate max-w-[200px]">{file.name}</span>
+                              <span className="text-xs text-muted-foreground">{formatFileSize(file.size)}</span>
+                            </div>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-6 w-6"
+                              onClick={() => removeNewAudio(index)}
+                            >
+                              <X className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Upload Button */}
+                  <div>
+                    <Label htmlFor="new-audios" className="cursor-pointer">
+                      <div className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-primary/30 rounded-lg hover:border-primary/50 transition-colors">
+                        <Plus className="w-5 h-5 text-primary" />
+                        <span className="text-primary">Agregar Audio</span>
+                      </div>
+                    </Label>
+                    <Input
+                      id="new-audios"
+                      type="file"
+                      accept="audio/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleAudioUpload}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+
+          {/* Save Button */}
+          {(newVideos.length > 0 || newImages.length > 0 || newAudios.length > 0) && (
+            <div className="fixed bottom-24 left-0 right-0 flex justify-center z-50">
+              <Button 
+                size="lg"
+                onClick={uploadNewContent}
+                disabled={uploading}
+                className="bg-primary hover:bg-primary/80 shadow-glow"
+              >
+                {uploading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Subiendo...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4 mr-2" />
+                    Subir {newVideos.length + newImages.length + newAudios.length} archivo(s)
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default MiPerfil;

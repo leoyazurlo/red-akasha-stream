@@ -1,8 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, MessageSquare, TrendingUp } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export const ForumStats = () => {
+  const { t } = useTranslation();
+  
   const { data: stats } = useQuery({
     queryKey: ["forum-stats"],
     queryFn: async () => {
@@ -21,9 +24,9 @@ export const ForumStats = () => {
   });
 
   const statItems = [
-    { label: "Miembros", value: stats?.users || 0, icon: Users },
-    { label: "Debates", value: stats?.threads || 0, icon: MessageSquare },
-    { label: "Respuestas", value: stats?.posts || 0, icon: TrendingUp },
+    { label: t('forum.stats.members'), value: stats?.users || 0, icon: Users },
+    { label: t('forum.stats.debates'), value: stats?.threads || 0, icon: MessageSquare },
+    { label: t('forum.stats.replies'), value: stats?.posts || 0, icon: TrendingUp },
   ];
 
   return (

@@ -2,8 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CategoryCard } from "./CategoryCard";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export const ForumCategories = () => {
+  const { t } = useTranslation();
+  
   const { data: categories, isLoading } = useQuery({
     queryKey: ["forum-categories"],
     queryFn: async () => {
@@ -32,7 +35,7 @@ export const ForumCategories = () => {
     return (
       <div className="bg-card/50 backdrop-blur-sm border border-border rounded-lg p-8 shadow-card text-center">
         <p className="text-muted-foreground text-lg">
-          No hay categorías disponibles aún. Los administradores pueden crear categorías desde el panel de administración.
+          {t('forum.noCategories')}
         </p>
       </div>
     );

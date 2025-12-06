@@ -334,6 +334,12 @@
     "noProfile": "No tienes un perfil creado",
     "noProfileDesc": "Para poder participar en el foro y colaborar con la comunidad, necesitas completar el proceso de asociación y crear tu perfil primero.",
     "joinNow": "Asociarme Ahora",
-    "backToHome": "Volver al Inicio"
+    "backToHome": "Volver al Inicio",
+    "stats": {
+      "members": "Miembros",
+      "debates": "Debates",
+      "replies": "Respuestas"
+    },
+    "noCategories": "No hay categorías disponibles aún. Los administradores pueden crear categorías desde el panel de administración."
   }
 }

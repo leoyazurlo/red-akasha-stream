@@ -334,6 +334,12 @@
     "noProfile": "您没有资料",
     "noProfileDesc": "要参与论坛并与社区协作，您需要先完成加入流程并创建资料。",
     "joinNow": "立即加入",
-    "backToHome": "返回首页"
+    "backToHome": "返回首页",
+    "stats": {
+      "members": "成员",
+      "debates": "讨论",
+      "replies": "回复"
+    },
+    "noCategories": "目前没有可用的类别。管理员可以从管理面板创建类别。"
   }
 }

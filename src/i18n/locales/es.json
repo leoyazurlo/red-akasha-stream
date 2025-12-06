@@ -185,6 +185,8 @@
     "confirmPasswordPlaceholder": "Repite tu contraseña",
     "profileType": "Tipo de Perfil",
     "selectProfile": "Selecciona tu perfil",
+    "selectMultiple": "puedes seleccionar varios",
+    "selectedProfiles": "Perfiles seleccionados",
     "profilePhoto": "Foto de Perfil",
     "uploadPhoto": "Subir Foto",
     "changePhoto": "Cambiar Foto",

@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, CheckCircle2, Upload, X, Video, Image as ImageIcon, Music } from "lucide-react";
+import { Loader2, CheckCircle2, Upload, X, Video, Image as ImageIcon, Music, Check } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Autocomplete } from "@/components/ui/autocomplete";
 import { ContenidoForm } from "@/components/profile-forms/ContenidoForm";
 import { ArteDigitalForm } from "@/components/profile-forms/ArteDigitalForm";
@@ -92,7 +93,7 @@ const Asociate = () => {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [showMediaUpload, setShowMediaUpload] = useState(false);
-  const [selectedProfile, setSelectedProfile] = useState<string>("");
+  const [selectedProfiles, setSelectedProfiles] = useState<string[]>([]);
   const [uploadedVideos, setUploadedVideos] = useState<File[]>([]);
   const [uploadedImages, setUploadedImages] = useState<File[]>([]);
   const [uploadedAudios, setUploadedAudios] = useState<File[]>([]);
@@ -300,18 +301,19 @@ const Asociate = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedProfile) {
+    if (selectedProfiles.length === 0) {
       toast({
         title: "Error",
-        description: "Por favor selecciona un tipo de perfil",
+        description: "Por favor selecciona al menos un tipo de perfil",
         variant: "destructive",
       });
       return;
     }
 
-    // Client-side validation
+    // Client-side validation - validate for primary profile (first selected)
     try {
-      const validationSchema = getValidationSchema(selectedProfile);
+      const primaryProfile = selectedProfiles[0];
+      const validationSchema = getValidationSchema(primaryProfile);
       validationSchema.parse(formData);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -360,7 +362,8 @@ const Asociate = () => {
 
       // Step 2: Call secure Edge Function for server-side validation and registration
       const registrationData = {
-        profile_type: profileTypeMap[selectedProfile],
+        profile_type: profileTypeMap[selectedProfiles[0]],
+        profile_types: selectedProfiles.map(p => profileTypeMap[p]),
         nombre: formData.nombre,
         email: formData.email,
         password: formData.password,
@@ -530,8 +533,8 @@ const Asociate = () => {
     }));
   };
 
-  const renderProfileForm = () => {
-    switch (selectedProfile) {
+  const renderProfileForm = (profileType: string) => {
+    switch (profileType) {
       case "perfil_contenido":
         return <ContenidoForm formData={formData} onChange={handleProfileFieldChange} />;
       case "estudio_grabacion":
@@ -565,6 +568,14 @@ const Asociate = () => {
         return <DanzaForm formData={formData} onChange={handleProfileFieldChange} />;
       default:
         return null;
+    }
+  };
+
+  const handleProfileToggle = (profileValue: string, checked: boolean) => {
+    if (checked) {
+      setSelectedProfiles(prev => [...prev, profileValue]);
+    } else {
+      setSelectedProfiles(prev => prev.filter(p => p !== profileValue));
     }
   };
 
@@ -608,37 +619,73 @@ const Asociate = () => {
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-8">
-                    {/* Profile Type Selection */}
-                    <div className="space-y-3 p-6 rounded-xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all duration-300">
-                      <Label htmlFor="profileType" className="text-base font-semibold flex items-center gap-2">
+                    {/* Profile Type Selection - Multiple Selection */}
+                    <div className="space-y-4 p-6 rounded-xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all duration-300">
+                      <Label className="text-base font-semibold flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
                         {t('asociate.profileType')} *
+                        <span className="text-sm font-normal text-muted-foreground ml-2">
+                          ({t('asociate.selectMultiple')})
+                        </span>
                       </Label>
-                      <Select
-                        value={selectedProfile}
-                        onValueChange={(value) => setSelectedProfile(value)}
-                        required
-                      >
-                        <SelectTrigger className="h-12 text-base hover:border-primary/50 transition-colors">
-                          <SelectValue placeholder={t('asociate.selectProfile')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {perfilOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value} className="text-base">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {perfilOptions.map((option) => (
+                          <div
+                            key={option.value}
+                            className={`flex items-center space-x-3 p-3 rounded-lg border transition-all cursor-pointer ${
+                              selectedProfiles.includes(option.value)
+                                ? 'border-primary bg-primary/10'
+                                : 'border-border/50 hover:border-primary/50 hover:bg-muted/50'
+                            }`}
+                            onClick={() => handleProfileToggle(option.value, !selectedProfiles.includes(option.value))}
+                          >
+                            <Checkbox
+                              id={option.value}
+                              checked={selectedProfiles.includes(option.value)}
+                              onCheckedChange={(checked) => handleProfileToggle(option.value, !!checked)}
+                            />
+                            <label
+                              htmlFor={option.value}
+                              className="text-sm font-medium cursor-pointer flex-1"
+                            >
                               {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                      {selectedProfiles.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-border/30">
+                          <span className="text-sm text-muted-foreground">{t('asociate.selectedProfiles')}:</span>
+                          {selectedProfiles.map(profile => {
+                            const option = perfilOptions.find(o => o.value === profile);
+                            return (
+                              <span
+                                key={profile}
+                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-primary/20 text-primary rounded-full"
+                              >
+                                {option?.label}
+                                <X
+                                  className="w-3 h-3 cursor-pointer hover:text-destructive"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleProfileToggle(profile, false);
+                                  }}
+                                />
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
 
-                    {selectedProfile && (
+                    {selectedProfiles.length > 0 && (
                       <div className="border-t border-border/50 pt-8 animate-fade-in">
                         <div className="flex items-center gap-3 mb-6">
                           <div className="w-1 h-6 bg-gradient-primary rounded-full"></div>
                           <h3 className="text-xl font-semibold">{t('asociate.profilePhoto')}</h3>
                         </div>
-                        {renderProfileForm()}
+                        {/* Show form for primary profile (first selected) */}
+                        {renderProfileForm(selectedProfiles[0])}
                       </div>
                     )}
 
@@ -779,7 +826,7 @@ const Asociate = () => {
                       </div>
                     </div>
 
-                    {selectedProfile && (
+                    {selectedProfiles.length > 0 && (
                       <div className="border-t border-border/50 pt-8 animate-fade-in">
                         <div className="flex items-center gap-3 mb-6">
                           <div className="w-1 h-6 bg-gradient-primary rounded-full"></div>

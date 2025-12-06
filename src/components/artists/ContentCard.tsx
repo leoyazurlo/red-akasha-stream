@@ -5,30 +5,6 @@ import { Play, Eye, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ContentWithCreator } from "@/hooks/useContentByCreatorProfile";
 
-const countryFlags: Record<string, string> = {
-  "Argentina": "🇦🇷",
-  "Bolivia": "🇧🇴",
-  "Brasil": "🇧🇷",
-  "Chile": "🇨🇱",
-  "Colombia": "🇨🇴",
-  "Costa Rica": "🇨🇷",
-  "Cuba": "🇨🇺",
-  "Ecuador": "🇪🇨",
-  "El Salvador": "🇸🇻",
-  "Guatemala": "🇬🇹",
-  "Honduras": "🇭🇳",
-  "México": "🇲🇽",
-  "Nicaragua": "🇳🇮",
-  "Panamá": "🇵🇦",
-  "Paraguay": "🇵🇾",
-  "Perú": "🇵🇪",
-  "República Dominicana": "🇩🇴",
-  "Uruguay": "🇺🇾",
-  "Venezuela": "🇻🇪",
-  "España": "🇪🇸",
-  "Estados Unidos": "🇺🇸",
-};
-
 interface ContentCardProps {
   content: ContentWithCreator;
   categoryLabel: string;
@@ -73,13 +49,6 @@ export const ContentCard = ({ content, categoryLabel, index }: ContentCardProps)
         <Badge className="absolute top-2 left-2 bg-background/80 text-foreground backdrop-blur-sm">
           {categoryLabel}
         </Badge>
-
-        {/* Country flag */}
-        {content.creator_country && countryFlags[content.creator_country] && (
-          <div className="absolute bottom-2 right-2 text-2xl drop-shadow-lg" title={content.creator_country}>
-            {countryFlags[content.creator_country]}
-          </div>
-        )}
       </div>
 
       <CardContent className="p-4">

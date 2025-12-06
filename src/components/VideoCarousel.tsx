@@ -26,7 +26,32 @@ interface VideoItem {
   thumbnail: string;
   duration: string;
   youtubeId?: string;
+  country?: string | null;
 }
+
+const countryFlags: Record<string, string> = {
+  "Argentina": "🇦🇷",
+  "Bolivia": "🇧🇴",
+  "Brasil": "🇧🇷",
+  "Chile": "🇨🇱",
+  "Colombia": "🇨🇴",
+  "Costa Rica": "🇨🇷",
+  "Cuba": "🇨🇺",
+  "Ecuador": "🇪🇨",
+  "El Salvador": "🇸🇻",
+  "Guatemala": "🇬🇹",
+  "Honduras": "🇭🇳",
+  "México": "🇲🇽",
+  "Nicaragua": "🇳🇮",
+  "Panamá": "🇵🇦",
+  "Paraguay": "🇵🇾",
+  "Perú": "🇵🇪",
+  "República Dominicana": "🇩🇴",
+  "Uruguay": "🇺🇾",
+  "Venezuela": "🇻🇪",
+  "España": "🇪🇸",
+  "Estados Unidos": "🇺🇸",
+};
 
 interface ProgramSchedule {
   time: string;
@@ -225,9 +250,16 @@ export const VideoCarousel = ({
                     </div>
 
                     {/* Duration */}
-                    <div className="absolute bottom-1.5 right-1.5 md:bottom-2 md:right-2 bg-black/80 px-1.5 py-0.5 md:px-2 md:py-1 rounded text-xs font-light backdrop-blur-sm">
+                    <div className="absolute bottom-1.5 left-1.5 md:bottom-2 md:left-2 bg-black/80 px-1.5 py-0.5 md:px-2 md:py-1 rounded text-xs font-light backdrop-blur-sm">
                       {video.duration}
-                  </div>
+                    </div>
+
+                    {/* Country flag */}
+                    {video.country && countryFlags[video.country] && (
+                      <div className="absolute bottom-1.5 right-1.5 md:bottom-2 md:right-2 text-lg md:text-xl drop-shadow-lg" title={video.country}>
+                        {countryFlags[video.country]}
+                      </div>
+                    )}
                 </div>
                   </div>
 

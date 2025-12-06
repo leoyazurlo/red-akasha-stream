@@ -2489,6 +2489,8 @@ export type Database = {
         | "representante"
         | "dj"
         | "vj"
+        | "danza"
+        | "percusion"
       report_status: "pending" | "reviewing" | "resolved" | "dismissed"
       sala_type:
         | "teatro"
@@ -2737,6 +2739,8 @@ export const Constants = {
         "representante",
         "dj",
         "vj",
+        "danza",
+        "percusion",
       ],
       report_status: ["pending", "reviewing", "resolved", "dismissed"],
       sala_type: [

@@ -20,7 +20,7 @@ export const ContentCard = ({ content, categoryLabel, index }: ContentCardProps)
 
   return (
     <Card 
-      className="group overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-[0_0_25px_hsl(180_100%_50%/0.4),0_0_50px_hsl(180_100%_50%/0.2)] hover:scale-[1.02] animate-fade-in bg-card/80 backdrop-blur-sm border-border/50 hover:border-cyan-400"
+      className="group overflow-hidden cursor-pointer transition-all duration-300 shadow-[0_0_25px_hsl(180_100%_50%/0.4),0_0_50px_hsl(180_100%_50%/0.2)] hover:shadow-[0_0_35px_hsl(180_100%_50%/0.6),0_0_70px_hsl(180_100%_50%/0.3)] hover:scale-[1.02] animate-fade-in bg-card/80 backdrop-blur-sm border-cyan-400"
       style={{ animationDelay: `${index * 100}ms` }}
       onClick={handleClick}
     >

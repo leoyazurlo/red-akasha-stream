@@ -593,9 +593,6 @@ const Asociate = () => {
               <CardTitle className="text-2xl md:text-3xl text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 {t('asociate.step1')}
               </CardTitle>
-              <CardDescription className="text-center text-base">
-                {t('asociate.subtitle')}
-              </CardDescription>
             </CardHeader>
             <CardContent>
                 {submitted ? (

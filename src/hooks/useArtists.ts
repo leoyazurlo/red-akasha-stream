@@ -3,13 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export type ArtistType = 
-  | "banda_musical" 
-  | "musico_solista" 
-  | "podcast" 
-  | "documental" 
-  | "cortometraje" 
-  | "fotografia" 
-  | "radio_show";
+  | "musico" 
+  | "percusion" 
+  | "agrupacion" 
+  | "dj" 
+  | "vj" 
+  | "danza" 
+  | "fotografia_digital";
 
 export interface Artist {
   id: string;

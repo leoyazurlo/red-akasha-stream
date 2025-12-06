@@ -2414,6 +2414,13 @@ export type Database = {
         | "cortometraje"
         | "fotografia"
         | "radio_show"
+        | "musico"
+        | "percusion"
+        | "agrupacion"
+        | "dj"
+        | "vj"
+        | "danza"
+        | "fotografia_digital"
       badge_type: "bronze" | "silver" | "gold" | "special" | "merit"
       content_type:
         | "video_musical_vivo"
@@ -2651,6 +2658,13 @@ export const Constants = {
         "cortometraje",
         "fotografia",
         "radio_show",
+        "musico",
+        "percusion",
+        "agrupacion",
+        "dj",
+        "vj",
+        "danza",
+        "fotografia_digital",
       ],
       badge_type: ["bronze", "silver", "gold", "special", "merit"],
       content_type: [

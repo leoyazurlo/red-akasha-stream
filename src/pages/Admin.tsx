@@ -1,10 +1,8 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate, useNavigate } from "react-router-dom";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2, Clock, CheckCircle2, XCircle, TrendingUp, BarChart3, Video, AlertCircle } from "lucide-react";
-import logoAkasha from "@/assets/logo-akasha-cyan.png";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -164,243 +162,225 @@ export default function Admin() {
   const rejectionRate = stats.total > 0 ? (stats.rejected / stats.total) * 100 : 0;
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        <header className="fixed top-0 left-0 right-0 h-14 flex items-center border-b bg-background z-50 px-4">
-          <SidebarTrigger />
-          <img 
-            src={logoAkasha} 
-            alt="Logo Akasha" 
-            className="h-8 w-8 ml-4"
-            style={{ filter: 'brightness(0) saturate(100%) invert(70%) sepia(100%) saturate(2500%) hue-rotate(160deg) brightness(120%) contrast(110%)' }}
-          />
-          <h1 className="ml-3 text-lg font-semibold">Red Akasha - Administración</h1>
-        </header>
-
-        <div className="flex w-full pt-14">
-          <AdminSidebar />
-          <main className="flex-1 p-6">
-            <div className="max-w-7xl mx-auto space-y-6">
-              {/* Header */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-3xl font-bold mb-2">Dashboard de Curaduría</h2>
-                  <p className="text-muted-foreground">
-                    Estadísticas y métricas de moderación de contenido
-                  </p>
-                </div>
-                {stats.pending > 0 && (
-                  <Badge variant="secondary" className="bg-amber-500/10 text-amber-500 border-amber-500/20">
-                    <AlertCircle className="w-4 h-4 mr-1" />
-                    {stats.pending} pendiente{stats.pending !== 1 ? 's' : ''}
-                  </Badge>
-                )}
-              </div>
-
-              {/* Stats Cards */}
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card 
-                  className="cursor-pointer hover:bg-accent/50 transition-colors border-amber-500/20 bg-gradient-to-br from-amber-500/5 to-orange-500/5"
-                  onClick={() => navigate('/admin/content')}
-                >
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Pendientes</CardTitle>
-                    <Clock className="h-5 w-5 text-amber-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-amber-500">{stats.pending}</div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Requieren revisión
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-green-500/20 bg-gradient-to-br from-green-500/5 to-emerald-500/5">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Aprobados</CardTitle>
-                    <CheckCircle2 className="h-5 w-5 text-green-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-green-500">{stats.approved}</div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {approvalRate.toFixed(1)}% del total
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-red-500/20 bg-gradient-to-br from-red-500/5 to-rose-500/5">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Rechazados</CardTitle>
-                    <XCircle className="h-5 w-5 text-red-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-red-500">{stats.rejected}</div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {rejectionRate.toFixed(1)}% del total
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-purple-500/5">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total</CardTitle>
-                    <Video className="h-5 w-5 text-primary" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold">{stats.total}</div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Contenido subido
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Charts Row */}
-              <div className="grid gap-6 md:grid-cols-2">
-                {/* Pie Chart */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <TrendingUp className="h-5 w-5" />
-                      Distribución por Estado
-                    </CardTitle>
-                    <CardDescription>
-                      Proporción de contenido en cada estado
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {pieData.length > 0 ? (
-                      <ResponsiveContainer width="100%" height={300}>
-                        <PieChart>
-                          <Pie
-                            data={pieData}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            label={(entry) => `${entry.name}: ${entry.value}`}
-                            outerRadius={80}
-                            fill="#8884d8"
-                            dataKey="value"
-                          >
-                            {pieData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                        No hay datos disponibles
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {/* Bar Chart by Type */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BarChart3 className="h-5 w-5" />
-                      Contenido por Tipo
-                    </CardTitle>
-                    <CardDescription>
-                      Distribución por tipo de contenido y estado
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {contentByType.length > 0 ? (
-                      <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={contentByType}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis 
-                            dataKey="type" 
-                            angle={-45}
-                            textAnchor="end"
-                            height={100}
-                            tick={{ fontSize: 10 }}
-                          />
-                          <YAxis />
-                          <Tooltip />
-                          <Legend />
-                          <Bar dataKey="pending" fill={COLORS.pending} name="Pendiente" />
-                          <Bar dataKey="approved" fill={COLORS.approved} name="Aprobado" />
-                          <Bar dataKey="rejected" fill={COLORS.rejected} name="Rechazado" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                        No hay datos disponibles
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Recent Content */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Contenido Reciente</CardTitle>
-                  <CardDescription>
-                    Últimas 5 subidas de contenido
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {recentContent.length > 0 ? (
-                    <div className="space-y-4">
-                      {recentContent.map((content) => (
-                        <div 
-                          key={content.id}
-                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
-                          onClick={() => navigate('/admin/content')}
-                        >
-                          <div className="flex-1 min-w-0 mr-4">
-                            <p className="font-medium truncate">{content.title}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {getContentTypeLabel(content.content_type)} • {new Date(content.created_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                          {getStatusBadge(content.status)}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No hay contenido reciente
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Approval Rate Progress */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Tasa de Aprobación</CardTitle>
-                  <CardDescription>
-                    Porcentaje de contenido aprobado vs rechazado
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">Aprobados</span>
-                      <span className="text-sm text-muted-foreground">{approvalRate.toFixed(1)}%</span>
-                    </div>
-                    <Progress value={approvalRate} className="h-2 [&>div]:bg-green-500" />
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">Rechazados</span>
-                      <span className="text-sm text-muted-foreground">{rejectionRate.toFixed(1)}%</span>
-                    </div>
-                    <Progress value={rejectionRate} className="h-2 [&>div]:bg-red-500" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </main>
+    <AdminLayout>
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold mb-2">Dashboard de Curaduría</h2>
+            <p className="text-muted-foreground">
+              Estadísticas y métricas de moderación de contenido
+            </p>
+          </div>
+          {stats.pending > 0 && (
+            <Badge variant="secondary" className="bg-amber-500/10 text-amber-500 border-amber-500/20">
+              <AlertCircle className="w-4 h-4 mr-1" />
+              {stats.pending} pendiente{stats.pending !== 1 ? 's' : ''}
+            </Badge>
+          )}
         </div>
+
+        {/* Stats Cards */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card 
+            className="cursor-pointer hover:bg-accent/50 transition-colors border-amber-500/20 bg-gradient-to-br from-amber-500/5 to-orange-500/5"
+            onClick={() => navigate('/admin/content')}
+          >
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pendientes</CardTitle>
+              <Clock className="h-5 w-5 text-amber-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-amber-500">{stats.pending}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Requieren revisión
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-green-500/20 bg-gradient-to-br from-green-500/5 to-emerald-500/5">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Aprobados</CardTitle>
+              <CheckCircle2 className="h-5 w-5 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-green-500">{stats.approved}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {approvalRate.toFixed(1)}% del total
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-red-500/20 bg-gradient-to-br from-red-500/5 to-rose-500/5">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Rechazados</CardTitle>
+              <XCircle className="h-5 w-5 text-red-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-red-500">{stats.rejected}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {rejectionRate.toFixed(1)}% del total
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-purple-500/5">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total</CardTitle>
+              <Video className="h-5 w-5 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{stats.total}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Contenido subido
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Charts Row */}
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Pie Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Distribución por Estado
+              </CardTitle>
+              <CardDescription>
+                Proporción de contenido en cada estado
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {pieData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={(entry) => `${entry.name}: ${entry.value}`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                  No hay datos disponibles
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Bar Chart by Type */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Contenido por Tipo
+              </CardTitle>
+              <CardDescription>
+                Distribución por tipo de contenido y estado
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {contentByType.length > 0 ? (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={contentByType}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis 
+                      dataKey="type" 
+                      angle={-45}
+                      textAnchor="end"
+                      height={100}
+                      tick={{ fontSize: 10 }}
+                    />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="pending" fill={COLORS.pending} name="Pendiente" />
+                    <Bar dataKey="approved" fill={COLORS.approved} name="Aprobado" />
+                    <Bar dataKey="rejected" fill={COLORS.rejected} name="Rechazado" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+                  No hay datos disponibles
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Recent Content */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Contenido Reciente</CardTitle>
+            <CardDescription>
+              Últimas 5 subidas de contenido
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {recentContent.length > 0 ? (
+              <div className="space-y-4">
+                {recentContent.map((content) => (
+                  <div 
+                    key={content.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
+                    onClick={() => navigate('/admin/content')}
+                  >
+                    <div className="flex-1 min-w-0 mr-4">
+                      <p className="font-medium truncate">{content.title}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {getContentTypeLabel(content.content_type)} • {new Date(content.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    {getStatusBadge(content.status)}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                No hay contenido reciente
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Approval Rate Progress */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Tasa de Aprobación</CardTitle>
+            <CardDescription>
+              Porcentaje de contenido aprobado vs rechazado
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">Aprobados</span>
+                <span className="text-sm text-muted-foreground">{approvalRate.toFixed(1)}%</span>
+              </div>
+              <Progress value={approvalRate} className="h-2 [&>div]:bg-green-500" />
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">Rechazados</span>
+                <span className="text-sm text-muted-foreground">{rejectionRate.toFixed(1)}%</span>
+              </div>
+              <Progress value={rejectionRate} className="h-2 [&>div]:bg-red-500" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    </SidebarProvider>
+    </AdminLayout>
   );
 }

@@ -65,45 +65,45 @@ const Artists = () => {
       color: "bg-primary/10 hover:bg-primary/20" 
     },
     { 
-      id: "banda_musical", 
-      labelKey: "artists.musicalBands", 
+      id: "musico", 
+      labelKey: "artists.musicians", 
       icon: Music, 
       color: "bg-purple-500/10 hover:bg-purple-500/20" 
     },
     { 
-      id: "musico_solista", 
-      labelKey: "artists.soloMusicians", 
+      id: "percusion", 
+      labelKey: "artists.percussion", 
       icon: Music, 
       color: "bg-indigo-500/10 hover:bg-indigo-500/20" 
     },
     { 
-      id: "podcast", 
-      labelKey: "artists.podcasts", 
+      id: "agrupacion", 
+      labelKey: "artists.groups", 
       icon: Mic, 
       color: "bg-blue-500/10 hover:bg-blue-500/20" 
     },
     { 
-      id: "documental", 
-      labelKey: "artists.documentaries", 
-      icon: Film, 
+      id: "dj", 
+      labelKey: "artists.djs", 
+      icon: Radio, 
       color: "bg-green-500/10 hover:bg-green-500/20" 
     },
     { 
-      id: "cortometraje", 
-      labelKey: "artists.shorts", 
-      icon: FileVideo, 
+      id: "vj", 
+      labelKey: "artists.vjs", 
+      icon: Film, 
       color: "bg-orange-500/10 hover:bg-orange-500/20" 
     },
     { 
-      id: "fotografia", 
-      labelKey: "artists.photography", 
-      icon: Camera, 
+      id: "danza", 
+      labelKey: "artists.dancers", 
+      icon: Music, 
       color: "bg-pink-500/10 hover:bg-pink-500/20" 
     },
     { 
-      id: "radio_show", 
-      labelKey: "artists.radioShows", 
-      icon: Radio, 
+      id: "fotografia_digital", 
+      labelKey: "artists.digitalPhotography", 
+      icon: Camera, 
       color: "bg-cyan-500/10 hover:bg-cyan-500/20" 
     },
   ];

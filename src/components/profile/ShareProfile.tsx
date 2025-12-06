@@ -16,7 +16,7 @@ interface ShareProfileProps {
 export const ShareProfile = ({ userId, userName }: ShareProfileProps) => {
   const { toast } = useToast();
   const profileUrl = `${window.location.origin}/perfil/${userId}`;
-  const shareText = `¡Mira el perfil de ${userName} en Red Akasha!`;
+  const shareText = `Somos RedAkasha.org te comparte este perfil para que puedas disfrutar del contenido de ${userName}. Si te gusta, podés asociarte a la Red Akasha.`;
 
   const copyToClipboard = async () => {
     try {

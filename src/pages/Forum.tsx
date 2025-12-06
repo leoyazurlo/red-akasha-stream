@@ -12,8 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { ScrollProgressBar } from "@/components/ScrollProgressBar";
+import { useTranslation } from "react-i18next";
 
 const Forum = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [hasProfile, setHasProfile] = useState(false);
@@ -80,25 +82,25 @@ const Forum = () => {
             <div className="container mx-auto px-4">
               <Card className="max-w-2xl mx-auto border-border bg-card/50 backdrop-blur-sm">
                 <CardHeader className="space-y-2">
-                  <CardTitle className="text-xl sm:text-2xl">Asociación Requerida</CardTitle>
+                  <CardTitle className="text-xl sm:text-2xl">{t('forum.associationRequired')}</CardTitle>
                   <CardDescription className="text-sm sm:text-base">
-                    Para participar en el foro, primero debes asociarte a la plataforma
+                    {t('forum.associationRequiredDesc')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Alert>
                     <AlertCircle className="h-4 w-4" />
-                    <AlertTitle className="text-sm sm:text-base">No tienes un perfil creado</AlertTitle>
+                    <AlertTitle className="text-sm sm:text-base">{t('forum.noProfile')}</AlertTitle>
                     <AlertDescription className="text-xs sm:text-sm">
-                      Para poder participar en el foro y colaborar con la comunidad, necesitas completar el proceso de asociación y crear tu perfil primero.
+                      {t('forum.noProfileDesc')}
                     </AlertDescription>
                   </Alert>
                   <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2">
                     <Button onClick={() => navigate("/asociate")} className="flex-1 h-11">
-                      Asociarme Ahora
+                      {t('forum.joinNow')}
                     </Button>
                     <Button onClick={() => navigate("/")} variant="outline" className="flex-1 h-11">
-                      Volver al Inicio
+                      {t('forum.backToHome')}
                     </Button>
                   </div>
                 </CardContent>
@@ -129,10 +131,10 @@ const Forum = () => {
           }`}
         >
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-3 md:mb-4 bg-gradient-primary bg-clip-text text-transparent">
-            Foro de la Comunidad
+            {t('forum.title')}
           </h1>
           <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-            Conecta, colabora y comparte con artistas y profesionales
+            {t('forum.subtitle')}
           </p>
         </section>
 

@@ -325,5 +325,15 @@
       "management": "Management",
       "composicion": "Composition"
     }
+  },
+  "forum": {
+    "title": "Community Forum",
+    "subtitle": "Connect, collaborate and share with artists and professionals",
+    "associationRequired": "Association Required",
+    "associationRequiredDesc": "To participate in the forum, you must first join the platform",
+    "noProfile": "You don't have a profile",
+    "noProfileDesc": "To participate in the forum and collaborate with the community, you need to complete the association process and create your profile first.",
+    "joinNow": "Join Now",
+    "backToHome": "Back to Home"
   }
 }

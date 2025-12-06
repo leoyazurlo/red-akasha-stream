@@ -30,7 +30,9 @@
     "search": "Buscar",
     "noResults": "Sin resultados",
     "viewMore": "Ver más",
-    "viewAll": "Ver todo"
+    "viewAll": "Ver todo",
+    "goBack": "Volver al Inicio",
+    "clearSearch": "Limpiar búsqueda"
   },
   "language": {
     "select": "Seleccionar idioma"
@@ -91,6 +93,35 @@
     "shorts": "Cortos",
     "photography": "Fotografía",
     "radioShows": "Radio Shows"
+  },
+  "circuit": {
+    "title": "Circuito",
+    "subtitle": "En esta sección podrás acceder a la base de datos y conocimiento del circuito de producción de la industria",
+    "selectCountry": "Selecciona tu país",
+    "loading": "Cargando perfiles...",
+    "noResults": "No se encontraron resultados",
+    "noResultsFor": "No hay perfiles que coincidan con tu búsqueda",
+    "noProfiles": "Aún no hay perfiles registrados en",
+    "beFirst": "¿Quieres ser el primero?",
+    "joinNetwork": "Únete a la Red Akasha y aparece en el circuito de tu país.",
+    "profiles": "Perfiles",
+    "showingResults": "Mostrando resultados para",
+    "findSpaces": "Encuentra espacios culturales, salas de grabación, bandas, productores y más",
+    "searchPlaceholder": "Buscar por nombre, ciudad o provincia...",
+    "sortNameAsc": "Nombre (A-Z)",
+    "sortNameDesc": "Nombre (Z-A)",
+    "sortNewest": "Más recientes",
+    "sortOldest": "Más antiguos",
+    "joinRequired": "Para ver la base de datos deberías asociarte.",
+    "joinNow": "Asociarme Ahora",
+    "profileTypes": {
+      "agrupacion_musical": "Agrupación Musical",
+      "sala_concierto": "Sala de Concierto",
+      "estudio_grabacion": "Estudio de Grabación",
+      "productor_artistico": "Productor Artístico",
+      "promotor_artistico": "Promotor Artístico",
+      "productor_audiovisual": "Productor Audiovisual"
+    }
   },
   "footer": {
     "contact": "Contacto / Quiénes Somos",

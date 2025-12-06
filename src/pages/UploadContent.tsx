@@ -23,8 +23,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { VideoUpload } from "@/components/VideoUpload";
 import { AudioUpload } from "@/components/AudioUpload";
 import { ImageUpload } from "@/components/ImageUpload";
-import { ServiceWorkerStatus } from "@/components/ServiceWorkerStatus";
-import { ThumbnailPreloadStatus } from "@/components/ThumbnailPreloadStatus";
 import { ProfileSelect } from "@/components/upload/ProfileSelect";
 import { ContentPreviewDialog } from "@/components/upload/ContentPreviewDialog";
 import { MonetizationSection } from "@/components/upload/MonetizationSection";
@@ -390,9 +388,6 @@ const UploadContent = () => {
       <main className="relative pt-24 pb-16">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto space-y-6">
-            <ServiceWorkerStatus />
-            <ThumbnailPreloadStatus />
-            
             <Card className="border-cyan-400 bg-card/50 backdrop-blur-sm shadow-[0_0_25px_hsl(180_100%_50%/0.4),0_0_50px_hsl(180_100%_50%/0.2)]">
               <CardHeader>
                 <CardTitle className="text-2xl text-cyan-400">{t('upload.title')}</CardTitle>

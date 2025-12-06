@@ -676,6 +676,21 @@ const Asociate = () => {
                           })}
                         </div>
                       )}
+                      
+                      <div className="space-y-2 mt-4">
+                        <Label htmlFor="profileSpecification" className="text-sm font-medium">
+                          {t('asociate.profileSpecification')}
+                        </Label>
+                        <Input
+                          id="profileSpecification"
+                          placeholder={t('asociate.profileSpecificationPlaceholder')}
+                          className="bg-background/50 border-border/50"
+                          maxLength={100}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          {t('asociate.profileSpecificationHint')}
+                        </p>
+                      </div>
                     </div>
 
                     {selectedProfiles.length > 0 && (

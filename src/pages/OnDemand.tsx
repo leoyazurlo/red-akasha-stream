@@ -65,6 +65,8 @@ const OnDemand = () => {
   const [filteredContents, setFilteredContents] = useState<Content[]>([]);
   const [continueWatching, setContinueWatching] = useState<PlaybackHistory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [checkingProfile, setCheckingProfile] = useState(true);
+  const [hasProfile, setHasProfile] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
@@ -86,15 +88,50 @@ const OnDemand = () => {
   };
 
   useEffect(() => {
-    fetchContents();
-    if (user) {
-      fetchContinueWatching();
+    checkUserProfile();
+  }, []);
+
+  useEffect(() => {
+    if (hasProfile) {
+      fetchContents();
+      if (user) {
+        fetchContinueWatching();
+      }
     }
-  }, [user]);
+  }, [user, hasProfile]);
 
   useEffect(() => {
     filterContents();
   }, [searchTerm, filterType, contents]);
+
+  const checkUserProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        navigate("/auth");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('profile_details')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1);
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        setHasProfile(false);
+      } else {
+        setHasProfile(true);
+      }
+    } catch (error) {
+      console.error('Error checking profile:', error);
+    } finally {
+      setCheckingProfile(false);
+    }
+  };
 
   const fetchContents = async () => {
     try {
@@ -228,6 +265,54 @@ const OnDemand = () => {
       description: t('onDemand.paymentSoon'),
     });
   };
+
+  if (checkingProfile) {
+    return (
+      <div className="min-h-screen relative">
+        <CosmicBackground />
+        <div className="relative z-10">
+          <Header />
+          <main className="pt-24 pb-16">
+            <div className="container mx-auto px-4 flex items-center justify-center min-h-[50vh]">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          </main>
+          <Footer />
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasProfile) {
+    return (
+      <div className="min-h-screen relative">
+        <CosmicBackground />
+        <div className="relative z-10">
+          <Header />
+          <main className="pt-24 pb-16">
+            <div className="container mx-auto px-4">
+              <Card className="max-w-2xl mx-auto border-border bg-card/50 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-2xl">{t('onDemand.joinRequired')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="mt-6 flex gap-4">
+                    <Button onClick={() => navigate("/asociate")} className="flex-1">
+                      {t('onDemand.joinNow')}
+                    </Button>
+                    <Button onClick={() => navigate("/")} variant="outline" className="flex-1">
+                      {t('common.goBack')}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </main>
+          <Footer />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen relative">

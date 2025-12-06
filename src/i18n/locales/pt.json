@@ -76,7 +76,9 @@
       "corto": "Curta-metragem",
       "documental": "Documentário",
       "pelicula": "Filme"
-    }
+    },
+    "joinRequired": "Para ver conteúdo On Demand você deve se associar com um perfil.",
+    "joinNow": "Associar-se Agora"
   },
   "artists": {
     "title": "Explorar Artistas",
@@ -93,7 +95,8 @@
     "documentaries": "Documentários",
     "shorts": "Curtas",
     "photography": "Fotografia",
-    "radioShows": "Programas de Rádio"
+    "radioShows": "Programas de Rádio",
+    "joinRequired": "Para ver artistas você deve se associar com um perfil."
   },
   "circuit": {
     "title": "Circuito",

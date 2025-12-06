@@ -1,18 +1,56 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Music, Mic, Film, FileVideo, Camera, Radio, Search } from "lucide-react";
+import { Music, Mic, Film, FileVideo, Camera, Radio, Search, Loader2 } from "lucide-react";
 import { useArtists, ArtistType } from "@/hooks/useArtists";
 import { ArtistCard } from "@/components/artists/ArtistCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { ScrollProgressBar } from "@/components/ScrollProgressBar";
+import { supabase } from "@/integrations/supabase/client";
 
 const Artists = () => {
+  const navigate = useNavigate();
+  const [checkingProfile, setCheckingProfile] = useState(true);
+  const [hasProfile, setHasProfile] = useState(false);
+
+  useEffect(() => {
+    checkUserProfile();
+  }, []);
+
+  const checkUserProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        navigate("/auth");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('profile_details')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1);
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        setHasProfile(false);
+      } else {
+        setHasProfile(true);
+      }
+    } catch (error) {
+      console.error('Error checking profile:', error);
+    } finally {
+      setCheckingProfile(false);
+    }
+  };
   const { t } = useTranslation();
   const [selectedGenre, setSelectedGenre] = useState<ArtistType | "all">("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -75,6 +113,48 @@ const Artists = () => {
   const filteredArtists = artists.filter((artist) =>
     artist.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (checkingProfile) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="pt-24 pb-16">
+          <div className="container mx-auto px-4 flex items-center justify-center min-h-[50vh]">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!hasProfile) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="pt-24 pb-16">
+          <div className="container mx-auto px-4">
+            <Card className="max-w-2xl mx-auto border-border bg-card/50 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-2xl">{t('artists.joinRequired')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="mt-6 flex gap-4">
+                  <Button onClick={() => navigate("/asociate")} className="flex-1">
+                    {t('artists.joinNow')}
+                  </Button>
+                  <Button onClick={() => navigate("/")} variant="outline" className="flex-1">
+                    {t('common.goBack')}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

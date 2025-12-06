@@ -76,7 +76,9 @@
       "corto": "Short Film",
       "documental": "Documentary",
       "pelicula": "Movie"
-    }
+    },
+    "joinRequired": "To see On Demand content you must join with a profile.",
+    "joinNow": "Join Now"
   },
   "artists": {
     "title": "Explore Artists",
@@ -93,7 +95,8 @@
     "documentaries": "Documentaries",
     "shorts": "Shorts",
     "photography": "Photography",
-    "radioShows": "Radio Shows"
+    "radioShows": "Radio Shows",
+    "joinRequired": "To see artists you must join with a profile."
   },
   "circuit": {
     "title": "Circuit",

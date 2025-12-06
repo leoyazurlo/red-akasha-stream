@@ -60,7 +60,11 @@ export const useFavorites = () => {
         if (error) throw error;
 
         // Decrement likes_count
-        await supabase.rpc('decrement_likes', { content_id: contentId }).catch(console.error);
+        try {
+          await supabase.rpc('decrement_likes' as any, { content_id: contentId });
+        } catch (e) {
+          console.error('Error decrementing likes:', e);
+        }
 
         setFavorites(prev => {
           const newSet = new Set(prev);
@@ -84,7 +88,11 @@ export const useFavorites = () => {
         if (error) throw error;
 
         // Increment likes_count
-        await supabase.rpc('increment_likes', { content_id: contentId }).catch(console.error);
+        try {
+          await supabase.rpc('increment_likes' as any, { content_id: contentId });
+        } catch (e) {
+          console.error('Error incrementing likes:', e);
+        }
 
         setFavorites(prev => new Set(prev).add(contentId));
 

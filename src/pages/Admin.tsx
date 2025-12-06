@@ -2,12 +2,21 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate, useNavigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Loader2, Clock, CheckCircle2, XCircle, TrendingUp, BarChart3, Video, AlertCircle } from "lucide-react";
+import { Loader2, Clock, CheckCircle2, XCircle, TrendingUp, BarChart3, Video, AlertCircle, Download, FileSpreadsheet, FileText } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { useToast } from "@/hooks/use-toast";
+import { exportToExcel, exportToCSV, formatDate, CONTENT_TYPE_LABELS, PROFILE_TYPE_LABELS } from "@/lib/exportUtils";
 
 interface ContentStats {
   pending: number;
@@ -34,9 +43,11 @@ interface RecentContent {
 export default function Admin() {
   const { user, loading, isAdmin } = useAuth(true);
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [stats, setStats] = useState<ContentStats>({ pending: 0, approved: 0, rejected: 0, total: 0 });
   const [contentByType, setContentByType] = useState<ContentByType[]>([]);
   const [recentContent, setRecentContent] = useState<RecentContent[]>([]);
+  const [allContent, setAllContent] = useState<any[]>([]);
   const [loadingStats, setLoadingStats] = useState(true);
 
   useEffect(() => {
@@ -50,27 +61,29 @@ export default function Admin() {
       setLoadingStats(true);
       
       // Obtener estadísticas generales
-      const { data: allContent, error } = await supabase
+      const { data: contentData, error } = await supabase
         .from('content_uploads')
-        .select('id, status, content_type, title, created_at');
+        .select('id, status, content_type, title, created_at, uploader_id, views_count, likes_count');
 
       if (error) throw error;
 
+      setAllContent(contentData || []);
+
       // Calcular estadísticas por estado
-      const pending = allContent?.filter(c => c.status === 'pending').length || 0;
-      const approved = allContent?.filter(c => c.status === 'approved').length || 0;
-      const rejected = allContent?.filter(c => c.status === 'rejected').length || 0;
+      const pending = contentData?.filter(c => c.status === 'pending').length || 0;
+      const approved = contentData?.filter(c => c.status === 'approved').length || 0;
+      const rejected = contentData?.filter(c => c.status === 'rejected').length || 0;
 
       setStats({
         pending,
         approved,
         rejected,
-        total: allContent?.length || 0,
+        total: contentData?.length || 0,
       });
 
       // Calcular estadísticas por tipo de contenido
       const typeStats: Record<string, ContentByType> = {};
-      allContent?.forEach(content => {
+      contentData?.forEach(content => {
         if (!typeStats[content.content_type]) {
           typeStats[content.content_type] = {
             type: content.content_type,
@@ -88,7 +101,7 @@ export default function Admin() {
       setContentByType(Object.values(typeStats));
 
       // Obtener contenido reciente
-      const recent = allContent
+      const recent = contentData
         ?.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .slice(0, 5)
         .map(c => ({
@@ -104,6 +117,91 @@ export default function Admin() {
       console.error('Error loading dashboard:', error);
     } finally {
       setLoadingStats(false);
+    }
+  };
+
+  const handleExportDashboard = async () => {
+    try {
+      // Obtener datos adicionales para exportación
+      const [usersRes, postsRes, threadsRes] = await Promise.all([
+        supabase.from('profile_details').select('id, display_name, profile_type, pais, ciudad, created_at'),
+        supabase.from('forum_posts').select('id, author_id, created_at'),
+        supabase.from('forum_threads').select('id, author_id, title, created_at'),
+      ]);
+
+      // Resumen general
+      const summaryData = [{
+        'Total Contenido': stats.total,
+        'Contenido Pendiente': stats.pending,
+        'Contenido Aprobado': stats.approved,
+        'Contenido Rechazado': stats.rejected,
+        'Tasa de Aprobación': `${((stats.approved / stats.total) * 100).toFixed(1)}%`,
+        'Total Usuarios': usersRes.data?.length || 0,
+        'Total Posts Foro': postsRes.data?.length || 0,
+        'Total Hilos Foro': threadsRes.data?.length || 0,
+        'Fecha de Exportación': formatDate(new Date().toISOString()),
+      }];
+
+      // Contenido por tipo
+      const contentByTypeData = contentByType.map(ct => ({
+        'Tipo de Contenido': CONTENT_TYPE_LABELS[ct.type] || ct.type,
+        'Pendiente': ct.pending,
+        'Aprobado': ct.approved,
+        'Rechazado': ct.rejected,
+        'Total': ct.pending + ct.approved + ct.rejected,
+      }));
+
+      // Lista de contenido
+      const contentListData = allContent.map(c => ({
+        'Título': c.title,
+        'Tipo': CONTENT_TYPE_LABELS[c.content_type] || c.content_type,
+        'Estado': c.status === 'approved' ? 'Aprobado' : c.status === 'rejected' ? 'Rechazado' : 'Pendiente',
+        'Vistas': c.views_count || 0,
+        'Likes': c.likes_count || 0,
+        'Fecha de Subida': formatDate(c.created_at),
+      }));
+
+      // Usuarios por tipo de perfil
+      const usersByType = Object.entries(
+        (usersRes.data || []).reduce((acc, u) => {
+          acc[u.profile_type] = (acc[u.profile_type] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>)
+      ).map(([type, count]) => ({
+        'Tipo de Perfil': PROFILE_TYPE_LABELS[type] || type,
+        'Cantidad': count,
+      }));
+
+      // Usuarios por país
+      const usersByCountry = Object.entries(
+        (usersRes.data || []).reduce((acc, u) => {
+          acc[u.pais] = (acc[u.pais] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>)
+      ).sort((a, b) => b[1] - a[1]).map(([country, count]) => ({
+        'País': country,
+        'Cantidad': count,
+      }));
+
+      exportToExcel([
+        { name: 'Resumen General', data: summaryData },
+        { name: 'Contenido por Tipo', data: contentByTypeData },
+        { name: 'Lista de Contenido', data: contentListData },
+        { name: 'Usuarios por Tipo', data: usersByType },
+        { name: 'Usuarios por País', data: usersByCountry },
+      ], 'dashboard_red_akasha');
+
+      toast({
+        title: "Exportación exitosa",
+        description: "Se descargó el archivo Excel con todas las estadísticas",
+      });
+    } catch (error) {
+      console.error('Error exporting dashboard:', error);
+      toast({
+        title: "Error al exportar",
+        description: "No se pudo generar el archivo",
+        variant: "destructive",
+      });
     }
   };
 
@@ -172,12 +270,28 @@ export default function Admin() {
               Estadísticas y métricas de moderación de contenido
             </p>
           </div>
-          {stats.pending > 0 && (
-            <Badge variant="secondary" className="bg-amber-500/10 text-amber-500 border-amber-500/20">
-              <AlertCircle className="w-4 h-4 mr-1" />
-              {stats.pending} pendiente{stats.pending !== 1 ? 's' : ''}
-            </Badge>
-          )}
+          <div className="flex items-center gap-2">
+            {stats.pending > 0 && (
+              <Badge variant="secondary" className="bg-amber-500/10 text-amber-500 border-amber-500/20">
+                <AlertCircle className="w-4 h-4 mr-1" />
+                {stats.pending} pendiente{stats.pending !== 1 ? 's' : ''}
+              </Badge>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <Download className="w-4 h-4" />
+                  Exportar
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-card border-border">
+                <DropdownMenuItem onClick={handleExportDashboard}>
+                  <FileSpreadsheet className="w-4 h-4 mr-2" />
+                  Excel Completo (.xlsx)
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
         {/* Stats Cards */}

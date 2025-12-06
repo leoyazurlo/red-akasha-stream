@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Loader2, Trash2, Shield, User, Search, X, CalendarIcon, Download, FileText, MessageSquare, Video, ArrowUpDown, UserCog, Ban, AlertTriangle } from "lucide-react";
+import { Loader2, Trash2, Shield, User, Search, X, CalendarIcon, Download, FileText, MessageSquare, Video, ArrowUpDown, UserCog, Ban, AlertTriangle, FileSpreadsheet } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,8 +36,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
 import { z } from "zod";
+import { exportToExcel, exportToCSV, formatDate, PROFILE_TYPE_LABELS, ROLE_LABELS } from "@/lib/exportUtils";
 
 interface UserProfile {
   id: string;
@@ -500,7 +507,7 @@ export default function AdminUsers() {
     }
   };
 
-  const exportToCSV = (usersToExport?: UserProfile[]) => {
+  const handleExportExcel = (usersToExport?: UserProfile[]) => {
     const dataToExport = usersToExport || users;
     
     if (dataToExport.length === 0) {
@@ -512,64 +519,107 @@ export default function AdminUsers() {
       return;
     }
 
-    // Define CSV headers
-    const headers = [
-      "Nombre",
-      "Email",
-      "Tipo de Perfil",
-      "País",
-      "Ciudad",
-      "Provincia",
-      "Fecha de Registro",
-    ];
+    // Preparar datos de usuarios
+    const usersData = dataToExport.map(u => {
+      const stats = userStats.get(u.user_id);
+      const role = userRoles.get(u.user_id);
+      const sanctions = userSanctions.get(u.user_id) || [];
+      const activeSanction = sanctions.find(s => s.is_active);
+      
+      return {
+        'Nombre': u.display_name,
+        'Email': u.email || 'N/A',
+        'Tipo de Perfil': PROFILE_TYPE_LABELS[u.profile_type] || u.profile_type,
+        'Rol': role ? ROLE_LABELS[role.role] || role.role : 'Usuario',
+        'País': u.pais,
+        'Ciudad': u.ciudad,
+        'Provincia': u.provincia || 'N/A',
+        'Fecha de Registro': formatDate(u.created_at),
+        'Última Actualización': formatDate(u.updated_at || null),
+        'Contenido Subido': stats?.content_count || 0,
+        'Posts en Foro': stats?.forum_posts_count || 0,
+        'Hilos en Foro': stats?.forum_threads_count || 0,
+        'Estado': activeSanction ? `Sancionado (${activeSanction.sanction_type})` : 'Activo',
+      };
+    });
 
-    // Convert users to CSV rows
-    const rows = dataToExport.map(user => [
-      user.display_name,
-      user.email || "",
-      user.profile_type.replace(/_/g, ' '),
-      user.pais,
-      user.ciudad,
-      user.provincia || "",
-      format(new Date(user.created_at), "dd/MM/yyyy HH:mm", { locale: es }),
-    ]);
+    // Preparar resumen
+    const summaryData = [{
+      'Total Usuarios': dataToExport.length,
+      'Por País': [...new Set(dataToExport.map(u => u.pais))].length,
+      'Con Contenido': dataToExport.filter(u => (userStats.get(u.user_id)?.content_count || 0) > 0).length,
+      'Activos en Foro': dataToExport.filter(u => {
+        const s = userStats.get(u.user_id);
+        return (s?.forum_posts_count || 0) + (s?.forum_threads_count || 0) > 0;
+      }).length,
+      'Fecha de Exportación': formatDate(new Date().toISOString()),
+    }];
 
-    // Combine headers and rows
-    const csvContent = [
-      headers.join(","),
-      ...rows.map(row => 
-        row.map(cell => `"${cell}"`).join(",")
-      )
-    ].join("\n");
+    // Estadísticas por tipo de perfil
+    const byProfileType = Object.entries(
+      dataToExport.reduce((acc, u) => {
+        acc[u.profile_type] = (acc[u.profile_type] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>)
+    ).map(([type, count]) => ({
+      'Tipo de Perfil': PROFILE_TYPE_LABELS[type] || type,
+      'Cantidad': count,
+    }));
 
-    // Create blob and download
-    const blob = new Blob(["\ufeff" + csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
+    // Estadísticas por país
+    const byCountry = Object.entries(
+      dataToExport.reduce((acc, u) => {
+        acc[u.pais] = (acc[u.pais] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>)
+    ).sort((a, b) => b[1] - a[1]).map(([country, count]) => ({
+      'País': country,
+      'Cantidad': count,
+    }));
+
+    exportToExcel([
+      { name: 'Resumen', data: summaryData },
+      { name: 'Usuarios', data: usersData },
+      { name: 'Por Tipo de Perfil', data: byProfileType },
+      { name: 'Por País', data: byCountry },
+    ], 'usuarios_red_akasha');
+
+    toast({
+      title: "Exportación exitosa",
+      description: `Se exportaron ${dataToExport.length} usuario${dataToExport.length !== 1 ? 's' : ''} a Excel`,
+    });
+  };
+
+  const handleExportCSV = (usersToExport?: UserProfile[]) => {
+    const dataToExport = usersToExport || users;
     
-    // Generate filename with current date and active filters
-    const timestamp = format(new Date(), "yyyy-MM-dd_HH-mm");
-    let filename = `usuarios_${timestamp}`;
-    
-    if (usersToExport) {
-      filename += "_seleccionados";
+    if (dataToExport.length === 0) {
+      toast({
+        title: "No hay datos",
+        description: "No hay usuarios para exportar",
+        variant: "destructive",
+      });
+      return;
     }
-    if (profileTypeFilter !== "all") {
-      filename += `_${profileTypeFilter}`;
-    }
-    if (countryFilter !== "all") {
-      filename += `_${countryFilter}`;
-    }
-    if (dateRange?.from) {
-      filename += `_desde_${format(dateRange.from, "yyyy-MM-dd")}`;
-    }
-    
-    link.setAttribute("href", url);
-    link.setAttribute("download", `${filename}.csv`);
-    link.style.visibility = "hidden";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+
+    const csvData = dataToExport.map(u => {
+      const stats = userStats.get(u.user_id);
+      const role = userRoles.get(u.user_id);
+      return {
+        'Nombre': u.display_name,
+        'Email': u.email || 'N/A',
+        'Tipo de Perfil': PROFILE_TYPE_LABELS[u.profile_type] || u.profile_type,
+        'Rol': role ? ROLE_LABELS[role.role] || role.role : 'Usuario',
+        'País': u.pais,
+        'Ciudad': u.ciudad,
+        'Provincia': u.provincia || 'N/A',
+        'Fecha de Registro': formatDate(u.created_at),
+        'Contenido Subido': stats?.content_count || 0,
+        'Posts en Foro': stats?.forum_posts_count || 0,
+      };
+    });
+
+    exportToCSV(csvData, 'usuarios_red_akasha');
 
     toast({
       title: "Exportación exitosa",
@@ -597,7 +647,7 @@ export default function AdminUsers() {
 
   const exportSelectedUsers = () => {
     const selectedUserData = users.filter(u => selectedUsers.has(u.id));
-    exportToCSV(selectedUserData);
+    handleExportExcel(selectedUserData);
   };
 
   const handleBulkDelete = async () => {
@@ -706,15 +756,24 @@ export default function AdminUsers() {
               Administra los usuarios registrados en la plataforma
             </p>
           </div>
-        <Button
-          onClick={() => exportToCSV()}
-          variant="outline"
-          className="gap-2"
-          disabled={users.length === 0}
-        >
-          <Download className="h-4 w-4" />
-          Exportar CSV
-        </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="gap-2" disabled={users.length === 0}>
+                <Download className="h-4 w-4" />
+                Exportar
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-card border-border">
+              <DropdownMenuItem onClick={() => handleExportExcel()}>
+                <FileSpreadsheet className="w-4 h-4 mr-2" />
+                Excel Completo (.xlsx)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExportCSV()}>
+                <FileText className="w-4 h-4 mr-2" />
+                CSV Simple (.csv)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
               </div>
 
               {/* Filters Section */}

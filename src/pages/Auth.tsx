@@ -33,7 +33,7 @@ const Auth = () => {
   // Usar useEffect para redirección en lugar de hacerlo durante render
   useEffect(() => {
     if (!authLoading && user) {
-      navigate("/foro");
+      navigate("/");
     }
   }, [user, authLoading, navigate]);
 
@@ -77,7 +77,7 @@ const Auth = () => {
         description: "Has iniciado sesión correctamente.",
       });
       
-      navigate("/foro");
+      navigate("/");
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast({
@@ -108,7 +108,7 @@ const Auth = () => {
         email: validated.email,
         password: validated.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/foro`,
+          emailRedirectTo: `${window.location.origin}/`,
           data: {
             username: validated.username,
           },

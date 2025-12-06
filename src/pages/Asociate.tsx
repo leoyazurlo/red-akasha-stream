@@ -629,29 +629,29 @@ const Asociate = () => {
                         </span>
                       </Label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {perfilOptions.map((option) => (
-                          <div
-                            key={option.value}
-                            className={`flex items-center space-x-3 p-3 rounded-lg border transition-all cursor-pointer ${
-                              selectedProfiles.includes(option.value)
-                                ? 'border-primary bg-primary/10'
-                                : 'border-border/50 hover:border-primary/50 hover:bg-muted/50'
-                            }`}
-                            onClick={() => handleProfileToggle(option.value, !selectedProfiles.includes(option.value))}
-                          >
-                            <Checkbox
-                              id={option.value}
-                              checked={selectedProfiles.includes(option.value)}
-                              onCheckedChange={(checked) => handleProfileToggle(option.value, !!checked)}
-                            />
+                        {perfilOptions.map((option) => {
+                          const isSelected = selectedProfiles.includes(option.value);
+                          return (
                             <label
-                              htmlFor={option.value}
-                              className="text-sm font-medium cursor-pointer flex-1"
+                              key={option.value}
+                              htmlFor={`profile-${option.value}`}
+                              className={`flex items-center space-x-3 p-3 rounded-lg border transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'border-primary bg-primary/10'
+                                  : 'border-border/50 hover:border-primary/50 hover:bg-muted/50'
+                              }`}
                             >
-                              {option.label}
+                              <Checkbox
+                                id={`profile-${option.value}`}
+                                checked={isSelected}
+                                onCheckedChange={(checked) => handleProfileToggle(option.value, !!checked)}
+                              />
+                              <span className="text-sm font-medium flex-1">
+                                {option.label}
+                              </span>
                             </label>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                       {selectedProfiles.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-border/30">

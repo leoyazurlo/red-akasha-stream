@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Music, Mic, Film, Camera, Radio, Search, Loader2 } from "lucide-react";
-import { useContentByCreatorProfile, CreatorProfileType } from "@/hooks/useContentByCreatorProfile";
+import { useContentByCreatorProfile, useContentCountsByProfile, CreatorProfileType } from "@/hooks/useContentByCreatorProfile";
 import { ContentCard } from "@/components/artists/ContentCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
@@ -113,10 +113,18 @@ const Artists = () => {
     selectedCategory === "all" ? undefined : selectedCategory
   );
 
+  const { data: counts } = useContentCountsByProfile();
+
   const filteredContent = content.filter((item) =>
     item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.creator_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const getCategoryCount = (categoryId: CreatorProfileType | "all") => {
+    if (!counts) return 0;
+    if (categoryId === "all") return counts.total;
+    return counts.byType[categoryId] || 0;
+  };
 
   if (checkingProfile) {
     return (
@@ -214,17 +222,17 @@ const Artists = () => {
                   h-9 sm:h-10 md:h-11
                   px-3 sm:px-4 md:px-6
                   ${!isSelected && category.color}
-                  animate-fade-in
+                  animate-fade-in gap-1.5
                 `}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <Icon className="mr-1.5 md:mr-2 h-4 w-4 md:h-5 md:w-5 transition-transform group-hover:rotate-12" />
+                <Icon className="h-4 w-4 md:h-5 md:w-5 transition-transform group-hover:rotate-12" />
                 <span className="whitespace-nowrap">{t(category.labelKey)}</span>
-                {isSelected && (
-                  <span className="ml-1.5 md:ml-2 bg-background/30 px-1.5 md:px-2 py-0.5 rounded-full text-xs">
-                    {filteredContent.length}
-                  </span>
-                )}
+                <span className={`px-1.5 md:px-2 py-0.5 rounded-full text-xs font-medium ${
+                  isSelected ? 'bg-background/30' : 'bg-primary/20 text-primary'
+                }`}>
+                  {getCategoryCount(category.id)}
+                </span>
               </Button>
             );
           })}

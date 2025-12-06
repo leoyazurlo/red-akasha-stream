@@ -30,7 +30,6 @@ export const useContentByCreatorProfile = (profileType?: CreatorProfileType) => 
   return useQuery({
     queryKey: ["content-by-creator", profileType],
     queryFn: async () => {
-      // First get the profile_details with the matching profile_type
       let profileQuery = supabase
         .from('profile_details')
         .select('user_id, display_name, avatar_url, profile_type');
@@ -46,10 +45,8 @@ export const useContentByCreatorProfile = (profileType?: CreatorProfileType) => 
         return [];
       }
 
-      // Get all user_ids from matching profiles
       const userIds = profiles.map(p => p.user_id);
 
-      // Get content uploaded by these users
       const { data: content, error: contentError } = await supabase
         .from('content_uploads')
         .select('*')
@@ -59,7 +56,6 @@ export const useContentByCreatorProfile = (profileType?: CreatorProfileType) => 
 
       if (contentError) throw contentError;
 
-      // Map content with creator info
       const contentWithCreator: ContentWithCreator[] = (content || []).map(item => {
         const creator = profiles.find(p => p.user_id === item.uploader_id);
         return {
@@ -80,6 +76,46 @@ export const useContentByCreatorProfile = (profileType?: CreatorProfileType) => 
       });
 
       return contentWithCreator;
+    },
+  });
+};
+
+export const useContentCountsByProfile = () => {
+  return useQuery({
+    queryKey: ["content-counts-by-profile"],
+    queryFn: async () => {
+      // Get all profiles with their types
+      const { data: profiles, error: profileError } = await supabase
+        .from('profile_details')
+        .select('user_id, profile_type');
+
+      if (profileError) throw profileError;
+
+      if (!profiles || profiles.length === 0) {
+        return { total: 0, byType: {} as Record<string, number> };
+      }
+
+      // Get all approved content
+      const { data: content, error: contentError } = await supabase
+        .from('content_uploads')
+        .select('uploader_id')
+        .eq('status', 'approved');
+
+      if (contentError) throw contentError;
+
+      // Count content by profile type
+      const counts: Record<string, number> = {};
+      let total = 0;
+
+      (content || []).forEach(item => {
+        const profile = profiles.find(p => p.user_id === item.uploader_id);
+        if (profile?.profile_type) {
+          counts[profile.profile_type] = (counts[profile.profile_type] || 0) + 1;
+          total++;
+        }
+      });
+
+      return { total, byType: counts };
     },
   });
 };

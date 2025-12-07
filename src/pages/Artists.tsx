@@ -53,18 +53,12 @@ const Artists = () => {
   };
 
   const { t } = useTranslation();
-  const [selectedCategory, setSelectedCategory] = useState<CreatorProfileType | "all">("all");
+  const [selectedCategory, setSelectedCategory] = useState<CreatorProfileType | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState("");
   const { elementRef: heroRef, isVisible: heroVisible } = useScrollAnimation({ threshold: 0.2 });
   const { elementRef: gridRef, isVisible: gridVisible } = useScrollAnimation({ threshold: 0.1 });
 
-  const categories: Array<{ id: CreatorProfileType | "all"; labelKey: string; icon: any; color: string }> = [
-    { 
-      id: "all", 
-      labelKey: "artists.all", 
-      icon: Search, 
-      color: "bg-primary/10 hover:bg-primary/20" 
-    },
+  const categories: Array<{ id: CreatorProfileType; labelKey: string; icon: any; color: string }> = [
     { 
       id: "musico", 
       labelKey: "artists.musicians", 
@@ -109,9 +103,7 @@ const Artists = () => {
     },
   ];
 
-  const { data: content = [], isLoading } = useContentByCreatorProfile(
-    selectedCategory === "all" ? undefined : selectedCategory
-  );
+  const { data: content = [], isLoading } = useContentByCreatorProfile(selectedCategory);
 
   const { data: counts } = useContentCountsByProfile();
 
@@ -120,9 +112,8 @@ const Artists = () => {
     item.creator_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getCategoryCount = (categoryId: CreatorProfileType | "all") => {
+  const getCategoryCount = (categoryId: CreatorProfileType) => {
     if (!counts) return 0;
-    if (categoryId === "all") return counts.total;
     return counts.byType[categoryId] || 0;
   };
 

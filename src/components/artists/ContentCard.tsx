@@ -46,9 +46,11 @@ export const ContentCard = ({ content, categoryLabel, index }: ContentCardProps)
         </div>
 
         {/* Category badge */}
-        <Badge className="absolute top-2 left-2 bg-background/80 text-foreground backdrop-blur-sm">
-          {categoryLabel}
-        </Badge>
+        {categoryLabel && categoryLabel !== "Todos" && (
+          <Badge className="absolute top-2 left-2 bg-background/80 text-foreground backdrop-blur-sm">
+            {categoryLabel}
+          </Badge>
+        )}
       </div>
 
       <CardContent className="p-4">

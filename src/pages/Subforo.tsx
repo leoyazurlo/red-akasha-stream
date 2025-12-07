@@ -7,6 +7,7 @@ import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { ThreadForm } from "@/components/forum/ThreadForm";
 import { UserBadges } from "@/components/forum/UserBadges";
+import { CountryFlag } from "@/components/forum/CountryFlag";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -245,9 +246,10 @@ const Subforo = () => {
                                     e.stopPropagation();
                                     navigate(`/perfil/${thread.author_id}`);
                                   }}
-                                  className="hover:text-primary transition-colors"
+                                  className="hover:text-primary transition-colors flex items-center gap-1"
                                 >
                                   {thread.author?.username || thread.author?.full_name || "Usuario"}
+                                  <CountryFlag userId={thread.author_id} />
                                 </button>
                                 <UserBadges userId={thread.author_id} limit={2} />
                               </div>

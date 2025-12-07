@@ -9,6 +9,7 @@ import { PostForm } from "@/components/forum/PostForm";
 import { UserBadges } from "@/components/forum/UserBadges";
 import { UserStatsCard } from "@/components/forum/UserStatsCard";
 import { MentionContent } from "@/components/forum/MentionContent";
+import { CountryFlag } from "@/components/forum/CountryFlag";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -328,9 +329,10 @@ const ThreadPage = () => {
                           e.stopPropagation();
                           navigate(`/perfil/${post.author_id}`);
                         }}
-                        className="font-semibold text-foreground hover:text-primary transition-colors"
+                        className="font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-1"
                       >
                         {post.author.username || post.author.full_name || "Usuario"}
+                        <CountryFlag userId={post.author_id} />
                       </button>
                       <UserBadges userId={post.author_id} limit={3} showCount />
                     </div>
@@ -506,11 +508,12 @@ const ThreadPage = () => {
                           e.stopPropagation();
                           navigate(`/perfil/${thread.author_id}`);
                         }}
-                        className="hover:text-primary transition-colors"
+                        className="hover:text-primary transition-colors flex items-center gap-1"
                       >
                         {thread.author.username ||
                           thread.author.full_name ||
                           "Usuario"}
+                        <CountryFlag userId={thread.author_id} />
                       </button>
                       <UserBadges userId={thread.author_id} limit={3} showCount />
                     </div>

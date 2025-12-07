@@ -1246,6 +1246,7 @@ export type Database = {
       }
       profile_details: {
         Row: {
+          additional_profile_types: string[] | null
           avatar_url: string | null
           bio: string | null
           capacity: number | null
@@ -1278,6 +1279,7 @@ export type Database = {
           whatsapp: string | null
         }
         Insert: {
+          additional_profile_types?: string[] | null
           avatar_url?: string | null
           bio?: string | null
           capacity?: number | null
@@ -1310,6 +1312,7 @@ export type Database = {
           whatsapp?: string | null
         }
         Update: {
+          additional_profile_types?: string[] | null
           avatar_url?: string | null
           bio?: string | null
           capacity?: number | null

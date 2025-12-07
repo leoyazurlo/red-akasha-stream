@@ -12,7 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, ArrowLeft, Save, MapPin } from "lucide-react";
+import { Loader2, ArrowLeft, Save, MapPin, X } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ImageUpload } from "@/components/ImageUpload";
 import { Autocomplete } from "@/components/ui/autocomplete";
 import {
@@ -80,11 +81,31 @@ const profileTypeLabels: Record<string, string> = {
   representante: "Representante",
   marketing_digital: "Marketing Digital",
   contenido: "Creador de Contenido",
+  perfil_contenido: "Creador de Contenido",
   arte_digital: "Arte Digital",
   percusion: "Percusión",
   danza: "Danza",
   melomano: "Melómano"
 };
+
+const profileTypeOptions = [
+  { value: "agrupacion_musical", label: "Agrupación Musical" },
+  { value: "arte_digital", label: "Arte Digital" },
+  { value: "danza", label: "Danza" },
+  { value: "dj", label: "DJ" },
+  { value: "estudio_grabacion", label: "Estudio de Grabación" },
+  { value: "management", label: "Management" },
+  { value: "marketing_digital", label: "Marketing Digital" },
+  { value: "musico", label: "Músico" },
+  { value: "percusion", label: "Percusión" },
+  { value: "productor_artistico", label: "Productor Artístico" },
+  { value: "promotor_artistico", label: "Promotor Artístico" },
+  { value: "representante", label: "Representante" },
+  { value: "sala_concierto", label: "Sala de Concierto" },
+  { value: "sello_discografico", label: "Sello Discográfico" },
+  { value: "perfil_contenido", label: "Creador de Contenido" },
+  { value: "vj", label: "VJ" }
+];
 
 const EditarPerfil = () => {
   const navigate = useNavigate();
@@ -107,7 +128,8 @@ const EditarPerfil = () => {
     whatsapp: "",
     telefono: "",
     email: "",
-    profile_type: ""
+    profile_type: "",
+    additional_profile_types: [] as string[]
   });
 
   useEffect(() => {
@@ -147,7 +169,8 @@ const EditarPerfil = () => {
         whatsapp: profileData.whatsapp || "",
         telefono: profileData.telefono || "",
         email: profileData.email || "",
-        profile_type: profileData.profile_type || ""
+        profile_type: profileData.profile_type || "",
+        additional_profile_types: (profileData as any).additional_profile_types || []
       });
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -167,6 +190,29 @@ const EditarPerfil = () => {
       [field]: value
     }));
   };
+
+  const handleProfileTypeToggle = (profileValue: string, checked: boolean) => {
+    // The main profile_type cannot be changed, only additional ones
+    if (profileValue === formData.profile_type) return;
+    
+    if (checked) {
+      setFormData(prev => ({
+        ...prev,
+        additional_profile_types: [...prev.additional_profile_types, profileValue]
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        additional_profile_types: prev.additional_profile_types.filter(p => p !== profileValue)
+      }));
+    }
+  };
+
+  // Get all selected profile types (main + additional)
+  const allSelectedTypes = useMemo(() => {
+    const types = [formData.profile_type, ...formData.additional_profile_types];
+    return [...new Set(types.filter(Boolean))];
+  }, [formData.profile_type, formData.additional_profile_types]);
 
   const cityOptions = useMemo(() => {
     if (!formData.pais) return [];
@@ -219,8 +265,9 @@ const EditarPerfil = () => {
           whatsapp: formData.whatsapp.trim() || null,
           telefono: formData.telefono.trim() || null,
           email: formData.email.trim() || null,
+          additional_profile_types: formData.additional_profile_types,
           updated_at: new Date().toISOString()
-        })
+        } as any)
         .eq("user_id", user?.id);
 
       if (error) throw error;
@@ -288,12 +335,72 @@ const EditarPerfil = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Profile Type Badge (read-only) */}
-                <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
-                  <Label className="text-sm text-muted-foreground">Tipo de Perfil</Label>
-                  <p className="font-medium text-primary">
-                    {profileTypeLabels[formData.profile_type] || formData.profile_type}
-                  </p>
+                {/* Profile Types Selection */}
+                <div className="space-y-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                  <div>
+                    <Label className="font-semibold">Tipos de Perfil</Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Selecciona todos los tipos que te representen. Tu tipo principal está marcado.
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {profileTypeOptions.map((option) => {
+                      const isMainType = option.value === formData.profile_type;
+                      const isSelected = isMainType || formData.additional_profile_types.includes(option.value);
+                      
+                      return (
+                        <label
+                          key={option.value}
+                          htmlFor={`profile-${option.value}`}
+                          className={`flex items-center space-x-3 p-3 rounded-lg border transition-all cursor-pointer ${
+                            isMainType
+                              ? 'border-primary bg-primary/20 cursor-default'
+                              : isSelected
+                                ? 'border-primary/60 bg-primary/10'
+                                : 'border-border/50 hover:border-primary/50 hover:bg-muted/50'
+                          }`}
+                        >
+                          <Checkbox
+                            id={`profile-${option.value}`}
+                            checked={isSelected}
+                            disabled={isMainType}
+                            onCheckedChange={(checked) => handleProfileTypeToggle(option.value, !!checked)}
+                          />
+                          <span className="text-sm font-medium flex-1">
+                            {option.label}
+                            {isMainType && (
+                              <span className="ml-2 text-xs text-primary">(Principal)</span>
+                            )}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  
+                  {allSelectedTypes.length > 1 && (
+                    <div className="flex flex-wrap gap-2 pt-3 border-t border-border/30">
+                      <span className="text-sm text-muted-foreground">Seleccionados:</span>
+                      {allSelectedTypes.map(type => (
+                        <span
+                          key={type}
+                          className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${
+                            type === formData.profile_type 
+                              ? 'bg-primary/30 text-primary' 
+                              : 'bg-primary/20 text-primary'
+                          }`}
+                        >
+                          {profileTypeLabels[type] || type}
+                          {type !== formData.profile_type && (
+                            <X
+                              className="w-3 h-3 cursor-pointer hover:text-destructive"
+                              onClick={() => handleProfileTypeToggle(type, false)}
+                            />
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Avatar */}

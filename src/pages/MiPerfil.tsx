@@ -32,6 +32,7 @@ interface ProfileData {
   id: string;
   display_name: string;
   profile_type: string;
+  additional_profile_types?: string[];
   bio: string | null;
   avatar_url: string | null;
   ciudad: string;
@@ -434,9 +435,16 @@ const MiPerfil = () => {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <Badge className="mb-2 bg-primary/20 text-primary border-primary/30">
-                    {profileTypeLabels[profile.profile_type] || profile.profile_type}
-                  </Badge>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    <Badge className="bg-primary/20 text-primary border-primary/30">
+                      {profileTypeLabels[profile.profile_type] || profile.profile_type}
+                    </Badge>
+                    {profile.additional_profile_types?.map(type => (
+                      <Badge key={type} variant="outline" className="border-primary/30 text-primary/80">
+                        {profileTypeLabels[type] || type}
+                      </Badge>
+                    ))}
+                  </div>
                   <h2 className="text-2xl font-bold">{profile.display_name}</h2>
                   <p className="text-muted-foreground">{profile.ciudad}, {profile.pais}</p>
                 </div>

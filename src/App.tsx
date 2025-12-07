@@ -37,6 +37,7 @@ import Playlists from "./pages/Playlists";
 import PlaylistDetail from "./pages/PlaylistDetail";
 import MiColeccion from "./pages/MiColeccion";
 import MiPerfil from "./pages/MiPerfil";
+import EditarPerfil from "./pages/EditarPerfil";
 import NotFound from "./pages/NotFound";
 
 import VideoDetail from "./pages/VideoDetail";
@@ -56,6 +57,7 @@ const App = () => (
             <Route path="/on-demand" element={<OnDemand />} />
             <Route path="/mi-coleccion" element={<MiColeccion />} />
             <Route path="/mi-perfil" element={<MiPerfil />} />
+            <Route path="/editar-perfil" element={<EditarPerfil />} />
             <Route path="/favoritos" element={<Favorites />} />
             <Route path="/playlists" element={<Playlists />} />
             <Route path="/playlist/:id" element={<PlaylistDetail />} />

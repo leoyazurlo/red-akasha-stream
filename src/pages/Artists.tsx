@@ -13,12 +13,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { ScrollProgressBar } from "@/components/ScrollProgressBar";
 import { supabase } from "@/integrations/supabase/client";
-import { CountrySelector } from "@/components/CountrySelector";
+import { CountrySelector, countryNameToCode, latinAmericanCountries } from "@/components/CountrySelector";
+import { useCountryDetection } from "@/hooks/useCountryDetection";
 
 const Artists = () => {
   const navigate = useNavigate();
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [hasProfile, setHasProfile] = useState(false);
+  const { country, isLoading: countryLoading } = useCountryDetection();
 
   useEffect(() => {
     checkUserProfile();
@@ -56,9 +58,16 @@ const Artists = () => {
   const { t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState<CreatorProfileType | "all">("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCountry, setSelectedCountry] = useState("AR");
+  const [selectedCountry, setSelectedCountry] = useState(country.countryCode);
   const { elementRef: heroRef, isVisible: heroVisible } = useScrollAnimation({ threshold: 0.2 });
   const { elementRef: gridRef, isVisible: gridVisible } = useScrollAnimation({ threshold: 0.1 });
+
+  // Update selected country when detection completes
+  useEffect(() => {
+    if (country.detected) {
+      setSelectedCountry(country.countryCode);
+    }
+  }, [country.detected, country.countryCode]);
 
   const categories: Array<{ id: CreatorProfileType | "all"; labelKey: string; icon: any; color: string }> = [
     { 
@@ -117,10 +126,24 @@ const Artists = () => {
 
   const { data: counts } = useContentCountsByProfile();
 
-  const filteredContent = content.filter((item) =>
-    item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.creator_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter by search term and country
+  const filteredContent = content.filter((item) => {
+    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.creator_name.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Filter by country - normalize country names
+    const itemCountry = item.creator_country?.toLowerCase()?.trim();
+    const selectedCountryData = latinAmericanCountries.find(c => c.code === selectedCountry);
+    const selectedCountryName = selectedCountryData?.name.toLowerCase();
+    
+    // Check if item's country matches selected country by code or name
+    const countryCode = itemCountry ? countryNameToCode[itemCountry] : null;
+    const matchesCountry = !selectedCountry || 
+      countryCode === selectedCountry ||
+      itemCountry === selectedCountryName;
+    
+    return matchesSearch && matchesCountry;
+  });
 
   const getCategoryCount = (categoryId: CreatorProfileType | "all") => {
     if (!counts) return 0;
@@ -195,7 +218,8 @@ const Artists = () => {
         <div className="flex justify-center mb-6 animate-fade-in">
           <CountrySelector 
             value={selectedCountry} 
-            onValueChange={setSelectedCountry} 
+            onValueChange={setSelectedCountry}
+            isLoading={countryLoading}
           />
         </div>
 

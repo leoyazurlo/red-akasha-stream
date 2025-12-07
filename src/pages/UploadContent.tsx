@@ -750,8 +750,8 @@ const UploadContent = () => {
                                   className={`cursor-pointer ${hasScrolledToEnd ? 'text-foreground' : 'text-muted-foreground/50'}`}
                                 >
                                   {hasScrolledToEnd 
-                                    ? (t('upload.acceptTerms') || 'Acepto los Términos y Condiciones y la política de privacidad del servicio') + ' *'
-                                    : (t('upload.scrollToAccept') || 'Desplázate hasta el final para poder aceptar los términos')
+                                    ? 'Acepto los Términos y Condiciones *'
+                                    : 'Desplázate hasta el final para poder aceptar los términos'
                                   }
                                 </label>
                               </div>

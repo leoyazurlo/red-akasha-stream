@@ -22,28 +22,8 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
-const latinAmericanCountries = [
-  { name: "Argentina", flag: "🇦🇷", code: "AR" },
-  { name: "Bolivia", flag: "🇧🇴", code: "BO" },
-  { name: "Brasil", flag: "🇧🇷", code: "BR" },
-  { name: "Chile", flag: "🇨🇱", code: "CL" },
-  { name: "Colombia", flag: "🇨🇴", code: "CO" },
-  { name: "Costa Rica", flag: "🇨🇷", code: "CR" },
-  { name: "Cuba", flag: "🇨🇺", code: "CU" },
-  { name: "Ecuador", flag: "🇪🇨", code: "EC" },
-  { name: "El Salvador", flag: "🇸🇻", code: "SV" },
-  { name: "Guatemala", flag: "🇬🇹", code: "GT" },
-  { name: "Honduras", flag: "🇭🇳", code: "HN" },
-  { name: "México", flag: "🇲🇽", code: "MX" },
-  { name: "Nicaragua", flag: "🇳🇮", code: "NI" },
-  { name: "Panamá", flag: "🇵🇦", code: "PA" },
-  { name: "Paraguay", flag: "🇵🇾", code: "PY" },
-  { name: "Perú", flag: "🇵🇪", code: "PE" },
-  { name: "República Dominicana", flag: "🇩🇴", code: "DO" },
-  { name: "Uruguay", flag: "🇺🇾", code: "UY" },
-  { name: "Venezuela", flag: "🇻🇪", code: "VE" },
-];
+import { useCountryDetection } from "@/hooks/useCountryDetection";
+import { latinAmericanCountries } from "@/components/CountrySelector";
 
 interface ProfileDetail {
   id: string;
@@ -98,7 +78,15 @@ interface CityGroup {
 const Circuito = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [selectedCountry, setSelectedCountry] = useState(latinAmericanCountries[0]);
+  const { country: detectedCountry, isLoading: countryLoading } = useCountryDetection();
+  
+  // Initialize with detected country or default to Argentina
+  const getInitialCountry = () => {
+    const foundCountry = latinAmericanCountries.find(c => c.code === detectedCountry.countryCode);
+    return foundCountry || latinAmericanCountries[0];
+  };
+  
+  const [selectedCountry, setSelectedCountry] = useState(getInitialCountry());
   const [locationGroups, setLocationGroups] = useState<CityGroup[]>([]);
   const [allProfiles, setAllProfiles] = useState<PublicProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -107,6 +95,16 @@ const Circuito = () => {
   const [selectedProfile, setSelectedProfile] = useState<PublicProfile | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<string>("name-asc");
+
+  // Update selected country when detection completes
+  useEffect(() => {
+    if (detectedCountry.detected) {
+      const foundCountry = latinAmericanCountries.find(c => c.code === detectedCountry.countryCode);
+      if (foundCountry) {
+        setSelectedCountry(foundCountry);
+      }
+    }
+  }, [detectedCountry.detected, detectedCountry.countryCode]);
 
   // Función para obtener el desglose de perfiles por tipo
   const getProfileTypeBreakdown = (profiles: PublicProfile[]) => {
@@ -306,31 +304,38 @@ const Circuito = () => {
               {/* Country Selector */}
               <div className="flex justify-center items-center gap-4">
                 <span className="text-foreground">{t('circuit.selectCountry')}:</span>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="min-w-[200px] justify-between">
-                      <span className="flex items-center gap-2">
-                        <span className="text-2xl">{selectedCountry.flag}</span>
-                        {selectedCountry.name}
-                      </span>
-                      <ChevronDown className="h-4 w-4 opacity-50" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-[200px] max-h-[400px] overflow-y-auto bg-card border-border">
-                    {latinAmericanCountries.map((country) => (
-                      <DropdownMenuItem
-                        key={country.code}
-                        onClick={() => setSelectedCountry(country)}
-                        className="cursor-pointer hover:bg-secondary"
-                      >
+                {countryLoading ? (
+                  <div className="flex items-center gap-2 px-4 py-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm text-muted-foreground">Detectando ubicación...</span>
+                  </div>
+                ) : (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="min-w-[220px] justify-between">
                         <span className="flex items-center gap-2">
-                          <span className="text-2xl">{country.flag}</span>
-                          {country.name}
+                          <span className="text-2xl">{selectedCountry.flag}</span>
+                          {selectedCountry.name}
                         </span>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                        <ChevronDown className="h-4 w-4 opacity-50" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-[220px] max-h-[400px] overflow-y-auto bg-card border-border">
+                      {latinAmericanCountries.map((country) => (
+                        <DropdownMenuItem
+                          key={country.code}
+                          onClick={() => setSelectedCountry(country)}
+                          className="cursor-pointer hover:bg-secondary"
+                        >
+                          <span className="flex items-center gap-2">
+                            <span className="text-2xl">{country.flag}</span>
+                            {country.name}
+                          </span>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             </section>
 

@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { ScrollProgressBar } from "@/components/ScrollProgressBar";
 import { supabase } from "@/integrations/supabase/client";
+import { CountrySelector } from "@/components/CountrySelector";
 
 const Artists = () => {
   const navigate = useNavigate();
@@ -55,6 +56,7 @@ const Artists = () => {
   const { t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState<CreatorProfileType | "all">("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("AR");
   const { elementRef: heroRef, isVisible: heroVisible } = useScrollAnimation({ threshold: 0.2 });
   const { elementRef: gridRef, isVisible: gridVisible } = useScrollAnimation({ threshold: 0.1 });
 
@@ -188,6 +190,14 @@ const Artists = () => {
             {t('artists.subtitle')}
           </p>
         </section>
+
+        {/* Country Selector */}
+        <div className="flex justify-center mb-6 animate-fade-in">
+          <CountrySelector 
+            value={selectedCountry} 
+            onValueChange={setSelectedCountry} 
+          />
+        </div>
 
         {/* Search Bar */}
         <div className="max-w-2xl mx-auto mb-8 md:mb-12 animate-scale-in px-2">

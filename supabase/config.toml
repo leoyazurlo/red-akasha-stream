@@ -2,3 +2,6 @@ project_id = "exihucrtuwjfqxvdlmmk"
 
 [functions.validate-registration]
 verify_jwt = false
+
+[functions.detect-country]
+verify_jwt = false

@@ -1007,8 +1007,11 @@ const Asociate = () => {
                       </div>
                     )}
 
-                    <p className="text-center text-sm text-cyan-400 mb-4">
+                    <p className="text-center text-sm text-white mb-2">
                       Tus datos personales serán tratados con responsabilidad y buena fe, conforme a nuestra Política de Privacidad.
+                    </p>
+                    <p className="text-center text-sm text-cyan-400 mb-4">
+                      En Red Akasha.org creemos en la transparencia. Al registrarte, comprometete a que tus datos personales sean reales y completos. Tu sinceridad fortalece la confianza y el espíritu colaborativo que nos une.
                     </p>
 
                     <Button 

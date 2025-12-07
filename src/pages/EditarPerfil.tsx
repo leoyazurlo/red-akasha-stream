@@ -627,6 +627,15 @@ const EditarPerfil = () => {
                     )}
                   </Button>
                 </div>
+
+                {/* Important Notice */}
+                <div className="mt-6 p-4 rounded-lg bg-muted/50 border border-border/50">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    <span className="font-semibold text-foreground">🔒 Aviso importante</span>
+                    <br />
+                    En Red Akasha.org confiamos en la buena fe de nuestra comunidad. Al registrarte, comprometete a que tus datos personales sean reales, completos y fehacientes. Tu sinceridad fortalece la transparencia, la confianza y el espíritu colaborativo que nos une.
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </form>

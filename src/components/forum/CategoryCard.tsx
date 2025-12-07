@@ -23,7 +23,7 @@ interface CategoryCardProps {
 
 export const CategoryCard = ({ category }: CategoryCardProps) => {
   return (
-    <Card className="bg-card/50 backdrop-blur-sm border border-border shadow-card hover:shadow-lg transition-shadow">
+    <Card className="bg-card/50 backdrop-blur-sm border-cyan-400 shadow-[0_0_25px_hsl(180_100%_50%/0.4),0_0_50px_hsl(180_100%_50%/0.2)] hover:shadow-[0_0_35px_hsl(180_100%_50%/0.6),0_0_70px_hsl(180_100%_50%/0.3)] transition-all duration-300">
       <CardHeader>
         <CardTitle className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-lg">

@@ -654,7 +654,7 @@ const UploadContent = () => {
                             <div className="space-y-4 text-sm text-muted-foreground">
                               <section>
                                 <h3 className="font-semibold text-foreground mb-2">1. Aceptación de los Términos</h3>
-                                <p>Al asociarte y subir contenido a <strong>Red Akasha.org</strong>, aceptás cumplir con estos términos y condiciones. Si no estás de acuerdo con alguno de ellos, no debés subir contenido a la plataforma.</p>
+                                <p>Al asociarte y subir contenido a Red Akasha.org, aceptás cumplir con estos términos y condiciones. Si no estás de acuerdo con alguno de ellos, no debés subir contenido a la plataforma.</p>
                               </section>
                               
                               <section>
@@ -668,13 +668,13 @@ const UploadContent = () => {
                               
                               <section>
                                 <h3 className="font-semibold text-foreground mb-2">3. Licencia de Uso</h3>
-                                <p>Al subir contenido, otorgás a Red Akasha una <strong>licencia no exclusiva, mundial y libre de regalías</strong> para mostrar, distribuir y promocionar tu contenido dentro de la plataforma, con el único fin de operar y mejorar el servicio.</p>
+                                <p>Al subir contenido, otorgás a Red Akasha una licencia no exclusiva, mundial y libre de regalías para mostrar, distribuir y promocionar tu contenido dentro de la plataforma, con el único fin de operar y mejorar el servicio.</p>
                               </section>
                               
                               <section>
                                 <h3 className="font-semibold text-foreground mb-2">4. Veracidad de los Datos</h3>
                                 <ul className="list-disc ml-6 space-y-1">
-                                  <li>La información que proporciones al registrarte y al publicar contenido debe ser <strong>real, completa y verificable</strong>.</li>
+                                  <li>La información que proporciones al registrarte y al publicar contenido debe ser real, completa y verificable.</li>
                                   <li>La plataforma no se responsabiliza por datos falsos o inexactos ingresados por los usuarios.</li>
                                 </ul>
                               </section>
@@ -693,7 +693,7 @@ const UploadContent = () => {
                               
                               <section>
                                 <h3 className="font-semibold text-foreground mb-2">6. Moderación de Contenido</h3>
-                                <p>Red Akasha se reserva el derecho de <strong>revisar, aprobar, rechazar o eliminar</strong> cualquier contenido que viole estos términos o que considere inapropiado para la comunidad.</p>
+                                <p>Red Akasha se reserva el derecho de revisar, aprobar, rechazar o eliminar cualquier contenido que viole estos términos o que considere inapropiado para la comunidad.</p>
                               </section>
                               
                               <section>
@@ -713,7 +713,7 @@ const UploadContent = () => {
                                 <h3 className="font-semibold text-foreground mb-2">9. Colaboración y Comunidad</h3>
                                 <ul className="list-disc ml-6 space-y-1">
                                   <li>Al participar, aceptás que tu aporte forma parte de un proyecto colectivo que busca fortalecer la industria cultural de habla hispana.</li>
-                                  <li>Tu colaboración ayuda a construir un espacio <strong>transparente, democrático y responsable</strong> para artistas emergentes y consumidores de buen contenido.</li>
+                                  <li>Tu colaboración ayuda a construir un espacio transparente, democrático y responsable para artistas emergentes y consumidores de buen contenido.</li>
                                 </ul>
                               </section>
                               
@@ -729,7 +729,7 @@ const UploadContent = () => {
                               
                               <section>
                                 <h3 className="font-semibold text-foreground mb-2">12. Contacto</h3>
-                                <p>Para consultas sobre estos términos, comunicate a través de los canales oficiales de <strong>Red Akasha.org</strong>.</p>
+                                <p>Para consultas sobre estos términos, comunicate a través de los canales oficiales de Red Akasha.org.</p>
                               </section>
                             </div>
                           </div>

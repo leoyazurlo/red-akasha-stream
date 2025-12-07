@@ -1007,6 +1007,10 @@ const Asociate = () => {
                       </div>
                     )}
 
+                    <p className="text-center text-sm text-cyan-400 mb-4">
+                      Tus datos personales serán tratados con responsabilidad y buena fe, conforme a nuestra Política de Privacidad.
+                    </p>
+
                     <Button 
                       type="submit" 
                       className="w-full h-12 text-base font-semibold bg-gradient-primary hover:shadow-glow transition-all duration-300 hover:scale-[1.02]" 

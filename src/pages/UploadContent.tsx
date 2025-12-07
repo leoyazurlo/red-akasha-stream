@@ -654,59 +654,82 @@ const UploadContent = () => {
                             <div className="space-y-4 text-sm text-muted-foreground">
                               <section>
                                 <h3 className="font-semibold text-foreground mb-2">1. Aceptación de los Términos</h3>
-                                <p>Al subir contenido a Red Akasha, aceptas cumplir con estos términos y condiciones. Si no estás de acuerdo con alguno de estos términos, no debes subir contenido a la plataforma.</p>
+                                <p>Al asociarte y subir contenido a <strong>Red Akasha.org</strong>, aceptás cumplir con estos términos y condiciones. Si no estás de acuerdo con alguno de ellos, no debés subir contenido a la plataforma.</p>
                               </section>
                               
                               <section>
                                 <h3 className="font-semibold text-foreground mb-2">2. Propiedad del Contenido</h3>
-                                <p>Declaras y garantizas que eres el propietario legítimo o tienes los derechos necesarios para subir, publicar y distribuir el contenido. Mantienes todos los derechos de propiedad intelectual sobre tu contenido original.</p>
-                              </section>
-                              
-                              <section>
-                                <h3 className="font-semibold text-foreground mb-2">3. Licencia de Uso</h3>
-                                <p>Al subir contenido, otorgas a Red Akasha una licencia no exclusiva, mundial, libre de regalías para mostrar, distribuir y promocionar tu contenido dentro de la plataforma con el fin de operar y mejorar el servicio.</p>
-                              </section>
-                              
-                              <section>
-                                <h3 className="font-semibold text-foreground mb-2">4. Contenido Prohibido</h3>
-                                <p>No está permitido subir contenido que:</p>
-                                <ul className="list-disc ml-6 mt-2 space-y-1">
-                                  <li>Infrinja derechos de autor, marcas registradas u otros derechos de propiedad intelectual</li>
-                                  <li>Contenga material ilegal, difamatorio, obsceno o que incite al odio</li>
-                                  <li>Incluya virus, malware o cualquier código malicioso</li>
-                                  <li>Viole la privacidad de terceros</li>
-                                  <li>Sea engañoso o fraudulento</li>
+                                <ul className="list-disc ml-6 space-y-1">
+                                  <li>Declarás y garantizás que sos el propietario legítimo o que contás con los derechos necesarios para subir, publicar y distribuir el contenido.</li>
+                                  <li>Todo material que subas (podcasts, videos musicales, videoclips, documentales, películas, etc.) debe ser de tu autoría o contar con autorización expresa.</li>
+                                  <li>Mantenés todos los derechos de propiedad intelectual sobre tu contenido original.</li>
                                 </ul>
                               </section>
                               
                               <section>
-                                <h3 className="font-semibold text-foreground mb-2">5. Moderación de Contenido</h3>
-                                <p>Red Akasha se reserva el derecho de revisar, aprobar, rechazar o eliminar cualquier contenido que viole estos términos o que considere inapropiado para la plataforma.</p>
+                                <h3 className="font-semibold text-foreground mb-2">3. Licencia de Uso</h3>
+                                <p>Al subir contenido, otorgás a Red Akasha una <strong>licencia no exclusiva, mundial y libre de regalías</strong> para mostrar, distribuir y promocionar tu contenido dentro de la plataforma, con el único fin de operar y mejorar el servicio.</p>
                               </section>
                               
                               <section>
-                                <h3 className="font-semibold text-foreground mb-2">6. Responsabilidad</h3>
-                                <p>Eres el único responsable del contenido que subes. Red Akasha no asume responsabilidad por el contenido generado por los usuarios ni por las consecuencias de su publicación.</p>
+                                <h3 className="font-semibold text-foreground mb-2">4. Veracidad de los Datos</h3>
+                                <ul className="list-disc ml-6 space-y-1">
+                                  <li>La información que proporciones al registrarte y al publicar contenido debe ser <strong>real, completa y verificable</strong>.</li>
+                                  <li>La plataforma no se responsabiliza por datos falsos o inexactos ingresados por los usuarios.</li>
+                                </ul>
                               </section>
                               
                               <section>
-                                <h3 className="font-semibold text-foreground mb-2">7. Monetización</h3>
-                                <p>Si optas por monetizar tu contenido, aceptas las políticas de pago y comisiones establecidas por la plataforma. Los pagos estarán sujetos a las leyes fiscales aplicables.</p>
+                                <h3 className="font-semibold text-foreground mb-2">5. Contenido Prohibido</h3>
+                                <p>No está permitido subir contenido que:</p>
+                                <ul className="list-disc ml-6 mt-2 space-y-1">
+                                  <li>Infrinja derechos de autor, marcas registradas u otros derechos de propiedad intelectual.</li>
+                                  <li>Contenga material ilegal, difamatorio, obsceno, violento o que incite al odio.</li>
+                                  <li>Incluya virus, malware o cualquier código malicioso.</li>
+                                  <li>Viole la privacidad de terceros.</li>
+                                  <li>Sea engañoso o fraudulento.</li>
+                                </ul>
                               </section>
                               
                               <section>
-                                <h3 className="font-semibold text-foreground mb-2">8. Modificaciones</h3>
+                                <h3 className="font-semibold text-foreground mb-2">6. Moderación de Contenido</h3>
+                                <p>Red Akasha se reserva el derecho de <strong>revisar, aprobar, rechazar o eliminar</strong> cualquier contenido que viole estos términos o que considere inapropiado para la comunidad.</p>
+                              </section>
+                              
+                              <section>
+                                <h3 className="font-semibold text-foreground mb-2">7. Responsabilidad del Usuario</h3>
+                                <ul className="list-disc ml-6 space-y-1">
+                                  <li>Sos el único responsable del contenido que publicás y de las consecuencias derivadas de su difusión.</li>
+                                  <li>Red Akasha.org no se hace responsable por reclamos, daños o perjuicios ocasionados por el uso indebido del material subido.</li>
+                                </ul>
+                              </section>
+                              
+                              <section>
+                                <h3 className="font-semibold text-foreground mb-2">8. Monetización</h3>
+                                <p>Si optás por monetizar tu contenido, aceptás las políticas de pago y comisiones establecidas por la plataforma. Los pagos estarán sujetos a las leyes fiscales aplicables.</p>
+                              </section>
+                              
+                              <section>
+                                <h3 className="font-semibold text-foreground mb-2">9. Colaboración y Comunidad</h3>
+                                <ul className="list-disc ml-6 space-y-1">
+                                  <li>Al participar, aceptás que tu aporte forma parte de un proyecto colectivo que busca fortalecer la industria cultural de habla hispana.</li>
+                                  <li>Tu colaboración ayuda a construir un espacio <strong>transparente, democrático y responsable</strong> para artistas emergentes y consumidores de buen contenido.</li>
+                                </ul>
+                              </section>
+                              
+                              <section>
+                                <h3 className="font-semibold text-foreground mb-2">10. Modificaciones</h3>
                                 <p>Red Akasha puede modificar estos términos en cualquier momento. Las modificaciones entrarán en vigor inmediatamente después de su publicación. El uso continuado del servicio constituye aceptación de los nuevos términos.</p>
                               </section>
                               
                               <section>
-                                <h3 className="font-semibold text-foreground mb-2">9. Terminación</h3>
-                                <p>Puedes eliminar tu contenido en cualquier momento. Red Akasha puede suspender o terminar tu acceso si violas estos términos.</p>
+                                <h3 className="font-semibold text-foreground mb-2">11. Terminación</h3>
+                                <p>Podés eliminar tu contenido en cualquier momento. Red Akasha puede suspender o terminar tu acceso si violás estos términos.</p>
                               </section>
                               
                               <section>
-                                <h3 className="font-semibold text-foreground mb-2">10. Contacto</h3>
-                                <p>Para preguntas sobre estos términos, contáctanos a través de los canales oficiales de Red Akasha.</p>
+                                <h3 className="font-semibold text-foreground mb-2">12. Contacto</h3>
+                                <p>Para consultas sobre estos términos, comunicate a través de los canales oficiales de <strong>Red Akasha.org</strong>.</p>
                               </section>
                             </div>
                           </div>

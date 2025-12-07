@@ -23,7 +23,8 @@ import {
   Plus,
   Trash2,
   Eye,
-  Save
+  Save,
+  Pencil
 } from "lucide-react";
 import { validateFile, formatFileSize } from "@/lib/storage-validation";
 
@@ -439,14 +440,24 @@ const MiPerfil = () => {
                   <h2 className="text-2xl font-bold">{profile.display_name}</h2>
                   <p className="text-muted-foreground">{profile.ciudad}, {profile.pais}</p>
                 </div>
-                <Button 
-                  variant="outline" 
-                  onClick={() => navigate(`/circuito/perfil/${profile.id}`)}
-                  className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/20"
-                >
-                  <Eye className="w-4 h-4 mr-2" />
-                  Ver Perfil Público
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate("/editar-perfil")}
+                    className="border-primary/50 text-primary hover:bg-primary/20"
+                  >
+                    <Pencil className="w-4 h-4 mr-2" />
+                    Editar
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate(`/circuito/perfil/${profile.id}`)}
+                    className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/20"
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    Ver Público
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

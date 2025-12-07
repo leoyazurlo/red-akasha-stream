@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -10,17 +10,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, AlertCircle, Eye, FileText } from "lucide-react";
+import { Loader2, AlertCircle, Eye, FileText, ChevronDown } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { useNavigate } from "react-router-dom";
 import {
   Select,
@@ -103,6 +99,9 @@ const UploadContent = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [formData, setFormData] = useState<FormData>(initialFormData);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
+  const [hasScrolledToEnd, setHasScrolledToEnd] = useState(false);
+  const termsScrollRef = useRef<HTMLDivElement>(null);
   
   // Profile options
   const [bands, setBands] = useState<ProfileOption[]>([]);
@@ -620,99 +619,126 @@ const UploadContent = () => {
 
                   {/* Terms and Conditions */}
                   <div className="border-t pt-6">
-                    <div className="flex items-start space-x-3">
-                      <Checkbox 
-                        id="terms" 
-                        checked={acceptedTerms}
-                        onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
-                        className="mt-1 border-cyan-400 data-[state=checked]:bg-cyan-500 data-[state=checked]:border-cyan-500"
-                      />
-                      <div className="text-sm">
-                        <label htmlFor="terms" className="cursor-pointer text-muted-foreground">
-                          {t('upload.acceptTerms') || 'Acepto los'}{' '}
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <button type="button" className="text-cyan-400 hover:text-cyan-300 underline inline-flex items-center gap-1">
-                                <FileText className="h-3 w-3" />
-                                {t('upload.termsAndConditions') || 'Términos y Condiciones'}
-                              </button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-2xl max-h-[80vh] border-cyan-400 bg-card/95 backdrop-blur-sm">
-                              <DialogHeader>
-                                <DialogTitle className="text-cyan-400 text-xl">
-                                  {t('upload.termsTitle') || 'Términos y Condiciones del Servicio'}
-                                </DialogTitle>
-                                <DialogDescription>
-                                  {t('upload.termsSubtitle') || 'Por favor lee cuidadosamente antes de subir contenido'}
-                                </DialogDescription>
-                              </DialogHeader>
-                              <ScrollArea className="h-[60vh] pr-4">
-                                <div className="space-y-4 text-sm text-muted-foreground">
-                                  <section>
-                                    <h3 className="font-semibold text-foreground mb-2">1. Aceptación de los Términos</h3>
-                                    <p>Al subir contenido a Red Akasha, aceptas cumplir con estos términos y condiciones. Si no estás de acuerdo con alguno de estos términos, no debes subir contenido a la plataforma.</p>
-                                  </section>
-                                  
-                                  <section>
-                                    <h3 className="font-semibold text-foreground mb-2">2. Propiedad del Contenido</h3>
-                                    <p>Declaras y garantizas que eres el propietario legítimo o tienes los derechos necesarios para subir, publicar y distribuir el contenido. Mantienes todos los derechos de propiedad intelectual sobre tu contenido original.</p>
-                                  </section>
-                                  
-                                  <section>
-                                    <h3 className="font-semibold text-foreground mb-2">3. Licencia de Uso</h3>
-                                    <p>Al subir contenido, otorgas a Red Akasha una licencia no exclusiva, mundial, libre de regalías para mostrar, distribuir y promocionar tu contenido dentro de la plataforma con el fin de operar y mejorar el servicio.</p>
-                                  </section>
-                                  
-                                  <section>
-                                    <h3 className="font-semibold text-foreground mb-2">4. Contenido Prohibido</h3>
-                                    <p>No está permitido subir contenido que:</p>
-                                    <ul className="list-disc ml-6 mt-2 space-y-1">
-                                      <li>Infrinja derechos de autor, marcas registradas u otros derechos de propiedad intelectual</li>
-                                      <li>Contenga material ilegal, difamatorio, obsceno o que incite al odio</li>
-                                      <li>Incluya virus, malware o cualquier código malicioso</li>
-                                      <li>Viole la privacidad de terceros</li>
-                                      <li>Sea engañoso o fraudulento</li>
-                                    </ul>
-                                  </section>
-                                  
-                                  <section>
-                                    <h3 className="font-semibold text-foreground mb-2">5. Moderación de Contenido</h3>
-                                    <p>Red Akasha se reserva el derecho de revisar, aprobar, rechazar o eliminar cualquier contenido que viole estos términos o que considere inapropiado para la plataforma.</p>
-                                  </section>
-                                  
-                                  <section>
-                                    <h3 className="font-semibold text-foreground mb-2">6. Responsabilidad</h3>
-                                    <p>Eres el único responsable del contenido que subes. Red Akasha no asume responsabilidad por el contenido generado por los usuarios ni por las consecuencias de su publicación.</p>
-                                  </section>
-                                  
-                                  <section>
-                                    <h3 className="font-semibold text-foreground mb-2">7. Monetización</h3>
-                                    <p>Si optas por monetizar tu contenido, aceptas las políticas de pago y comisiones establecidas por la plataforma. Los pagos estarán sujetos a las leyes fiscales aplicables.</p>
-                                  </section>
-                                  
-                                  <section>
-                                    <h3 className="font-semibold text-foreground mb-2">8. Modificaciones</h3>
-                                    <p>Red Akasha puede modificar estos términos en cualquier momento. Las modificaciones entrarán en vigor inmediatamente después de su publicación. El uso continuado del servicio constituye aceptación de los nuevos términos.</p>
-                                  </section>
-                                  
-                                  <section>
-                                    <h3 className="font-semibold text-foreground mb-2">9. Terminación</h3>
-                                    <p>Puedes eliminar tu contenido en cualquier momento. Red Akasha puede suspender o terminar tu acceso si violas estos términos.</p>
-                                  </section>
-                                  
-                                  <section>
-                                    <h3 className="font-semibold text-foreground mb-2">10. Contacto</h3>
-                                    <p>Para preguntas sobre estos términos, contáctanos a través de los canales oficiales de Red Akasha.</p>
-                                  </section>
-                                </div>
-                              </ScrollArea>
-                            </DialogContent>
-                          </Dialog>
-                          {' '}{t('upload.andPrivacyPolicy') || 'y la política de privacidad del servicio'} *
-                        </label>
-                      </div>
-                    </div>
+                    <Collapsible
+                      open={termsOpen}
+                      onOpenChange={setTermsOpen}
+                    >
+                      <CollapsibleTrigger asChild>
+                        <button
+                          type="button"
+                          className="flex items-center justify-between w-full p-4 bg-card/50 border border-cyan-400/50 rounded-lg hover:bg-card/70 transition-colors"
+                        >
+                          <span className="flex items-center gap-2 text-cyan-400 font-medium">
+                            <FileText className="h-5 w-5" />
+                            {t('upload.termsTitle') || 'Términos y Condiciones del Servicio'}
+                          </span>
+                          <ChevronDown className={`h-5 w-5 text-cyan-400 transition-transform duration-200 ${termsOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="mt-2 border border-cyan-400/30 rounded-lg bg-card/30">
+                          <p className="p-3 text-sm text-muted-foreground border-b border-cyan-400/20 bg-cyan-400/5">
+                            {t('upload.termsSubtitle') || 'Por favor lee cuidadosamente hasta el final para poder aceptar los términos'}
+                          </p>
+                          <div 
+                            ref={termsScrollRef}
+                            className="h-[300px] overflow-y-auto p-4"
+                            onScroll={(e) => {
+                              const target = e.target as HTMLDivElement;
+                              const isAtBottom = target.scrollHeight - target.scrollTop <= target.clientHeight + 20;
+                              if (isAtBottom && !hasScrolledToEnd) {
+                                setHasScrolledToEnd(true);
+                              }
+                            }}
+                          >
+                            <div className="space-y-4 text-sm text-muted-foreground">
+                              <section>
+                                <h3 className="font-semibold text-foreground mb-2">1. Aceptación de los Términos</h3>
+                                <p>Al subir contenido a Red Akasha, aceptas cumplir con estos términos y condiciones. Si no estás de acuerdo con alguno de estos términos, no debes subir contenido a la plataforma.</p>
+                              </section>
+                              
+                              <section>
+                                <h3 className="font-semibold text-foreground mb-2">2. Propiedad del Contenido</h3>
+                                <p>Declaras y garantizas que eres el propietario legítimo o tienes los derechos necesarios para subir, publicar y distribuir el contenido. Mantienes todos los derechos de propiedad intelectual sobre tu contenido original.</p>
+                              </section>
+                              
+                              <section>
+                                <h3 className="font-semibold text-foreground mb-2">3. Licencia de Uso</h3>
+                                <p>Al subir contenido, otorgas a Red Akasha una licencia no exclusiva, mundial, libre de regalías para mostrar, distribuir y promocionar tu contenido dentro de la plataforma con el fin de operar y mejorar el servicio.</p>
+                              </section>
+                              
+                              <section>
+                                <h3 className="font-semibold text-foreground mb-2">4. Contenido Prohibido</h3>
+                                <p>No está permitido subir contenido que:</p>
+                                <ul className="list-disc ml-6 mt-2 space-y-1">
+                                  <li>Infrinja derechos de autor, marcas registradas u otros derechos de propiedad intelectual</li>
+                                  <li>Contenga material ilegal, difamatorio, obsceno o que incite al odio</li>
+                                  <li>Incluya virus, malware o cualquier código malicioso</li>
+                                  <li>Viole la privacidad de terceros</li>
+                                  <li>Sea engañoso o fraudulento</li>
+                                </ul>
+                              </section>
+                              
+                              <section>
+                                <h3 className="font-semibold text-foreground mb-2">5. Moderación de Contenido</h3>
+                                <p>Red Akasha se reserva el derecho de revisar, aprobar, rechazar o eliminar cualquier contenido que viole estos términos o que considere inapropiado para la plataforma.</p>
+                              </section>
+                              
+                              <section>
+                                <h3 className="font-semibold text-foreground mb-2">6. Responsabilidad</h3>
+                                <p>Eres el único responsable del contenido que subes. Red Akasha no asume responsabilidad por el contenido generado por los usuarios ni por las consecuencias de su publicación.</p>
+                              </section>
+                              
+                              <section>
+                                <h3 className="font-semibold text-foreground mb-2">7. Monetización</h3>
+                                <p>Si optas por monetizar tu contenido, aceptas las políticas de pago y comisiones establecidas por la plataforma. Los pagos estarán sujetos a las leyes fiscales aplicables.</p>
+                              </section>
+                              
+                              <section>
+                                <h3 className="font-semibold text-foreground mb-2">8. Modificaciones</h3>
+                                <p>Red Akasha puede modificar estos términos en cualquier momento. Las modificaciones entrarán en vigor inmediatamente después de su publicación. El uso continuado del servicio constituye aceptación de los nuevos términos.</p>
+                              </section>
+                              
+                              <section>
+                                <h3 className="font-semibold text-foreground mb-2">9. Terminación</h3>
+                                <p>Puedes eliminar tu contenido en cualquier momento. Red Akasha puede suspender o terminar tu acceso si violas estos términos.</p>
+                              </section>
+                              
+                              <section>
+                                <h3 className="font-semibold text-foreground mb-2">10. Contacto</h3>
+                                <p>Para preguntas sobre estos términos, contáctanos a través de los canales oficiales de Red Akasha.</p>
+                              </section>
+                            </div>
+                          </div>
+                          
+                          {/* Checkbox at the bottom - only enabled after scrolling */}
+                          <div className="p-4 border-t border-cyan-400/20 bg-cyan-400/5">
+                            <div className="flex items-start space-x-3">
+                              <Checkbox 
+                                id="terms" 
+                                checked={acceptedTerms}
+                                onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                                disabled={!hasScrolledToEnd}
+                                className="mt-1 border-cyan-400 data-[state=checked]:bg-cyan-500 data-[state=checked]:border-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                              />
+                              <div className="text-sm">
+                                <label 
+                                  htmlFor="terms" 
+                                  className={`cursor-pointer ${hasScrolledToEnd ? 'text-foreground' : 'text-muted-foreground/50'}`}
+                                >
+                                  {hasScrolledToEnd 
+                                    ? (t('upload.acceptTerms') || 'Acepto los Términos y Condiciones y la política de privacidad del servicio') + ' *'
+                                    : (t('upload.scrollToAccept') || 'Desplázate hasta el final para poder aceptar los términos')
+                                  }
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
                   </div>
+
 
                   {/* Action Buttons */}
                   <div className="flex gap-3">

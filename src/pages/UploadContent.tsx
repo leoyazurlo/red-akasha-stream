@@ -630,7 +630,7 @@ const UploadContent = () => {
                         >
                           <span className="flex items-center gap-2 text-cyan-400 font-medium">
                             <FileText className="h-5 w-5" />
-                            {t('upload.termsTitle') || 'Términos y Condiciones del Servicio'}
+                            Términos y Condiciones de la Red
                           </span>
                           <ChevronDown className={`h-5 w-5 text-cyan-400 transition-transform duration-200 ${termsOpen ? 'rotate-180' : ''}`} />
                         </button>

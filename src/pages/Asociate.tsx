@@ -154,7 +154,6 @@ const Asociate = () => {
     { value: "representante", label: t('asociate.profiles.representante') },
     { value: "sala_concierto", label: t('asociate.profiles.sala_concierto') },
     { value: "sello_discografico", label: t('asociate.profiles.sello_discografico') },
-    { value: "perfil_contenido", label: t('asociate.profiles.perfil_contenido') },
     { value: "vj", label: t('asociate.profiles.vj') }
   ], [t]);
 

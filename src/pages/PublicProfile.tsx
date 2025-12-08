@@ -636,10 +636,10 @@ const PublicProfile = () => {
                                 <button
                                   key={idx}
                                   onClick={() => setCurrentPhotoIndex(idx)}
-                                  className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden transition-all duration-300 ${
+                                  className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden transition-all duration-500 ${
                                     idx === currentPhotoIndex 
-                                      ? 'ring-2 ring-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.5)]' 
-                                      : 'opacity-50 hover:opacity-80 ring-1 ring-border/30'
+                                      ? 'ring-1 ring-cyan-400/40 shadow-[0_0_15px_rgba(34,211,238,0.15)]' 
+                                      : 'opacity-40 hover:opacity-70 ring-1 ring-white/10'
                                   }`}
                                 >
                                   <img
@@ -707,10 +707,10 @@ const PublicProfile = () => {
                                 <button
                                   key={idx}
                                   onClick={() => setCurrentVideoIndex(idx)}
-                                  className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden transition-all duration-300 relative ${
+                                  className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden transition-all duration-500 relative ${
                                     idx === currentVideoIndex 
-                                      ? 'ring-2 ring-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.5)]' 
-                                      : 'opacity-50 hover:opacity-80 ring-1 ring-border/30'
+                                      ? 'ring-1 ring-cyan-400/40 shadow-[0_0_15px_rgba(34,211,238,0.15)]' 
+                                      : 'opacity-40 hover:opacity-70 ring-1 ring-white/10'
                                   }`}
                                 >
                                   <video

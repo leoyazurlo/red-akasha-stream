@@ -61,6 +61,7 @@ interface PublicProfile {
   instagram: string | null;
   facebook: string | null;
   linkedin: string | null;
+  whatsapp: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -563,7 +564,7 @@ const Circuito = () => {
                 instagram={selectedProfile.instagram}
                 facebook={selectedProfile.facebook}
                 linkedin={selectedProfile.linkedin}
-                whatsapp={null}
+                whatsapp={selectedProfile.whatsapp}
                 email={null}
               />
             )}

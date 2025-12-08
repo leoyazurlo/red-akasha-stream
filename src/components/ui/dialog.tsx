@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X, Minimize2 } from "lucide-react";
+import { X, Minus } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -27,10 +27,15 @@ const DialogOverlay = React.forwardRef<
 ));
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
+interface DialogContentProps extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
+  onMinimize?: () => void;
+  showControls?: boolean;
+}
+
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+  DialogContentProps
+>(({ className, children, onMinimize, showControls = true, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
@@ -42,16 +47,23 @@ const DialogContent = React.forwardRef<
       {...props}
     >
       {children}
-      <div className="absolute right-4 top-4 flex items-center gap-2">
-        <DialogPrimitive.Close className="rounded-sm ring-offset-background transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 disabled:pointer-events-none">
-          <Minimize2 className="h-7 w-7 text-cyan-400 drop-shadow-[0_0_10px_rgba(34,211,238,0.7)]" />
-          <span className="sr-only">Minimize</span>
-        </DialogPrimitive.Close>
-        <DialogPrimitive.Close className="rounded-sm ring-offset-background transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 disabled:pointer-events-none">
-          <X className="h-8 w-8 text-cyan-400 drop-shadow-[0_0_10px_rgba(34,211,238,0.7)]" />
-          <span className="sr-only">Close</span>
-        </DialogPrimitive.Close>
-      </div>
+      {showControls && (
+        <div className="absolute right-4 top-4 flex items-center gap-3">
+          {onMinimize && (
+            <button
+              onClick={onMinimize}
+              className="rounded-sm ring-offset-background transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2"
+            >
+              <Minus className="h-7 w-7 text-cyan-400 drop-shadow-[0_0_10px_rgba(34,211,238,0.7)]" />
+              <span className="sr-only">Minimize</span>
+            </button>
+          )}
+          <DialogPrimitive.Close className="rounded-sm ring-offset-background transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 disabled:pointer-events-none">
+            <X className="h-8 w-8 text-cyan-400 drop-shadow-[0_0_10px_rgba(34,211,238,0.7)]" />
+            <span className="sr-only">Close</span>
+          </DialogPrimitive.Close>
+        </div>
+      )}
     </DialogPrimitive.Content>
   </DialogPortal>
 ));

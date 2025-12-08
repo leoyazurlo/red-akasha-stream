@@ -20,8 +20,19 @@ export const GeoRestrictionGuard = ({ children }: GeoRestrictionGuardProps) => {
   const [hasSubscription, setHasSubscription] = useState(false);
   const [checkingSubscription, setCheckingSubscription] = useState(true);
 
+  // Verificar si la ruta actual está permitida (rutas públicas)
+  const isAllowedRoute = ALLOWED_ROUTES.some(route => 
+    location.pathname === route || location.pathname.startsWith(route + "/")
+  );
+
   useEffect(() => {
     const checkSubscription = async () => {
+      // Si es ruta permitida, no necesitamos verificar suscripción
+      if (isAllowedRoute) {
+        setCheckingSubscription(false);
+        return;
+      }
+
       if (!user) {
         setCheckingSubscription(false);
         return;
@@ -45,9 +56,12 @@ export const GeoRestrictionGuard = ({ children }: GeoRestrictionGuardProps) => {
     };
 
     checkSubscription();
-  }, [user]);
+  }, [user, isAllowedRoute]);
 
   useEffect(() => {
+    // Si es ruta permitida, no aplicar restricciones
+    if (isAllowedRoute) return;
+
     // Si todavía está cargando, no hacer nada
     if (countryLoading || checkingSubscription) return;
 
@@ -57,18 +71,16 @@ export const GeoRestrictionGuard = ({ children }: GeoRestrictionGuardProps) => {
     // Si tiene suscripción activa, permitir acceso
     if (hasSubscription) return;
 
-    // Verificar si la ruta actual está permitida
-    const isAllowedRoute = ALLOWED_ROUTES.some(route => 
-      location.pathname === route || location.pathname.startsWith(route + "/")
-    );
+    // Si no cumple ninguna condición, redirigir a suscripciones
+    navigate("/suscripciones", { replace: true });
+  }, [country, countryLoading, hasSubscription, checkingSubscription, location.pathname, navigate, isAllowedRoute]);
 
-    // Si no es ruta permitida, redirigir a suscripciones
-    if (!isAllowedRoute) {
-      navigate("/suscripciones", { replace: true });
-    }
-  }, [country, countryLoading, hasSubscription, checkingSubscription, location.pathname, navigate]);
+  // Para rutas permitidas, mostrar contenido inmediatamente sin loading
+  if (isAllowedRoute) {
+    return <>{children}</>;
+  }
 
-  // Mostrar loading mientras verifica
+  // Mostrar loading mientras verifica para rutas restringidas
   if (countryLoading || checkingSubscription) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">

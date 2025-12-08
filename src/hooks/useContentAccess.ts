@@ -1,31 +1,37 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
+import { useCountryDetection } from "./useCountryDetection";
 
 interface ContentAccessResult {
   hasAccess: boolean;
-  accessType: 'owner' | 'purchased' | 'rented' | 'subscription' | 'free' | null;
+  accessType: 'owner' | 'purchased' | 'rented' | 'subscription' | 'free' | 'latin_america_free' | null;
   expiresAt: string | null;
   loading: boolean;
+  isLatinAmerica: boolean;
 }
 
 export const useContentAccess = (contentId: string | undefined): ContentAccessResult => {
   const { user } = useAuth();
+  const { country, isLoading: countryLoading } = useCountryDetection();
   const [result, setResult] = useState<ContentAccessResult>({
     hasAccess: false,
     accessType: null,
     expiresAt: null,
     loading: true,
+    isLatinAmerica: false,
   });
 
   useEffect(() => {
-    if (!contentId) {
-      setResult({ hasAccess: false, accessType: null, expiresAt: null, loading: false });
+    if (!contentId || countryLoading) {
+      if (!countryLoading && !contentId) {
+        setResult({ hasAccess: false, accessType: null, expiresAt: null, loading: false, isLatinAmerica: false });
+      }
       return;
     }
 
     checkAccess();
-  }, [contentId, user?.id]);
+  }, [contentId, user?.id, country, countryLoading]);
 
   const checkAccess = async () => {
     if (!contentId) return;
@@ -39,25 +45,47 @@ export const useContentAccess = (contentId: string | undefined): ContentAccessRe
         .single();
 
       if (contentError || !content) {
-        setResult({ hasAccess: false, accessType: null, expiresAt: null, loading: false });
+        setResult({ hasAccess: false, accessType: null, expiresAt: null, loading: false, isLatinAmerica: country.isLatinAmerican || false });
         return;
       }
 
       // Free content - everyone has access
       if (content.is_free) {
-        setResult({ hasAccess: true, accessType: 'free', expiresAt: null, loading: false });
+        setResult({ hasAccess: true, accessType: 'free', expiresAt: null, loading: false, isLatinAmerica: country.isLatinAmerican || false });
         return;
       }
 
-      // Not logged in - no access to paid content
+      // Check Latin America free access
+      if (country.isLatinAmerican) {
+        // Verify if Latin America free access is enabled in platform settings
+        const { data: freeAccessSetting } = await supabase
+          .from('platform_payment_settings')
+          .select('setting_value')
+          .eq('setting_key', 'free_access_enabled')
+          .single();
+        
+        const settingValue = freeAccessSetting?.setting_value as Record<string, unknown> | null;
+        if (settingValue?.enabled) {
+          setResult({ 
+            hasAccess: true, 
+            accessType: 'latin_america_free', 
+            expiresAt: null, 
+            loading: false,
+            isLatinAmerica: true
+          });
+          return;
+        }
+      }
+
+      // Not logged in - no access to paid content for non-LATAM users
       if (!user) {
-        setResult({ hasAccess: false, accessType: null, expiresAt: null, loading: false });
+        setResult({ hasAccess: false, accessType: null, expiresAt: null, loading: false, isLatinAmerica: country.isLatinAmerican || false });
         return;
       }
 
       // Owner always has access
       if (content.uploader_id === user.id) {
-        setResult({ hasAccess: true, accessType: 'owner', expiresAt: null, loading: false });
+        setResult({ hasAccess: true, accessType: 'owner', expiresAt: null, loading: false, isLatinAmerica: country.isLatinAmerican || false });
         return;
       }
 
@@ -81,14 +109,15 @@ export const useContentAccess = (contentId: string | undefined): ContentAccessRe
               hasAccess: true, 
               accessType: 'rented', 
               expiresAt: purchase.expires_at, 
-              loading: false 
+              loading: false,
+              isLatinAmerica: country.isLatinAmerican || false
             });
             return;
           }
           // Rental expired - no access
         } else {
           // Permanent purchase
-          setResult({ hasAccess: true, accessType: 'purchased', expiresAt: null, loading: false });
+          setResult({ hasAccess: true, accessType: 'purchased', expiresAt: null, loading: false, isLatinAmerica: country.isLatinAmerican || false });
           return;
         }
       }
@@ -109,17 +138,18 @@ export const useContentAccess = (contentId: string | undefined): ContentAccessRe
             hasAccess: true, 
             accessType: 'subscription', 
             expiresAt: subscription.current_period_end, 
-            loading: false 
+            loading: false,
+            isLatinAmerica: country.isLatinAmerican || false
           });
           return;
         }
       }
 
       // No access
-      setResult({ hasAccess: false, accessType: null, expiresAt: null, loading: false });
+      setResult({ hasAccess: false, accessType: null, expiresAt: null, loading: false, isLatinAmerica: country.isLatinAmerican || false });
     } catch (error) {
       console.error('Error checking content access:', error);
-      setResult({ hasAccess: false, accessType: null, expiresAt: null, loading: false });
+      setResult({ hasAccess: false, accessType: null, expiresAt: null, loading: false, isLatinAmerica: country.isLatinAmerican || false });
     }
   };
 

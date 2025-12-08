@@ -601,9 +601,9 @@ const PublicProfile = () => {
                 {/* Photos */}
                 {photos.length > 0 && (
                   <div className="mb-8">
-                    <div className="flex items-center gap-2 mb-4">
-                      <ImageIcon className="w-4 h-4 text-cyan-400" />
-                      <span className="text-xs font-light tracking-wider uppercase text-muted-foreground">Fotos ({photos.length})</span>
+                    <div className="flex items-center gap-3 mb-6">
+                      <ImageIcon className="w-6 h-6 text-cyan-400" />
+                      <span className="text-lg font-light tracking-widest uppercase text-muted-foreground">Fotos ({photos.length})</span>
                     </div>
                     <div className="flex justify-center">
                       <div className="flex items-center gap-4">
@@ -672,9 +672,9 @@ const PublicProfile = () => {
                 {/* Videos */}
                 {videos.length > 0 && (
                   <div className="mb-8">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Video className="w-4 h-4 text-cyan-400" />
-                      <span className="text-xs font-light tracking-wider uppercase text-muted-foreground">Videos ({videos.length})</span>
+                    <div className="flex items-center gap-3 mb-6">
+                      <Video className="w-6 h-6 text-cyan-400" />
+                      <span className="text-lg font-light tracking-widest uppercase text-muted-foreground">Videos ({videos.length})</span>
                     </div>
                     <div className="flex justify-center">
                       <div className="flex items-center gap-4">
@@ -746,9 +746,9 @@ const PublicProfile = () => {
                 {/* Audio Player */}
                 {audioPlaylist.length > 0 && (
                   <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <Music2 className="w-4 h-4 text-cyan-400" />
-                      <span className="text-xs font-light tracking-wider uppercase text-muted-foreground">Audio ({audioPlaylist.length} pistas)</span>
+                    <div className="flex items-center gap-3 mb-6">
+                      <Music2 className="w-6 h-6 text-cyan-400" />
+                      <span className="text-lg font-light tracking-widest uppercase text-muted-foreground">Audio ({audioPlaylist.length} pistas)</span>
                     </div>
                     <div className="flex justify-center">
                       <div className="flex items-center gap-4">

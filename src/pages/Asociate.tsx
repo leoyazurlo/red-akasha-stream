@@ -139,6 +139,7 @@ const Asociate = () => {
 
   // Profile options usando traducciones - ordenados alfabéticamente por value
   const perfilOptions = useMemo(() => [
+    { value: "amante_de_la_musica", label: t('asociate.profiles.amante_de_la_musica') },
     { value: "agrupacion_musical", label: t('asociate.profiles.agrupacion_musical') },
     { value: "arte_digital", label: t('asociate.profiles.arte_digital') },
     { value: "danza", label: t('asociate.profiles.danza') },
@@ -158,6 +159,7 @@ const Asociate = () => {
   ], [t]);
 
   const profileTypeMap: Record<string, string> = {
+    "amante_de_la_musica": "amante_de_la_musica",
     "perfil_contenido": "perfil_contenido",
     "productor_artistico": "productor_artistico",
     "estudio_grabacion": "estudio_grabacion",

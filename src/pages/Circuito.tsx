@@ -1,7 +1,8 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
@@ -95,6 +96,29 @@ const Circuito = () => {
   const [selectedProfile, setSelectedProfile] = useState<PublicProfile | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<string>("name-asc");
+  const [selectedProfileType, setSelectedProfileType] = useState<string>("all");
+
+  // Profile type categories for tabs
+  const PROFILE_TYPE_TABS = [
+    { key: 'all', label: 'Todos' },
+    { key: 'sala', label: 'Salas' },
+    { key: 'banda', label: 'Bandas' },
+    { key: 'musico', label: 'Músicos' },
+    { key: 'dj', label: 'DJs' },
+    { key: 'vj', label: 'VJs' },
+    { key: 'productor_artistico', label: 'Productores' },
+    { key: 'promotor_artistico', label: 'Promotores' },
+    { key: 'estudio_de_grabacion', label: 'Estudios' },
+    { key: 'sello_discografico', label: 'Sellos' },
+    { key: 'management', label: 'Management' },
+    { key: 'danza', label: 'Danza' },
+    { key: 'percusion', label: 'Percusión' },
+    { key: 'arte_digital', label: 'Arte Digital' },
+    { key: 'contenido', label: 'Contenido' },
+    { key: 'marketing_digital', label: 'Marketing' },
+    { key: 'representante', label: 'Representantes' },
+    { key: 'amante_de_la_musica', label: 'Fans' },
+  ];
 
   // Update selected country when detection completes
   useEffect(() => {
@@ -226,6 +250,11 @@ const Circuito = () => {
       ...cityGroup,
       profiles: sortProfiles(
         cityGroup.profiles.filter((profile) => {
+          // Filter by profile type
+          if (selectedProfileType !== 'all' && profile.profile_type !== selectedProfileType) {
+            return false;
+          }
+          // Filter by search term
           if (!searchTerm) return true;
           const term = searchTerm.toLowerCase();
           return (
@@ -413,11 +442,26 @@ const Circuito = () => {
                   <h2 className="text-3xl font-bold mb-2 text-primary">
                     {t('circuit.profiles')} - {selectedCountry.name} {selectedCountry.flag}
                   </h2>
-                  <p className="text-muted-foreground">
+                  <p className="text-muted-foreground mb-6">
                     {searchTerm
                       ? `${t('circuit.showingResults')} "${searchTerm}"`
                       : t('circuit.findSpaces')}
                   </p>
+
+                  {/* Profile Type Tabs */}
+                  <Tabs value={selectedProfileType} onValueChange={setSelectedProfileType} className="w-full">
+                    <TabsList className="flex flex-wrap justify-center gap-1 bg-transparent h-auto">
+                      {PROFILE_TYPE_TABS.map((tab) => (
+                        <TabsTrigger 
+                          key={tab.key} 
+                          value={tab.key}
+                          className="px-3 py-2 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full"
+                        >
+                          {tab.label}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </Tabs>
                 </div>
 
                   {filteredLocationGroups.map((cityGroup) => (

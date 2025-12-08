@@ -5,8 +5,14 @@
 
 export const FILE_SIZE_LIMITS = {
   IMAGE: 10 * 1024 * 1024,    // 10MB
-  VIDEO: 500 * 1024 * 1024,   // 500MB
+  VIDEO: 1024 * 1024 * 1024,  // 1GB
   AUDIO: 50 * 1024 * 1024,    // 50MB
+} as const;
+
+// Límites de cantidad por perfil
+export const FILE_COUNT_LIMITS = {
+  PHOTOS: 30,   // Máximo 30 fotos
+  VIDEOS: 10,   // Máximo 10 videos
 } as const;
 
 export const ALLOWED_FILE_TYPES = {

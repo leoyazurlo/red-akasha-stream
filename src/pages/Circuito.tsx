@@ -493,7 +493,7 @@ const Circuito = () => {
                         {cityGroup.profiles.map((profile) => (
                           <Card 
                             key={profile.id} 
-                            className="border-cyan-400 bg-card/50 backdrop-blur-sm shadow-[0_0_25px_hsl(180_100%_50%/0.4),0_0_50px_hsl(180_100%_50%/0.2)] hover:shadow-[0_0_35px_hsl(180_100%_50%/0.6),0_0_70px_hsl(180_100%_50%/0.3)] transition-all duration-300 cursor-pointer group"
+                            className="border-cyan-400 bg-card/50 backdrop-blur-sm shadow-[0_0_25px_hsl(180_100%_50%/0.4),0_0_50px_hsl(180_100%_50%/0.2)] hover:shadow-[0_0_35px_hsl(180_100%_50%/0.6),0_0_70px_hsl(180_100%_50%/0.3)] transition-all duration-300 cursor-pointer group active:scale-[0.98]"
                             onClick={() => setSelectedProfile(profile)}
                           >
                             <CardHeader>
@@ -505,7 +505,7 @@ const Circuito = () => {
                                   </AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1 min-w-0">
-                                  <CardTitle className="text-lg mb-1">{profile.display_name}</CardTitle>
+                                  <CardTitle className="text-lg mb-1 group-active:text-cyan-400 group-active:drop-shadow-[0_0_10px_hsl(180_100%_50%)] transition-all duration-150">{profile.display_name}</CardTitle>
                                   <Badge variant="outline" className="mb-2 border-primary text-primary">
                                     {t(`circuit.profileTypes.${profile.profile_type}`, { defaultValue: profile.profile_type })}
                                   </Badge>

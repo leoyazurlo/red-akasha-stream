@@ -527,6 +527,20 @@ const Suscripciones = () => {
             </Card>
           )}
 
+          {/* Royalties Distribution Banner */}
+          <Card className="mb-8 bg-black border-2 border-cyan-400 shadow-[0_0_20px_hsl(180_100%_50%/0.4),0_0_40px_hsl(180_100%_50%/0.2)]">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-center gap-3 text-center">
+                <Sparkles className="w-6 h-6 text-cyan-400 shrink-0" />
+                <p className="text-white font-medium text-sm md:text-base">
+                  <span className="text-cyan-400 font-bold">Lo recaudado se distribuye:</span> una parte para el mantenimiento y crecimiento de la plataforma, 
+                  y otra parte destinada a <span className="text-cyan-400 font-bold">regalías para los creadores de contenido destacados</span>.
+                </p>
+                <Sparkles className="w-6 h-6 text-cyan-400 shrink-0" />
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Subscription Plans */}
           {!subscription && (
             <div className="grid md:grid-cols-2 gap-6 mb-8">

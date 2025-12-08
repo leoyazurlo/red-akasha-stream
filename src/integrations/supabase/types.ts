@@ -2130,6 +2130,7 @@ export type Database = {
           last_connected_at: string | null
           name: string
           platform: string
+          playback_url: string | null
           rtmp_url: string
           stream_key: string
           updated_at: string
@@ -2143,6 +2144,7 @@ export type Database = {
           last_connected_at?: string | null
           name: string
           platform: string
+          playback_url?: string | null
           rtmp_url: string
           stream_key: string
           updated_at?: string
@@ -2156,6 +2158,7 @@ export type Database = {
           last_connected_at?: string | null
           name?: string
           platform?: string
+          playback_url?: string | null
           rtmp_url?: string
           stream_key?: string
           updated_at?: string

@@ -11,6 +11,7 @@ interface ActiveDestination {
   platform: string;
   rtmp_url: string;
   stream_key: string;
+  playback_url: string | null;
   is_active: boolean;
 }
 
@@ -22,14 +23,6 @@ interface StreamData {
   thumbnail_url: string | null;
   status: string;
 }
-
-// Genera URL de embed de YouTube Live
-const getYouTubeEmbedUrl = (destination: ActiveDestination) => {
-  // Para YouTube Live, necesitamos el canal ID o video ID
-  // El stream_key de YouTube no es directamente utilizable para embed
-  // Vamos a usar un enfoque diferente: el admin debe poner la URL de playback
-  return null;
-};
 
 export const VideoPlayer = () => {
   const { elementRef, isVisible } = useScrollAnimation({ threshold: 0.2 });
@@ -61,11 +54,12 @@ export const VideoPlayer = () => {
         };
       }
 
-      // Si no hay stream live, buscar destino de streaming activo
+      // Si no hay stream live, buscar destino de streaming activo con playback_url
       const { data: destData, error } = await supabase
         .from("streaming_destinations")
         .select("*")
         .eq("is_active", true)
+        .not("playback_url", "is", null)
         .limit(1)
         .maybeSingle();
       
@@ -73,22 +67,12 @@ export const VideoPlayer = () => {
       
       if (destData) {
         const dest = destData as ActiveDestination;
-        // Para YouTube, construir URL de embed live
-        // El usuario debe tener un live stream activo en su canal
-        // Usaremos el nombre del canal para intentar mostrar el stream
-        // NOTA: Para que esto funcione correctamente, el admin debería poner
-        // el ID del canal o el ID del video live en algún campo
-        
-        // Por ahora, indicaremos que hay un stream configurado pero necesita 
-        // el playback URL
         return {
           type: 'destination' as const,
           title: dest.name,
           description: `Transmitiendo en ${dest.platform}`,
           platform: dest.platform,
-          streamKey: dest.stream_key,
-          // No tenemos playback URL directa del destino
-          playbackUrl: null,
+          playbackUrl: dest.playback_url,
         };
       }
       
@@ -97,8 +81,7 @@ export const VideoPlayer = () => {
     refetchInterval: 30000,
   });
 
-  const hasLiveStream = liveData?.playbackUrl;
-  const hasActiveDestination = liveData?.type === 'destination';
+  const hasLiveStream = !!liveData?.playbackUrl;
 
   const toggleFullscreen = () => {
     if (containerRef.current) {
@@ -138,13 +121,13 @@ export const VideoPlayer = () => {
         {/* Live Badge */}
         <div className="flex items-center justify-center mb-3 md:mb-4 gap-2">
           <div className={`flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 ${
-            hasLiveStream || hasActiveDestination
+            hasLiveStream
               ? 'bg-red-500/20 border-red-500' 
               : 'bg-primary/20 border-primary'
           } border rounded-full`}>
-            <div className={`w-2 h-2 ${hasLiveStream || hasActiveDestination ? 'bg-red-500' : 'bg-primary'} rounded-full animate-pulse`} />
-            <span className={`${hasLiveStream || hasActiveDestination ? 'text-red-400' : 'text-primary'} font-light text-xs sm:text-sm uppercase tracking-widest font-sans`}>
-              {hasLiveStream ? 'En Vivo Ahora' : hasActiveDestination ? 'Transmitiendo' : 'En Vivo 24/7'}
+            <div className={`w-2 h-2 ${hasLiveStream ? 'bg-red-500' : 'bg-primary'} rounded-full animate-pulse`} />
+            <span className={`${hasLiveStream ? 'text-red-400' : 'text-primary'} font-light text-xs sm:text-sm uppercase tracking-widest font-sans`}>
+              {hasLiveStream ? 'En Vivo Ahora' : 'En Vivo 24/7'}
             </span>
           </div>
         </div>
@@ -220,24 +203,6 @@ export const VideoPlayer = () => {
                 playsInline
               />
             </>
-          ) : hasActiveDestination ? (
-            /* Destino activo pero sin playback URL */
-            <div className="absolute inset-0 bg-gradient-dark flex items-center justify-center p-4">
-              <div className="text-center space-y-3">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto bg-red-500/20 rounded-full flex items-center justify-center animate-pulse">
-                  <Radio className="w-8 h-8 sm:w-10 sm:h-10 text-red-400" />
-                </div>
-                <div>
-                  <p className="text-lg font-semibold text-foreground">{liveData?.title}</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {liveData?.description}
-                  </p>
-                  <p className="text-xs text-cyan-400 mt-3">
-                    Para ver la transmisión, configura la URL de reproducción en el panel de admin
-                  </p>
-                </div>
-              </div>
-            </div>
           ) : (
             /* Placeholder when no live stream */
             <div className="absolute inset-0 bg-gradient-dark flex items-center justify-center p-4">

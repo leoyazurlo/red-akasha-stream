@@ -7,10 +7,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Crown, Check, Calendar, Heart, Globe, Sparkles } from "lucide-react";
+import { Crown, Check, Calendar, Heart, Globe, Sparkles, Gift } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 interface UserSubscription {
   id: string;
@@ -59,6 +67,9 @@ const Suscripciones = () => {
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [subscribing, setSubscribing] = useState<string | null>(null);
+  const [donationOpen, setDonationOpen] = useState(false);
+  const [donationAmount, setDonationAmount] = useState("");
+  const [donating, setDonating] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -169,6 +180,42 @@ const Suscripciones = () => {
       style: 'currency',
       currency: currency,
     }).format(amount);
+  };
+
+  const handleDonate = async () => {
+    const amount = parseFloat(donationAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast({
+        title: "Monto inválido",
+        description: "Por favor ingresa un monto válido mayor a 0",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setDonating(true);
+    try {
+      // Aquí se integraría con el procesador de pagos
+      // Por ahora simulamos el proceso
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      toast({
+        title: "¡Gracias por tu donación!",
+        description: `Tu donación de $${amount.toFixed(2)} USD ayudará a Red Akasha a seguir creciendo.`,
+      });
+      
+      setDonationOpen(false);
+      setDonationAmount("");
+    } catch (error) {
+      console.error('Error processing donation:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo procesar la donación.",
+        variant: "destructive"
+      });
+    } finally {
+      setDonating(false);
+    }
   };
 
   return (
@@ -338,6 +385,71 @@ const Suscripciones = () => {
               ))}
             </div>
           )}
+
+          {/* Donation Banner */}
+          <button
+            onClick={() => setDonationOpen(true)}
+            className="w-full mb-8 py-4 px-6 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-background font-bold text-lg flex items-center justify-center gap-3 transition-all duration-300 shadow-[0_0_30px_hsl(180_100%_50%/0.4)] hover:shadow-[0_0_40px_hsl(180_100%_50%/0.6)] hover:scale-[1.02]"
+          >
+            <Gift className="w-6 h-6" />
+            DONAR
+          </button>
+
+          {/* Donation Dialog */}
+          <Dialog open={donationOpen} onOpenChange={setDonationOpen}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Gift className="w-5 h-5 text-cyan-400" />
+                  Hacer una Donación
+                </DialogTitle>
+                <DialogDescription>
+                  Tu donación ayuda a mantener Red Akasha como un proyecto de libre uso para Latinoamérica.
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Monto a donar (USD)</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                    <Input
+                      type="number"
+                      min="1"
+                      step="0.01"
+                      placeholder="10.00"
+                      value={donationAmount}
+                      onChange={(e) => setDonationAmount(e.target.value)}
+                      className="pl-7"
+                    />
+                  </div>
+                </div>
+                
+                {/* Quick amounts */}
+                <div className="flex gap-2">
+                  {[5, 10, 25, 50].map((amount) => (
+                    <Button
+                      key={amount}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDonationAmount(amount.toString())}
+                      className={donationAmount === amount.toString() ? 'border-cyan-400 text-cyan-400' : ''}
+                    >
+                      ${amount}
+                    </Button>
+                  ))}
+                </div>
+                
+                <Button 
+                  onClick={handleDonate}
+                  disabled={donating || !donationAmount}
+                  className="w-full bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-background"
+                >
+                  {donating ? 'Procesando...' : 'Confirmar Donación'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* Quote */}
           <Card className="bg-card/30 backdrop-blur-sm border-primary/10">

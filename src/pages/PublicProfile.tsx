@@ -594,80 +594,118 @@ const PublicProfile = () => {
 
           {/* Gallery */}
           {hasContent && (
-            <Card className="mb-8 bg-card/50 backdrop-blur-sm border-primary/20">
+            <Card className="mb-8 bg-card/50 backdrop-blur-sm border-border/30">
               <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Trabajos Realizados</h3>
+                <h3 className="text-base font-light tracking-wide text-foreground/90 mb-6">Trabajos Realizados</h3>
                 
                 {/* Photos */}
                 {photos.length > 0 && (
-                  <div className="mb-6">
-                    <div className="flex items-center gap-2 mb-3">
-                      <ImageIcon className="w-4 h-4 text-primary" />
-                      <span className="text-sm font-medium">Fotos ({photos.length})</span>
+                  <div className="mb-8">
+                    <div className="flex items-center gap-2 mb-4">
+                      <ImageIcon className="w-4 h-4 text-cyan-400" />
+                      <span className="text-xs font-light tracking-wider uppercase text-muted-foreground">Fotos ({photos.length})</span>
                     </div>
-                    <div className="relative">
-                      <img
-                        src={photos[currentPhotoIndex]?.url}
-                        alt={photos[currentPhotoIndex]?.title || 'Foto'}
-                        className="w-full h-64 object-cover rounded-lg"
-                      />
-                      {photos.length > 1 && (
-                        <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-2">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="bg-black/50 hover:bg-black/70"
-                            onClick={() => setCurrentPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length)}
-                          >
-                            <ChevronLeft className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="bg-black/50 hover:bg-black/70"
-                            onClick={() => setCurrentPhotoIndex((prev) => (prev + 1) % photos.length)}
-                          >
-                            <ChevronRight className="w-4 h-4" />
-                          </Button>
+                    <div className="flex justify-center">
+                      <div className="relative max-w-md w-full">
+                        <div className="aspect-square rounded-xl overflow-hidden border border-cyan-400/30 shadow-[0_0_20px_rgba(34,211,238,0.2)]">
+                          <img
+                            src={photos[currentPhotoIndex]?.url}
+                            alt={photos[currentPhotoIndex]?.title || 'Foto'}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
-                      )}
+                        {photos.length > 1 && (
+                          <>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-black/60 hover:bg-black/80 backdrop-blur-sm h-10 w-10 rounded-full border border-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:shadow-[0_0_25px_rgba(34,211,238,0.6)] transition-all duration-300"
+                              onClick={() => setCurrentPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length)}
+                            >
+                              <ChevronLeft className="w-5 h-5 text-cyan-400" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-black/60 hover:bg-black/80 backdrop-blur-sm h-10 w-10 rounded-full border border-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:shadow-[0_0_25px_rgba(34,211,238,0.6)] transition-all duration-300"
+                              onClick={() => setCurrentPhotoIndex((prev) => (prev + 1) % photos.length)}
+                            >
+                              <ChevronRight className="w-5 h-5 text-cyan-400" />
+                            </Button>
+                          </>
+                        )}
+                        {photos.length > 1 && (
+                          <div className="flex justify-center gap-1.5 mt-3">
+                            {photos.map((_, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => setCurrentPhotoIndex(idx)}
+                                className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                                  idx === currentPhotoIndex 
+                                    ? 'bg-cyan-400 w-4' 
+                                    : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}
 
                 {/* Videos */}
                 {videos.length > 0 && (
-                  <div className="mb-6">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Video className="w-4 h-4 text-primary" />
-                      <span className="text-sm font-medium">Videos ({videos.length})</span>
+                  <div className="mb-8">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Video className="w-4 h-4 text-cyan-400" />
+                      <span className="text-xs font-light tracking-wider uppercase text-muted-foreground">Videos ({videos.length})</span>
                     </div>
-                    <div className="relative">
-                      <video
-                        src={videos[currentVideoIndex]?.url}
-                        controls
-                        className="w-full h-64 object-cover rounded-lg"
-                      />
-                      {videos.length > 1 && (
-                        <div className="absolute top-2 right-2 flex gap-2">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="bg-black/50 hover:bg-black/70 h-8 w-8"
-                            onClick={() => setCurrentVideoIndex((prev) => (prev - 1 + videos.length) % videos.length)}
-                          >
-                            <ChevronLeft className="w-3 h-3" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="bg-black/50 hover:bg-black/70 h-8 w-8"
-                            onClick={() => setCurrentVideoIndex((prev) => (prev + 1) % videos.length)}
-                          >
-                            <ChevronRight className="w-3 h-3" />
-                          </Button>
+                    <div className="flex justify-center">
+                      <div className="relative max-w-md w-full">
+                        <div className="aspect-square rounded-xl overflow-hidden border border-cyan-400/30 shadow-[0_0_20px_rgba(34,211,238,0.2)]">
+                          <video
+                            src={videos[currentVideoIndex]?.url}
+                            controls
+                            className="w-full h-full object-cover"
+                          />
                         </div>
-                      )}
+                        {videos.length > 1 && (
+                          <>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-black/60 hover:bg-black/80 backdrop-blur-sm h-10 w-10 rounded-full border border-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:shadow-[0_0_25px_rgba(34,211,238,0.6)] transition-all duration-300"
+                              onClick={() => setCurrentVideoIndex((prev) => (prev - 1 + videos.length) % videos.length)}
+                            >
+                              <ChevronLeft className="w-5 h-5 text-cyan-400" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-black/60 hover:bg-black/80 backdrop-blur-sm h-10 w-10 rounded-full border border-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:shadow-[0_0_25px_rgba(34,211,238,0.6)] transition-all duration-300"
+                              onClick={() => setCurrentVideoIndex((prev) => (prev + 1) % videos.length)}
+                            >
+                              <ChevronRight className="w-5 h-5 text-cyan-400" />
+                            </Button>
+                          </>
+                        )}
+                        {videos.length > 1 && (
+                          <div className="flex justify-center gap-1.5 mt-3">
+                            {videos.map((_, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => setCurrentVideoIndex(idx)}
+                                className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                                  idx === currentVideoIndex 
+                                    ? 'bg-cyan-400 w-4' 
+                                    : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -675,44 +713,60 @@ const PublicProfile = () => {
                 {/* Audio Player */}
                 {audioPlaylist.length > 0 && (
                   <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Music2 className="w-4 h-4 text-primary" />
-                      <span className="text-sm font-medium">Audio ({audioPlaylist.length} pistas)</span>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Music2 className="w-4 h-4 text-cyan-400" />
+                      <span className="text-xs font-light tracking-wider uppercase text-muted-foreground">Audio ({audioPlaylist.length} pistas)</span>
                     </div>
-                    <div className="bg-background/50 rounded-lg p-4">
-                      <p className="text-sm font-medium mb-3 truncate">
-                        {audioPlaylist[currentTrack]?.title}
-                      </p>
-                      <audio
-                        ref={audioRef}
-                        onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
-                        onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
-                        onEnded={playNext}
-                      />
-                      <div className="flex items-center gap-4">
-                        <span className="text-xs text-muted-foreground w-10">
-                          {formatTime(currentTime)}
-                        </span>
-                        <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-primary transition-all"
-                            style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
-                          />
+                    <div className="flex justify-center">
+                      <div className="max-w-md w-full bg-background/30 rounded-xl p-5 border border-border/30">
+                        <p className="text-sm font-light mb-4 truncate text-center text-foreground/90">
+                          {audioPlaylist[currentTrack]?.title}
+                        </p>
+                        <audio
+                          ref={audioRef}
+                          onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+                          onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+                          onEnded={playNext}
+                        />
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-muted-foreground w-10 font-light">
+                            {formatTime(currentTime)}
+                          </span>
+                          <div className="flex-1 h-1 bg-muted/30 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-cyan-400 transition-all"
+                              style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
+                            />
+                          </div>
+                          <span className="text-xs text-muted-foreground w-10 text-right font-light">
+                            {formatTime(duration)}
+                          </span>
                         </div>
-                        <span className="text-xs text-muted-foreground w-10 text-right">
-                          {formatTime(duration)}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-center gap-4 mt-4">
-                        <Button size="icon" variant="ghost" onClick={playPrevious}>
-                          <SkipBack className="w-4 h-4" />
-                        </Button>
-                        <Button size="icon" onClick={togglePlayPause} className="bg-primary hover:bg-primary/80">
-                          {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                        </Button>
-                        <Button size="icon" variant="ghost" onClick={playNext}>
-                          <SkipForward className="w-4 h-4" />
-                        </Button>
+                        <div className="flex items-center justify-center gap-6 mt-5">
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            onClick={playPrevious}
+                            className="h-9 w-9 rounded-full hover:bg-cyan-400/10"
+                          >
+                            <SkipBack className="w-4 h-4 text-foreground/70" />
+                          </Button>
+                          <Button 
+                            size="icon" 
+                            onClick={togglePlayPause} 
+                            className="h-12 w-12 rounded-full bg-cyan-400/20 hover:bg-cyan-400/30 border border-cyan-400/50"
+                          >
+                            {isPlaying ? <Pause className="w-5 h-5 text-cyan-400" /> : <Play className="w-5 h-5 text-cyan-400 ml-0.5" />}
+                          </Button>
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            onClick={playNext}
+                            className="h-9 w-9 rounded-full hover:bg-cyan-400/10"
+                          >
+                            <SkipForward className="w-4 h-4 text-foreground/70" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>

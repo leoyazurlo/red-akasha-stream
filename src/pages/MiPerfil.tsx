@@ -24,8 +24,10 @@ import {
   Trash2,
   Eye,
   Save,
-  Pencil
+  Pencil,
+  MessageSquare
 } from "lucide-react";
+import { MessagesTab } from "@/components/profile/MessagesTab";
 import { validateFile, formatFileSize, FILE_COUNT_LIMITS } from "@/lib/storage-validation";
 
 interface ProfileData {
@@ -498,18 +500,22 @@ const MiPerfil = () => {
 
           {/* Content Management */}
           <Tabs defaultValue="gallery" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3 h-auto p-2 bg-card/50">
-              <TabsTrigger value="gallery" className="gap-3 py-4 text-lg font-light tracking-widest uppercase">
-                <ImageIcon className="w-7 h-7" />
-                Galería ({photos.length})
+            <TabsList className="grid w-full grid-cols-4 h-auto p-2 bg-card/50">
+              <TabsTrigger value="gallery" className="gap-2 py-4 text-sm md:text-lg font-light tracking-widest uppercase">
+                <ImageIcon className="w-5 h-5 md:w-7 md:h-7" />
+                <span className="hidden sm:inline">Galería</span> ({photos.length})
               </TabsTrigger>
-              <TabsTrigger value="videos" className="gap-3 py-4 text-lg font-light tracking-widest uppercase">
-                <Video className="w-7 h-7" />
-                Videos ({videos.length})
+              <TabsTrigger value="videos" className="gap-2 py-4 text-sm md:text-lg font-light tracking-widest uppercase">
+                <Video className="w-5 h-5 md:w-7 md:h-7" />
+                <span className="hidden sm:inline">Videos</span> ({videos.length})
               </TabsTrigger>
-              <TabsTrigger value="audio" className="gap-3 py-4 text-lg font-light tracking-widest uppercase">
-                <Music className="w-7 h-7" />
-                Música ({audioPlaylist.length})
+              <TabsTrigger value="audio" className="gap-2 py-4 text-sm md:text-lg font-light tracking-widest uppercase">
+                <Music className="w-5 h-5 md:w-7 md:h-7" />
+                <span className="hidden sm:inline">Música</span> ({audioPlaylist.length})
+              </TabsTrigger>
+              <TabsTrigger value="mensajes" className="gap-2 py-4 text-sm md:text-lg font-light tracking-widest uppercase">
+                <MessageSquare className="w-5 h-5 md:w-7 md:h-7" />
+                <span className="hidden sm:inline">Mensajes</span>
               </TabsTrigger>
             </TabsList>
 
@@ -743,6 +749,11 @@ const MiPerfil = () => {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* Messages Tab */}
+            <TabsContent value="mensajes">
+              <MessagesTab />
             </TabsContent>
           </Tabs>
 

@@ -30,6 +30,7 @@ export const Header = () => {
     { name: t('nav.join'), href: "/asociate" },
     { name: t('nav.upload'), href: "/subir-contenido" },
     { name: t('nav.forum'), href: "/foro" },
+    { name: "Suscripción", href: "/suscripciones" },
   ];
 
   const handleLogout = async () => {

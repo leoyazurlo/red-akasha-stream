@@ -327,7 +327,7 @@ const Circuito = () => {
             {/* Hero Section */}
             <section className="text-center mb-16">
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-                En esta sección podrás acceder a la base de datos y conocimiento del circuito de producción de la industria Cultural
+                En esta sección podrás acceder a la base de datos y conocimiento del circuito de producción de la industria Cultural de Latinoamérica
               </p>
 
               {/* Country Selector */}

@@ -1027,7 +1027,7 @@ export const ProfileTechnicalSheet = ({
                   )}
                   {whatsapp && (
                     <a
-                      href={`https://wa.me/${whatsapp.replace(/[^0-9]/g, '')}`}
+                      href={`https://wa.me/${whatsapp.replace(/[^0-9+]/g, '').replace(/^\+/, '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="group relative p-3 rounded-xl transition-all duration-300 hover:scale-110"

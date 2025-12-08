@@ -468,7 +468,7 @@ const Circuito = () => {
                         <TabsTrigger 
                           key={tab.key} 
                           value={tab.key}
-                          className="px-3 py-2 text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-full"
+                          className="px-3 py-2 text-xs sm:text-sm text-muted-foreground hover:text-cyan-400 transition-all duration-200 rounded-full data-[state=active]:bg-transparent data-[state=active]:text-cyan-400 data-[state=active]:drop-shadow-[0_0_12px_hsl(180_100%_50%)] data-[state=active]:font-medium"
                         >
                           {tab.label}
                         </TabsTrigger>

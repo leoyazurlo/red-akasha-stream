@@ -24,6 +24,7 @@ import AdminBadges from "./pages/admin/Badges";
 import AdminShareAnalytics from "./pages/admin/ShareAnalytics";
 import AdminYouTubeVideos from "./pages/admin/YouTubeVideos";
 import AdminStreamConfig from "./pages/admin/StreamConfig";
+import AdminPaymentSettings from "./pages/admin/PaymentSettings";
 import Asociate from "./pages/Asociate";
 import Circuito from "./pages/Circuito";
 import PublicProfile from "./pages/PublicProfile";
@@ -90,6 +91,7 @@ const App = () => (
             <Route path="/admin/share-analytics" element={<AdminShareAnalytics />} />
             <Route path="/admin/youtube-videos" element={<AdminYouTubeVideos />} />
             <Route path="/admin/stream-config" element={<AdminStreamConfig />} />
+            <Route path="/admin/payments" element={<AdminPaymentSettings />} />
             <Route path="/proyecto" element={<ProyectoRedAkasha />} />
             <Route path="/contacto" element={<Contacto />} />
             <Route path="/suscripciones" element={<Suscripciones />} />

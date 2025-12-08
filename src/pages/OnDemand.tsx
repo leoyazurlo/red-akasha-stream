@@ -386,7 +386,9 @@ const OnDemand = () => {
               { value: "video_musical_vivo", label: "En Vivo" },
               { value: "video_clip", label: "Clips" },
               { value: "podcast", label: "Podcast" },
+              { value: "corto", label: "Cortos" },
               { value: "documental", label: "Docs" },
+              { value: "pelicula", label: "Películas" },
             ].map((cat) => (
               <button
                 key={cat.value}

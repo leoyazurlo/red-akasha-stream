@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Crown, Check, Calendar, Heart, Globe, Sparkles, Gift } from "lucide-react";
+import { Crown, Check, Calendar, Heart, Globe, Sparkles, Gift, CreditCard, Wallet, Bitcoin, Building2, Loader2, Lock } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
@@ -28,6 +28,15 @@ interface UserSubscription {
   current_period_end: string;
   amount: number;
   currency: string;
+}
+
+interface PaymentMethod {
+  id: string;
+  provider: string;
+  display_name: string;
+  icon_name: string;
+  is_active: boolean;
+  supported_currencies: string[];
 }
 
 const SUBSCRIPTION_PLANS = [
@@ -61,15 +70,34 @@ const SUBSCRIPTION_PLANS = [
   }
 ];
 
+const ICON_MAP: Record<string, React.ReactNode> = {
+  'credit-card': <CreditCard className="w-6 h-6" />,
+  'wallet': <Wallet className="w-6 h-6" />,
+  'paypal': <Wallet className="w-6 h-6 text-blue-500" />,
+  'bitcoin': <Bitcoin className="w-6 h-6 text-orange-500" />,
+  'building-2': <Building2 className="w-6 h-6" />,
+};
+
 const Suscripciones = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
   const [loading, setLoading] = useState(true);
-  const [subscribing, setSubscribing] = useState<string | null>(null);
+  
+  // Donation state
   const [donationOpen, setDonationOpen] = useState(false);
   const [donationAmount, setDonationAmount] = useState("");
-  const [donating, setDonating] = useState(false);
+  const [donationStep, setDonationStep] = useState<'amount' | 'payment'>('amount');
+  
+  // Subscription state
+  const [subscriptionOpen, setSubscriptionOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<typeof SUBSCRIPTION_PLANS[0] | null>(null);
+  
+  // Payment state
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  const [processing, setProcessing] = useState(false);
+  const [loadingMethods, setLoadingMethods] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -99,7 +127,27 @@ const Suscripciones = () => {
     }
   };
 
-  const handleSubscribe = async (planId: string) => {
+  const fetchPaymentMethods = async () => {
+    setLoadingMethods(true);
+    try {
+      const { data, error } = await supabase
+        .from('payment_methods_config')
+        .select('*')
+        .eq('is_active', true);
+
+      if (error) throw error;
+      setPaymentMethods(data || []);
+      if (data && data.length > 0) {
+        setSelectedMethod(data[0].provider);
+      }
+    } catch (error) {
+      console.error('Error fetching payment methods:', error);
+    } finally {
+      setLoadingMethods(false);
+    }
+  };
+
+  const openSubscriptionDialog = (plan: typeof SUBSCRIPTION_PLANS[0]) => {
     if (!user) {
       toast({
         title: "Inicia sesión",
@@ -108,24 +156,28 @@ const Suscripciones = () => {
       });
       return;
     }
+    setSelectedPlan(plan);
+    setSubscriptionOpen(true);
+    fetchPaymentMethods();
+  };
 
-    setSubscribing(planId);
+  const handleSubscribe = async () => {
+    if (!user || !selectedPlan || !selectedMethod) return;
+
+    setProcessing(true);
     try {
-      const plan = SUBSCRIPTION_PLANS.find(p => p.id === planId);
-      if (!plan) return;
-
       const { error } = await supabase
         .from('user_subscriptions')
         .insert({
           user_id: user.id,
-          plan_type: planId,
+          plan_type: selectedPlan.id,
           status: 'active',
-          amount: plan.price,
-          currency: plan.currency,
-          payment_method: 'card',
-          payment_provider: 'manual',
+          amount: selectedPlan.price,
+          currency: selectedPlan.currency,
+          payment_method: selectedMethod,
+          payment_provider: selectedMethod,
           current_period_start: new Date().toISOString(),
-          current_period_end: new Date(Date.now() + (planId === 'annual' ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString()
+          current_period_end: new Date(Date.now() + (selectedPlan.id === 'annual' ? 365 : 30) * 24 * 60 * 60 * 1000).toISOString()
         });
 
       if (error) throw error;
@@ -135,6 +187,8 @@ const Suscripciones = () => {
         description: "Tu suscripción ha sido activada.",
       });
 
+      setSubscriptionOpen(false);
+      setSelectedPlan(null);
       fetchSubscription();
     } catch (error) {
       console.error('Error subscribing:', error);
@@ -144,7 +198,7 @@ const Suscripciones = () => {
         variant: "destructive"
       });
     } finally {
-      setSubscribing(null);
+      setProcessing(false);
     }
   };
 
@@ -175,14 +229,7 @@ const Suscripciones = () => {
     }
   };
 
-  const formatPrice = (amount: number, currency: string) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency,
-    }).format(amount);
-  };
-
-  const handleDonate = async () => {
+  const openDonationPayment = () => {
     const amount = parseFloat(donationAmount);
     if (isNaN(amount) || amount <= 0) {
       toast({
@@ -192,11 +239,24 @@ const Suscripciones = () => {
       });
       return;
     }
+    setDonationStep('payment');
+    fetchPaymentMethods();
+  };
 
-    setDonating(true);
+  const handleDonate = async () => {
+    if (!selectedMethod) {
+      toast({
+        title: "Selecciona un método",
+        description: "Debes seleccionar un método de pago",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const amount = parseFloat(donationAmount);
+    setProcessing(true);
     try {
-      // Aquí se integraría con el procesador de pagos
-      // Por ahora simulamos el proceso
+      // Simular procesamiento de pago
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       toast({
@@ -206,6 +266,7 @@ const Suscripciones = () => {
       
       setDonationOpen(false);
       setDonationAmount("");
+      setDonationStep('amount');
     } catch (error) {
       console.error('Error processing donation:', error);
       toast({
@@ -214,9 +275,66 @@ const Suscripciones = () => {
         variant: "destructive"
       });
     } finally {
-      setDonating(false);
+      setProcessing(false);
     }
   };
+
+  const formatPrice = (amount: number, currency: string) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency,
+    }).format(amount);
+  };
+
+  const PaymentMethodsGrid = () => (
+    <div className="space-y-3">
+      <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+        Selecciona método de pago
+      </h4>
+      {loadingMethods ? (
+        <div className="flex items-center justify-center py-4">
+          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {paymentMethods.map((method) => (
+            <Card 
+              key={method.provider}
+              className={`cursor-pointer transition-all duration-200 hover:border-cyan-400/60 ${
+                selectedMethod === method.provider 
+                  ? 'border-cyan-400 bg-cyan-400/10 shadow-[0_0_15px_hsl(180_100%_50%/0.2)]' 
+                  : 'border-border'
+              }`}
+              onClick={() => setSelectedMethod(method.provider)}
+            >
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${
+                  selectedMethod === method.provider 
+                    ? 'bg-cyan-400/20 text-cyan-400' 
+                    : 'bg-muted text-muted-foreground'
+                }`}>
+                  {ICON_MAP[method.icon_name] || <CreditCard className="w-6 h-6" />}
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium">{method.display_name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {method.provider === 'mercadopago' && 'Latinoamérica'}
+                    {method.provider === 'stripe' && 'Visa, Mastercard, Amex'}
+                    {method.provider === 'paypal' && 'Cuenta PayPal'}
+                    {method.provider === 'crypto' && 'BTC, ETH, USDT'}
+                    {method.provider === 'bank_transfer' && 'Transferencia directa'}
+                  </p>
+                </div>
+                {selectedMethod === method.provider && (
+                  <Check className="w-5 h-5 text-cyan-400" />
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
@@ -375,10 +493,9 @@ const Suscripciones = () => {
                     <Button 
                       className={`w-full ${plan.highlighted ? 'bg-gradient-to-r from-primary to-accent hover:opacity-90' : ''}`}
                       variant={plan.highlighted ? 'default' : 'outline'}
-                      onClick={() => handleSubscribe(plan.id)}
-                      disabled={subscribing === plan.id}
+                      onClick={() => openSubscriptionDialog(plan)}
                     >
-                      {subscribing === plan.id ? 'Procesando...' : 'Colaborar'}
+                      Colaborar
                     </Button>
                   </CardContent>
                 </Card>
@@ -388,65 +505,200 @@ const Suscripciones = () => {
 
           {/* Donation Banner */}
           <button
-            onClick={() => setDonationOpen(true)}
+            onClick={() => {
+              setDonationOpen(true);
+              setDonationStep('amount');
+            }}
             className="w-full mb-8 py-4 px-6 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-background font-bold text-lg flex items-center justify-center gap-3 transition-all duration-300 shadow-[0_0_30px_hsl(180_100%_50%/0.4)] hover:shadow-[0_0_40px_hsl(180_100%_50%/0.6)] hover:scale-[1.02]"
           >
             <Gift className="w-6 h-6" />
             DONAR
           </button>
 
+          {/* Subscription Payment Dialog */}
+          <Dialog open={subscriptionOpen} onOpenChange={setSubscriptionOpen}>
+            <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Lock className="w-5 h-5 text-cyan-400" />
+                  Suscripción {selectedPlan?.name}
+                </DialogTitle>
+                <DialogDescription>
+                  Completa tu suscripción de forma segura
+                </DialogDescription>
+              </DialogHeader>
+              
+              {selectedPlan && (
+                <div className="space-y-6 py-4">
+                  {/* Plan Summary */}
+                  <Card className="bg-card/50 border-primary/30">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold">Plan {selectedPlan.name}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Facturación {selectedPlan.id === 'annual' ? 'anual' : 'mensual'}
+                          </p>
+                        </div>
+                        <span className="text-2xl font-bold text-cyan-400">
+                          {formatPrice(selectedPlan.price, selectedPlan.currency)}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Payment Methods */}
+                  <PaymentMethodsGrid />
+
+                  {/* Pay Button */}
+                  <div className="border-t pt-4 space-y-4">
+                    <div className="flex items-center justify-between text-lg font-semibold">
+                      <span>Total a pagar:</span>
+                      <span className="text-cyan-400">{formatPrice(selectedPlan.price, selectedPlan.currency)}</span>
+                    </div>
+
+                    <Button 
+                      onClick={handleSubscribe}
+                      disabled={!selectedMethod || processing}
+                      className="w-full bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white font-semibold py-6"
+                    >
+                      {processing ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Procesando...
+                        </>
+                      ) : (
+                        <>
+                          <Lock className="w-4 h-4 mr-2" />
+                          Pagar {formatPrice(selectedPlan.price, selectedPlan.currency)}
+                        </>
+                      )}
+                    </Button>
+
+                    <p className="text-xs text-center text-muted-foreground">
+                      Al realizar el pago aceptas nuestros términos y condiciones.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+
           {/* Donation Dialog */}
-          <Dialog open={donationOpen} onOpenChange={setDonationOpen}>
-            <DialogContent className="sm:max-w-md">
+          <Dialog open={donationOpen} onOpenChange={(open) => {
+            setDonationOpen(open);
+            if (!open) {
+              setDonationStep('amount');
+              setDonationAmount("");
+            }
+          }}>
+            <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                   <Gift className="w-5 h-5 text-cyan-400" />
-                  Hacer una Donación
+                  {donationStep === 'amount' ? 'Hacer una Donación' : 'Método de Pago'}
                 </DialogTitle>
                 <DialogDescription>
-                  Tu donación ayuda a mantener Red Akasha como un proyecto de libre uso para Latinoamérica.
+                  {donationStep === 'amount' 
+                    ? 'Tu donación ayuda a mantener Red Akasha como un proyecto de libre uso para Latinoamérica.'
+                    : `Donación de ${formatPrice(parseFloat(donationAmount) || 0, 'USD')}`
+                  }
                 </DialogDescription>
               </DialogHeader>
               
               <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Monto a donar (USD)</label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
-                    <Input
-                      type="number"
-                      min="1"
-                      step="0.01"
-                      placeholder="10.00"
-                      value={donationAmount}
-                      onChange={(e) => setDonationAmount(e.target.value)}
-                      className="pl-7"
-                    />
-                  </div>
-                </div>
-                
-                {/* Quick amounts */}
-                <div className="flex gap-2">
-                  {[5, 10, 25, 50].map((amount) => (
-                    <Button
-                      key={amount}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setDonationAmount(amount.toString())}
-                      className={donationAmount === amount.toString() ? 'border-cyan-400 text-cyan-400' : ''}
+                {donationStep === 'amount' ? (
+                  <>
+                    {/* Amount Input */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Monto a donar (USD)</label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                        <Input
+                          type="number"
+                          min="1"
+                          step="0.01"
+                          placeholder="10.00"
+                          value={donationAmount}
+                          onChange={(e) => setDonationAmount(e.target.value)}
+                          className="pl-7"
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Quick amounts */}
+                    <div className="flex gap-2">
+                      {[5, 10, 25, 50].map((amount) => (
+                        <Button
+                          key={amount}
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setDonationAmount(amount.toString())}
+                          className={donationAmount === amount.toString() ? 'border-cyan-400 text-cyan-400' : ''}
+                        >
+                          ${amount}
+                        </Button>
+                      ))}
+                    </div>
+                    
+                    <Button 
+                      onClick={openDonationPayment}
+                      disabled={!donationAmount || parseFloat(donationAmount) <= 0}
+                      className="w-full bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-background"
                     >
-                      ${amount}
+                      Continuar al Pago
                     </Button>
-                  ))}
-                </div>
-                
-                <Button 
-                  onClick={handleDonate}
-                  disabled={donating || !donationAmount}
-                  className="w-full bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-background"
-                >
-                  {donating ? 'Procesando...' : 'Confirmar Donación'}
-                </Button>
+                  </>
+                ) : (
+                  <>
+                    {/* Donation Summary */}
+                    <Card className="bg-card/50 border-primary/30">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-semibold">Donación</h4>
+                            <p className="text-sm text-muted-foreground">Único pago</p>
+                          </div>
+                          <span className="text-2xl font-bold text-cyan-400">
+                            {formatPrice(parseFloat(donationAmount) || 0, 'USD')}
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Payment Methods */}
+                    <PaymentMethodsGrid />
+
+                    {/* Pay Button */}
+                    <div className="border-t pt-4 space-y-4">
+                      <Button 
+                        onClick={handleDonate}
+                        disabled={!selectedMethod || processing}
+                        className="w-full bg-gradient-to-r from-cyan-500 to-purple-500 hover:from-cyan-600 hover:to-purple-600 text-white font-semibold py-6"
+                      >
+                        {processing ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Procesando...
+                          </>
+                        ) : (
+                          <>
+                            <Lock className="w-4 h-4 mr-2" />
+                            Donar {formatPrice(parseFloat(donationAmount) || 0, 'USD')}
+                          </>
+                        )}
+                      </Button>
+
+                      <Button 
+                        variant="ghost" 
+                        onClick={() => setDonationStep('amount')}
+                        className="w-full"
+                      >
+                        Volver
+                      </Button>
+                    </div>
+                  </>
+                )}
               </div>
             </DialogContent>
           </Dialog>

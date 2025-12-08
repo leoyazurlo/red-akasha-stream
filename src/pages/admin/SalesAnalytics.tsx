@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, ArrowLeft, DollarSign, TrendingUp, Users, ShoppingCart, CreditCard, Calendar } from "lucide-react";
+import { Loader2, ArrowLeft, DollarSign, TrendingUp, Users, ShoppingCart, CreditCard, Calendar, Heart, CalendarDays, CalendarCheck } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from "recharts";
 import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
@@ -54,6 +54,21 @@ const SalesAnalytics = () => {
     }
   });
 
+  // Fetch donations
+  const { data: donations, isLoading: donationsLoading } = useQuery({
+    queryKey: ['admin-donations', dateRange],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('donations')
+        .select('*')
+        .gte('created_at', startDate)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
   // Fetch payment settings for percentages
   const { data: paymentSettings } = useQuery({
     queryKey: ['payment-settings-analytics'],
@@ -67,15 +82,24 @@ const SalesAnalytics = () => {
     }
   });
 
-  const isLoading = purchasesLoading || subscriptionsLoading;
+  const isLoading = purchasesLoading || subscriptionsLoading || donationsLoading;
 
   // Calculate statistics
   const totalPurchases = purchases?.length || 0;
   const totalSubscriptions = subscriptions?.length || 0;
+  const totalDonations = donations?.length || 0;
+  
+  // Subscription breakdowns
+  const monthlySubscriptions = subscriptions?.filter(s => s.plan_type === 'monthly') || [];
+  const annualSubscriptions = subscriptions?.filter(s => s.plan_type === 'annual') || [];
+  
+  const monthlySubRevenue = monthlySubscriptions.reduce((acc, s) => acc + Number(s.amount), 0);
+  const annualSubRevenue = annualSubscriptions.reduce((acc, s) => acc + Number(s.amount), 0);
   
   const purchaseRevenue = purchases?.reduce((acc, p) => acc + Number(p.amount), 0) || 0;
   const subscriptionRevenue = subscriptions?.reduce((acc, s) => acc + Number(s.amount), 0) || 0;
-  const totalRevenue = purchaseRevenue + subscriptionRevenue;
+  const donationsRevenue = donations?.reduce((acc, d) => acc + Number(d.amount), 0) || 0;
+  const totalRevenue = purchaseRevenue + subscriptionRevenue + donationsRevenue;
 
   // Get percentage settings
   const singlePurchaseSetting = paymentSettings?.find(s => s.setting_key === 'single_content_purchase');
@@ -88,13 +112,15 @@ const SalesAnalytics = () => {
   // Chart data - Revenue by type
   const revenueByType = [
     { name: 'Compras', value: purchaseRevenue, color: COLORS[0] },
-    { name: 'Suscripciones', value: subscriptionRevenue, color: COLORS[1] },
+    { name: 'Sub. Mensual', value: monthlySubRevenue, color: COLORS[1] },
+    { name: 'Sub. Anual', value: annualSubRevenue, color: COLORS[2] },
+    { name: 'Donaciones', value: donationsRevenue, color: COLORS[3] },
   ];
 
   // Chart data - Earnings distribution
   const earningsDistribution = [
     { name: 'Plataforma', value: platformEarnings, color: COLORS[2] },
-    { name: 'Autores', value: authorEarnings, color: COLORS[3] },
+    { name: 'Usuarios (Pozo)', value: authorEarnings, color: COLORS[3] },
   ];
 
   // Chart data - Daily revenue (last 7 days)
@@ -176,7 +202,7 @@ const SalesAnalytics = () => {
           </Select>
         </div>
 
-        {/* KPI Cards */}
+        {/* KPI Cards - Row 1 */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card className="bg-card/50 border-cyan-500/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -232,16 +258,70 @@ const SalesAnalytics = () => {
           <Card className="bg-card/50 border-cyan-500/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
-                Suscripciones
+                Donaciones
               </CardTitle>
-              <Users className="h-4 w-4 text-amber-400" />
+              <Heart className="h-4 w-4 text-rose-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-rose-400">
+                {totalDonations}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                ${donationsRevenue.toFixed(2)} recaudados
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* KPI Cards - Row 2: Subscriptions */}
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card className="bg-card/50 border-cyan-500/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Suscripciones Mensuales
+              </CardTitle>
+              <CalendarDays className="h-4 w-4 text-blue-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-400">
+                {monthlySubscriptions.length}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                ${monthlySubRevenue.toFixed(2)} en ventas mensuales
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card/50 border-cyan-500/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Suscripciones Anuales
+              </CardTitle>
+              <CalendarCheck className="h-4 w-4 text-amber-400" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-amber-400">
+                {annualSubscriptions.length}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                ${annualSubRevenue.toFixed(2)} en ventas anuales
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card/50 border-cyan-500/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Total Suscripciones
+              </CardTitle>
+              <Users className="h-4 w-4 text-cyan-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-cyan-400">
                 {totalSubscriptions}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                ${subscriptionRevenue.toFixed(2)} en suscripciones
+                ${subscriptionRevenue.toFixed(2)} total suscripciones
               </p>
             </CardContent>
           </Card>

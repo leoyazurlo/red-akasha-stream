@@ -327,7 +327,7 @@ const Circuito = () => {
           <div className="container mx-auto px-4">
             {/* Hero Section */}
             <section className="text-center mb-16">
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+              <p className="text-xl text-foreground max-w-3xl mx-auto mb-8 font-medium">
                 En esta sección podrás acceder a la base de datos y conocimiento del circuito de producción de la industria Cultural de Latinoamérica
               </p>
 

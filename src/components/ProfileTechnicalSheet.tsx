@@ -674,10 +674,9 @@ export const ProfileTechnicalSheet = ({
                   <Button
                     onClick={toggleFollow}
                     disabled={followLoading}
-                    variant={isFollowing ? "secondary" : "default"}
-                    className={`gap-2 ${isFollowing 
-                      ? 'border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/20' 
-                      : 'bg-cyan-500 hover:bg-cyan-600 text-white'
+                    className={`gap-2 font-semibold shadow-[0_0_15px_rgba(34,211,238,0.5)] ${isFollowing 
+                      ? 'bg-transparent border-2 border-cyan-400 text-cyan-400 hover:bg-cyan-400/20 hover:shadow-[0_0_25px_rgba(34,211,238,0.7)]' 
+                      : 'bg-cyan-400 hover:bg-cyan-300 text-black hover:shadow-[0_0_25px_rgba(34,211,238,0.8)]'
                     }`}
                   >
                     {isFollowing ? (
@@ -695,8 +694,7 @@ export const ProfileTechnicalSheet = ({
                   </Button>
                   <Button
                     onClick={() => setShowMessageDialog(true)}
-                    variant="outline"
-                    className="gap-2 border-primary/50 text-primary hover:bg-primary/20"
+                    className="gap-2 font-semibold bg-transparent border-2 border-cyan-400 text-cyan-400 hover:bg-cyan-400/20 shadow-[0_0_15px_rgba(34,211,238,0.5)] hover:shadow-[0_0_25px_rgba(34,211,238,0.7)]"
                   >
                     <Mail className="h-4 w-4" />
                     Mensaje

@@ -978,7 +978,13 @@ export const ProfileTechnicalSheet = ({
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             {hasSocialMedia && (
               <div className="w-full sm:w-auto">
-                <h4 className="text-xl font-bold text-foreground mb-4 tracking-widest uppercase text-center sm:text-left">Contacto</h4>
+                <div className="flex items-center justify-center sm:justify-start gap-4 mb-4">
+                  <div className="h-px flex-1 max-w-20 bg-gradient-to-r from-transparent to-primary/30" />
+                  <h4 className="text-base sm:text-lg font-light text-foreground/70 tracking-[0.4em] uppercase">
+                    Contacto
+                  </h4>
+                  <div className="h-px flex-1 max-w-20 bg-gradient-to-l from-transparent to-primary/30" />
+                </div>
                 <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
                   {instagram && (
                     <a

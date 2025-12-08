@@ -95,7 +95,7 @@ const Circuito = () => {
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [hasProfile, setHasProfile] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<PublicProfile | null>(null);
-  const [minimizedProfile, setMinimizedProfile] = useState<PublicProfile | null>(null);
+  const [minimizedProfiles, setMinimizedProfiles] = useState<PublicProfile[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<string>("name-asc");
   const [selectedProfileType, setSelectedProfileType] = useState<string>("all");
@@ -103,23 +103,40 @@ const Circuito = () => {
   // Handle minimize - close dialog but keep profile in minimized state
   const handleMinimize = () => {
     if (selectedProfile) {
-      setMinimizedProfile(selectedProfile);
+      // Add to minimized stack if not already there
+      setMinimizedProfiles(prev => {
+        const exists = prev.some(p => p.id === selectedProfile.id);
+        if (exists) return prev;
+        return [...prev, selectedProfile];
+      });
       setSelectedProfile(null);
     }
   };
 
   // Handle restore from minimized
-  const handleRestore = () => {
-    if (minimizedProfile) {
-      setSelectedProfile(minimizedProfile);
-      setMinimizedProfile(null);
+  const handleRestore = (profile: PublicProfile) => {
+    // If there's already a profile open, minimize it first
+    if (selectedProfile) {
+      setMinimizedProfiles(prev => {
+        const exists = prev.some(p => p.id === selectedProfile.id);
+        if (exists) return prev;
+        return [...prev, selectedProfile];
+      });
     }
+    // Remove from minimized and open
+    setMinimizedProfiles(prev => prev.filter(p => p.id !== profile.id));
+    setSelectedProfile(profile);
   };
 
-  // Handle close dialog - clear both states
+  // Handle close a minimized profile
+  const handleCloseMinimized = (profileId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setMinimizedProfiles(prev => prev.filter(p => p.id !== profileId));
+  };
+
+  // Handle close dialog
   const handleCloseDialog = () => {
     setSelectedProfile(null);
-    setMinimizedProfile(null);
   };
 
   // Profile type categories for tabs
@@ -516,7 +533,17 @@ const Circuito = () => {
                           <Card 
                             key={profile.id} 
                             className="border-cyan-400 bg-card/50 backdrop-blur-sm shadow-[0_0_25px_hsl(180_100%_50%/0.4),0_0_50px_hsl(180_100%_50%/0.2)] hover:shadow-[0_0_35px_hsl(180_100%_50%/0.6),0_0_70px_hsl(180_100%_50%/0.3)] transition-all duration-300 cursor-pointer group active:scale-[0.98]"
-                            onClick={() => setSelectedProfile(profile)}
+                            onClick={() => {
+                              // If there's a profile open, minimize it first
+                              if (selectedProfile && selectedProfile.id !== profile.id) {
+                                setMinimizedProfiles(prev => {
+                                  const exists = prev.some(p => p.id === selectedProfile.id);
+                                  if (exists) return prev;
+                                  return [...prev, selectedProfile];
+                                });
+                              }
+                              setSelectedProfile(profile);
+                            }}
                           >
                             <CardHeader>
                               <div className="flex items-start gap-4">
@@ -573,24 +600,42 @@ const Circuito = () => {
 
         <Footer />
 
-        {/* Minimized Profile Floating Bar */}
-        {minimizedProfile && !selectedProfile && (
-          <div className="fixed bottom-6 right-6 z-50 animate-slide-in">
-            <button
-              onClick={handleRestore}
-              className="flex items-center gap-3 px-4 py-3 bg-card/90 backdrop-blur-xl border border-cyan-500/30 rounded-xl shadow-glow hover:shadow-elegant transition-all duration-300 hover:scale-105 group"
-            >
-              <Avatar className="w-10 h-10 border-2 border-cyan-400/50">
-                <AvatarImage src={minimizedProfile.avatar_url || ''} alt={minimizedProfile.display_name} />
-                <AvatarFallback className="bg-primary/20 text-primary text-sm">
-                  {minimizedProfile.display_name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-cyan-400 font-medium max-w-[150px] truncate">
-                {minimizedProfile.display_name}
-              </span>
-              <Maximize2 className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
-            </button>
+        {/* Minimized Profiles Floating Stack */}
+        {minimizedProfiles.length > 0 && !selectedProfile && (
+          <div className="fixed bottom-6 right-6 z-50 flex flex-col-reverse gap-2">
+            {minimizedProfiles.map((profile, index) => (
+              <div
+                key={profile.id}
+                className="animate-slide-in"
+                style={{
+                  transform: `translateX(${index * -8}px)`,
+                  zIndex: minimizedProfiles.length - index,
+                }}
+              >
+                <button
+                  onClick={() => handleRestore(profile)}
+                  className="flex items-center gap-3 px-4 py-3 bg-card/90 backdrop-blur-xl border border-cyan-500/30 rounded-xl shadow-glow hover:shadow-elegant transition-all duration-300 hover:scale-105 group relative"
+                >
+                  <Avatar className="w-10 h-10 border-2 border-cyan-400/50">
+                    <AvatarImage src={profile.avatar_url || ''} alt={profile.display_name} />
+                    <AvatarFallback className="bg-primary/20 text-primary text-sm">
+                      {profile.display_name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-cyan-400 font-medium max-w-[150px] truncate">
+                    {profile.display_name}
+                  </span>
+                  <Maximize2 className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
+                  {/* Close button */}
+                  <button
+                    onClick={(e) => handleCloseMinimized(profile.id, e)}
+                    className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 hover:bg-red-400 rounded-full flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    ×
+                  </button>
+                </button>
+              </div>
+            ))}
           </div>
         )}
 

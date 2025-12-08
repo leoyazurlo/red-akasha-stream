@@ -23,6 +23,7 @@ import AdminProgramSchedules from "./pages/admin/ProgramSchedules";
 import AdminBadges from "./pages/admin/Badges";
 import AdminShareAnalytics from "./pages/admin/ShareAnalytics";
 import AdminYouTubeVideos from "./pages/admin/YouTubeVideos";
+import AdminStreamConfig from "./pages/admin/StreamConfig";
 import Asociate from "./pages/Asociate";
 import Circuito from "./pages/Circuito";
 import PublicProfile from "./pages/PublicProfile";
@@ -86,6 +87,7 @@ const App = () => (
             <Route path="/admin/badges" element={<AdminBadges />} />
             <Route path="/admin/share-analytics" element={<AdminShareAnalytics />} />
             <Route path="/admin/youtube-videos" element={<AdminYouTubeVideos />} />
+            <Route path="/admin/stream-config" element={<AdminStreamConfig />} />
             <Route path="/proyecto" element={<ProyectoRedAkasha />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

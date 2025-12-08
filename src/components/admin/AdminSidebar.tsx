@@ -1,4 +1,4 @@
-import { LayoutDashboard, FolderTree, Users, Flag, ShieldAlert, Award, Radio, Film, Headphones, Calendar, FileText, UserCheck, ScrollText, Share2 } from "lucide-react";
+import { LayoutDashboard, FolderTree, Users, Flag, ShieldAlert, Award, Radio, Film, Headphones, Calendar, FileText, UserCheck, ScrollText, Share2, Settings } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -22,6 +22,7 @@ const generalItems = [
 
 const streamingItems = [
   { title: "Streams en Vivo", url: "/admin/streams", icon: Radio },
+  { title: "Config. Streaming", url: "/admin/stream-config", icon: Settings },
   { title: "Videos (VOD)", url: "/admin/vod", icon: Film },
   { title: "Podcasts", url: "/admin/podcasts", icon: Headphones },
   { title: "Horarios", url: "/admin/program-schedules", icon: Calendar },

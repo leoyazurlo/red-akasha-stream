@@ -1635,6 +1635,101 @@ export type Database = {
         }
         Relationships: []
       }
+      scheduled_streams: {
+        Row: {
+          created_at: string
+          description: string | null
+          destination_ids: string[] | null
+          id: string
+          scheduled_end: string | null
+          scheduled_start: string
+          status: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          destination_ids?: string[] | null
+          id?: string
+          scheduled_end?: string | null
+          scheduled_start: string
+          status?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          destination_ids?: string[] | null
+          id?: string
+          scheduled_end?: string | null
+          scheduled_start?: string
+          status?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      stream_analytics_log: {
+        Row: {
+          comments: number | null
+          created_at: string
+          destination_id: string | null
+          duration_minutes: number | null
+          id: string
+          likes: number | null
+          platform: string
+          shares: number | null
+          stream_date: string
+          user_id: string
+          viewers_average: number | null
+          viewers_peak: number | null
+        }
+        Insert: {
+          comments?: number | null
+          created_at?: string
+          destination_id?: string | null
+          duration_minutes?: number | null
+          id?: string
+          likes?: number | null
+          platform: string
+          shares?: number | null
+          stream_date?: string
+          user_id: string
+          viewers_average?: number | null
+          viewers_peak?: number | null
+        }
+        Update: {
+          comments?: number | null
+          created_at?: string
+          destination_id?: string | null
+          duration_minutes?: number | null
+          id?: string
+          likes?: number | null
+          platform?: string
+          shares?: number | null
+          stream_date?: string
+          user_id?: string
+          viewers_average?: number | null
+          viewers_peak?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stream_analytics_log_destination_id_fkey"
+            columns: ["destination_id"]
+            isOneToOne: false
+            referencedRelation: "streaming_destinations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stream_overlays: {
         Row: {
           config: Json
@@ -1671,6 +1766,48 @@ export type Database = {
           overlay_type?: string
           owner_id?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      stream_overlays_config: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          name: string
+          overlay_type: string
+          position: string | null
+          styles: Json | null
+          text_content: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name: string
+          overlay_type: string
+          position?: string | null
+          styles?: Json | null
+          text_content?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string
+          overlay_type?: string
+          position?: string | null
+          styles?: Json | null
+          text_content?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -1789,6 +1926,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      streaming_destinations: {
+        Row: {
+          connection_status: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          last_connected_at: string | null
+          name: string
+          platform: string
+          rtmp_url: string
+          stream_key: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          connection_status?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          last_connected_at?: string | null
+          name: string
+          platform: string
+          rtmp_url: string
+          stream_key: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          connection_status?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          last_connected_at?: string | null
+          name?: string
+          platform?: string
+          rtmp_url?: string
+          stream_key?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       streams: {
         Row: {

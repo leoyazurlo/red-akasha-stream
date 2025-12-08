@@ -497,7 +497,7 @@ export const ProfileTechnicalSheet = ({
               {/* Badge with profile type */}
               <div className="inline-flex items-center gap-2 mb-4">
                 <div className="h-px w-8 bg-gradient-to-r from-transparent to-primary/50" />
-                <span className="text-primary text-[11px] font-light tracking-[0.3em] uppercase">
+                <span className="text-primary text-base sm:text-lg font-light tracking-[0.3em] uppercase">
                   {profileTypeLabels[profileType] || profileType}
                 </span>
                 <div className="h-px w-8 bg-gradient-to-l from-transparent to-primary/50" />
@@ -666,7 +666,7 @@ export const ProfileTechnicalSheet = ({
           <div className="backdrop-blur-xl bg-card/40 rounded-3xl border border-primary/20 p-6 sm:p-8 mb-6 shadow-glow">
             <div className="flex items-center justify-center gap-4 mb-8">
               <div className="h-px flex-1 max-w-20 bg-gradient-to-r from-transparent to-primary/30" />
-              <h3 className="text-xs font-light text-foreground/70 tracking-[0.4em] uppercase">
+              <h3 className="text-base sm:text-lg font-light text-foreground/70 tracking-[0.4em] uppercase">
                 Portfolio
               </h3>
               <div className="h-px flex-1 max-w-20 bg-gradient-to-l from-transparent to-primary/30" />

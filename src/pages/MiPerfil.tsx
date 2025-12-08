@@ -498,18 +498,18 @@ const MiPerfil = () => {
 
           {/* Content Management */}
           <Tabs defaultValue="gallery" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3 bg-card/50">
-              <TabsTrigger value="gallery">
-                <ImageIcon className="w-4 h-4 mr-2" />
-                Fotos ({photos.length})
+            <TabsList className="grid w-full grid-cols-3 h-auto p-2 bg-card/50">
+              <TabsTrigger value="gallery" className="gap-3 py-4 text-lg font-light tracking-widest uppercase">
+                <ImageIcon className="w-7 h-7" />
+                Galería ({photos.length})
               </TabsTrigger>
-              <TabsTrigger value="videos">
-                <Video className="w-4 h-4 mr-2" />
+              <TabsTrigger value="videos" className="gap-3 py-4 text-lg font-light tracking-widest uppercase">
+                <Video className="w-7 h-7" />
                 Videos ({videos.length})
               </TabsTrigger>
-              <TabsTrigger value="audio">
-                <Music className="w-4 h-4 mr-2" />
-                Audio ({audioPlaylist.length})
+              <TabsTrigger value="audio" className="gap-3 py-4 text-lg font-light tracking-widest uppercase">
+                <Music className="w-7 h-7" />
+                Música ({audioPlaylist.length})
               </TabsTrigger>
             </TabsList>
 

@@ -1,85 +1,16 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Play, Radio, Maximize } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-
-interface ActiveDestination {
-  id: string;
-  name: string;
-  platform: string;
-  rtmp_url: string;
-  stream_key: string;
-  playback_url: string | null;
-  is_active: boolean;
-}
-
-interface StreamData {
-  id: string;
-  title: string;
-  description: string | null;
-  playback_url: string | null;
-  thumbnail_url: string | null;
-  status: string;
-}
+import { useLiveStream } from "@/contexts/LiveStreamContext";
 
 export const VideoPlayer = () => {
   const { elementRef, isVisible } = useScrollAnimation({ threshold: 0.2 });
   const containerRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  // Buscar destino de streaming activo o stream live
-  const { data: liveData } = useQuery({
-    queryKey: ["active-live-content"],
-    queryFn: async () => {
-      // Primero buscar en streams table (si existe un stream live con playback_url)
-      const { data: streamData } = await supabase
-        .from("streams")
-        .select("id, title, description, playback_url, thumbnail_url, status")
-        .eq("status", "live")
-        .order("actual_start_time", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      
-      if (streamData?.playback_url) {
-        return {
-          type: 'stream' as const,
-          title: streamData.title,
-          description: streamData.description,
-          playbackUrl: streamData.playback_url,
-          thumbnailUrl: streamData.thumbnail_url,
-        };
-      }
-
-      // Si no hay stream live, buscar destino de streaming activo con playback_url
-      const { data: destData, error } = await supabase
-        .from("streaming_destinations")
-        .select("*")
-        .eq("is_active", true)
-        .not("playback_url", "is", null)
-        .limit(1)
-        .maybeSingle();
-      
-      if (error) throw error;
-      
-      if (destData) {
-        const dest = destData as ActiveDestination;
-        return {
-          type: 'destination' as const,
-          title: dest.name,
-          description: `Transmitiendo en ${dest.platform}`,
-          platform: dest.platform,
-          playbackUrl: dest.playback_url,
-        };
-      }
-      
-      return null;
-    },
-    refetchInterval: 30000,
-  });
+  const [isPlayingLocal, setIsPlayingLocal] = useState(false);
+  const { liveData, setIsPlaying } = useLiveStream();
 
   const hasLiveStream = !!liveData?.playbackUrl;
 
@@ -94,8 +25,16 @@ export const VideoPlayer = () => {
   };
 
   const handlePlay = () => {
+    setIsPlayingLocal(true);
     setIsPlaying(true);
   };
+
+  // Sincronizar estado global cuando se reproduce
+  useEffect(() => {
+    if (isPlayingLocal) {
+      setIsPlaying(true);
+    }
+  }, [isPlayingLocal, setIsPlaying]);
 
   // Determinar si es un video de YouTube para usar iframe
   const isYouTubeUrl = liveData?.playbackUrl?.includes('youtube.com') || liveData?.playbackUrl?.includes('youtu.be');
@@ -140,7 +79,7 @@ export const VideoPlayer = () => {
           {hasLiveStream && isYouTubeUrl && youtubeVideoId ? (
             <>
               {/* YouTube iframe */}
-              {isPlaying ? (
+              {isPlayingLocal ? (
                 <iframe
                   ref={iframeRef}
                   src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&rel=0`}
@@ -181,7 +120,7 @@ export const VideoPlayer = () => {
               )}
 
               {/* Fullscreen button when playing */}
-              {isPlaying && (
+              {isPlayingLocal && (
                 <Button
                   variant="ghost"
                   size="icon"
@@ -199,8 +138,12 @@ export const VideoPlayer = () => {
                 src={liveData.playbackUrl}
                 className="absolute inset-0 w-full h-full object-cover"
                 controls
-                autoPlay={isPlaying}
+                autoPlay={isPlayingLocal}
                 playsInline
+                onPlay={() => {
+                  setIsPlayingLocal(true);
+                  setIsPlaying(true);
+                }}
               />
             </>
           ) : (

@@ -620,8 +620,8 @@ const PublicProfile = () => {
                         )}
                         
                         {/* Main Image */}
-                        <div className="w-80 flex-shrink-0">
-                          <div className="w-80 h-80 rounded-xl overflow-hidden border border-cyan-400/30 shadow-[0_0_20px_rgba(34,211,238,0.2)] bg-black/50">
+                        <div className="w-[480px] flex-shrink-0">
+                          <div className="w-[480px] h-[480px] rounded-xl overflow-hidden border border-cyan-400/30 shadow-[0_0_20px_rgba(34,211,238,0.2)] bg-black/50">
                             <img
                               src={photos[currentPhotoIndex]?.url}
                               alt={photos[currentPhotoIndex]?.title || 'Foto'}
@@ -631,12 +631,12 @@ const PublicProfile = () => {
                           
                           {/* Thumbnails below */}
                           {photos.length > 1 && (
-                            <div className="flex justify-center gap-2 mt-6 pt-2 overflow-x-auto pb-2">
+                            <div className="flex justify-center gap-3 mt-6 pt-2 overflow-x-auto pb-2">
                               {photos.map((photo, idx) => (
                                 <button
                                   key={idx}
                                   onClick={() => setCurrentPhotoIndex(idx)}
-                                  className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden transition-all duration-500 ${
+                                  className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden transition-all duration-500 ${
                                     idx === currentPhotoIndex 
                                       ? 'ring-1 ring-cyan-400/40 shadow-[0_0_15px_rgba(34,211,238,0.15)]' 
                                       : 'opacity-40 hover:opacity-70 ring-1 ring-white/10'
@@ -691,8 +691,8 @@ const PublicProfile = () => {
                         )}
                         
                         {/* Main Video */}
-                        <div className="w-80 flex-shrink-0">
-                          <div className="w-80 h-80 rounded-xl overflow-hidden border border-cyan-400/30 shadow-[0_0_20px_rgba(34,211,238,0.2)] bg-black/50">
+                        <div className="w-[480px] flex-shrink-0">
+                          <div className="w-[480px] h-[480px] rounded-xl overflow-hidden border border-cyan-400/30 shadow-[0_0_20px_rgba(34,211,238,0.2)] bg-black/50">
                             <video
                               src={videos[currentVideoIndex]?.url}
                               controls
@@ -702,12 +702,12 @@ const PublicProfile = () => {
                           
                           {/* Thumbnails below */}
                           {videos.length > 1 && (
-                            <div className="flex justify-center gap-2 mt-6 pt-2 overflow-x-auto pb-2">
+                            <div className="flex justify-center gap-3 mt-6 pt-2 overflow-x-auto pb-2">
                               {videos.map((video, idx) => (
                                 <button
                                   key={idx}
                                   onClick={() => setCurrentVideoIndex(idx)}
-                                  className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden transition-all duration-500 relative ${
+                                  className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden transition-all duration-500 relative ${
                                     idx === currentVideoIndex 
                                       ? 'ring-1 ring-cyan-400/40 shadow-[0_0_15px_rgba(34,211,238,0.15)]' 
                                       : 'opacity-40 hover:opacity-70 ring-1 ring-white/10'
@@ -751,55 +751,114 @@ const PublicProfile = () => {
                       <span className="text-xs font-light tracking-wider uppercase text-muted-foreground">Audio ({audioPlaylist.length} pistas)</span>
                     </div>
                     <div className="flex justify-center">
-                      <div className="max-w-md w-full bg-background/30 rounded-xl p-5 border border-border/30">
-                        <p className="text-sm font-light mb-4 truncate text-center text-foreground/90">
-                          {audioPlaylist[currentTrack]?.title}
-                        </p>
-                        <audio
-                          ref={audioRef}
-                          onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
-                          onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
-                          onEnded={playNext}
-                        />
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs text-muted-foreground w-10 font-light">
-                            {formatTime(currentTime)}
-                          </span>
-                          <div className="flex-1 h-1 bg-muted/30 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-cyan-400 transition-all"
-                              style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
-                            />
-                          </div>
-                          <span className="text-xs text-muted-foreground w-10 text-right font-light">
-                            {formatTime(duration)}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-center gap-6 mt-5">
-                          <Button 
-                            size="icon" 
-                            variant="ghost" 
+                      <div className="flex items-center gap-4">
+                        {/* Left Arrow - Outside */}
+                        {audioPlaylist.length > 1 && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="bg-black/60 hover:bg-black/80 backdrop-blur-sm h-10 w-10 rounded-full border border-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:shadow-[0_0_25px_rgba(34,211,238,0.6)] transition-all duration-300 flex-shrink-0"
                             onClick={playPrevious}
-                            className="h-9 w-9 rounded-full hover:bg-cyan-400/10"
                           >
-                            <SkipBack className="w-4 h-4 text-foreground/70" />
+                            <ChevronLeft className="w-5 h-5 text-cyan-400" />
                           </Button>
-                          <Button 
-                            size="icon" 
-                            onClick={togglePlayPause} 
-                            className="h-12 w-12 rounded-full bg-cyan-400/20 hover:bg-cyan-400/30 border border-cyan-400/50"
-                          >
-                            {isPlaying ? <Pause className="w-5 h-5 text-cyan-400" /> : <Play className="w-5 h-5 text-cyan-400 ml-0.5" />}
-                          </Button>
-                          <Button 
-                            size="icon" 
-                            variant="ghost" 
-                            onClick={playNext}
-                            className="h-9 w-9 rounded-full hover:bg-cyan-400/10"
-                          >
-                            <SkipForward className="w-4 h-4 text-foreground/70" />
-                          </Button>
+                        )}
+                        
+                        {/* Main Audio Player */}
+                        <div className="w-[480px] flex-shrink-0">
+                          <div className="w-[480px] h-[480px] rounded-xl overflow-hidden border border-cyan-400/30 shadow-[0_0_20px_rgba(34,211,238,0.2)] bg-gradient-to-br from-black/80 via-cyan-950/20 to-black/80 flex flex-col items-center justify-center p-8">
+                            <div className="w-32 h-32 rounded-full bg-cyan-400/10 border border-cyan-400/30 flex items-center justify-center mb-6">
+                              <Music2 className="w-16 h-16 text-cyan-400/60" />
+                            </div>
+                            <p className="text-lg font-light mb-6 text-center text-foreground/90 tracking-wide font-sans">
+                              {audioPlaylist[currentTrack]?.title}
+                            </p>
+                            <audio
+                              ref={audioRef}
+                              onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+                              onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+                              onEnded={playNext}
+                            />
+                            <div className="w-full flex items-center gap-3 mb-6">
+                              <span className="text-xs text-muted-foreground w-12 font-light font-sans tracking-wide">
+                                {formatTime(currentTime)}
+                              </span>
+                              <div className="flex-1 h-1.5 bg-muted/30 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-cyan-400 transition-all"
+                                  style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
+                                />
+                              </div>
+                              <span className="text-xs text-muted-foreground w-12 text-right font-light font-sans tracking-wide">
+                                {formatTime(duration)}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-center gap-8">
+                              <Button 
+                                size="icon" 
+                                variant="ghost" 
+                                onClick={playPrevious}
+                                className="h-12 w-12 rounded-full hover:bg-cyan-400/10"
+                              >
+                                <SkipBack className="w-6 h-6 text-foreground/70" />
+                              </Button>
+                              <Button 
+                                size="icon" 
+                                onClick={togglePlayPause} 
+                                className="h-16 w-16 rounded-full bg-cyan-400/20 hover:bg-cyan-400/30 border border-cyan-400/50"
+                              >
+                                {isPlaying ? <Pause className="w-7 h-7 text-cyan-400" /> : <Play className="w-7 h-7 text-cyan-400 ml-1" />}
+                              </Button>
+                              <Button 
+                                size="icon" 
+                                variant="ghost" 
+                                onClick={playNext}
+                                className="h-12 w-12 rounded-full hover:bg-cyan-400/10"
+                              >
+                                <SkipForward className="w-6 h-6 text-foreground/70" />
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          {/* Thumbnails below - track list */}
+                          {audioPlaylist.length > 1 && (
+                            <div className="flex justify-center gap-3 mt-6 pt-2 overflow-x-auto pb-2">
+                              {audioPlaylist.map((track, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => {
+                                    setCurrentTrack(idx);
+                                    if (audioRef.current) {
+                                      audioRef.current.src = track.audio_url;
+                                      if (isPlaying) {
+                                        audioRef.current.play();
+                                      }
+                                    }
+                                  }}
+                                  className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden transition-all duration-500 flex items-center justify-center ${
+                                    idx === currentTrack 
+                                      ? 'ring-1 ring-cyan-400/40 shadow-[0_0_15px_rgba(34,211,238,0.15)] bg-cyan-400/20' 
+                                      : 'opacity-40 hover:opacity-70 ring-1 ring-white/10 bg-black/40'
+                                  }`}
+                                >
+                                  <Music2 className="w-6 h-6 text-cyan-400/70" />
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
+                        
+                        {/* Right Arrow - Outside */}
+                        {audioPlaylist.length > 1 && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="bg-black/60 hover:bg-black/80 backdrop-blur-sm h-10 w-10 rounded-full border border-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:shadow-[0_0_25px_rgba(34,211,238,0.6)] transition-all duration-300 flex-shrink-0"
+                            onClick={playNext}
+                          >
+                            <ChevronRight className="w-5 h-5 text-cyan-400" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>

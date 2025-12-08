@@ -47,7 +47,10 @@ export const VideoPlayer = () => {
         {/* Info Text */}
         <div className="mt-4 sm:mt-6 text-center px-4">
           <p className="text-cyan-400 text-xs sm:text-sm font-light tracking-wide drop-shadow-[0_0_8px_hsl(180_100%_50%/0.6)]">
-            Plataforma colaborativa para artistas, productores del medio artístico y cultural ESTE PROYECTO ES DE LIBRE USO PARA LATINOAMÉRICA
+            Plataforma colaborativa para artistas, productores del medio artístico y cultural
+          </p>
+          <p className="text-cyan-400 text-xs sm:text-sm font-light tracking-wide drop-shadow-[0_0_8px_hsl(180_100%_50%/0.6)] mt-1">
+            ESTE PROYECTO ES DE LIBRE USO PARA LATINOAMÉRICA
           </p>
         </div>
       </div>

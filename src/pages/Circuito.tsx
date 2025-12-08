@@ -415,11 +415,23 @@ const Circuito = () => {
                     {t('circuit.noResults')}
                   </h2>
                   <p className="text-muted-foreground mb-6">
-                    {t('circuit.noResultsFor')} "{searchTerm}".
+                    {selectedProfileType !== 'all' 
+                      ? `No hay perfiles de tipo "${PROFILE_TYPE_TABS.find(t => t.key === selectedProfileType)?.label}" en ${selectedCountry.name}.`
+                      : `${t('circuit.noResultsFor')} "${searchTerm}".`
+                    }
                   </p>
-                  <Button onClick={() => setSearchTerm("")} variant="outline">
-                    {t('common.clearSearch')}
-                  </Button>
+                  <div className="flex gap-3 justify-center">
+                    {selectedProfileType !== 'all' && (
+                      <Button onClick={() => setSelectedProfileType("all")} variant="default">
+                        Ver todos los perfiles
+                      </Button>
+                    )}
+                    {searchTerm && (
+                      <Button onClick={() => setSearchTerm("")} variant="outline">
+                        {t('common.clearSearch')}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ) : locationGroups.length === 0 ? (
                 <div className="bg-card/50 backdrop-blur-sm rounded-lg border border-border p-8 text-center">

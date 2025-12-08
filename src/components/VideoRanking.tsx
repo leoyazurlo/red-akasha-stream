@@ -118,7 +118,7 @@ export const VideoRanking = ({ videos: propVideos }: VideoRankingProps) => {
         .select('id, title, thumbnail_url, band_name, content_type, likes_count, uploader_id')
         .eq('status', 'approved')
         .order('likes_count', { ascending: false })
-        .limit(50);
+        .limit(100);
 
       if (contentError) throw contentError;
 

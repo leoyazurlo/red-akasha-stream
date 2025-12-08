@@ -111,6 +111,7 @@ interface VideoDetail {
   is_free: boolean;
   price: number;
   country?: string | null;
+  uploader_profile_id?: string | null;
 }
 
 interface Comment {
@@ -133,6 +134,15 @@ interface RelatedVideo {
   created_at: string;
 }
 
+interface MoreContent {
+  id: string;
+  title: string;
+  thumbnail_url: string | null;
+  views_count: number;
+  duration: number | null;
+  is_free: boolean;
+}
+
 const VideoDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
@@ -143,6 +153,7 @@ const VideoDetail = () => {
   const [video, setVideo] = useState<VideoDetail | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [relatedVideos, setRelatedVideos] = useState<RelatedVideo[]>([]);
+  const [moreContent, setMoreContent] = useState<MoreContent[]>([]);
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
@@ -219,6 +230,7 @@ const VideoDetail = () => {
   useEffect(() => {
     if (video) {
       fetchRelatedVideos();
+      fetchMoreContent();
     }
   }, [video]);
 
@@ -233,16 +245,17 @@ const VideoDetail = () => {
       if (error) throw error;
 
       if (data) {
-        // Fetch country from uploader's profile
+        // Fetch country and profile_id from uploader's profile
         const { data: profileData } = await supabase
           .from('profile_details')
-          .select('pais')
+          .select('id, pais')
           .eq('user_id', data.uploader_id)
           .single();
 
         setVideo({
           ...data,
-          country: profileData?.pais || null
+          country: profileData?.pais || null,
+          uploader_profile_id: profileData?.id || null
         });
         
         // Incrementar vistas
@@ -312,6 +325,26 @@ const VideoDetail = () => {
       setRelatedVideos(data || []);
     } catch (error) {
       console.error('Error fetching related videos:', error);
+    }
+  };
+
+  const fetchMoreContent = async () => {
+    if (!video) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('content_uploads')
+        .select('id, title, thumbnail_url, views_count, duration, is_free')
+        .eq('status', 'approved')
+        .eq('uploader_id', video.uploader_id)
+        .neq('id', video.id)
+        .order('created_at', { ascending: false })
+        .limit(6);
+
+      if (error) throw error;
+      setMoreContent(data || []);
+    } catch (error) {
+      console.error('Error fetching more content:', error);
     }
   };
 
@@ -640,7 +673,16 @@ const VideoDetail = () => {
                             <div className="flex items-center gap-2 text-sm">
                               <User className="w-4 h-4 text-muted-foreground" />
                               <span className="text-muted-foreground">Producido por:</span>
-                              <span className="font-medium">{video.producer_name}</span>
+                              {video.uploader_profile_id ? (
+                                <Link 
+                                  to={`/perfil/${video.uploader_profile_id}`}
+                                  className="font-medium text-primary hover:underline transition-colors"
+                                >
+                                  {video.producer_name}
+                                </Link>
+                              ) : (
+                                <span className="font-medium">{video.producer_name}</span>
+                              )}
                             </div>
                           </div>
                         )}
@@ -738,6 +780,59 @@ const VideoDetail = () => {
 
             {/* Sidebar */}
             <div className="space-y-6">
+              {/* More Content from same uploader */}
+              {moreContent.length > 0 && (
+                <Card className="bg-card/50 backdrop-blur-sm border-border">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Más contenido</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {moreContent.map((content) => (
+                      <Link
+                        key={content.id}
+                        to={`/video/${content.id}`}
+                        className="flex gap-3 group cursor-pointer"
+                      >
+                        <div className="relative w-32 aspect-video shrink-0 rounded overflow-hidden bg-secondary/30">
+                          {content.thumbnail_url ? (
+                            <img
+                              src={content.thumbnail_url}
+                              alt={content.title}
+                              className="object-cover w-full h-full group-hover:scale-105 transition-transform"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Play className="w-6 h-6 text-muted-foreground" />
+                            </div>
+                          )}
+                          {content.duration && (
+                            <Badge className="absolute bottom-1 right-1 bg-black/70 text-white text-xs">
+                              {formatDuration(content.duration)}
+                            </Badge>
+                          )}
+                          <span className={cn(
+                            "absolute top-1 left-1 text-[10px] px-1.5 py-0.5 rounded",
+                            content.is_free 
+                              ? "bg-cyan-500/80 text-white" 
+                              : "bg-amber-500/80 text-white"
+                          )}>
+                            {content.is_free ? "Libre" : "Pago"}
+                          </span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
+                            {content.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {content.views_count} vistas
+                          </p>
+                        </div>
+                      </Link>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Related Videos */}
               {relatedVideos.length > 0 && (
                 <Card className="bg-card/50 backdrop-blur-sm border-border">

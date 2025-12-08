@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
+import { ProfilePaidContent } from "@/components/profile/ProfilePaidContent";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -585,6 +586,11 @@ const PublicProfile = () => {
               </CardContent>
             </Card>
           )}
+
+          {/* Paid Content Section */}
+          <div className="mb-8">
+            <ProfilePaidContent profileId={id!} userId={profile.user_id} />
+          </div>
 
           {/* Gallery */}
           {hasContent && (

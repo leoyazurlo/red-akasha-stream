@@ -37,7 +37,7 @@ import {
   UserCheck,
   Mail
 } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -57,6 +57,10 @@ interface ProfileTechnicalSheetProps {
   linkedin: string | null;
   whatsapp: string | null;
   email: string | null;
+}
+
+export interface ProfileTechnicalSheetRef {
+  transferToMiniPlayer: () => void;
 }
 
 interface GalleryItem {
@@ -93,7 +97,7 @@ const profileTypeLabels: Record<string, string> = {
   productor_audiovisual: "PRODUCTOR AUDIOVISUAL"
 };
 
-export const ProfileTechnicalSheet = ({
+export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, ProfileTechnicalSheetProps>(({
   profileId,
   displayName,
   profileType,
@@ -104,7 +108,7 @@ export const ProfileTechnicalSheet = ({
   linkedin,
   whatsapp,
   email
-}: ProfileTechnicalSheetProps) => {
+}, ref) => {
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [audioPlaylist, setAudioPlaylist] = useState<AudioTrack[]>([]);
   const [currentTrack, setCurrentTrack] = useState(0);
@@ -214,7 +218,44 @@ export const ProfileTechnicalSheet = ({
     }
   };
 
-  // Send to floating mini player
+  // Send to floating mini player (internal use)
+  const transferToMiniPlayerInternal = (showToast: boolean = true) => {
+    if (audioPlaylist.length === 0 || !isPlaying) return;
+    
+    // Pause local audio first
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    setIsPlaying(false);
+    
+    openMiniPlayer({
+      id: profileId,
+      title: audioPlaylist[currentTrack]?.title || displayName,
+      video_url: null,
+      audio_url: audioPlaylist[currentTrack]?.audio_url || null,
+      thumbnail_url: avatarUrl,
+      content_type: 'profile_audio',
+      band_name: displayName,
+      playlist: audioPlaylist.map(track => ({
+        id: track.id,
+        title: track.title,
+        audio_url: track.audio_url,
+        duration: track.duration
+      })),
+      currentTrackIndex: currentTrack,
+      profileName: displayName,
+      profileAvatar: avatarUrl || undefined
+    });
+
+    if (showToast) {
+      toast({
+        title: "Reproductor flotante activado",
+        description: "La música seguirá reproduciéndose mientras navegas"
+      });
+    }
+  };
+
+  // Public send to mini player (with toast)
   const sendToMiniPlayer = () => {
     if (audioPlaylist.length === 0) return;
     
@@ -248,6 +289,11 @@ export const ProfileTechnicalSheet = ({
       description: "La música seguirá reproduciéndose mientras navegas"
     });
   };
+
+  // Expose transferToMiniPlayer to parent via ref
+  useImperativeHandle(ref, () => ({
+    transferToMiniPlayer: () => transferToMiniPlayerInternal(false)
+  }), [audioPlaylist, isPlaying, currentTrack, profileId, displayName, avatarUrl]);
 
   const profileUrl = `${window.location.origin}/circuito/perfil/${profileId}`;
 
@@ -1349,4 +1395,4 @@ export const ProfileTechnicalSheet = ({
       </Dialog>
     </div>
   );
-};
+});

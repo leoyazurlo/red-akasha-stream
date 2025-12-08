@@ -527,14 +527,15 @@ export default function ArtistProfile() {
             </TabsContent>
           </Tabs>
 
-          {/* Recent Ratings */}
+          {/* Valoración de la Comunidad - Solo mostrar la última */}
           {recentRatings.length > 0 && (
             <Card className="mt-8 border-border/50 bg-card/50 backdrop-blur-sm">
               <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Valoraciones Recientes</h2>
-                <div className="space-y-4">
-                  {recentRatings.map((rating: any) => (
-                    <div key={rating.id} className="flex gap-3 pb-4 border-b border-border/50 last:border-0">
+                <h2 className="text-xl font-semibold mb-4">Valoración de la Comunidad</h2>
+                {(() => {
+                  const rating = recentRatings[0] as any;
+                  return (
+                    <div key={rating.id} className="flex gap-3">
                       <img
                         src={rating.rater?.avatar_url || "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=50&h=50&fit=crop"}
                         alt={rating.rater?.name || 'Usuario'}
@@ -559,8 +560,8 @@ export default function ArtistProfile() {
                         )}
                       </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })()}
               </CardContent>
             </Card>
           )}

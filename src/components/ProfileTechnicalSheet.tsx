@@ -672,6 +672,8 @@ export const ProfileTechnicalSheet = ({
                     <ImageIcon className="w-5 h-5 text-primary" />
                     Fotos
                   </h4>
+                  
+                  {/* Photo Carousel */}
                   <div className="relative group">
                     {/* Glow effect border */}
                     <div className="absolute -inset-0.5 bg-gradient-primary rounded-2xl blur opacity-30 group-hover:opacity-60 transition-opacity duration-500" />
@@ -718,25 +720,52 @@ export const ProfileTechnicalSheet = ({
                           >
                             <ChevronRight className="w-5 h-5" />
                           </Button>
-                          
-                          {/* Photo counter */}
-                          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-background/90 backdrop-blur-md px-4 py-1.5 rounded-full text-primary text-xs font-bold border border-primary/20 shadow-lg">
-                            {currentPhotoIndex + 1} / {photos.length}
-                          </div>
                         </>
                       )}
                     </div>
+                    
+                    {/* Thumbnail strip */}
+                    {photos.length > 1 && (
+                      <div className="mt-3 flex gap-2 overflow-x-auto pb-2 justify-center">
+                        {photos.map((photo, index) => (
+                          <button
+                            key={photo.id}
+                            onClick={() => {
+                              setPhotoTransition('exit');
+                              setTimeout(() => {
+                                setCurrentPhotoIndex(index);
+                                setPhotoTransition('enter');
+                                setTimeout(() => setPhotoTransition('idle'), 500);
+                              }, 300);
+                            }}
+                            className={`flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden border-2 transition-all duration-300 ${
+                              currentPhotoIndex === index 
+                                ? 'border-primary shadow-glow scale-110' 
+                                : 'border-transparent opacity-60 hover:opacity-100'
+                            }`}
+                          >
+                            <img 
+                              src={photo.url} 
+                              alt={photo.title || `Photo ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* VIDEO - Only show if there are videos */}
+              {/* VIDEOS - Only show if there are videos */}
               {videos.length > 0 && (
                 <div className="space-y-4">
                   <h4 className="text-lg font-bold text-foreground text-center tracking-widest uppercase flex items-center justify-center gap-2">
                     <Video className="w-5 h-5 text-accent" />
-                    Video
+                    Videos
                   </h4>
+                  
+                  {/* Video Carousel */}
                   <div className="relative group">
                     {/* Glow effect border */}
                     <div className="absolute -inset-0.5 bg-gradient-primary rounded-2xl blur opacity-30 group-hover:opacity-60 transition-opacity duration-500" />
@@ -785,14 +814,40 @@ export const ProfileTechnicalSheet = ({
                           >
                             <ChevronRight className="w-5 h-5" />
                           </Button>
-                          
-                          {/* Video counter */}
-                          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-background/90 backdrop-blur-md px-4 py-1.5 rounded-full text-primary text-xs font-bold border border-primary/20 shadow-lg z-10">
-                            {currentVideoIndex + 1} / {videos.length}
-                          </div>
                         </>
                       )}
                     </div>
+                    
+                    {/* Video thumbnail strip */}
+                    {videos.length > 1 && (
+                      <div className="mt-3 flex gap-2 overflow-x-auto pb-2 justify-center">
+                        {videos.map((video, index) => (
+                          <button
+                            key={video.id}
+                            onClick={() => {
+                              setVideoTransition('exit');
+                              setTimeout(() => {
+                                setCurrentVideoIndex(index);
+                                setVideoTransition('enter');
+                                setTimeout(() => setVideoTransition('idle'), 500);
+                              }, 300);
+                            }}
+                            className={`flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden border-2 transition-all duration-300 relative ${
+                              currentVideoIndex === index 
+                                ? 'border-accent shadow-glow scale-110' 
+                                : 'border-transparent opacity-60 hover:opacity-100'
+                            }`}
+                          >
+                            <div className="w-full h-full bg-secondary/50 flex items-center justify-center">
+                              <Play className="w-4 h-4 text-accent" />
+                            </div>
+                            <span className="absolute bottom-0 left-0 right-0 bg-background/80 text-[8px] text-center truncate px-1">
+                              {index + 1}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -802,7 +857,7 @@ export const ProfileTechnicalSheet = ({
                 <div className="space-y-4">
                   <h4 className="text-lg font-bold text-foreground text-center tracking-widest uppercase flex items-center justify-center gap-2">
                     <Music2 className="w-5 h-5 text-primary-glow" />
-                    Audio
+                    Mi Música
                   </h4>
                   <div className="backdrop-blur-md bg-card/30 rounded-2xl p-4 border border-primary/20 space-y-4">
                     {/* Playlist */}

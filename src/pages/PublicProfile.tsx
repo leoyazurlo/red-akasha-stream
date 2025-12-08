@@ -606,48 +606,63 @@ const PublicProfile = () => {
                       <span className="text-xs font-light tracking-wider uppercase text-muted-foreground">Fotos ({photos.length})</span>
                     </div>
                     <div className="flex justify-center">
-                      <div className="relative max-w-md w-full">
-                        <div className="aspect-square rounded-xl overflow-hidden border border-cyan-400/30 shadow-[0_0_20px_rgba(34,211,238,0.2)]">
-                          <img
-                            src={photos[currentPhotoIndex]?.url}
-                            alt={photos[currentPhotoIndex]?.title || 'Foto'}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
+                      <div className="flex items-center gap-4">
+                        {/* Left Arrow - Outside */}
                         {photos.length > 1 && (
-                          <>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-black/60 hover:bg-black/80 backdrop-blur-sm h-10 w-10 rounded-full border border-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:shadow-[0_0_25px_rgba(34,211,238,0.6)] transition-all duration-300"
-                              onClick={() => setCurrentPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length)}
-                            >
-                              <ChevronLeft className="w-5 h-5 text-cyan-400" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-black/60 hover:bg-black/80 backdrop-blur-sm h-10 w-10 rounded-full border border-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:shadow-[0_0_25px_rgba(34,211,238,0.6)] transition-all duration-300"
-                              onClick={() => setCurrentPhotoIndex((prev) => (prev + 1) % photos.length)}
-                            >
-                              <ChevronRight className="w-5 h-5 text-cyan-400" />
-                            </Button>
-                          </>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="bg-black/60 hover:bg-black/80 backdrop-blur-sm h-10 w-10 rounded-full border border-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:shadow-[0_0_25px_rgba(34,211,238,0.6)] transition-all duration-300 flex-shrink-0"
+                            onClick={() => setCurrentPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length)}
+                          >
+                            <ChevronLeft className="w-5 h-5 text-cyan-400" />
+                          </Button>
                         )}
-                        {photos.length > 1 && (
-                          <div className="flex justify-center gap-1.5 mt-3">
-                            {photos.map((_, idx) => (
-                              <button
-                                key={idx}
-                                onClick={() => setCurrentPhotoIndex(idx)}
-                                className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                                  idx === currentPhotoIndex 
-                                    ? 'bg-cyan-400 w-4' 
-                                    : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
-                                }`}
-                              />
-                            ))}
+                        
+                        {/* Main Image */}
+                        <div className="max-w-sm w-full">
+                          <div className="aspect-square rounded-xl overflow-hidden border border-cyan-400/30 shadow-[0_0_20px_rgba(34,211,238,0.2)]">
+                            <img
+                              src={photos[currentPhotoIndex]?.url}
+                              alt={photos[currentPhotoIndex]?.title || 'Foto'}
+                              className="w-full h-full object-cover"
+                            />
                           </div>
+                          
+                          {/* Thumbnails below */}
+                          {photos.length > 1 && (
+                            <div className="flex justify-center gap-2 mt-4 overflow-x-auto pb-2">
+                              {photos.map((photo, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => setCurrentPhotoIndex(idx)}
+                                  className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden transition-all duration-300 ${
+                                    idx === currentPhotoIndex 
+                                      ? 'ring-2 ring-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.5)]' 
+                                      : 'opacity-50 hover:opacity-80 ring-1 ring-border/30'
+                                  }`}
+                                >
+                                  <img
+                                    src={photo.url}
+                                    alt={photo.title || `Foto ${idx + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Right Arrow - Outside */}
+                        {photos.length > 1 && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="bg-black/60 hover:bg-black/80 backdrop-blur-sm h-10 w-10 rounded-full border border-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:shadow-[0_0_25px_rgba(34,211,238,0.6)] transition-all duration-300 flex-shrink-0"
+                            onClick={() => setCurrentPhotoIndex((prev) => (prev + 1) % photos.length)}
+                          >
+                            <ChevronRight className="w-5 h-5 text-cyan-400" />
+                          </Button>
                         )}
                       </div>
                     </div>
@@ -662,48 +677,66 @@ const PublicProfile = () => {
                       <span className="text-xs font-light tracking-wider uppercase text-muted-foreground">Videos ({videos.length})</span>
                     </div>
                     <div className="flex justify-center">
-                      <div className="relative max-w-md w-full">
-                        <div className="aspect-square rounded-xl overflow-hidden border border-cyan-400/30 shadow-[0_0_20px_rgba(34,211,238,0.2)]">
-                          <video
-                            src={videos[currentVideoIndex]?.url}
-                            controls
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
+                      <div className="flex items-center gap-4">
+                        {/* Left Arrow - Outside */}
                         {videos.length > 1 && (
-                          <>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-black/60 hover:bg-black/80 backdrop-blur-sm h-10 w-10 rounded-full border border-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:shadow-[0_0_25px_rgba(34,211,238,0.6)] transition-all duration-300"
-                              onClick={() => setCurrentVideoIndex((prev) => (prev - 1 + videos.length) % videos.length)}
-                            >
-                              <ChevronLeft className="w-5 h-5 text-cyan-400" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-black/60 hover:bg-black/80 backdrop-blur-sm h-10 w-10 rounded-full border border-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:shadow-[0_0_25px_rgba(34,211,238,0.6)] transition-all duration-300"
-                              onClick={() => setCurrentVideoIndex((prev) => (prev + 1) % videos.length)}
-                            >
-                              <ChevronRight className="w-5 h-5 text-cyan-400" />
-                            </Button>
-                          </>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="bg-black/60 hover:bg-black/80 backdrop-blur-sm h-10 w-10 rounded-full border border-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:shadow-[0_0_25px_rgba(34,211,238,0.6)] transition-all duration-300 flex-shrink-0"
+                            onClick={() => setCurrentVideoIndex((prev) => (prev - 1 + videos.length) % videos.length)}
+                          >
+                            <ChevronLeft className="w-5 h-5 text-cyan-400" />
+                          </Button>
                         )}
-                        {videos.length > 1 && (
-                          <div className="flex justify-center gap-1.5 mt-3">
-                            {videos.map((_, idx) => (
-                              <button
-                                key={idx}
-                                onClick={() => setCurrentVideoIndex(idx)}
-                                className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                                  idx === currentVideoIndex 
-                                    ? 'bg-cyan-400 w-4' 
-                                    : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
-                                }`}
-                              />
-                            ))}
+                        
+                        {/* Main Video */}
+                        <div className="max-w-sm w-full">
+                          <div className="aspect-square rounded-xl overflow-hidden border border-cyan-400/30 shadow-[0_0_20px_rgba(34,211,238,0.2)]">
+                            <video
+                              src={videos[currentVideoIndex]?.url}
+                              controls
+                              className="w-full h-full object-cover"
+                            />
                           </div>
+                          
+                          {/* Thumbnails below */}
+                          {videos.length > 1 && (
+                            <div className="flex justify-center gap-2 mt-4 overflow-x-auto pb-2">
+                              {videos.map((video, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => setCurrentVideoIndex(idx)}
+                                  className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden transition-all duration-300 relative ${
+                                    idx === currentVideoIndex 
+                                      ? 'ring-2 ring-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.5)]' 
+                                      : 'opacity-50 hover:opacity-80 ring-1 ring-border/30'
+                                  }`}
+                                >
+                                  <video
+                                    src={video.url}
+                                    className="w-full h-full object-cover"
+                                    muted
+                                  />
+                                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                    <Video className="w-4 h-4 text-white/80" />
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Right Arrow - Outside */}
+                        {videos.length > 1 && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="bg-black/60 hover:bg-black/80 backdrop-blur-sm h-10 w-10 rounded-full border border-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:shadow-[0_0_25px_rgba(34,211,238,0.6)] transition-all duration-300 flex-shrink-0"
+                            onClick={() => setCurrentVideoIndex((prev) => (prev + 1) % videos.length)}
+                          >
+                            <ChevronRight className="w-5 h-5 text-cyan-400" />
+                          </Button>
                         )}
                       </div>
                     </div>

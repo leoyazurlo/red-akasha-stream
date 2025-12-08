@@ -1,6 +1,6 @@
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
+import { X, Minimize2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -42,10 +42,16 @@ const DialogContent = React.forwardRef<
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm ring-offset-background transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 disabled:pointer-events-none">
-        <X className="h-8 w-8 text-cyan-400 drop-shadow-[0_0_10px_rgba(34,211,238,0.7)]" />
-        <span className="sr-only">Close</span>
-      </DialogPrimitive.Close>
+      <div className="absolute right-4 top-4 flex items-center gap-2">
+        <DialogPrimitive.Close className="rounded-sm ring-offset-background transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 disabled:pointer-events-none">
+          <Minimize2 className="h-7 w-7 text-cyan-400 drop-shadow-[0_0_10px_rgba(34,211,238,0.7)]" />
+          <span className="sr-only">Minimize</span>
+        </DialogPrimitive.Close>
+        <DialogPrimitive.Close className="rounded-sm ring-offset-background transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 disabled:pointer-events-none">
+          <X className="h-8 w-8 text-cyan-400 drop-shadow-[0_0_10px_rgba(34,211,238,0.7)]" />
+          <span className="sr-only">Close</span>
+        </DialogPrimitive.Close>
+      </div>
     </DialogPrimitive.Content>
   </DialogPortal>
 ));

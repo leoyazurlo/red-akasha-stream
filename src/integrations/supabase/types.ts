@@ -358,6 +358,62 @@ export type Database = {
           },
         ]
       }
+      content_purchases: {
+        Row: {
+          amount: number
+          content_id: string
+          created_at: string
+          currency: string
+          expires_at: string | null
+          id: string
+          payment_id: string | null
+          payment_method: string
+          payment_provider: string
+          purchase_type: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          content_id: string
+          created_at?: string
+          currency?: string
+          expires_at?: string | null
+          id?: string
+          payment_id?: string | null
+          payment_method: string
+          payment_provider: string
+          purchase_type: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          content_id?: string
+          created_at?: string
+          currency?: string
+          expires_at?: string | null
+          id?: string
+          payment_id?: string | null
+          payment_method?: string
+          payment_provider?: string
+          purchase_type?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_purchases_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "content_uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_shares: {
         Row: {
           content_id: string
@@ -398,6 +454,8 @@ export type Database = {
       }
       content_uploads: {
         Row: {
+          accepted_payment_methods: string[] | null
+          access_type: string | null
           audio_duration_seconds: number | null
           audio_url: string | null
           band_name: string | null
@@ -419,8 +477,11 @@ export type Database = {
           producer_name: string | null
           promoter_name: string | null
           recording_studio: string | null
+          rental_duration_hours: number | null
+          rental_price: number | null
           shares_count: number | null
           status: string | null
+          subscription_tier: string | null
           tags: string[] | null
           thumbnail_large: string | null
           thumbnail_medium: string | null
@@ -437,6 +498,8 @@ export type Database = {
           views_count: number | null
         }
         Insert: {
+          accepted_payment_methods?: string[] | null
+          access_type?: string | null
           audio_duration_seconds?: number | null
           audio_url?: string | null
           band_name?: string | null
@@ -458,8 +521,11 @@ export type Database = {
           producer_name?: string | null
           promoter_name?: string | null
           recording_studio?: string | null
+          rental_duration_hours?: number | null
+          rental_price?: number | null
           shares_count?: number | null
           status?: string | null
+          subscription_tier?: string | null
           tags?: string[] | null
           thumbnail_large?: string | null
           thumbnail_medium?: string | null
@@ -476,6 +542,8 @@ export type Database = {
           views_count?: number | null
         }
         Update: {
+          accepted_payment_methods?: string[] | null
+          access_type?: string | null
           audio_duration_seconds?: number | null
           audio_url?: string | null
           band_name?: string | null
@@ -497,8 +565,11 @@ export type Database = {
           producer_name?: string | null
           promoter_name?: string | null
           recording_studio?: string | null
+          rental_duration_hours?: number | null
+          rental_price?: number | null
           shares_count?: number | null
           status?: string | null
+          subscription_tier?: string | null
           tags?: string[] | null
           thumbnail_large?: string | null
           thumbnail_medium?: string | null
@@ -1040,6 +1111,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      payment_methods_config: {
+        Row: {
+          config: Json | null
+          created_at: string
+          display_name: string
+          icon_name: string | null
+          id: string
+          is_active: boolean | null
+          provider: string
+          supported_currencies: string[] | null
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string
+          display_name: string
+          icon_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          provider: string
+          supported_currencies?: string[] | null
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string
+          display_name?: string
+          icon_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          provider?: string
+          supported_currencies?: string[] | null
+        }
+        Relationships: []
       }
       playback_history: {
         Row: {
@@ -2292,6 +2396,54 @@ export type Database = {
           },
         ]
       }
+      user_subscriptions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          current_period_end: string
+          current_period_start: string
+          id: string
+          payment_method: string
+          payment_provider: string
+          plan_type: string
+          status: string
+          subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          current_period_end: string
+          current_period_start?: string
+          id?: string
+          payment_method: string
+          payment_provider: string
+          plan_type: string
+          status?: string
+          subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          current_period_end?: string
+          current_period_start?: string
+          id?: string
+          payment_method?: string
+          payment_provider?: string
+          plan_type?: string
+          status?: string
+          subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       viewer_analytics: {
         Row: {
           average_bitrate: number | null
@@ -2569,6 +2721,10 @@ export type Database = {
       award_badge_if_eligible: {
         Args: { p_badge_name: string; p_user_id: string }
         Returns: undefined
+      }
+      check_content_access: {
+        Args: { p_content_id: string; p_user_id: string }
+        Returns: boolean
       }
       decrement_likes: { Args: { content_id: string }; Returns: undefined }
       extract_mentions: { Args: { content_text: string }; Returns: string[] }

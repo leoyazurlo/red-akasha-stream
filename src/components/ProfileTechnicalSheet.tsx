@@ -668,11 +668,21 @@ export const ProfileTechnicalSheet = ({
                 )}
               </div>
 
-              {/* Follow and Message Buttons */}
-              {user && targetUserId && user.id !== targetUserId && (
+              {/* Follow and Message Buttons - Show for any visitor viewing another's profile */}
+              {targetUserId && (!user || user.id !== targetUserId) && (
                 <div className="flex gap-3 mb-4">
                   <Button
-                    onClick={toggleFollow}
+                    onClick={() => {
+                      if (!user) {
+                        toast({
+                          title: "Inicia sesión",
+                          description: "Debes iniciar sesión para seguir usuarios",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      toggleFollow();
+                    }}
                     disabled={followLoading}
                     className={`gap-2 font-semibold shadow-[0_0_15px_rgba(34,211,238,0.5)] ${isFollowing 
                       ? 'bg-transparent border-2 border-cyan-400 text-cyan-400 hover:bg-cyan-400/20 hover:shadow-[0_0_25px_rgba(34,211,238,0.7)]' 
@@ -693,7 +703,17 @@ export const ProfileTechnicalSheet = ({
                     )}
                   </Button>
                   <Button
-                    onClick={() => setShowMessageDialog(true)}
+                    onClick={() => {
+                      if (!user) {
+                        toast({
+                          title: "Inicia sesión",
+                          description: "Debes iniciar sesión para enviar mensajes",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      setShowMessageDialog(true);
+                    }}
                     className="gap-2 font-semibold bg-transparent border-2 border-cyan-400 text-cyan-400 hover:bg-cyan-400/20 shadow-[0_0_15px_rgba(34,211,238,0.5)] hover:shadow-[0_0_25px_rgba(34,211,238,0.7)]"
                   >
                     <Mail className="h-4 w-4" />

@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Loader2, Trash2, Shield, User, Search, X, CalendarIcon, Download, FileText, MessageSquare, Video, ArrowUpDown, UserCog, Ban, AlertTriangle, FileSpreadsheet } from "lucide-react";
+import { Loader2, Trash2, Shield, User, Search, X, CalendarIcon, Download, FileText, MessageSquare, Video, ArrowUpDown, UserCog, Ban, AlertTriangle, FileSpreadsheet, Heart, CalendarDays, CalendarCheck, DollarSign } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,6 +43,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { z } from "zod";
 import { exportToExcel, exportToCSV, formatDate, PROFILE_TYPE_LABELS, ROLE_LABELS } from "@/lib/exportUtils";
 
@@ -86,6 +88,35 @@ interface UserSanction {
   created_at: string;
 }
 
+interface UserSubscription {
+  id: string;
+  user_id: string;
+  plan_type: string;
+  amount: number;
+  currency: string;
+  status: string;
+  payment_method: string;
+  current_period_start: string;
+  current_period_end: string;
+  created_at: string;
+  user_profile?: {
+    display_name: string;
+    email: string;
+  };
+}
+
+interface UserDonation {
+  id: string;
+  donor_id: string | null;
+  amount: number;
+  currency: string;
+  message: string | null;
+  display_name: string | null;
+  payment_status: string;
+  created_at: string;
+  stream_id: string;
+}
+
 const sanctionSchema = z.object({
   sanctionType: z.enum(['warning', 'temporary_ban', 'permanent_ban'], {
     required_error: "Debe seleccionar un tipo de sanción",
@@ -125,12 +156,53 @@ export default function AdminUsers() {
   const [sanctionReason, setSanctionReason] = useState("");
   const [sanctionDuration, setSanctionDuration] = useState<number>(7);
   const [sanctionErrors, setSanctionErrors] = useState<Record<string, string>>({});
+  const [activeTab, setActiveTab] = useState("users");
+  const [subscriptions, setSubscriptions] = useState<UserSubscription[]>([]);
+  const [donations, setDonations] = useState<UserDonation[]>([]);
+  const [loadingSubscriptions, setLoadingSubscriptions] = useState(false);
+  const [loadingDonations, setLoadingDonations] = useState(false);
 
   useEffect(() => {
     if (!authLoading && user && isAdmin) {
       loadUsers();
+      loadSubscriptions();
+      loadDonations();
     }
   }, [authLoading, user, isAdmin, searchQuery, profileTypeFilter, countryFilter, dateRange]);
+
+  const loadSubscriptions = async () => {
+    try {
+      setLoadingSubscriptions(true);
+      const { data, error } = await supabase
+        .from('user_subscriptions')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setSubscriptions(data || []);
+    } catch (error: any) {
+      console.error('Error loading subscriptions:', error);
+    } finally {
+      setLoadingSubscriptions(false);
+    }
+  };
+
+  const loadDonations = async () => {
+    try {
+      setLoadingDonations(true);
+      const { data, error } = await supabase
+        .from('donations')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setDonations(data || []);
+    } catch (error: any) {
+      console.error('Error loading donations:', error);
+    } finally {
+      setLoadingDonations(false);
+    }
+  };
 
   const loadUsers = async () => {
     try {
@@ -774,12 +846,35 @@ export default function AdminUsers() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-              </div>
+        </div>
 
-              {/* Filters Section */}
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Tabs for different views */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="users" className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              Usuarios ({users.length})
+            </TabsTrigger>
+            <TabsTrigger value="monthly" className="flex items-center gap-2">
+              <CalendarDays className="h-4 w-4" />
+              Mensuales ({subscriptions.filter(s => s.plan_type === 'monthly').length})
+            </TabsTrigger>
+            <TabsTrigger value="annual" className="flex items-center gap-2">
+              <CalendarCheck className="h-4 w-4" />
+              Anuales ({subscriptions.filter(s => s.plan_type === 'annual').length})
+            </TabsTrigger>
+            <TabsTrigger value="donations" className="flex items-center gap-2">
+              <Heart className="h-4 w-4" />
+              Donantes ({donations.length})
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Users Tab */}
+          <TabsContent value="users" className="space-y-4">
+            {/* Filters Section */}
+            <Card>
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {/* Search Input */}
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -1205,139 +1300,328 @@ export default function AdminUsers() {
                   No hay usuarios registrados
                 </div>
               )}
-            </div>
+          </TabsContent>
 
-            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción eliminará permanentemente el perfil de {selectedUser?.display_name}.
-              Esta acción no se puede deshacer.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteUser} className="bg-destructive text-destructive-foreground">
-              Eliminar
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          {/* Monthly Subscriptions Tab */}
+          <TabsContent value="monthly" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-cyan-400">
+                  <CalendarDays className="h-5 w-5" />
+                  Suscriptores Mensuales
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loadingSubscriptions ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Usuario ID</TableHead>
+                        <TableHead>Monto</TableHead>
+                        <TableHead>Método de Pago</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead>Período</TableHead>
+                        <TableHead>Fecha Registro</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {subscriptions.filter(s => s.plan_type === 'monthly').map((sub) => (
+                        <TableRow key={sub.id}>
+                          <TableCell className="font-mono text-xs">{sub.user_id.slice(0, 8)}...</TableCell>
+                          <TableCell className="font-medium text-cyan-400">
+                            ${Number(sub.amount).toFixed(2)} {sub.currency}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary">{sub.payment_method}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={sub.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-destructive/20 text-destructive'}>
+                              {sub.status === 'active' ? 'Activa' : sub.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {format(new Date(sub.current_period_start), 'dd/MM/yy')} - {format(new Date(sub.current_period_end), 'dd/MM/yy')}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {format(new Date(sub.created_at), 'dd/MM/yyyy', { locale: es })}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {subscriptions.filter(s => s.plan_type === 'monthly').length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                            No hay suscriptores mensuales
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-      <AlertDialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar {selectedUsers.size} usuario{selectedUsers.size !== 1 ? 's' : ''}?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta acción eliminará permanentemente {selectedUsers.size} perfil{selectedUsers.size !== 1 ? 'es' : ''} de usuario.
-              Esta acción no se puede deshacer.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive text-destructive-foreground">
-              Eliminar {selectedUsers.size} usuario{selectedUsers.size !== 1 ? 's' : ''}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+          {/* Annual Subscriptions Tab */}
+          <TabsContent value="annual" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-amber-400">
+                  <CalendarCheck className="h-5 w-5" />
+                  Suscriptores Anuales
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loadingSubscriptions ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Usuario ID</TableHead>
+                        <TableHead>Monto</TableHead>
+                        <TableHead>Método de Pago</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead>Período</TableHead>
+                        <TableHead>Fecha Registro</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {subscriptions.filter(s => s.plan_type === 'annual').map((sub) => (
+                        <TableRow key={sub.id}>
+                          <TableCell className="font-mono text-xs">{sub.user_id.slice(0, 8)}...</TableCell>
+                          <TableCell className="font-medium text-amber-400">
+                            ${Number(sub.amount).toFixed(2)} {sub.currency}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary">{sub.payment_method}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={sub.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-destructive/20 text-destructive'}>
+                              {sub.status === 'active' ? 'Activa' : sub.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {format(new Date(sub.current_period_start), 'dd/MM/yy')} - {format(new Date(sub.current_period_end), 'dd/MM/yy')}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {format(new Date(sub.created_at), 'dd/MM/yyyy', { locale: es })}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {subscriptions.filter(s => s.plan_type === 'annual').length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                            No hay suscriptores anuales
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-      <Dialog open={sanctionDialogOpen} onOpenChange={setSanctionDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Aplicar Sanción</DialogTitle>
-            <DialogDescription>
-              Aplica una sanción a {selectedUserForSanction?.display_name}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Tipo de Sanción</label>
-              <Select value={sanctionType} onValueChange={setSanctionType}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar tipo de sanción" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="warning">
-                    <div className="flex items-center gap-2">
-                      <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                      Advertencia
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="temporary_ban">
-                    <div className="flex items-center gap-2">
-                      <Ban className="h-4 w-4 text-orange-500" />
-                      Suspensión Temporal
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="permanent_ban">
-                    <div className="flex items-center gap-2">
-                      <Ban className="h-4 w-4 text-destructive" />
-                      Suspensión Permanente
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              {sanctionErrors.sanctionType && (
-                <p className="text-xs text-destructive">{sanctionErrors.sanctionType}</p>
-              )}
-            </div>
+          {/* Donations Tab */}
+          <TabsContent value="donations" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-rose-400">
+                  <Heart className="h-5 w-5" />
+                  Donantes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loadingDonations ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Donante</TableHead>
+                        <TableHead>Monto</TableHead>
+                        <TableHead>Mensaje</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead>Fecha</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {donations.map((donation) => (
+                        <TableRow key={donation.id}>
+                          <TableCell className="font-medium">
+                            {donation.display_name || (donation.donor_id ? donation.donor_id.slice(0, 8) + '...' : 'Anónimo')}
+                          </TableCell>
+                          <TableCell className="font-medium text-rose-400">
+                            ${Number(donation.amount).toFixed(2)} {donation.currency}
+                          </TableCell>
+                          <TableCell className="max-w-xs truncate text-muted-foreground">
+                            {donation.message || '-'}
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={donation.payment_status === 'completed' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-yellow-500/20 text-yellow-400'}>
+                              {donation.payment_status === 'completed' ? 'Completado' : donation.payment_status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {format(new Date(donation.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {donations.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                            No hay donaciones registradas
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
-            {sanctionType === 'temporary_ban' && (
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta acción eliminará permanentemente el perfil de {selectedUser?.display_name}.
+                Esta acción no se puede deshacer.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteUser} className="bg-destructive text-destructive-foreground">
+                Eliminar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Eliminar {selectedUsers.size} usuario{selectedUsers.size !== 1 ? 's' : ''}?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta acción eliminará permanentemente {selectedUsers.size} perfil{selectedUsers.size !== 1 ? 'es' : ''} de usuario.
+                Esta acción no se puede deshacer.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive text-destructive-foreground">
+                Eliminar {selectedUsers.size} usuario{selectedUsers.size !== 1 ? 's' : ''}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <Dialog open={sanctionDialogOpen} onOpenChange={setSanctionDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Aplicar Sanción</DialogTitle>
+              <DialogDescription>
+                Aplica una sanción a {selectedUserForSanction?.display_name}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Duración (días)</label>
-                <Input
-                  type="number"
-                  min="1"
-                  max="365"
-                  value={sanctionDuration}
-                  onChange={(e) => setSanctionDuration(parseInt(e.target.value) || 1)}
+                <label className="text-sm font-medium">Tipo de Sanción</label>
+                <Select value={sanctionType} onValueChange={setSanctionType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar tipo de sanción" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="warning">
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                        Advertencia
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="temporary_ban">
+                      <div className="flex items-center gap-2">
+                        <Ban className="h-4 w-4 text-orange-500" />
+                        Suspensión Temporal
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="permanent_ban">
+                      <div className="flex items-center gap-2">
+                        <Ban className="h-4 w-4 text-destructive" />
+                        Suspensión Permanente
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                {sanctionErrors.sanctionType && (
+                  <p className="text-xs text-destructive">{sanctionErrors.sanctionType}</p>
+                )}
+              </div>
+
+              {sanctionType === 'temporary_ban' && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Duración (días)</label>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="365"
+                    value={sanctionDuration}
+                    onChange={(e) => setSanctionDuration(parseInt(e.target.value) || 1)}
+                  />
+                  {sanctionErrors.duration && (
+                    <p className="text-xs text-destructive">{sanctionErrors.duration}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    Expira: {format(new Date(Date.now() + sanctionDuration * 24 * 60 * 60 * 1000), "dd/MM/yyyy HH:mm", { locale: es })}
+                  </p>
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Razón de la Sanción</label>
+                <Textarea
+                  placeholder="Explique la razón de la sanción (mínimo 10 caracteres)..."
+                  value={sanctionReason}
+                  onChange={(e) => setSanctionReason(e.target.value)}
+                  rows={4}
+                  maxLength={500}
+                  className={sanctionErrors.reason ? "border-destructive" : ""}
                 />
-                {sanctionErrors.duration && (
-                  <p className="text-xs text-destructive">{sanctionErrors.duration}</p>
+                {sanctionErrors.reason && (
+                  <p className="text-xs text-destructive">{sanctionErrors.reason}</p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  Expira: {format(new Date(Date.now() + sanctionDuration * 24 * 60 * 60 * 1000), "dd/MM/yyyy HH:mm", { locale: es })}
+                  {sanctionReason.length}/500 caracteres
                 </p>
               </div>
-            )}
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Razón de la Sanción</label>
-              <Textarea
-                placeholder="Explique la razón de la sanción (mínimo 10 caracteres)..."
-                value={sanctionReason}
-                onChange={(e) => setSanctionReason(e.target.value)}
-                rows={4}
-                maxLength={500}
-                className={sanctionErrors.reason ? "border-destructive" : ""}
-              />
-              {sanctionErrors.reason && (
-                <p className="text-xs text-destructive">{sanctionErrors.reason}</p>
-              )}
-              <p className="text-xs text-muted-foreground">
-                {sanctionReason.length}/500 caracteres
-              </p>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setSanctionDialogOpen(false);
-              setSelectedUserForSanction(null);
-              setSanctionType("");
-              setSanctionReason("");
-              setSanctionDuration(7);
-              setSanctionErrors({});
-            }}>
-              Cancelar
-            </Button>
-            <Button onClick={handleAddSanction} variant="destructive">
-              Aplicar Sanción
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      </AdminLayout>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => {
+                setSanctionDialogOpen(false);
+                setSelectedUserForSanction(null);
+                setSanctionType("");
+                setSanctionReason("");
+                setSanctionDuration(7);
+                setSanctionErrors({});
+              }}>
+                Cancelar
+              </Button>
+              <Button onClick={handleAddSanction} variant="destructive">
+                Aplicar Sanción
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </AdminLayout>
   );
 }

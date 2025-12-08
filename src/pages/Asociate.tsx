@@ -9,7 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, CheckCircle2, Upload, X, Video, Image as ImageIcon, Music, Check } from "lucide-react";
+import { Loader2, CheckCircle2, Upload, X, Video, Image as ImageIcon, Music, Check, User } from "lucide-react";
+import { ImageUpload } from "@/components/ImageUpload";
 import {
   Select,
   SelectContent,
@@ -714,6 +715,22 @@ const Asociate = () => {
                       </div>
                       
                        <div className="grid gap-6 md:grid-cols-2">
+                        {/* Profile Photo Upload */}
+                        <div className="space-y-3 md:col-span-2 p-4 rounded-xl bg-muted/20 border border-border/50">
+                          <div className="flex items-center gap-2 mb-3">
+                            <User className="w-5 h-5 text-primary" />
+                            <Label className="text-base font-semibold">{t('asociate.profilePhoto')} *</Label>
+                          </div>
+                          <ImageUpload
+                            label=""
+                            value={formData.avatar_url}
+                            onChange={(url) => setFormData(prev => ({ ...prev, avatar_url: url }))}
+                            required
+                            allowLocalPreview={true}
+                            description={t('asociate.profilePhotoDescription')}
+                          />
+                        </div>
+
                         <div className="space-y-2 md:col-span-2">
                           <Label htmlFor="nombre" className="text-sm font-medium">{t('asociate.fullName')} *</Label>
                           <Input

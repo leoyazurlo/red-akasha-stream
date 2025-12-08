@@ -30,6 +30,7 @@ const SUBSCRIPTION_PLANS = [
     currency: 'USD',
     period: 'mes',
     features: [
+      'Uso y descarga del contenido disponible',
       'Acceso anticipado a contenido',
       'Badge de colaborador',
       'Tu nombre en créditos'

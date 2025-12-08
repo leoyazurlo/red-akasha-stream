@@ -214,6 +214,11 @@ const Artists = () => {
           </p>
         </section>
 
+        {/* Intro Text */}
+        <p className="text-center text-muted-foreground max-w-3xl mx-auto mb-6 px-4 animate-fade-in">
+          Esta base de datos reúne formatos, artistas y contenidos de Latam. Conocer y difundir nuestra identidad cultural nos hace más fuertes como comunidad.
+        </p>
+
         {/* Country Selector */}
         <div className="flex justify-center mb-6 animate-fade-in">
           <CountrySelector 

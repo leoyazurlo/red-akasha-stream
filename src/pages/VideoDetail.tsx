@@ -673,9 +673,9 @@ const VideoDetail = () => {
                             <div className="flex items-center gap-2 text-sm">
                               <User className="w-4 h-4 text-muted-foreground" />
                               <span className="text-muted-foreground">Producido por:</span>
-                              {video.uploader_profile_id ? (
+                            {video.uploader_profile_id ? (
                                 <Link 
-                                  to={`/perfil/${video.uploader_profile_id}`}
+                                  to={`/circuito/perfil/${video.uploader_profile_id}`}
                                   className="font-medium text-primary hover:underline transition-colors"
                                 >
                                   {video.producer_name}

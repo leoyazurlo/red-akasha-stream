@@ -99,6 +99,7 @@ const profileTypeOptions = [
   { value: "musico", label: "Músico" },
   { value: "percusion", label: "Percusión" },
   { value: "productor_artistico", label: "Productor Artístico" },
+  { value: "productor_audiovisual", label: "Productor Audiovisual" },
   { value: "promotor_artistico", label: "Promotor Artístico" },
   { value: "representante", label: "Representante" },
   { value: "sala_concierto", label: "Sala de Concierto" },

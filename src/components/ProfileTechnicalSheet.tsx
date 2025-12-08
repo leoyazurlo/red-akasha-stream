@@ -625,8 +625,8 @@ export const ProfileTechnicalSheet = ({
               {photos.length > 0 && (
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 justify-center">
-                    <ImageIcon className="w-3.5 h-3.5 text-primary/60" />
-                    <span className="text-[10px] font-light text-foreground/60 tracking-[0.2em] uppercase">Galería</span>
+                    <ImageIcon className="w-5 h-5 text-primary/60" />
+                    <span className="text-base font-light text-foreground/60 tracking-[0.2em] uppercase">Galería</span>
                   </div>
                   
                   {/* Photo Carousel */}
@@ -717,8 +717,8 @@ export const ProfileTechnicalSheet = ({
               {videos.length > 0 && (
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 justify-center">
-                    <Video className="w-3.5 h-3.5 text-accent/60" />
-                    <span className="text-[10px] font-light text-foreground/60 tracking-[0.2em] uppercase">Videos</span>
+                    <Video className="w-5 h-5 text-accent/60" />
+                    <span className="text-base font-light text-foreground/60 tracking-[0.2em] uppercase">Videos</span>
                   </div>
                   
                   {/* Video Carousel */}
@@ -812,8 +812,8 @@ export const ProfileTechnicalSheet = ({
               {audioPlaylist.length > 0 && (
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 justify-center">
-                    <Music2 className="w-3.5 h-3.5 text-primary/60" />
-                    <span className="text-[10px] font-light text-foreground/60 tracking-[0.2em] uppercase">Música</span>
+                    <Music2 className="w-5 h-5 text-primary/60" />
+                    <span className="text-base font-light text-foreground/60 tracking-[0.2em] uppercase">Música</span>
                   </div>
                   <div className="backdrop-blur-md bg-card/20 rounded-2xl p-4 border border-primary/10 space-y-3">
                     {/* Playlist */}

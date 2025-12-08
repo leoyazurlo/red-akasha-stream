@@ -496,11 +496,11 @@ export const ProfileTechnicalSheet = ({
             <div className="flex-1 max-w-3xl">
               {/* Badge with profile type */}
               <div className="inline-flex items-center gap-2 mb-4">
-                <div className="h-px w-8 bg-gradient-to-r from-transparent to-primary/50" />
-                <span className="text-primary text-base sm:text-lg font-light tracking-[0.3em] uppercase">
+                <div className="h-px w-8 bg-gradient-to-r from-transparent to-primary/30" />
+                <span className="text-foreground/70 text-base sm:text-lg font-light tracking-[0.4em] uppercase">
                   {profileTypeLabels[profileType] || profileType}
                 </span>
-                <div className="h-px w-8 bg-gradient-to-l from-transparent to-primary/50" />
+                <div className="h-px w-8 bg-gradient-to-l from-transparent to-primary/30" />
               </div>
               
               <h2 className="text-2xl sm:text-3xl font-light text-foreground mb-4 tracking-wide">

@@ -394,10 +394,86 @@ const SalesAnalytics = () => {
           </Card>
         </div>
 
+        {/* Recent Subscriptions Table */}
+        <Card className="bg-card/50 border-cyan-500/20">
+          <CardHeader>
+            <CardTitle className="text-cyan-400 flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Suscripciones Recientes
+            </CardTitle>
+            <CardDescription>Historial de suscripciones vendidas</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead>Plan</TableHead>
+                  <TableHead>Método de Pago</TableHead>
+                  <TableHead>Proveedor</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Período</TableHead>
+                  <TableHead className="text-right">Monto</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {subscriptions?.slice(0, 10).map((sub) => (
+                  <TableRow key={sub.id}>
+                    <TableCell className="text-muted-foreground">
+                      {format(new Date(sub.created_at), 'dd/MM/yyyy HH:mm', { locale: es })}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      <Badge variant="outline" className={
+                        sub.plan_type === 'annual' 
+                          ? 'bg-purple-500/10 text-purple-400 border-purple-500/30'
+                          : 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
+                      }>
+                        {sub.plan_type === 'annual' ? 'Anual' : 'Mensual'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">
+                        {sub.payment_method}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {sub.payment_provider}
+                    </TableCell>
+                    <TableCell>
+                      <Badge 
+                        variant={sub.status === 'active' ? 'default' : 'destructive'}
+                        className={sub.status === 'active' ? 'bg-emerald-500/20 text-emerald-400' : ''}
+                      >
+                        {sub.status === 'active' ? 'Activa' : sub.status === 'cancelled' ? 'Cancelada' : sub.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {format(new Date(sub.current_period_start), 'dd/MM/yy')} - {format(new Date(sub.current_period_end), 'dd/MM/yy')}
+                    </TableCell>
+                    <TableCell className="text-right font-medium text-cyan-400">
+                      ${Number(sub.amount).toFixed(2)} {sub.currency}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {(!subscriptions || subscriptions.length === 0) && (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                      No hay suscripciones en este período
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
         {/* Recent Transactions Table */}
         <Card className="bg-card/50 border-cyan-500/20">
           <CardHeader>
-            <CardTitle className="text-cyan-400">Últimas Transacciones</CardTitle>
+            <CardTitle className="text-cyan-400 flex items-center gap-2">
+              <ShoppingCart className="h-5 w-5" />
+              Últimas Compras de Contenido
+            </CardTitle>
             <CardDescription>Historial de compras recientes</CardDescription>
           </CardHeader>
           <CardContent>

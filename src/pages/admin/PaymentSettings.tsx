@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,8 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Loader2, DollarSign, Percent, Globe, Save } from "lucide-react";
+import { Loader2, DollarSign, Percent, Globe, Save, ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 
 interface PaymentSetting {
   id: string;
@@ -18,6 +20,7 @@ interface PaymentSetting {
 }
 
 const PaymentSettings = () => {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [settings, setSettings] = useState<Record<string, any>>({});
 
@@ -79,34 +82,45 @@ const PaymentSettings = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
-      </div>
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
+        </div>
+      </AdminLayout>
     );
   }
 
   const latinCountries = settings.latin_america_countries?.countries || [];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-cyan-400 drop-shadow-[0_0_10px_hsl(180,100%,50%)]">
-            Configuración de Pagos
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Gestiona los precios, suscripciones y porcentajes de la plataforma
-          </p>
+    <AdminLayout>
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => navigate('/admin')}
+            className="text-cyan-400 hover:bg-cyan-500/10"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-cyan-400 drop-shadow-[0_0_10px_hsl(180,100%,50%)]">
+              Configuración de Pagos
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Gestiona los precios, suscripciones y porcentajes de la plataforma
+            </p>
+          </div>
+          <Button onClick={handleSaveAll} disabled={updateMutation.isPending}>
+            {updateMutation.isPending ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
+            )}
+            Guardar Cambios
+          </Button>
         </div>
-        <Button onClick={handleSaveAll} disabled={updateMutation.isPending}>
-          {updateMutation.isPending ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <Save className="h-4 w-4 mr-2" />
-          )}
-          Guardar Cambios
-        </Button>
-      </div>
 
       {/* Acceso Gratuito Latinoamérica */}
       <Card className="bg-card/50 border-cyan-500/20">
@@ -298,7 +312,8 @@ const PaymentSettings = () => {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 

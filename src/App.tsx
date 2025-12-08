@@ -27,6 +27,7 @@ import AdminYouTubeVideos from "./pages/admin/YouTubeVideos";
 import AdminStreamConfig from "./pages/admin/StreamConfig";
 import AdminPaymentSettings from "./pages/admin/PaymentSettings";
 import AdminSalesAnalytics from "./pages/admin/SalesAnalytics";
+import AdminCommunications from "./pages/admin/Communications";
 import Asociate from "./pages/Asociate";
 import Circuito from "./pages/Circuito";
 import PublicProfile from "./pages/PublicProfile";
@@ -86,6 +87,7 @@ const App = () => (
               <Route path="/admin/vod" element={<AdminVOD />} />
               <Route path="/admin/podcasts" element={<AdminPodcasts />} />
               <Route path="/admin/users" element={<AdminUsers />} />
+              <Route path="/admin/communications" element={<AdminCommunications />} />
               <Route path="/admin/content" element={<AdminContentModeration />} />
               <Route path="/admin/requests" element={<AdminRegistrationRequests />} />
               <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />

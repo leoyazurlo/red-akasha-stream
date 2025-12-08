@@ -26,7 +26,7 @@ import {
   Save,
   Pencil
 } from "lucide-react";
-import { validateFile, formatFileSize } from "@/lib/storage-validation";
+import { validateFile, formatFileSize, FILE_COUNT_LIMITS } from "@/lib/storage-validation";
 
 interface ProfileData {
   id: string;
@@ -152,9 +152,24 @@ const MiPerfil = () => {
     }
   };
 
+  // Contar fotos y videos actuales
+  const currentPhotos = gallery.filter(item => item.media_type === 'photo' || item.media_type === 'image');
+  const currentVideos = gallery.filter(item => item.media_type === 'video');
+
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     const validFiles: File[] = [];
+
+    // Verificar límite de videos
+    const totalVideos = currentVideos.length + newVideos.length + files.length;
+    if (totalVideos > FILE_COUNT_LIMITS.VIDEOS) {
+      toast({
+        title: "Límite de videos alcanzado",
+        description: `Solo puedes tener máximo ${FILE_COUNT_LIMITS.VIDEOS} videos. Actualmente tienes ${currentVideos.length} y ${newVideos.length} pendientes de subir.`,
+        variant: "destructive"
+      });
+      return;
+    }
 
     files.forEach(file => {
       const validation = validateFile(file, 'video');
@@ -175,6 +190,17 @@ const MiPerfil = () => {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     const validFiles: File[] = [];
+
+    // Verificar límite de fotos
+    const totalPhotos = currentPhotos.length + newImages.length + files.length;
+    if (totalPhotos > FILE_COUNT_LIMITS.PHOTOS) {
+      toast({
+        title: "Límite de fotos alcanzado",
+        description: `Solo puedes tener máximo ${FILE_COUNT_LIMITS.PHOTOS} fotos. Actualmente tienes ${currentPhotos.length} y ${newImages.length} pendientes de subir.`,
+        variant: "destructive"
+      });
+      return;
+    }
 
     files.forEach(file => {
       const validation = validateFile(file, 'image');

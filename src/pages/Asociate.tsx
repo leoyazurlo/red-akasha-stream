@@ -36,7 +36,7 @@ import { RecordLabelForm } from "@/components/profile-forms/RecordLabelForm";
 import { PercusionForm } from "@/components/profile-forms/PercusionForm";
 import { DanzaForm } from "@/components/profile-forms/DanzaForm";
 import { z } from "zod";
-import { validateFile, formatFileSize } from "@/lib/storage-validation";
+import { validateFile, formatFileSize, FILE_COUNT_LIMITS } from "@/lib/storage-validation";
 
 const argentinaProvincias = [
   { name: "Buenos Aires", cities: ["Adolfo Alsina", "Adolfo Gonzales Chaves", "Alberti", "Almirante Brown", "Arrecifes", "Avellaneda", "Ayacucho", "Azul", "Bahía Blanca", "Balcarce", "Baradero", "Benito Juárez", "Berazategui", "Berisso", "Bolívar", "Bragado", "Brandsen", "Campana", "Cañuelas", "Capitán Sarmiento", "Carlos Casares", "Carlos Tejedor", "Carmen de Areco", "Castelli", "Chacabuco", "Chascomús", "Chivilcoy", "Colón", "Coronel de Marina Leonardo Rosales", "Coronel Dorrego", "Coronel Pringles", "Coronel Suárez", "Daireaux", "Dolores", "Ensenada", "Escobar", "Esteban Echeverría", "Exaltación de la Cruz", "Ezeiza", "Florencio Varela", "Florentino Ameghino", "General Alvarado", "General Alvear", "General Arenales", "General Belgrano", "General Guido", "General Juan Madariaga", "General La Madrid", "General Las Heras", "General Lavalle", "General Paz", "General Pinto", "General Pueyrredón", "General Rodríguez", "General San Martín", "General Viamonte", "General Villegas", "Guaminí", "Hipólito Yrigoyen", "Hurlingham", "Ituzaingó", "José C. Paz", "Junín", "La Costa", "La Matanza", "Lanús", "La Plata", "Laprida", "Las Flores", "Leandro N. Alem", "Lezama", "Lincoln", "Lobería", "Lobos", "Lomas de Zamora", "Luján", "Magdalena", "Maipú", "Malvinas Argentinas", "Mar Chiquita", "Marcos Paz", "Mercedes", "Merlo", "Monte", "Monte Hermoso", "Moreno", "Morón", "Navarro", "Necochea", "9 de Julio", "Olavarría", "Patagones", "Pehuajó", "Pellegrini", "Pergamino", "Pila", "Pilar", "Pinamar", "Presidente Perón", "Puan", "Punta Indio", "Quilmes", "Ramallo", "Rauch", "Rivadavia", "Rojas", "Roque Pérez", "Saavedra", "Saladillo", "Salliqueló", "Salto", "San Andrés de Giles", "San Antonio de Areco", "San Cayetano", "San Fernando", "San Isidro", "San Miguel", "San Nicolás", "San Pedro", "San Vicente", "Suipacha", "Tandil", "Tapalqué", "Tigre", "Tordillo", "Tornquist", "Trenque Lauquen", "Tres Arroyos", "Tres de Febrero", "Tres Lomas", "25 de Mayo", "Vicente López", "Villa Gesell", "Villarino", "Zárate"] },
@@ -866,6 +866,17 @@ const Asociate = () => {
                               const files = Array.from(e.target.files || []);
                               const validFiles: File[] = [];
                               
+                              // Verificar límite de videos
+                              const totalVideos = uploadedVideos.length + files.length;
+                              if (totalVideos > FILE_COUNT_LIMITS.VIDEOS) {
+                                toast({
+                                  title: "Límite de videos alcanzado",
+                                  description: `Solo puedes subir máximo ${FILE_COUNT_LIMITS.VIDEOS} videos. Actualmente tienes ${uploadedVideos.length}.`,
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
+                              
                               for (const file of files) {
                                 const validation = validateFile(file, 'video');
                                 if (!validation.valid) {
@@ -916,6 +927,17 @@ const Asociate = () => {
                             onChange={(e) => {
                               const files = Array.from(e.target.files || []);
                               const validFiles: File[] = [];
+                              
+                              // Verificar límite de fotos
+                              const totalPhotos = uploadedImages.length + files.length;
+                              if (totalPhotos > FILE_COUNT_LIMITS.PHOTOS) {
+                                toast({
+                                  title: "Límite de fotos alcanzado",
+                                  description: `Solo puedes subir máximo ${FILE_COUNT_LIMITS.PHOTOS} fotos. Actualmente tienes ${uploadedImages.length}.`,
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
                               
                               for (const file of files) {
                                 const validation = validateFile(file, 'image');

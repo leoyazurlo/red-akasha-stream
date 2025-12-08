@@ -669,7 +669,7 @@ export const ProfileTechnicalSheet = ({
               </div>
 
               {/* Follow and Message Buttons */}
-              {user && user.id !== targetUserId && (
+              {user && targetUserId && user.id !== targetUserId && (
                 <div className="flex gap-3 mb-4">
                   <Button
                     onClick={toggleFollow}

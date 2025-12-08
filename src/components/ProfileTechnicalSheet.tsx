@@ -38,6 +38,7 @@ import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useMiniPlayer } from "@/contexts/MiniPlayerContext";
 
 interface ProfileTechnicalSheetProps {
   profileId: string;
@@ -117,9 +118,45 @@ export const ProfileTechnicalSheet = ({
   const audioRef = useRef<HTMLAudioElement>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { openMiniPlayer } = useMiniPlayer();
   const [expandedPhoto, setExpandedPhoto] = useState<number | null>(null);
   const [expandedVideo, setExpandedVideo] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Send to floating mini player
+  const sendToMiniPlayer = () => {
+    if (audioPlaylist.length === 0) return;
+    
+    // Pause local audio first
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    setIsPlaying(false);
+    
+    openMiniPlayer({
+      id: profileId,
+      title: audioPlaylist[currentTrack]?.title || displayName,
+      video_url: null,
+      audio_url: audioPlaylist[currentTrack]?.audio_url || null,
+      thumbnail_url: avatarUrl,
+      content_type: 'profile_audio',
+      band_name: displayName,
+      playlist: audioPlaylist.map(track => ({
+        id: track.id,
+        title: track.title,
+        audio_url: track.audio_url,
+        duration: track.duration
+      })),
+      currentTrackIndex: currentTrack,
+      profileName: displayName,
+      profileAvatar: avatarUrl || undefined
+    });
+
+    toast({
+      title: "Reproductor flotante activado",
+      description: "La música seguirá reproduciéndose mientras navegas"
+    });
+  };
 
   const profileUrl = `${window.location.origin}/circuito/perfil/${profileId}`;
 
@@ -909,9 +946,11 @@ export const ProfileTechnicalSheet = ({
                       <Button
                         variant="ghost"
                         size="icon"
+                        onClick={sendToMiniPlayer}
                         className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                        title="Reproductor flotante"
                       >
-                        <Music2 className="w-4 h-4" />
+                        <ExternalLink className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>

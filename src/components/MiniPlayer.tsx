@@ -1,7 +1,8 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { 
   Play, 
   Pause, 
@@ -9,85 +10,82 @@ import {
   VolumeX, 
   Maximize2, 
   Minimize2,
-  X 
+  X,
+  SkipBack,
+  SkipForward,
+  Music2
 } from "lucide-react";
 import { useMiniPlayer } from "@/contexts/MiniPlayerContext";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 export const MiniPlayer = () => {
-  const { isOpen, content, closeMiniPlayer, isMinimized, setIsMinimized } = useMiniPlayer();
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(1);
-  const [isMuted, setIsMuted] = useState(false);
+  const { 
+    isOpen, 
+    content, 
+    closeMiniPlayer, 
+    isMinimized, 
+    setIsMinimized,
+    isPlaying,
+    setIsPlaying,
+    currentTime,
+    duration,
+    currentTrackIndex,
+    setCurrentTrackIndex,
+    audioRef
+  } = useMiniPlayer();
   
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const [volume, setVolume] = React.useState(1);
+  const [isMuted, setIsMuted] = React.useState(false);
 
-  const isVideo = content?.content_type !== 'podcast';
-  const mediaRef = isVideo ? videoRef : audioRef;
-  const mediaUrl = isVideo ? content?.video_url : content?.audio_url;
-
-  useEffect(() => {
-    const media = mediaRef.current;
-    if (!media) return;
-
-    const handleTimeUpdate = () => setCurrentTime(media.currentTime);
-    const handleDurationChange = () => setDuration(media.duration);
-    const handleEnded = () => setIsPlaying(false);
-
-    media.addEventListener('timeupdate', handleTimeUpdate);
-    media.addEventListener('durationchange', handleDurationChange);
-    media.addEventListener('ended', handleEnded);
-
-    return () => {
-      media.removeEventListener('timeupdate', handleTimeUpdate);
-      media.removeEventListener('durationchange', handleDurationChange);
-      media.removeEventListener('ended', handleEnded);
-    };
-  }, [mediaRef, content]);
+  const isVideo = content?.content_type !== 'podcast' && content?.content_type !== 'profile_audio' && content?.video_url;
+  const hasPlaylist = content?.playlist && content.playlist.length > 0;
+  const currentTrack = hasPlaylist ? content.playlist[currentTrackIndex] : null;
 
   const togglePlayPause = () => {
-    const media = mediaRef.current;
-    if (!media) return;
+    if (!audioRef.current) return;
 
     if (isPlaying) {
-      media.pause();
+      audioRef.current.pause();
     } else {
-      media.play();
+      audioRef.current.play();
     }
-    setIsPlaying(!isPlaying);
   };
 
   const handleSeek = (value: number[]) => {
-    const media = mediaRef.current;
-    if (!media) return;
-    
-    media.currentTime = value[0];
-    setCurrentTime(value[0]);
+    if (!audioRef.current) return;
+    audioRef.current.currentTime = value[0];
   };
 
   const handleVolumeChange = (value: number[]) => {
-    const media = mediaRef.current;
-    if (!media) return;
+    if (!audioRef.current) return;
 
     const newVolume = value[0];
-    media.volume = newVolume;
+    audioRef.current.volume = newVolume;
     setVolume(newVolume);
     setIsMuted(newVolume === 0);
   };
 
   const toggleMute = () => {
-    const media = mediaRef.current;
-    if (!media) return;
+    if (!audioRef.current) return;
 
     if (isMuted) {
-      media.volume = volume || 0.5;
+      audioRef.current.volume = volume || 0.5;
       setIsMuted(false);
     } else {
-      media.volume = 0;
+      audioRef.current.volume = 0;
       setIsMuted(true);
+    }
+  };
+
+  const playNext = () => {
+    if (hasPlaylist && currentTrackIndex < content.playlist!.length - 1) {
+      setCurrentTrackIndex(currentTrackIndex + 1);
+    }
+  };
+
+  const playPrevious = () => {
+    if (hasPlaylist && currentTrackIndex > 0) {
+      setCurrentTrackIndex(currentTrackIndex - 1);
     }
   };
 
@@ -102,86 +100,78 @@ export const MiniPlayer = () => {
 
   return (
     <Card 
-      className={`fixed z-50 bg-card border-border shadow-2xl transition-all duration-300 ${
+      className={`fixed z-50 bg-card/95 backdrop-blur-xl border-primary/20 shadow-glow transition-all duration-300 ${
         isMinimized 
-          ? 'bottom-4 right-4 w-80' 
+          ? 'bottom-4 right-4 w-72' 
           : 'bottom-4 right-4 w-96'
       }`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-3 border-b border-border bg-card/50">
+      <div className="flex items-center gap-3 p-3 border-b border-primary/10">
+        {/* Avatar/Thumbnail */}
+        {content.profileAvatar || content.thumbnail_url ? (
+          <Avatar className="w-10 h-10 border border-primary/20">
+            <AvatarImage src={content.profileAvatar || content.thumbnail_url || ''} />
+            <AvatarFallback className="bg-primary/20">
+              <Music2 className="w-4 h-4" />
+            </AvatarFallback>
+          </Avatar>
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center">
+            <Music2 className="w-5 h-5 text-primary-foreground" />
+          </div>
+        )}
+        
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-light tracking-wide truncate font-sans">{content.title}</p>
-          {content.band_name && (
-            <p className="text-xs text-muted-foreground font-light tracking-wide truncate font-sans">{content.band_name}</p>
-          )}
+          <p className="text-sm font-medium truncate">
+            {currentTrack?.title || content.title}
+          </p>
+          <p className="text-xs text-muted-foreground truncate">
+            {content.profileName || content.band_name || 'Reproduciendo'}
+          </p>
         </div>
-        <div className="flex items-center gap-1 ml-2">
+        
+        <div className="flex items-center gap-1">
           <Button
             size="icon"
             variant="ghost"
             onClick={() => setIsMinimized(!isMinimized)}
-            className="h-8 w-8"
+            className="h-7 w-7"
           >
-            {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
+            {isMinimized ? <Maximize2 className="h-3.5 w-3.5" /> : <Minimize2 className="h-3.5 w-3.5" />}
           </Button>
           <Button
             size="icon"
             variant="ghost"
             onClick={closeMiniPlayer}
-            className="h-8 w-8"
+            className="h-7 w-7 hover:text-destructive"
           >
-            <X className="h-4 w-4" />
+            <X className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>
 
-      {/* Video/Audio Player */}
-      {!isMinimized && (
-        <div className="relative bg-black">
-          {isVideo ? (
-            <AspectRatio ratio={16 / 9}>
-              <video
-                ref={videoRef}
-                src={mediaUrl || ''}
-                poster={content.thumbnail_url || ''}
-                className="w-full h-full object-contain"
-                onClick={togglePlayPause}
-              />
-            </AspectRatio>
-          ) : (
-            <div className="h-32 flex items-center justify-center bg-gradient-to-br from-primary/20 via-purple-500/20 to-pink-500/20">
-              {content.thumbnail_url ? (
-                <img 
-                  src={content.thumbnail_url} 
-                  alt={content.title}
-                  className="w-full h-full object-cover opacity-50"
-                />
-              ) : (
-                <div className="text-center">
-                  <Play className="w-12 h-12 text-white/50 mx-auto" />
-                </div>
-              )}
-            </div>
-          )}
-          <audio ref={audioRef} src={mediaUrl || ''} />
-
-          {/* Play/Pause Overlay */}
-          {!isPlaying && (
-            <div 
-              className="absolute inset-0 flex items-center justify-center cursor-pointer"
-              onClick={togglePlayPause}
+      {/* Playlist (when expanded) */}
+      {!isMinimized && hasPlaylist && (
+        <div className="max-h-32 overflow-y-auto p-2 border-b border-primary/10">
+          {content.playlist!.map((track, index) => (
+            <button
+              key={track.id}
+              onClick={() => setCurrentTrackIndex(index)}
+              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                currentTrackIndex === index 
+                  ? 'bg-primary/20 text-primary' 
+                  : 'hover:bg-muted/50 text-muted-foreground'
+              }`}
             >
-              <div className="w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center hover:bg-black/70 transition-colors">
-                <Play className="w-6 h-6 text-white ml-0.5" fill="white" />
-              </div>
-            </div>
-          )}
+              <span className="font-medium">{index + 1}.</span> {track.title}
+            </button>
+          ))}
         </div>
       )}
 
       {/* Controls */}
-      <div className="p-3 space-y-2">
+      <div className="p-3 space-y-3">
         {/* Progress Bar */}
         <div>
           <Slider
@@ -192,7 +182,7 @@ export const MiniPlayer = () => {
             onValueChange={handleSeek}
             className="cursor-pointer"
           />
-          <div className="flex justify-between text-xs text-muted-foreground mt-1 font-sans font-light tracking-wide">
+          <div className="flex justify-between text-xs text-muted-foreground mt-1">
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>
           </div>
@@ -200,30 +190,55 @@ export const MiniPlayer = () => {
 
         {/* Control Buttons */}
         <div className="flex items-center justify-between">
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={togglePlayPause}
-            className="h-8 w-8"
-          >
-            {isPlaying ? (
-              <Pause className="h-4 w-4" />
-            ) : (
-              <Play className="h-4 w-4" />
+          <div className="flex items-center gap-1">
+            {hasPlaylist && (
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={playPrevious}
+                disabled={currentTrackIndex === 0}
+                className="h-8 w-8"
+              >
+                <SkipBack className="h-4 w-4" />
+              </Button>
             )}
-          </Button>
+            
+            <Button
+              size="icon"
+              onClick={togglePlayPause}
+              className="h-10 w-10 rounded-full bg-gradient-primary text-primary-foreground hover:shadow-glow"
+            >
+              {isPlaying ? (
+                <Pause className="h-5 w-5" />
+              ) : (
+                <Play className="h-5 w-5 ml-0.5" />
+              )}
+            </Button>
+            
+            {hasPlaylist && (
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={playNext}
+                disabled={currentTrackIndex === content.playlist!.length - 1}
+                className="h-8 w-8"
+              >
+                <SkipForward className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
 
-          <div className="flex items-center gap-2 flex-1 max-w-32">
+          <div className="flex items-center gap-2 flex-1 max-w-28 ml-4">
             <Button
               size="icon"
               variant="ghost"
               onClick={toggleMute}
-              className="h-8 w-8"
+              className="h-7 w-7"
             >
               {isMuted ? (
-                <VolumeX className="h-3 w-3" />
+                <VolumeX className="h-3.5 w-3.5" />
               ) : (
-                <Volume2 className="h-3 w-3" />
+                <Volume2 className="h-3.5 w-3.5" />
               )}
             </Button>
             <Slider

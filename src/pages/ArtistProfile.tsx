@@ -399,18 +399,18 @@ export default function ArtistProfile() {
 
           {/* Content Tabs */}
           <Tabs defaultValue="gallery" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3 lg:w-auto">
-              <TabsTrigger value="gallery" className="gap-2">
-                <ImageIcon className="h-4 w-4" />
+            <TabsList className="grid w-full grid-cols-3 lg:w-auto h-auto p-2 bg-card/50">
+              <TabsTrigger value="gallery" className="gap-3 py-4 text-lg font-light tracking-widest uppercase">
+                <ImageIcon className="h-7 w-7" />
                 Galería ({photos.length})
               </TabsTrigger>
-              <TabsTrigger value="videos" className="gap-2">
-                <VideoIcon className="h-4 w-4" />
+              <TabsTrigger value="videos" className="gap-3 py-4 text-lg font-light tracking-widest uppercase">
+                <VideoIcon className="h-7 w-7" />
                 Videos ({videos.length})
               </TabsTrigger>
-              <TabsTrigger value="audio" className="gap-2">
-                <Music2 className="h-4 w-4" />
-                Audio ({audioPlaylist.length})
+              <TabsTrigger value="audio" className="gap-3 py-4 text-lg font-light tracking-widest uppercase">
+                <Music2 className="h-7 w-7" />
+                Música ({audioPlaylist.length})
               </TabsTrigger>
             </TabsList>
 

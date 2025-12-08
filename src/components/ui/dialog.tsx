@@ -48,7 +48,7 @@ const DialogContent = React.forwardRef<
     >
       {children}
       {showControls && (
-        <div className="absolute right-4 top-2 flex items-center gap-3">
+        <div className="absolute right-4 -top-2 flex items-center gap-3">
           {onMinimize && (
             <button
               onClick={onMinimize}

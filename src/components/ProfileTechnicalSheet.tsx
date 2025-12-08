@@ -1085,59 +1085,6 @@ export const ProfileTechnicalSheet = ({
           </div>
         )}
 
-        {/* Valoraciones de la Comunidad */}
-        {recentRatings.length > 0 && (
-          <div className="backdrop-blur-xl bg-card/40 rounded-3xl border border-primary/20 p-6 sm:p-8 mb-6 shadow-glow">
-            <div className="flex items-center justify-center gap-4 mb-6">
-              <div className="h-px flex-1 max-w-20 bg-gradient-to-r from-transparent to-primary/30" />
-              <h3 className="text-base sm:text-lg font-light text-foreground/70 tracking-[0.4em] uppercase flex items-center gap-2">
-                <Star className="w-4 h-4 text-yellow-400" />
-                Valoración de la Comunidad
-              </h3>
-              <div className="h-px flex-1 max-w-20 bg-gradient-to-l from-transparent to-primary/30" />
-            </div>
-
-            {/* Promedio y total */}
-            {totalRatings > 0 && (
-              <div className="flex items-center justify-center gap-4 mb-6">
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-5 w-5 ${
-                        i < Math.round(averageRating) ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'
-                      }`}
-                    />
-                  ))}
-                </div>
-                <span className="text-lg font-semibold text-foreground">{averageRating.toFixed(1)}</span>
-                <span className="text-sm text-muted-foreground">({totalRatings} {totalRatings === 1 ? 'valoración' : 'valoraciones'})</span>
-              </div>
-            )}
-
-            {/* Última valoración */}
-            <div className="space-y-4">
-              {recentRatings.slice(0, 1).map((rating) => (
-                <div key={rating.id} className="flex items-center justify-center gap-3 p-4 bg-background/30 rounded-xl border border-primary/10">
-                  <span className="font-medium text-foreground">{rating.rater_name}</span>
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-4 w-4 ${
-                          i < rating.rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  {rating.comment && (
-                    <p className="text-sm text-muted-foreground italic">"{rating.comment}"</p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Contact & Social Section - Show if there's social media, otherwise just show interaction badge */}
         <div className="backdrop-blur-xl bg-card/40 rounded-3xl border border-primary/20 p-6 sm:p-8 shadow-glow">

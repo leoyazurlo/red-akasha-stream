@@ -79,14 +79,14 @@ export const MiniPlayerProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (audioRef.current && content && isOpen) {
       const audioUrl = content.playlist?.[currentTrackIndex]?.audio_url || content.audio_url;
-      if (audioUrl) {
+      if (audioUrl && audioRef.current.src !== audioUrl) {
         audioRef.current.src = audioUrl;
-        if (isPlaying) {
-          audioRef.current.play().catch(console.error);
-        }
+      }
+      if (isPlaying && audioRef.current.paused) {
+        audioRef.current.play().catch(console.error);
       }
     }
-  }, [content, currentTrackIndex, isOpen]);
+  }, [content, currentTrackIndex, isOpen, isPlaying]);
 
   return (
     <MiniPlayerContext.Provider

@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import * as XLSX from 'xlsx';
+import { Top100Videos } from "@/components/admin/Top100Videos";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -463,6 +464,8 @@ export default function ShareAnalytics() {
   return (
     <AdminLayout>
       <div className="max-w-7xl mx-auto space-y-6">
+        {/* Top 100 Videos */}
+        <Top100Videos />
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

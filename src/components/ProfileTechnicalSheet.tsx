@@ -397,8 +397,8 @@ export const ProfileTechnicalSheet = ({
   const photos = gallery.filter(item => item.media_type === 'photo' || item.media_type === 'image');
   const videos = gallery.filter(item => item.media_type === 'video');
   
-  // Check if there are any social media links
-  const hasSocialMedia = instagram || facebook || linkedin;
+  // Check if there are any social media links or whatsapp
+  const hasSocialMedia = instagram || facebook || linkedin || whatsapp;
   
   // Check if there's any content in trabajos realizados
   const hasContent = photos.length > 0 || videos.length > 0 || audioPlaylist.length > 0;
@@ -1013,6 +1013,21 @@ export const ProfileTechnicalSheet = ({
                       <div className="relative bg-blue-600 rounded-xl p-0.5">
                         <div className="bg-background rounded-lg p-2">
                           <Linkedin className="w-6 h-6 text-blue-600" />
+                        </div>
+                      </div>
+                    </a>
+                  )}
+                  {whatsapp && (
+                    <a
+                      href={`https://wa.me/${whatsapp.replace(/[^0-9]/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group relative p-3 rounded-xl transition-all duration-300 hover:scale-110"
+                    >
+                      <div className="absolute inset-0 bg-green-500 rounded-xl blur opacity-60 group-hover:opacity-100 transition-opacity" />
+                      <div className="relative bg-green-500 rounded-xl p-0.5">
+                        <div className="bg-background rounded-lg p-2">
+                          <MessageCircle className="w-6 h-6 text-green-500" />
                         </div>
                       </div>
                     </a>

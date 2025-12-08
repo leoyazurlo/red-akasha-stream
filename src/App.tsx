@@ -25,6 +25,7 @@ import AdminShareAnalytics from "./pages/admin/ShareAnalytics";
 import AdminYouTubeVideos from "./pages/admin/YouTubeVideos";
 import AdminStreamConfig from "./pages/admin/StreamConfig";
 import AdminPaymentSettings from "./pages/admin/PaymentSettings";
+import AdminSalesAnalytics from "./pages/admin/SalesAnalytics";
 import Asociate from "./pages/Asociate";
 import Circuito from "./pages/Circuito";
 import PublicProfile from "./pages/PublicProfile";
@@ -92,6 +93,7 @@ const App = () => (
             <Route path="/admin/youtube-videos" element={<AdminYouTubeVideos />} />
             <Route path="/admin/stream-config" element={<AdminStreamConfig />} />
             <Route path="/admin/payments" element={<AdminPaymentSettings />} />
+            <Route path="/admin/sales" element={<AdminSalesAnalytics />} />
             <Route path="/proyecto" element={<ProyectoRedAkasha />} />
             <Route path="/contacto" element={<Contacto />} />
             <Route path="/suscripciones" element={<Suscripciones />} />

@@ -1118,31 +1118,21 @@ export const ProfileTechnicalSheet = ({
             {/* Última valoración */}
             <div className="space-y-4">
               {recentRatings.slice(0, 1).map((rating) => (
-                <div key={rating.id} className="flex gap-4 p-4 bg-background/30 rounded-xl border border-primary/10">
-                  <Avatar className="w-12 h-12 border-2 border-primary/20">
-                    <AvatarImage src={rating.rater_avatar || ''} alt={rating.rater_name} />
-                    <AvatarFallback className="bg-primary/20 text-primary">
-                      {rating.rater_name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-foreground">{rating.rater_name}</span>
-                      <div className="flex">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-3 w-3 ${
-                              i < rating.rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    {rating.comment && (
-                      <p className="text-sm text-muted-foreground">{rating.comment}</p>
-                    )}
+                <div key={rating.id} className="flex items-center justify-center gap-3 p-4 bg-background/30 rounded-xl border border-primary/10">
+                  <span className="font-medium text-foreground">{rating.rater_name}</span>
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-4 w-4 ${
+                          i < rating.rating ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'
+                        }`}
+                      />
+                    ))}
                   </div>
+                  {rating.comment && (
+                    <p className="text-sm text-muted-foreground italic">"{rating.comment}"</p>
+                  )}
                 </div>
               ))}
             </div>

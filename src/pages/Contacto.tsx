@@ -242,10 +242,10 @@ const Contacto = () => {
                 <p className="text-muted-foreground text-sm">
                   También puedes encontrarnos en nuestras redes sociales o escribirnos directamente a{" "}
                   <a 
-                    href="mailto:contacto@redakasha.com" 
+                    href="mailto:contacto@redakasha.org" 
                     className="text-cyan-400 hover:text-cyan-300 underline underline-offset-4 transition-colors"
                   >
-                    contacto@redakasha.com
+                    contacto@redakasha.org
                   </a>
                 </p>
               </div>

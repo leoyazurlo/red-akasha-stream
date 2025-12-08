@@ -495,15 +495,19 @@ export const ProfileTechnicalSheet = ({
           <div className="flex flex-col sm:flex-row justify-between items-start gap-6">
             <div className="flex-1 max-w-3xl">
               {/* Badge with profile type */}
-              <Badge className="mb-3 px-3 py-1 bg-primary/10 text-primary font-medium text-[10px] tracking-wider border border-primary/20">
-                {profileTypeLabels[profileType] || profileType}
-              </Badge>
+              <div className="inline-flex items-center gap-2 mb-4">
+                <div className="h-px w-8 bg-gradient-to-r from-transparent to-primary/50" />
+                <span className="text-primary text-[11px] font-light tracking-[0.3em] uppercase">
+                  {profileTypeLabels[profileType] || profileType}
+                </span>
+                <div className="h-px w-8 bg-gradient-to-l from-transparent to-primary/50" />
+              </div>
               
-              <h2 className="text-xl sm:text-2xl font-semibold text-foreground mb-3 tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-light text-foreground mb-4 tracking-wide">
                 {displayName}
               </h2>
               
-              <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed mb-4">
+              <p className="text-muted-foreground/80 text-sm leading-relaxed mb-5 font-light max-w-xl">
                 {bio || "Sin información cargada, a la espera de que el socio active"}
               </p>
               
@@ -660,18 +664,22 @@ export const ProfileTechnicalSheet = ({
         {/* Trabajos Realizados Section - Only show if there's content */}
         {hasContent && (
           <div className="backdrop-blur-xl bg-card/40 rounded-3xl border border-primary/20 p-6 sm:p-8 mb-6 shadow-glow">
-            <h3 className="text-sm font-medium text-muted-foreground text-center mb-6 tracking-widest uppercase">
-              Trabajos Realizados
-            </h3>
+            <div className="flex items-center justify-center gap-4 mb-8">
+              <div className="h-px flex-1 max-w-20 bg-gradient-to-r from-transparent to-primary/30" />
+              <h3 className="text-xs font-light text-foreground/70 tracking-[0.4em] uppercase">
+                Portfolio
+              </h3>
+              <div className="h-px flex-1 max-w-20 bg-gradient-to-l from-transparent to-primary/30" />
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* FOTOS - Only show if there are photos */}
               {photos.length > 0 && (
-                <div className="space-y-3">
-                  <h4 className="text-xs font-medium text-muted-foreground text-center tracking-wider uppercase flex items-center justify-center gap-2">
-                    <ImageIcon className="w-4 h-4 text-primary/70" />
-                    Fotos
-                  </h4>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 justify-center">
+                    <ImageIcon className="w-3.5 h-3.5 text-primary/60" />
+                    <span className="text-[10px] font-light text-foreground/60 tracking-[0.2em] uppercase">Galería</span>
+                  </div>
                   
                   {/* Photo Carousel */}
                   <div className="relative group">
@@ -759,11 +767,11 @@ export const ProfileTechnicalSheet = ({
 
               {/* VIDEOS - Only show if there are videos */}
               {videos.length > 0 && (
-                <div className="space-y-3">
-                  <h4 className="text-xs font-medium text-muted-foreground text-center tracking-wider uppercase flex items-center justify-center gap-2">
-                    <Video className="w-4 h-4 text-accent/70" />
-                    Videos
-                  </h4>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 justify-center">
+                    <Video className="w-3.5 h-3.5 text-accent/60" />
+                    <span className="text-[10px] font-light text-foreground/60 tracking-[0.2em] uppercase">Videos</span>
+                  </div>
                   
                   {/* Video Carousel */}
                   <div className="relative group">
@@ -854,12 +862,12 @@ export const ProfileTechnicalSheet = ({
 
               {/* AUDIO - Only show if there's audio */}
               {audioPlaylist.length > 0 && (
-                <div className="space-y-3">
-                  <h4 className="text-xs font-medium text-muted-foreground text-center tracking-wider uppercase flex items-center justify-center gap-2">
-                    <Music2 className="w-4 h-4 text-primary/70" />
-                    Mi Música
-                  </h4>
-                  <div className="backdrop-blur-md bg-card/30 rounded-2xl p-4 border border-primary/20 space-y-3">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 justify-center">
+                    <Music2 className="w-3.5 h-3.5 text-primary/60" />
+                    <span className="text-[10px] font-light text-foreground/60 tracking-[0.2em] uppercase">Música</span>
+                  </div>
+                  <div className="backdrop-blur-md bg-card/20 rounded-2xl p-4 border border-primary/10 space-y-3">
                     {/* Playlist */}
                     <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
                       {audioPlaylist.map((track, index) => (

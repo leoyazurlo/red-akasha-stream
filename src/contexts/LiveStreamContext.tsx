@@ -26,6 +26,7 @@ export const LiveStreamProvider = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasClosedManually, setHasClosedManually] = useState(false);
+  const [hasAutoStarted, setHasAutoStarted] = useState(false);
 
   // Detectar si estamos en el home
   const isHome = location.pathname === '/';
@@ -75,6 +76,14 @@ export const LiveStreamProvider = ({ children }: { children: ReactNode }) => {
     },
     refetchInterval: 30000,
   });
+
+  // Auto-start cuando hay un stream disponible
+  useEffect(() => {
+    if (liveData?.playbackUrl && !hasAutoStarted && !hasClosedManually) {
+      setIsPlaying(true);
+      setHasAutoStarted(true);
+    }
+  }, [liveData, hasAutoStarted, hasClosedManually]);
 
   // Reset cuando volvemos al home
   useEffect(() => {

@@ -10,9 +10,16 @@ export const VideoPlayer = () => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   
   const [isPlayingLocal, setIsPlayingLocal] = useState(false);
-  const { liveData, setIsPlaying } = useLiveStream();
+  const { liveData, isPlaying, setIsPlaying } = useLiveStream();
 
   const hasLiveStream = !!liveData?.playbackUrl;
+
+  // Auto-start local playback when global isPlaying is true
+  useEffect(() => {
+    if (isPlaying && hasLiveStream && !isPlayingLocal) {
+      setIsPlayingLocal(true);
+    }
+  }, [isPlaying, hasLiveStream, isPlayingLocal]);
 
   const toggleFullscreen = () => {
     if (containerRef.current) {

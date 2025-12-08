@@ -168,45 +168,52 @@ const PaymentSettings = () => {
             Suscripción Mensual
           </CardTitle>
           <CardDescription>
-            Precio y distribución para suscriptores mensuales
+            Precio y distribución para suscriptores mensuales (fuera de Latinoamérica)
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-3">
-          <div className="space-y-2">
-            <Label>Precio (USD)</Label>
-            <Input
-              type="number"
-              step="0.01"
-              value={settings.subscription_monthly?.price || 0}
-              onChange={(e) => updateSetting('subscription_monthly', 'price', parseFloat(e.target.value))}
-              className="bg-background/50"
-            />
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="space-y-2">
+              <Label>Precio (USD)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={settings.subscription_monthly?.price || 0}
+                onChange={(e) => updateSetting('subscription_monthly', 'price', parseFloat(e.target.value))}
+                className="bg-background/50"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1">
+                <Percent className="h-3 w-3" /> Usuarios (Pozo Común)
+              </Label>
+              <Input
+                type="number"
+                min="0"
+                max="100"
+                value={settings.subscription_monthly?.author_percentage || 0}
+                onChange={(e) => updateSetting('subscription_monthly', 'author_percentage', parseInt(e.target.value))}
+                className="bg-background/50"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1">
+                <Percent className="h-3 w-3" /> Plataforma
+              </Label>
+              <Input
+                type="number"
+                min="0"
+                max="100"
+                value={settings.subscription_monthly?.platform_percentage || 0}
+                onChange={(e) => updateSetting('subscription_monthly', 'platform_percentage', parseInt(e.target.value))}
+                className="bg-background/50"
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label className="flex items-center gap-1">
-              <Percent className="h-3 w-3" /> Autor
-            </Label>
-            <Input
-              type="number"
-              min="0"
-              max="100"
-              value={settings.subscription_monthly?.author_percentage || 0}
-              onChange={(e) => updateSetting('subscription_monthly', 'author_percentage', parseInt(e.target.value))}
-              className="bg-background/50"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label className="flex items-center gap-1">
-              <Percent className="h-3 w-3" /> Plataforma
-            </Label>
-            <Input
-              type="number"
-              min="0"
-              max="100"
-              value={settings.subscription_monthly?.platform_percentage || 0}
-              onChange={(e) => updateSetting('subscription_monthly', 'platform_percentage', parseInt(e.target.value))}
-              className="bg-background/50"
-            />
+          <div className="p-3 bg-cyan-500/10 rounded-lg border border-cyan-500/20">
+            <p className="text-sm text-muted-foreground">
+              <strong className="text-cyan-400">Pozo Común de Regalías:</strong> El {settings.subscription_monthly?.author_percentage || 50}% se distribuye mensualmente entre usuarios activos con contenido más visto/rankeado que tengan configuradas sus cuentas bancarias o Mercado Pago en su perfil.
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -219,45 +226,52 @@ const PaymentSettings = () => {
             Suscripción Anual
           </CardTitle>
           <CardDescription>
-            Precio y distribución para suscriptores anuales
+            Precio y distribución para suscriptores anuales (fuera de Latinoamérica)
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-3">
-          <div className="space-y-2">
-            <Label>Precio (USD)</Label>
-            <Input
-              type="number"
-              step="0.01"
-              value={settings.subscription_annual?.price || 0}
-              onChange={(e) => updateSetting('subscription_annual', 'price', parseFloat(e.target.value))}
-              className="bg-background/50"
-            />
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="space-y-2">
+              <Label>Precio (USD)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={settings.subscription_annual?.price || 0}
+                onChange={(e) => updateSetting('subscription_annual', 'price', parseFloat(e.target.value))}
+                className="bg-background/50"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1">
+                <Percent className="h-3 w-3" /> Usuarios (Pozo Común)
+              </Label>
+              <Input
+                type="number"
+                min="0"
+                max="100"
+                value={settings.subscription_annual?.author_percentage || 0}
+                onChange={(e) => updateSetting('subscription_annual', 'author_percentage', parseInt(e.target.value))}
+                className="bg-background/50"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="flex items-center gap-1">
+                <Percent className="h-3 w-3" /> Plataforma
+              </Label>
+              <Input
+                type="number"
+                min="0"
+                max="100"
+                value={settings.subscription_annual?.platform_percentage || 0}
+                onChange={(e) => updateSetting('subscription_annual', 'platform_percentage', parseInt(e.target.value))}
+                className="bg-background/50"
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label className="flex items-center gap-1">
-              <Percent className="h-3 w-3" /> Autor
-            </Label>
-            <Input
-              type="number"
-              min="0"
-              max="100"
-              value={settings.subscription_annual?.author_percentage || 0}
-              onChange={(e) => updateSetting('subscription_annual', 'author_percentage', parseInt(e.target.value))}
-              className="bg-background/50"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label className="flex items-center gap-1">
-              <Percent className="h-3 w-3" /> Plataforma
-            </Label>
-            <Input
-              type="number"
-              min="0"
-              max="100"
-              value={settings.subscription_annual?.platform_percentage || 0}
-              onChange={(e) => updateSetting('subscription_annual', 'platform_percentage', parseInt(e.target.value))}
-              className="bg-background/50"
-            />
+          <div className="p-3 bg-cyan-500/10 rounded-lg border border-cyan-500/20">
+            <p className="text-sm text-muted-foreground">
+              <strong className="text-cyan-400">Pozo Común de Regalías:</strong> El {settings.subscription_annual?.author_percentage || 50}% se distribuye mensualmente entre usuarios activos con contenido más visto/rankeado que tengan configuradas sus cuentas bancarias o Mercado Pago en su perfil.
+            </p>
           </div>
         </CardContent>
       </Card>

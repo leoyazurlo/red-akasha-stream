@@ -16,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CardDescription } from "@/components/ui/card";
-import { ChevronDown, Mail, Phone, MapPin, Users, Instagram, Facebook, Linkedin, ExternalLink, Loader2, AlertCircle, Search, ArrowUpDown } from "lucide-react";
+import { ChevronDown, Mail, Phone, MapPin, Users, Instagram, Facebook, Linkedin, ExternalLink, Loader2, AlertCircle, Search, ArrowUpDown, Maximize2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -95,9 +95,32 @@ const Circuito = () => {
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [hasProfile, setHasProfile] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<PublicProfile | null>(null);
+  const [minimizedProfile, setMinimizedProfile] = useState<PublicProfile | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<string>("name-asc");
   const [selectedProfileType, setSelectedProfileType] = useState<string>("all");
+
+  // Handle minimize - close dialog but keep profile in minimized state
+  const handleMinimize = () => {
+    if (selectedProfile) {
+      setMinimizedProfile(selectedProfile);
+      setSelectedProfile(null);
+    }
+  };
+
+  // Handle restore from minimized
+  const handleRestore = () => {
+    if (minimizedProfile) {
+      setSelectedProfile(minimizedProfile);
+      setMinimizedProfile(null);
+    }
+  };
+
+  // Handle close dialog - clear both states
+  const handleCloseDialog = () => {
+    setSelectedProfile(null);
+    setMinimizedProfile(null);
+  };
 
   // Profile type categories for tabs
   const PROFILE_TYPE_TABS = [
@@ -550,9 +573,33 @@ const Circuito = () => {
 
         <Footer />
 
+        {/* Minimized Profile Floating Bar */}
+        {minimizedProfile && !selectedProfile && (
+          <div className="fixed bottom-6 right-6 z-50 animate-slide-in">
+            <button
+              onClick={handleRestore}
+              className="flex items-center gap-3 px-4 py-3 bg-card/90 backdrop-blur-xl border border-cyan-500/30 rounded-xl shadow-glow hover:shadow-elegant transition-all duration-300 hover:scale-105 group"
+            >
+              <Avatar className="w-10 h-10 border-2 border-cyan-400/50">
+                <AvatarImage src={minimizedProfile.avatar_url || ''} alt={minimizedProfile.display_name} />
+                <AvatarFallback className="bg-primary/20 text-primary text-sm">
+                  {minimizedProfile.display_name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-cyan-400 font-medium max-w-[150px] truncate">
+                {minimizedProfile.display_name}
+              </span>
+              <Maximize2 className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
+            </button>
+          </div>
+        )}
+
         {/* Profile Detail Dialog */}
-        <Dialog open={!!selectedProfile} onOpenChange={(open) => !open && setSelectedProfile(null)}>
-          <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 overflow-y-auto bg-transparent border-none">
+        <Dialog open={!!selectedProfile} onOpenChange={(open) => !open && handleCloseDialog()}>
+          <DialogContent 
+            className="max-w-[95vw] max-h-[95vh] p-0 overflow-y-auto bg-transparent border-none"
+            onMinimize={handleMinimize}
+          >
             {selectedProfile && (
               <ProfileTechnicalSheet
                 profileId={selectedProfile.id}

@@ -71,6 +71,7 @@ interface StreamingDestination {
   name: string;
   rtmp_url: string;
   stream_key: string;
+  playback_url: string | null;
   is_active: boolean;
   connection_status: string;
   last_connected_at: string | null;
@@ -123,6 +124,7 @@ export default function StreamConfig() {
     name: "",
     rtmp_url: "",
     stream_key: "",
+    playback_url: "",
   });
 
   const [newSchedule, setNewSchedule] = useState({
@@ -207,7 +209,7 @@ export default function StreamConfig() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["streaming-destinations"] });
       setIsAddingDestination(false);
-      setNewDestination({ platform: "", name: "", rtmp_url: "", stream_key: "" });
+      setNewDestination({ platform: "", name: "", rtmp_url: "", stream_key: "", playback_url: "" });
       toast.success("Destino agregado correctamente");
     },
     onError: () => toast.error("Error al agregar destino"),
@@ -222,6 +224,7 @@ export default function StreamConfig() {
           name: destination.name,
           rtmp_url: destination.rtmp_url,
           stream_key: destination.stream_key,
+          playback_url: destination.playback_url,
           is_active: destination.is_active,
         })
         .eq("id", destination.id);
@@ -467,6 +470,18 @@ export default function StreamConfig() {
                           placeholder="xxxx-xxxx-xxxx-xxxx"
                           className="bg-black/40 border-cyan-500/30 text-cyan-100"
                         />
+                      </div>
+                      <div>
+                        <Label className="text-cyan-300">URL de Reproducción (Playback)</Label>
+                        <Input
+                          value={newDestination.playback_url}
+                          onChange={(e) => setNewDestination({ ...newDestination, playback_url: e.target.value })}
+                          placeholder="https://www.youtube.com/watch?v=VIDEO_ID"
+                          className="bg-black/40 border-cyan-500/30 text-cyan-100"
+                        />
+                        <p className="text-xs text-cyan-300/50 mt-1">
+                          URL del video en vivo para mostrar en el reproductor principal
+                        </p>
                       </div>
                       <Button
                         onClick={() => addDestinationMutation.mutate(newDestination)}

@@ -13,33 +13,64 @@ export interface Notification {
   related_user_id: string | null;
 }
 
+export interface PlatformAnnouncement {
+  id: string;
+  title: string;
+  message: string;
+  link: string | null;
+  created_at: string;
+}
+
 export const useNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [announcements, setAnnouncements] = useState<PlatformAnnouncement[]>([]);
+  const [readAnnouncementIds, setReadAnnouncementIds] = useState<string[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Load read announcements from localStorage
+    const storedReadIds = localStorage.getItem('read_announcements');
+    if (storedReadIds) {
+      setReadAnnouncementIds(JSON.parse(storedReadIds));
+    }
+  }, []);
 
   useEffect(() => {
     const loadNotifications = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase
+      // Load user notifications
+      const { data: notifData, error: notifError } = await supabase
         .from('notifications')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(50);
 
-      if (!error && data) {
-        setNotifications(data);
-        setUnreadCount(data.filter(n => !n.read).length);
+      if (!notifError && notifData) {
+        setNotifications(notifData);
       }
+
+      // Load platform announcements
+      const { data: announcementData, error: announcementError } = await supabase
+        .from('platform_announcements')
+        .select('id, title, message, link, created_at')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (!announcementError && announcementData) {
+        setAnnouncements(announcementData);
+      }
+
       setIsLoading(false);
     };
 
     loadNotifications();
 
-    // Configurar realtime
+    // Setup realtime
     let channel: RealtimeChannel;
     
     const setupRealtime = async () => {
@@ -59,7 +90,6 @@ export const useNotifications = () => {
           (payload) => {
             const newNotification = payload.new as Notification;
             setNotifications(prev => [newNotification, ...prev]);
-            setUnreadCount(prev => prev + 1);
           }
         )
         .on(
@@ -75,9 +105,18 @@ export const useNotifications = () => {
             setNotifications(prev =>
               prev.map(n => (n.id === updated.id ? updated : n))
             );
-            if (updated.read) {
-              setUnreadCount(prev => Math.max(0, prev - 1));
-            }
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'platform_announcements',
+          },
+          (payload) => {
+            const newAnnouncement = payload.new as PlatformAnnouncement;
+            setAnnouncements(prev => [newAnnouncement, ...prev]);
           }
         )
         .subscribe();
@@ -92,6 +131,13 @@ export const useNotifications = () => {
     };
   }, []);
 
+  // Calculate unread count
+  useEffect(() => {
+    const unreadNotifs = notifications.filter(n => !n.read).length;
+    const unreadAnnouncements = announcements.filter(a => !readAnnouncementIds.includes(a.id)).length;
+    setUnreadCount(unreadNotifs + unreadAnnouncements);
+  }, [notifications, announcements, readAnnouncementIds]);
+
   const markAsRead = async (notificationId: string) => {
     const { error } = await supabase
       .from('notifications')
@@ -102,8 +148,13 @@ export const useNotifications = () => {
       setNotifications(prev =>
         prev.map(n => (n.id === notificationId ? { ...n, read: true } : n))
       );
-      setUnreadCount(prev => Math.max(0, prev - 1));
     }
+  };
+
+  const markAnnouncementAsRead = (announcementId: string) => {
+    const newReadIds = [...readAnnouncementIds, announcementId];
+    setReadAnnouncementIds(newReadIds);
+    localStorage.setItem('read_announcements', JSON.stringify(newReadIds));
   };
 
   const markAllAsRead = async () => {
@@ -118,15 +169,22 @@ export const useNotifications = () => {
 
     if (!error) {
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-      setUnreadCount(0);
     }
+
+    // Mark all announcements as read
+    const allAnnouncementIds = announcements.map(a => a.id);
+    setReadAnnouncementIds(allAnnouncementIds);
+    localStorage.setItem('read_announcements', JSON.stringify(allAnnouncementIds));
   };
 
   return {
     notifications,
+    announcements,
     unreadCount,
     isLoading,
     markAsRead,
+    markAnnouncementAsRead,
     markAllAsRead,
+    isAnnouncementRead: (id: string) => readAnnouncementIds.includes(id),
   };
 };

@@ -371,9 +371,9 @@ const Circuito = () => {
 
             {/* Search Bar and Sort */}
             {!loading && allProfiles.length > 0 && (
-              <section className="max-w-6xl mx-auto mb-8">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="relative flex-1">
+              <section className="max-w-4xl mx-auto mb-8">
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                  <div className="relative flex-1 max-w-xl w-full">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                     <Input
                       type="text"
@@ -453,7 +453,7 @@ const Circuito = () => {
                 <div className="space-y-12">
                  <div className="text-center mb-8">
                   <h2 className="text-3xl font-bold mb-2 text-primary">
-                    {t('circuit.profiles')} - {selectedCountry.name} {selectedCountry.flag}
+                    {t('circuit.profiles')} - Base de Datos {selectedCountry.name} {selectedCountry.flag}
                   </h2>
                   <p className="text-muted-foreground mb-6">
                     {searchTerm

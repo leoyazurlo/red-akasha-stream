@@ -88,7 +88,7 @@ export const Footer = () => {
     {
       icon: Vote,
       labelKey: "footer.contact",
-      href: "#contacto",
+      href: "/contacto",
     },
     {
       icon: UserPlus,

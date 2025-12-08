@@ -43,6 +43,7 @@ import NotFound from "./pages/NotFound";
 
 import VideoDetail from "./pages/VideoDetail";
 import ProyectoRedAkasha from "./pages/ProyectoRedAkasha";
+import Contacto from "./pages/Contacto";
 
 const queryClient = new QueryClient();
 
@@ -89,6 +90,7 @@ const App = () => (
             <Route path="/admin/youtube-videos" element={<AdminYouTubeVideos />} />
             <Route path="/admin/stream-config" element={<AdminStreamConfig />} />
             <Route path="/proyecto" element={<ProyectoRedAkasha />} />
+            <Route path="/contacto" element={<Contacto />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -294,9 +294,9 @@ export const OnDemandPlayer = ({
                     </Badge>
                   )}
                 </div>
-                <DialogTitle className="text-white text-xl md:text-2xl">{content.title}</DialogTitle>
+                <DialogTitle className="text-white text-xl md:text-2xl font-light tracking-wide font-sans">{content.title}</DialogTitle>
                 {content.description && (
-                  <DialogDescription className="text-white/80 mt-2">
+                  <DialogDescription className="text-white/80 mt-2 font-light tracking-wide font-sans">
                     {content.description}
                   </DialogDescription>
                 )}
@@ -382,7 +382,7 @@ export const OnDemandPlayer = ({
                   onValueChange={handleSeek}
                   className="cursor-pointer"
                 />
-                <div className="flex justify-between text-xs text-white/70 mt-1">
+                <div className="flex justify-between text-xs text-white/70 mt-1 font-sans font-light tracking-wide">
                   <span>{formatTime(currentTime)}</span>
                   <span>{formatTime(duration)}</span>
                 </div>
@@ -458,7 +458,7 @@ export const OnDemandPlayer = ({
                 <div className="flex items-center gap-2">
                   {/* Playlist info */}
                   {playlistContext && (
-                    <div className="text-xs text-white/70 mr-2">
+                    <div className="text-xs text-white/70 mr-2 font-sans font-light tracking-wide">
                       {playlistContext.currentIndex + 1} / {playlistContext.items.length}
                     </div>
                   )}
@@ -481,28 +481,28 @@ export const OnDemandPlayer = ({
 
         {/* Info Section */}
         <div className="p-6 space-y-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm font-sans">
             {content.band_name && (
               <div>
-                <p className="text-muted-foreground mb-1">Banda</p>
-                <p className="font-medium">{content.band_name}</p>
+                <p className="text-muted-foreground mb-1 font-light tracking-wide text-xs uppercase">Banda</p>
+                <p className="font-light tracking-wide">{content.band_name}</p>
               </div>
             )}
             {content.producer_name && (
               <div>
-                <p className="text-muted-foreground mb-1">Productor</p>
-                <p className="font-medium">{content.producer_name}</p>
+                <p className="text-muted-foreground mb-1 font-light tracking-wide text-xs uppercase">Productor</p>
+                <p className="font-light tracking-wide">{content.producer_name}</p>
               </div>
             )}
             {content.venue_name && (
               <div>
-                <p className="text-muted-foreground mb-1">Sala</p>
-                <p className="font-medium">{content.venue_name}</p>
+                <p className="text-muted-foreground mb-1 font-light tracking-wide text-xs uppercase">Sala</p>
+                <p className="font-light tracking-wide">{content.venue_name}</p>
               </div>
             )}
             <div>
-              <p className="text-muted-foreground mb-1">Reproducciones</p>
-              <p className="font-medium">{content.views_count.toLocaleString()}</p>
+              <p className="text-muted-foreground mb-1 font-light tracking-wide text-xs uppercase">Reproducciones</p>
+              <p className="font-light tracking-wide">{content.views_count.toLocaleString()}</p>
             </div>
           </div>
         </div>

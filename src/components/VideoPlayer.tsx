@@ -17,7 +17,7 @@ export const VideoPlayer = () => {
         <div className="flex items-center justify-center mb-3 md:mb-4 gap-2">
           <div className="flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-primary/20 border border-primary rounded-full">
             <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-            <span className="text-primary font-light text-xs sm:text-sm uppercase tracking-wider">
+            <span className="text-primary font-light text-xs sm:text-sm uppercase tracking-widest font-sans">
               En Vivo 24/7
             </span>
           </div>
@@ -32,8 +32,8 @@ export const VideoPlayer = () => {
                 <Play className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-primary fill-primary ml-0.5" />
               </div>
               <div>
-                <p className="text-sm sm:text-base md:text-lg font-light text-foreground">Transmisión en Vivo</p>
-                <p className="text-xs sm:text-sm font-light text-muted-foreground mt-0.5 sm:mt-1">
+                <p className="text-sm sm:text-base md:text-lg font-light text-foreground tracking-wide font-sans">Transmisión en Vivo</p>
+                <p className="text-xs sm:text-sm font-light text-muted-foreground mt-0.5 sm:mt-1 tracking-wide font-sans">
                   Contenido exclusivo las 24 horas
                 </p>
               </div>
@@ -46,10 +46,10 @@ export const VideoPlayer = () => {
 
         {/* Info Text */}
         <div className="mt-4 sm:mt-6 text-center px-4">
-          <p className="text-cyan-400 text-xs sm:text-sm font-light tracking-wide drop-shadow-[0_0_8px_hsl(180_100%_50%/0.6)]">
+          <p className="text-cyan-400 text-xs sm:text-sm font-light tracking-wide drop-shadow-[0_0_8px_hsl(180_100%_50%/0.6)] font-sans">
             Plataforma colaborativa para artistas, productores del medio artístico y cultural
           </p>
-          <p className="text-cyan-400 text-xs sm:text-sm font-light tracking-wide drop-shadow-[0_0_8px_hsl(180_100%_50%/0.6)] mt-1">
+          <p className="text-cyan-400 text-xs sm:text-sm font-light tracking-wide drop-shadow-[0_0_8px_hsl(180_100%_50%/0.6)] mt-1 font-sans">
             ESTE PROYECTO ES DE LIBRE USO PARA LATINOAMÉRICA
           </p>
         </div>

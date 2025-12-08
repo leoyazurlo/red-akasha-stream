@@ -111,9 +111,9 @@ export const MiniPlayer = () => {
       {/* Header */}
       <div className="flex items-center justify-between p-3 border-b border-border bg-card/50">
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">{content.title}</p>
+          <p className="text-sm font-light tracking-wide truncate font-sans">{content.title}</p>
           {content.band_name && (
-            <p className="text-xs text-muted-foreground truncate">{content.band_name}</p>
+            <p className="text-xs text-muted-foreground font-light tracking-wide truncate font-sans">{content.band_name}</p>
           )}
         </div>
         <div className="flex items-center gap-1 ml-2">
@@ -192,7 +192,7 @@ export const MiniPlayer = () => {
             onValueChange={handleSeek}
             className="cursor-pointer"
           />
-          <div className="flex justify-between text-xs text-muted-foreground mt-1">
+          <div className="flex justify-between text-xs text-muted-foreground mt-1 font-sans font-light tracking-wide">
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>
           </div>

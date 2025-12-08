@@ -503,9 +503,42 @@ export const ProfileTechnicalSheet = ({
                 <div className="h-px w-8 bg-gradient-to-l from-transparent to-primary/30" />
               </div>
               
-              <h2 className="text-2xl sm:text-3xl font-light text-cyan-400 mb-4 tracking-wide drop-shadow-[0_0_10px_rgba(34,211,238,0.5)]">
+              <h2 className="text-2xl sm:text-3xl font-light text-cyan-400 mb-2 tracking-wide drop-shadow-[0_0_10px_rgba(34,211,238,0.5)]">
                 {displayName}
               </h2>
+              
+              {/* Rating Stars - Clickable */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      onClick={() => handleRating(star)}
+                      onMouseEnter={() => setHoveredStar(star)}
+                      onMouseLeave={() => setHoveredStar(0)}
+                      className="transition-transform hover:scale-125 focus:outline-none"
+                    >
+                      <Star
+                        className={`h-5 w-5 transition-colors ${
+                          star <= (hoveredStar || userRating || Math.round(averageRating))
+                            ? 'fill-yellow-400 text-yellow-400'
+                            : 'text-muted-foreground hover:text-yellow-300'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+                {totalRatings > 0 && (
+                  <span className="text-sm text-muted-foreground">
+                    {averageRating.toFixed(1)} ({totalRatings})
+                  </span>
+                )}
+                {userRating > 0 && (
+                  <Badge variant="outline" className="text-xs border-yellow-400/50 text-yellow-400">
+                    Tu valoración: {userRating}★
+                  </Badge>
+                )}
+              </div>
               
               <p className="text-muted-foreground/80 text-sm leading-relaxed mb-5 font-light max-w-xl">
                 {bio || "Sin información cargada, a la espera de que el socio active"}

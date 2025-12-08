@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, User, MessageSquare, Send, Sparkles } from "lucide-react";
+import { Mail, User, MessageSquare, Send, Sparkles, Instagram, Facebook, Youtube, Music2 } from "lucide-react";
 import { z } from "zod";
 
 const contactSchema = z.object({
@@ -95,10 +95,62 @@ const Contacto = () => {
                 </h1>
                 <Sparkles className="w-6 h-6 text-cyan-400 animate-pulse" />
               </div>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
                 ¿Tienes alguna pregunta, sugerencia o quieres ser parte de Red Akasha? 
                 Escríbenos y te responderemos lo antes posible.
               </p>
+              <p className="text-muted-foreground text-sm mb-4">
+                También puedes encontrarnos en nuestras redes sociales o escribirnos directamente a{" "}
+                <a 
+                  href="mailto:contacto@redakasha.org" 
+                  className="text-cyan-400 hover:text-cyan-300 underline underline-offset-4 transition-colors"
+                >
+                  contacto@redakasha.org
+                </a>
+              </p>
+              {/* Social Media Icons */}
+              <div className="flex items-center justify-center gap-4 mb-8">
+                <a
+                  href="https://instagram.com/redakasha"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group p-3 rounded-xl bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 
+                    hover:scale-110 transition-all duration-300 shadow-[0_0_15px_rgba(236,72,153,0.4)]
+                    hover:shadow-[0_0_25px_rgba(236,72,153,0.6)]"
+                >
+                  <Instagram className="w-6 h-6 text-white" />
+                </a>
+                <a
+                  href="https://facebook.com/redakasha"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group p-3 rounded-xl bg-blue-600 hover:bg-blue-500
+                    hover:scale-110 transition-all duration-300 shadow-[0_0_15px_rgba(37,99,235,0.4)]
+                    hover:shadow-[0_0_25px_rgba(37,99,235,0.6)]"
+                >
+                  <Facebook className="w-6 h-6 text-white" />
+                </a>
+                <a
+                  href="https://youtube.com/@redakasha"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group p-3 rounded-xl bg-red-600 hover:bg-red-500
+                    hover:scale-110 transition-all duration-300 shadow-[0_0_15px_rgba(220,38,38,0.4)]
+                    hover:shadow-[0_0_25px_rgba(220,38,38,0.6)]"
+                >
+                  <Youtube className="w-6 h-6 text-white" />
+                </a>
+                <a
+                  href="https://open.spotify.com/user/redakasha"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group p-3 rounded-xl bg-green-600 hover:bg-green-500
+                    hover:scale-110 transition-all duration-300 shadow-[0_0_15px_rgba(22,163,74,0.4)]
+                    hover:shadow-[0_0_25px_rgba(22,163,74,0.6)]"
+                >
+                  <Music2 className="w-6 h-6 text-white" />
+                </a>
+              </div>
             </section>
 
             {/* Contact Form */}
@@ -237,18 +289,6 @@ const Contacto = () => {
                 </div>
               </form>
 
-              {/* Additional info */}
-              <div className="mt-12 text-center">
-                <p className="text-muted-foreground text-sm">
-                  También puedes encontrarnos en nuestras redes sociales o escribirnos directamente a{" "}
-                  <a 
-                    href="mailto:contacto@redakasha.org" 
-                    className="text-cyan-400 hover:text-cyan-300 underline underline-offset-4 transition-colors"
-                  >
-                    contacto@redakasha.org
-                  </a>
-                </p>
-              </div>
             </section>
           </div>
         </main>

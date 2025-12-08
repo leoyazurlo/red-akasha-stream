@@ -495,15 +495,15 @@ export const ProfileTechnicalSheet = ({
           <div className="flex flex-col sm:flex-row justify-between items-start gap-6">
             <div className="flex-1 max-w-3xl">
               {/* Badge with profile type */}
-              <Badge className="mb-4 px-4 py-1.5 bg-gradient-primary text-primary-foreground font-bold text-xs tracking-widest border-0 shadow-glow">
+              <Badge className="mb-3 px-3 py-1 bg-primary/10 text-primary font-medium text-[10px] tracking-wider border border-primary/20">
                 {profileTypeLabels[profileType] || profileType}
               </Badge>
               
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-foreground mb-4 tracking-tight bg-gradient-to-r from-primary-glow to-accent bg-clip-text text-transparent animate-slide-in">
-                {displayName.toUpperCase()}
+              <h2 className="text-xl sm:text-2xl font-semibold text-foreground mb-3 tracking-tight">
+                {displayName}
               </h2>
               
-              <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-6 backdrop-blur-sm">
+              <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed mb-4">
                 {bio || "Sin información cargada, a la espera de que el socio active"}
               </p>
               
@@ -660,16 +660,16 @@ export const ProfileTechnicalSheet = ({
         {/* Trabajos Realizados Section - Only show if there's content */}
         {hasContent && (
           <div className="backdrop-blur-xl bg-card/40 rounded-3xl border border-primary/20 p-6 sm:p-8 mb-6 shadow-glow">
-            <h3 className="text-2xl sm:text-3xl font-black text-center mb-8 tracking-tight bg-gradient-to-r from-primary-glow to-accent bg-clip-text text-transparent">
-              TRABAJOS REALIZADOS
+            <h3 className="text-sm font-medium text-muted-foreground text-center mb-6 tracking-widest uppercase">
+              Trabajos Realizados
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* FOTOS - Only show if there are photos */}
               {photos.length > 0 && (
-                <div className="space-y-4">
-                  <h4 className="text-lg font-bold text-foreground text-center tracking-widest uppercase flex items-center justify-center gap-2">
-                    <ImageIcon className="w-5 h-5 text-primary" />
+                <div className="space-y-3">
+                  <h4 className="text-xs font-medium text-muted-foreground text-center tracking-wider uppercase flex items-center justify-center gap-2">
+                    <ImageIcon className="w-4 h-4 text-primary/70" />
                     Fotos
                   </h4>
                   
@@ -759,9 +759,9 @@ export const ProfileTechnicalSheet = ({
 
               {/* VIDEOS - Only show if there are videos */}
               {videos.length > 0 && (
-                <div className="space-y-4">
-                  <h4 className="text-lg font-bold text-foreground text-center tracking-widest uppercase flex items-center justify-center gap-2">
-                    <Video className="w-5 h-5 text-accent" />
+                <div className="space-y-3">
+                  <h4 className="text-xs font-medium text-muted-foreground text-center tracking-wider uppercase flex items-center justify-center gap-2">
+                    <Video className="w-4 h-4 text-accent/70" />
                     Videos
                   </h4>
                   
@@ -854,12 +854,12 @@ export const ProfileTechnicalSheet = ({
 
               {/* AUDIO - Only show if there's audio */}
               {audioPlaylist.length > 0 && (
-                <div className="space-y-4">
-                  <h4 className="text-lg font-bold text-foreground text-center tracking-widest uppercase flex items-center justify-center gap-2">
-                    <Music2 className="w-5 h-5 text-primary-glow" />
+                <div className="space-y-3">
+                  <h4 className="text-xs font-medium text-muted-foreground text-center tracking-wider uppercase flex items-center justify-center gap-2">
+                    <Music2 className="w-4 h-4 text-primary/70" />
                     Mi Música
                   </h4>
-                  <div className="backdrop-blur-md bg-card/30 rounded-2xl p-4 border border-primary/20 space-y-4">
+                  <div className="backdrop-blur-md bg-card/30 rounded-2xl p-4 border border-primary/20 space-y-3">
                     {/* Playlist */}
                     <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
                       {audioPlaylist.map((track, index) => (

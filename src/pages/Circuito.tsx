@@ -369,39 +369,6 @@ const Circuito = () => {
               </div>
             </section>
 
-            {/* Search Bar and Sort */}
-            {!loading && allProfiles.length > 0 && (
-              <section className="max-w-4xl mx-auto mb-8">
-                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                  <div className="relative flex-1 max-w-xl w-full">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
-                    <Input
-                      type="text"
-                      placeholder={t('circuit.searchPlaceholder')}
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 pr-4 py-6 text-base bg-card/50 backdrop-blur-sm border-border"
-                    />
-                  </div>
-                  <div className="sm:w-64">
-                    <Select value={sortBy} onValueChange={setSortBy}>
-                      <SelectTrigger className="py-6 bg-card/50 backdrop-blur-sm border-border">
-                        <div className="flex items-center gap-2">
-                          <ArrowUpDown className="w-4 h-4" />
-                          <SelectValue placeholder={t('common.search')} />
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent className="bg-card border-border">
-                        <SelectItem value="name-asc">{t('circuit.sortNameAsc')}</SelectItem>
-                        <SelectItem value="name-desc">{t('circuit.sortNameDesc')}</SelectItem>
-                        <SelectItem value="date-newest">{t('circuit.sortNewest')}</SelectItem>
-                        <SelectItem value="date-oldest">{t('circuit.sortOldest')}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </section>
-            )}
 
             {/* Content Section */}
             <section className="max-w-6xl mx-auto">
@@ -475,6 +442,38 @@ const Circuito = () => {
                       ))}
                     </TabsList>
                   </Tabs>
+
+                  {/* Search Bar and Sort - Moved below tabs */}
+                  {!loading && allProfiles.length > 0 && (
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-6">
+                      <div className="relative flex-1 max-w-xl w-full">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+                        <Input
+                          type="text"
+                          placeholder={t('circuit.searchPlaceholder')}
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-10 pr-4 py-6 text-base bg-card/50 backdrop-blur-sm border-border"
+                        />
+                      </div>
+                      <div className="sm:w-64">
+                        <Select value={sortBy} onValueChange={setSortBy}>
+                          <SelectTrigger className="py-6 bg-card/50 backdrop-blur-sm border-border">
+                            <div className="flex items-center gap-2">
+                              <ArrowUpDown className="w-4 h-4" />
+                              <SelectValue placeholder={t('common.search')} />
+                            </div>
+                          </SelectTrigger>
+                          <SelectContent className="bg-card border-border">
+                            <SelectItem value="name-asc">{t('circuit.sortNameAsc')}</SelectItem>
+                            <SelectItem value="name-desc">{t('circuit.sortNameDesc')}</SelectItem>
+                            <SelectItem value="date-newest">{t('circuit.sortNewest')}</SelectItem>
+                            <SelectItem value="date-oldest">{t('circuit.sortOldest')}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                   {filteredLocationGroups.map((cityGroup) => (

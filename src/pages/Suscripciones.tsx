@@ -39,36 +39,16 @@ interface PaymentMethod {
   supported_currencies: string[];
 }
 
-const SUBSCRIPTION_PLANS = [
-  {
-    id: 'monthly',
-    name: 'Mensual',
-    price: 5,
-    currency: 'USD',
-    period: 'mes',
-    features: [
-      'Uso y descarga del contenido disponible',
-      'Acceso anticipado a contenido',
-      'Badge de colaborador',
-      'Tu nombre en créditos'
-    ]
-  },
-  {
-    id: 'annual',
-    name: 'Anual',
-    price: 50,
-    currency: 'USD',
-    period: 'año',
-    highlighted: true,
-    savings: '2 meses gratis',
-    features: [
-      'Todo lo del plan mensual',
-      'Eventos virtuales exclusivos',
-      'Badge dorado VIP',
-      'Voto en decisiones'
-    ]
-  }
-];
+interface SubscriptionPlan {
+  id: string;
+  name: string;
+  price: number;
+  currency: string;
+  period: string;
+  features: string[];
+  highlighted?: boolean;
+  savings?: string;
+}
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   'credit-card': <CreditCard className="w-6 h-6" />,
@@ -83,6 +63,8 @@ const Suscripciones = () => {
   const { toast } = useToast();
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
   const [loading, setLoading] = useState(true);
+  const [subscriptionPlans, setSubscriptionPlans] = useState<SubscriptionPlan[]>([]);
+  const [loadingPlans, setLoadingPlans] = useState(true);
   
   // Donation state
   const [donationOpen, setDonationOpen] = useState(false);
@@ -91,7 +73,7 @@ const Suscripciones = () => {
   
   // Subscription state
   const [subscriptionOpen, setSubscriptionOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<typeof SUBSCRIPTION_PLANS[0] | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
   
   // Payment state
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
@@ -100,12 +82,105 @@ const Suscripciones = () => {
   const [loadingMethods, setLoadingMethods] = useState(false);
 
   useEffect(() => {
+    fetchSubscriptionPlans();
     if (user) {
       fetchSubscription();
     } else {
       setLoading(false);
     }
   }, [user]);
+
+  const fetchSubscriptionPlans = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('platform_payment_settings')
+        .select('*')
+        .in('setting_key', ['subscription_monthly', 'subscription_annual']);
+
+      if (error) throw error;
+
+      const plans: SubscriptionPlan[] = [];
+      
+      const monthlyData = data?.find(d => d.setting_key === 'subscription_monthly');
+      const annualData = data?.find(d => d.setting_key === 'subscription_annual');
+
+      if (monthlyData) {
+        const value = monthlyData.setting_value as Record<string, any>;
+        plans.push({
+          id: 'monthly',
+          name: 'Mensual',
+          price: value.price || 5,
+          currency: 'USD',
+          period: 'mes',
+          features: [
+            'Uso y descarga del contenido disponible',
+            'Acceso anticipado a contenido',
+            'Badge de colaborador',
+            'Tu nombre en créditos'
+          ]
+        });
+      }
+
+      if (annualData) {
+        const value = annualData.setting_value as Record<string, any>;
+        plans.push({
+          id: 'annual',
+          name: 'Anual',
+          price: value.price || 50,
+          currency: 'USD',
+          period: 'año',
+          highlighted: true,
+          savings: '2 meses gratis',
+          features: [
+            'Todo lo del plan mensual',
+            'Eventos virtuales exclusivos',
+            'Badge dorado VIP',
+            'Voto en decisiones'
+          ]
+        });
+      }
+
+      // Default plans if none found in DB
+      if (plans.length === 0) {
+        plans.push(
+          {
+            id: 'monthly',
+            name: 'Mensual',
+            price: 5,
+            currency: 'USD',
+            period: 'mes',
+            features: [
+              'Uso y descarga del contenido disponible',
+              'Acceso anticipado a contenido',
+              'Badge de colaborador',
+              'Tu nombre en créditos'
+            ]
+          },
+          {
+            id: 'annual',
+            name: 'Anual',
+            price: 50,
+            currency: 'USD',
+            period: 'año',
+            highlighted: true,
+            savings: '2 meses gratis',
+            features: [
+              'Todo lo del plan mensual',
+              'Eventos virtuales exclusivos',
+              'Badge dorado VIP',
+              'Voto en decisiones'
+            ]
+          }
+        );
+      }
+
+      setSubscriptionPlans(plans);
+    } catch (error) {
+      console.error('Error fetching subscription plans:', error);
+    } finally {
+      setLoadingPlans(false);
+    }
+  };
 
   const fetchSubscription = async () => {
     try {
@@ -147,7 +222,7 @@ const Suscripciones = () => {
     }
   };
 
-  const openSubscriptionDialog = (plan: typeof SUBSCRIPTION_PLANS[0]) => {
+  const openSubscriptionDialog = (plan: SubscriptionPlan) => {
     if (!user) {
       toast({
         title: "Inicia sesión",
@@ -455,7 +530,7 @@ const Suscripciones = () => {
           {/* Subscription Plans */}
           {!subscription && (
             <div className="grid md:grid-cols-2 gap-6 mb-8">
-              {SUBSCRIPTION_PLANS.map((plan) => (
+              {subscriptionPlans.map((plan) => (
                 <Card 
                   key={plan.id}
                   className={`relative bg-card/50 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:scale-[1.02] ${

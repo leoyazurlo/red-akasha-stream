@@ -5,21 +5,18 @@ import { useAuth } from "@/hooks/useAuth";
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useFavorites } from "@/hooks/useFavorites";
-import { Play, Search, Loader2, TrendingUp, Clock, Sparkles, Flame } from "lucide-react";
+import { Play, Search, Loader2, TrendingUp, Sparkles, Heart, ListPlus, Video, Music } from "lucide-react";
 import { AddToPlaylistDialog } from "@/components/AddToPlaylistDialog";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Skeleton } from "@/components/ui/skeleton";
-import { HeroCarousel } from "@/components/ondemand/HeroCarousel";
-import { ContentCarouselSection } from "@/components/ondemand/ContentCarouselSection";
-import { CategoryFilter } from "@/components/ondemand/CategoryFilter";
-import { ContentGrid } from "@/components/ondemand/ContentGrid";
+import { cn } from "@/lib/utils";
 
 interface Content {
   id: string;
@@ -53,6 +50,22 @@ interface PlaybackHistory {
   content?: Content;
 }
 
+const formatDuration = (seconds: number | null) => {
+  if (!seconds) return "";
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
+const getContentIcon = (type: string) => {
+  switch (type) {
+    case 'podcast':
+      return <Music className="w-5 h-5" />;
+    default:
+      return <Video className="w-5 h-5" />;
+  }
+};
+
 const OnDemand = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -64,23 +77,10 @@ const OnDemand = () => {
   const [hasProfile, setHasProfile] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
-  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [showAddToPlaylist, setShowAddToPlaylist] = useState(false);
   const [selectedContentId, setSelectedContentId] = useState<string | null>(null);
   const { toast } = useToast();
   const { toggleFavorite, isFavorite, loading: favLoading } = useFavorites();
-
-  const toggleCardInfo = (cardId: string) => {
-    setExpandedCards(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(cardId)) {
-        newSet.delete(cardId);
-      } else {
-        newSet.add(cardId);
-      }
-      return newSet;
-    });
-  };
 
   useEffect(() => {
     checkUserProfile();
@@ -206,46 +206,8 @@ const OnDemand = () => {
     return filtered;
   }, [contents, searchTerm, filterType]);
 
-  // Content counts for category filter
-  const categoryCounts = useMemo(() => {
-    const countByType = (type: string) => 
-      type === "all" 
-        ? contents.length 
-        : contents.filter(c => c.content_type === type).length;
-
-    return {
-      all: contents.length,
-      video_musical_vivo: countByType('video_musical_vivo'),
-      video_clip: countByType('video_clip'),
-      podcast: countByType('podcast'),
-      corto: countByType('corto'),
-      documental: countByType('documental'),
-      pelicula: countByType('pelicula'),
-    };
-  }, [contents]);
-
-  // Smart sections
-  const trendingContents = useMemo(() => 
-    [...contents].sort((a, b) => b.views_count - a.views_count).slice(0, 10),
-    [contents]
-  );
-
-  const newContents = useMemo(() => 
-    [...contents]
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 10),
-    [contents]
-  );
-
-  const freeContents = useMemo(() => 
-    filteredContents.filter(c => c.is_free),
-    [filteredContents]
-  );
-
-  const paidContents = useMemo(() => 
-    filteredContents.filter(c => !c.is_free),
-    [filteredContents]
-  );
+  const freeContents = useMemo(() => filteredContents.filter(c => c.is_free), [filteredContents]);
+  const paidContents = useMemo(() => filteredContents.filter(c => !c.is_free), [filteredContents]);
 
   const handleContentClick = (content: Content) => {
     navigate(`/video/${content.id}`);
@@ -256,14 +218,89 @@ const OnDemand = () => {
     navigate(`/video/${history.content.id}`);
   };
 
-  const handleFavoriteClick = (contentId: string) => {
-    toggleFavorite(contentId);
-  };
+  // Content Card Component
+  const ContentCard = ({ content, index }: { content: Content; index: number }) => (
+    <div 
+      className="group cursor-pointer animate-fade-in"
+      style={{ animationDelay: `${index * 0.03}s` }}
+      onClick={() => handleContentClick(content)}
+    >
+      <div className="relative overflow-hidden rounded-lg bg-card/30 mb-3">
+        <AspectRatio ratio={16 / 9}>
+          {content.thumbnail_url ? (
+            <img
+              src={content.thumbnail_url}
+              alt={content.title}
+              className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-muted/20">
+              {getContentIcon(content.content_type)}
+            </div>
+          )}
+        </AspectRatio>
 
-  const handlePlaylistClick = (contentId: string) => {
-    setSelectedContentId(contentId);
-    setShowAddToPlaylist(true);
-  };
+        {/* Overlay on hover */}
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+          <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform">
+            <Play className="w-5 h-5 text-background ml-0.5" fill="currentColor" />
+          </div>
+        </div>
+
+        {/* Action buttons */}
+        <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Button
+            size="icon"
+            variant="secondary"
+            className="h-8 w-8 bg-black/50 hover:bg-black/70 border-0"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleFavorite(content.id);
+            }}
+            disabled={favLoading}
+          >
+            <Heart className={cn("h-4 w-4", isFavorite(content.id) && "fill-red-500 text-red-500")} />
+          </Button>
+          <Button
+            size="icon"
+            variant="secondary"
+            className="h-8 w-8 bg-black/50 hover:bg-black/70 border-0"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedContentId(content.id);
+              setShowAddToPlaylist(true);
+            }}
+          >
+            <ListPlus className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Duration */}
+        {content.duration && (
+          <span className="absolute bottom-2 right-2 text-xs bg-black/70 text-white px-1.5 py-0.5 rounded">
+            {formatDuration(content.duration)}
+          </span>
+        )}
+
+        {/* Price badge */}
+        {!content.is_free && (
+          <Badge className="absolute top-2 left-2 bg-amber-500 hover:bg-amber-500 text-white border-0 text-xs">
+            ${content.price}
+          </Badge>
+        )}
+      </div>
+
+      <h3 className="font-medium text-sm line-clamp-2 text-foreground group-hover:text-primary transition-colors">
+        {content.title}
+      </h3>
+      {content.band_name && (
+        <p className="text-xs text-muted-foreground mt-1">{content.band_name}</p>
+      )}
+      <p className="text-xs text-muted-foreground/70 mt-0.5">
+        {content.views_count.toLocaleString()} vistas
+      </p>
+    </div>
+  );
 
   if (checkingProfile) {
     return (
@@ -321,194 +358,149 @@ const OnDemand = () => {
         <Header />
         
         <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          {/* Hero Carousel */}
-          {!loading && contents.length > 0 && (
-            <HeroCarousel 
-              contents={contents} 
-              onContentClick={handleContentClick}
-            />
-          )}
+          {/* Minimal Header */}
+          <div className="mb-8">
+            <h1 className="text-2xl font-medium text-foreground">
+              On Demand
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Explora contenido exclusivo de la comunidad
+            </p>
+          </div>
 
-          {/* Continue Watching Section */}
-          {user && continueWatching.length > 0 && (
-            <Card className="mb-8 bg-card/50 backdrop-blur-sm border-border overflow-hidden">
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
-                    <Play className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-xl">{t('onDemand.continueWatching')}</CardTitle>
-                    <CardDescription>{t('onDemand.resumeWhere')}</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {continueWatching.map((history, index) => {
-                    const content = history.content as Content;
-                    if (!content) return null;
-                    
-                    const progress = (history.last_position / history.duration) * 100;
-                    
-                    return (
-                      <Card 
-                        key={history.id}
-                        className="group overflow-hidden border-border bg-card/30 hover:bg-card/60 transition-all cursor-pointer animate-fade-in"
-                        style={{ animationDelay: `${index * 0.1}s` }}
-                        onClick={() => handleContinueWatching(history)}
-                      >
-                        <div className="relative overflow-hidden">
-                          <AspectRatio ratio={16 / 9}>
-                            {content.thumbnail_url ? (
-                              <img
-                                src={content.thumbnail_url}
-                                alt={content.title}
-                                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-secondary/30">
-                                <Play className="w-6 h-6 text-muted-foreground" />
-                              </div>
-                            )}
-                          </AspectRatio>
-                          
-                          {/* Progress Bar */}
-                          <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/50">
-                            <div 
-                              className="h-full bg-primary transition-all"
-                              style={{ width: `${progress}%` }}
-                            />
-                          </div>
-
-                          {/* Play Overlay */}
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
-                              <Play className="w-6 h-6 text-primary-foreground" fill="currentColor" />
-                            </div>
-                          </div>
-                        </div>
-
-                        <CardContent className="p-3">
-                          <p className="font-medium text-sm line-clamp-1 mb-1">{content.title}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {Math.floor(history.last_position / 60)}:{(history.last_position % 60).toString().padStart(2, '0')} / {Math.floor(history.duration / 60)}:{(history.duration % 60).toString().padStart(2, '0')}
-                          </p>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Search Bar */}
-          <div className="relative mb-6">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+          {/* Search */}
+          <div className="relative mb-8 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder={t('onDemand.searchPlaceholder')}
+              placeholder="Buscar contenido..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 h-12 text-base bg-card/50 border-border focus:border-primary"
+              className="pl-10 bg-card/30 border-border/50 focus:border-primary/50 h-10"
             />
           </div>
 
-          {/* Category Filter */}
-          <CategoryFilter 
-            selectedType={filterType}
-            onTypeChange={setFilterType}
-            counts={categoryCounts}
-          />
+          {/* Category Pills */}
+          <div className="flex gap-2 mb-10 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
+            {[
+              { value: "all", label: "Todo" },
+              { value: "video_musical_vivo", label: "En Vivo" },
+              { value: "video_clip", label: "Clips" },
+              { value: "podcast", label: "Podcast" },
+              { value: "documental", label: "Docs" },
+            ].map((cat) => (
+              <button
+                key={cat.value}
+                onClick={() => setFilterType(cat.value)}
+                className={cn(
+                  "px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-all",
+                  filterType === cat.value
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card/30 text-muted-foreground hover:text-foreground hover:bg-card/50"
+                )}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
 
-          {/* Loading State */}
           {loading ? (
-            <div className="space-y-8">
-              <div className="flex gap-4 overflow-hidden">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="flex-shrink-0 w-[280px]">
-                    <Skeleton className="h-40 w-full rounded-lg" />
-                    <Skeleton className="h-4 w-3/4 mt-3" />
-                    <Skeleton className="h-3 w-1/2 mt-2" />
-                  </div>
-                ))}
-              </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {[...Array(10)].map((_, i) => (
+                <div key={i}>
+                  <Skeleton className="aspect-video rounded-lg mb-3" />
+                  <Skeleton className="h-4 w-3/4 mb-2" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              ))}
             </div>
           ) : filteredContents.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-secondary/20 flex items-center justify-center">
-                <Search className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">{t('onDemand.noContent')}</h3>
-              <p className="text-muted-foreground">
-                {t('onDemand.adjustFilters')}
-              </p>
+            <div className="text-center py-20">
+              <Search className="w-10 h-10 mx-auto text-muted-foreground/50 mb-4" />
+              <p className="text-muted-foreground">No se encontró contenido</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {/* Trending Section */}
-              {filterType === "all" && !searchTerm && (
-                <ContentCarouselSection
-                  title="Tendencias"
-                  subtitle="Lo más visto esta semana"
-                  icon={<TrendingUp className="w-5 h-5 text-white" />}
-                  contents={trendingContents}
-                  gradientFrom="from-rose-500"
-                  gradientTo="to-pink-600"
-                  onContentClick={handleContentClick}
-                  onFavoriteClick={handleFavoriteClick}
-                  onPlaylistClick={handlePlaylistClick}
-                  isFavorite={isFavorite}
-                  favLoading={favLoading}
-                />
+            <div className="space-y-12">
+              {/* Continue Watching */}
+              {user && continueWatching.length > 0 && (
+                <section>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Play className="w-4 h-4 text-primary" />
+                    <h2 className="text-lg font-medium">Continuar viendo</h2>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {continueWatching.slice(0, 4).map((history) => {
+                      const content = history.content as Content;
+                      if (!content) return null;
+                      const progress = (history.last_position / history.duration) * 100;
+                      
+                      return (
+                        <div
+                          key={history.id}
+                          className="group cursor-pointer"
+                          onClick={() => handleContinueWatching(history)}
+                        >
+                          <div className="relative overflow-hidden rounded-lg bg-card/30 mb-3">
+                            <AspectRatio ratio={16 / 9}>
+                              {content.thumbnail_url ? (
+                                <img
+                                  src={content.thumbnail_url}
+                                  alt={content.title}
+                                  className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-muted/20">
+                                  <Video className="w-5 h-5" />
+                                </div>
+                              )}
+                            </AspectRatio>
+                            <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/50">
+                              <div className="h-full bg-primary" style={{ width: `${progress}%` }} />
+                            </div>
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                              <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
+                                <Play className="w-4 h-4 text-background ml-0.5" fill="currentColor" />
+                              </div>
+                            </div>
+                          </div>
+                          <h3 className="font-medium text-sm line-clamp-1">{content.title}</h3>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
               )}
 
-              {/* New Content Section */}
-              {filterType === "all" && !searchTerm && (
-                <ContentCarouselSection
-                  title="Recién Agregados"
-                  subtitle="Lo último en la plataforma"
-                  icon={<Sparkles className="w-5 h-5 text-white" />}
-                  contents={newContents}
-                  gradientFrom="from-violet-500"
-                  gradientTo="to-purple-600"
-                  onContentClick={handleContentClick}
-                  onFavoriteClick={handleFavoriteClick}
-                  onPlaylistClick={handlePlaylistClick}
-                  isFavorite={isFavorite}
-                  favLoading={favLoading}
-                />
+              {/* Free Content */}
+              {freeContents.length > 0 && (
+                <section>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Sparkles className="w-4 h-4 text-cyan-500" />
+                    <h2 className="text-lg font-medium">Contenido gratuito</h2>
+                    <span className="text-xs text-muted-foreground ml-2">{freeContents.length}</span>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    {freeContents.map((content, index) => (
+                      <ContentCard key={content.id} content={content} index={index} />
+                    ))}
+                  </div>
+                </section>
               )}
 
-              {/* Free Content Grid */}
-              <ContentGrid
-                title={t('onDemand.freeContent')}
-                subtitle={`${freeContents.length} ${t('onDemand.videosAvailable')}`}
-                contents={freeContents}
-                variant="free"
-                expandedCards={expandedCards}
-                onToggleCard={toggleCardInfo}
-                onContentClick={handleContentClick}
-                onFavoriteClick={handleFavoriteClick}
-                onPlaylistClick={handlePlaylistClick}
-                isFavorite={isFavorite}
-                favLoading={favLoading}
-              />
-
-              {/* Premium Content Grid */}
-              <ContentGrid
-                title={t('onDemand.premiumContent')}
-                subtitle={`${paidContents.length} ${t('onDemand.exclusiveVideos')}`}
-                contents={paidContents}
-                variant="premium"
-                expandedCards={expandedCards}
-                onToggleCard={toggleCardInfo}
-                onContentClick={handleContentClick}
-                onFavoriteClick={handleFavoriteClick}
-                onPlaylistClick={handlePlaylistClick}
-                isFavorite={isFavorite}
-                favLoading={favLoading}
-              />
+              {/* Premium Content */}
+              {paidContents.length > 0 && (
+                <section>
+                  <div className="flex items-center gap-2 mb-4">
+                    <TrendingUp className="w-4 h-4 text-amber-500" />
+                    <h2 className="text-lg font-medium">Contenido premium</h2>
+                    <span className="text-xs text-muted-foreground ml-2">{paidContents.length}</span>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    {paidContents.map((content, index) => (
+                      <ContentCard key={content.id} content={content} index={index} />
+                    ))}
+                  </div>
+                </section>
+              )}
             </div>
           )}
         </main>
@@ -516,7 +508,6 @@ const OnDemand = () => {
         <Footer />
       </div>
 
-      {/* Add to Playlist Dialog */}
       {selectedContentId && (
         <AddToPlaylistDialog
           open={showAddToPlaylist}

@@ -503,7 +503,7 @@ export const ProfileTechnicalSheet = ({
                 <div className="h-px w-8 bg-gradient-to-l from-transparent to-primary/30" />
               </div>
               
-              <h2 className="text-2xl sm:text-3xl font-light text-foreground mb-4 tracking-wide">
+              <h2 className="text-2xl sm:text-3xl font-light text-cyan-400 mb-4 tracking-wide drop-shadow-[0_0_10px_rgba(34,211,238,0.5)]">
                 {displayName}
               </h2>
               

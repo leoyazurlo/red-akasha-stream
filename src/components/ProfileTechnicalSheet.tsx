@@ -32,13 +32,19 @@ import {
   Twitter,
   Maximize2,
   X,
-  Send
+  Send,
+  UserPlus,
+  UserCheck,
+  Mail
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useMiniPlayer } from "@/contexts/MiniPlayerContext";
+import { useFollow } from "@/hooks/useFollow";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ProfileTechnicalSheetProps {
   profileId: string;
@@ -122,6 +128,91 @@ export const ProfileTechnicalSheet = ({
   const [expandedPhoto, setExpandedPhoto] = useState<number | null>(null);
   const [expandedVideo, setExpandedVideo] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
+  const [showMessageDialog, setShowMessageDialog] = useState(false);
+  const [messageText, setMessageText] = useState("");
+  const [sendingMessage, setSendingMessage] = useState(false);
+  
+  // Get the user_id for following functionality
+  const [targetUserId, setTargetUserId] = useState<string | null>(null);
+  const { isFollowing, isLoading: followLoading, toggleFollow, followersCount } = useFollow(targetUserId);
+
+  // Fetch the user_id from profile_details
+  useEffect(() => {
+    const fetchTargetUserId = async () => {
+      const { data } = await supabase
+        .from('profile_details')
+        .select('user_id')
+        .eq('id', profileId)
+        .single();
+      
+      if (data) {
+        setTargetUserId(data.user_id);
+      }
+    };
+    
+    if (profileId) {
+      fetchTargetUserId();
+    }
+  }, [profileId]);
+
+  // Send direct message
+  const handleSendMessage = async () => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "Debes iniciar sesión para enviar mensajes",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!targetUserId || !messageText.trim()) {
+      toast({
+        title: "Error",
+        description: "Escribe un mensaje antes de enviar",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (user.id === targetUserId) {
+      toast({
+        title: "Error",
+        description: "No puedes enviarte mensajes a ti mismo",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSendingMessage(true);
+    try {
+      const { error } = await supabase
+        .from('direct_messages')
+        .insert({
+          sender_id: user.id,
+          receiver_id: targetUserId,
+          message: messageText.trim(),
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Mensaje enviado",
+        description: `Tu mensaje fue enviado a ${displayName}`,
+      });
+      setMessageText("");
+      setShowMessageDialog(false);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo enviar el mensaje",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingMessage(false);
+    }
+  };
 
   // Send to floating mini player
   const sendToMiniPlayer = () => {
@@ -576,6 +667,42 @@ export const ProfileTechnicalSheet = ({
                   </Badge>
                 )}
               </div>
+
+              {/* Follow and Message Buttons */}
+              {user && user.id !== targetUserId && (
+                <div className="flex gap-3 mb-4">
+                  <Button
+                    onClick={toggleFollow}
+                    disabled={followLoading}
+                    variant={isFollowing ? "secondary" : "default"}
+                    className={`gap-2 ${isFollowing 
+                      ? 'border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/20' 
+                      : 'bg-cyan-500 hover:bg-cyan-600 text-white'
+                    }`}
+                  >
+                    {isFollowing ? (
+                      <>
+                        <UserCheck className="h-4 w-4" />
+                        Siguiendo
+                        {followersCount > 0 && <span className="text-xs opacity-70">({followersCount})</span>}
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="h-4 w-4" />
+                        Seguir
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={() => setShowMessageDialog(true)}
+                    variant="outline"
+                    className="gap-2 border-primary/50 text-primary hover:bg-primary/20"
+                  >
+                    <Mail className="h-4 w-4" />
+                    Mensaje
+                  </Button>
+                </div>
+              )}
               
               <p className="text-muted-foreground/80 text-sm leading-relaxed mb-5 font-light max-w-xl">
                 {bio || "Sin información cargada, a la espera de que el socio active"}
@@ -1220,6 +1347,51 @@ export const ProfileTechnicalSheet = ({
           </div>
         </div>
       )}
+
+      {/* Send Message Dialog */}
+      <Dialog open={showMessageDialog} onOpenChange={setShowMessageDialog}>
+        <DialogContent className="sm:max-w-md" showControls={false}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <Avatar className="w-10 h-10">
+                <AvatarImage src={avatarUrl || ''} alt={displayName} />
+                <AvatarFallback>{displayName.charAt(0).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <span>Enviar mensaje a {displayName}</span>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Textarea
+              placeholder="Escribe tu mensaje..."
+              value={messageText}
+              onChange={(e) => setMessageText(e.target.value)}
+              className="min-h-[120px] resize-none"
+              maxLength={1000}
+            />
+            <div className="flex justify-between items-center">
+              <span className="text-xs text-muted-foreground">
+                {messageText.length}/1000
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowMessageDialog(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={handleSendMessage}
+                  disabled={sendingMessage || !messageText.trim()}
+                  className="gap-2 bg-cyan-500 hover:bg-cyan-600"
+                >
+                  <Send className="h-4 w-4" />
+                  {sendingMessage ? "Enviando..." : "Enviar"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

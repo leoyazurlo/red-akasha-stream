@@ -1,13 +1,13 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ProfileTechnicalSheet } from "@/components/ProfileTechnicalSheet";
+import { ProfileTechnicalSheet, ProfileTechnicalSheetRef } from "@/components/ProfileTechnicalSheet";
 import { useTranslation } from "react-i18next";
 import {
   DropdownMenu,
@@ -99,10 +99,16 @@ const Circuito = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<string>("name-asc");
   const [selectedProfileType, setSelectedProfileType] = useState<string>("all");
+  
+  // Ref for ProfileTechnicalSheet to transfer audio to MiniPlayer on minimize
+  const profileSheetRef = useRef<ProfileTechnicalSheetRef>(null);
 
-  // Handle minimize - close dialog but keep profile in minimized state
+  // Handle minimize - transfer audio to MiniPlayer and close dialog
   const handleMinimize = () => {
     if (selectedProfile) {
+      // Transfer audio to MiniPlayer if playing
+      profileSheetRef.current?.transferToMiniPlayer();
+      
       // Add to minimized stack if not already there
       setMinimizedProfiles(prev => {
         const exists = prev.some(p => p.id === selectedProfile.id);
@@ -647,6 +653,7 @@ const Circuito = () => {
           >
             {selectedProfile && (
               <ProfileTechnicalSheet
+                ref={profileSheetRef}
                 profileId={selectedProfile.id}
                 displayName={selectedProfile.display_name}
                 profileType={selectedProfile.profile_type}

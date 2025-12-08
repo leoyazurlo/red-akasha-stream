@@ -192,45 +192,60 @@ const Suscripciones = () => {
                 Sé Parte del Cambio
               </h1>
               
-              <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Red Akasha es un sueño compartido. Una plataforma por artistas, para artistas, 
-                donde la música latinoamericana brilla sin fronteras. Tu apoyo hace posible 
-                que este proyecto sea de <span className="text-primary font-medium">libre uso para Latinoamérica</span>.
-              </p>
+              <div className="max-w-2xl mx-auto space-y-3 text-muted-foreground leading-relaxed">
+                <p>
+                  <strong className="text-foreground">Red Akasha es un sueño compartido.</strong> Una plataforma creada por artistas, 
+                  para artistas, donde la música y el arte latinoamericano pueden brillar sin fronteras.
+                </p>
+                <p>
+                  Mientras que para Latinoamérica este proyecto es de <span className="text-primary font-semibold">libre uso</span>, 
+                  necesitamos el apoyo de quienes están más allá de nuestras fronteras para seguir creciendo.
+                </p>
+              </div>
             </CardContent>
           </Card>
 
           {/* What Your Support Does */}
-          <div className="grid md:grid-cols-3 gap-4 mb-8">
-            <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
-              <CardContent className="p-6 text-center">
-                <Sparkles className="w-8 h-8 mx-auto mb-3 text-primary" />
-                <h3 className="font-semibold mb-2">Producción</h3>
-                <p className="text-sm text-muted-foreground">
-                  Documentales, sesiones en vivo y podcasts
-                </p>
-              </CardContent>
-            </Card>
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-center mb-6 flex items-center justify-center gap-2">
+              <Heart className="w-5 h-5 text-accent" />
+              ¿En qué invertiremos tu apoyo?
+            </h2>
             
-            <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
-              <CardContent className="p-6 text-center">
-                <Heart className="w-8 h-8 mx-auto mb-3 text-accent" />
-                <h3 className="font-semibold mb-2">Plataforma</h3>
-                <p className="text-sm text-muted-foreground">
-                  Nuevas funcionalidades y mejor infraestructura
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
-              <CardContent className="p-6 text-center">
-                <Crown className="w-8 h-8 mx-auto mb-3 text-yellow-400" />
-                <h3 className="font-semibold mb-2">Comunidad</h3>
-                <p className="text-sm text-muted-foreground">
-                  Eventos virtuales y becas para artistas
-                </p>
-              </CardContent>
-            </Card>
+            <div className="grid md:grid-cols-3 gap-4">
+              <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
+                <CardContent className="p-6 text-center">
+                  <Sparkles className="w-8 h-8 mx-auto mb-3 text-primary" />
+                  <h3 className="font-semibold mb-2">Producción de Contenido</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Documentales sobre artistas emergentes, sesiones en vivo, podcasts y material educativo 
+                    que celebre la riqueza cultural de Latinoamérica.
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
+                <CardContent className="p-6 text-center">
+                  <Crown className="w-8 h-8 mx-auto mb-3 text-yellow-400" />
+                  <h3 className="font-semibold mb-2">Mejoras en la Plataforma</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Nuevas funcionalidades, mejor infraestructura, apps móviles y herramientas que 
+                    faciliten la conexión entre artistas y audiencias.
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
+                <CardContent className="p-6 text-center">
+                  <Heart className="w-8 h-8 mx-auto mb-3 text-accent" />
+                  <h3 className="font-semibold mb-2">Comunidad y Eventos</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Festivales virtuales, encuentros entre artistas, talleres y becas para 
+                    músicos emergentes que merecen ser escuchados.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
           {/* Current Subscription */}

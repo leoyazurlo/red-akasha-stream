@@ -620,8 +620,8 @@ const PublicProfile = () => {
                         )}
                         
                         {/* Main Image */}
-                        <div className="max-w-sm w-full">
-                          <div className="aspect-square rounded-xl overflow-hidden border border-cyan-400/30 shadow-[0_0_20px_rgba(34,211,238,0.2)]">
+                        <div className="w-80 flex-shrink-0">
+                          <div className="w-80 h-80 rounded-xl overflow-hidden border border-cyan-400/30 shadow-[0_0_20px_rgba(34,211,238,0.2)] bg-black/50">
                             <img
                               src={photos[currentPhotoIndex]?.url}
                               alt={photos[currentPhotoIndex]?.title || 'Foto'}
@@ -631,7 +631,7 @@ const PublicProfile = () => {
                           
                           {/* Thumbnails below */}
                           {photos.length > 1 && (
-                            <div className="flex justify-center gap-2 mt-4 overflow-x-auto pb-2">
+                            <div className="flex justify-center gap-2 mt-6 pt-2 overflow-x-auto pb-2">
                               {photos.map((photo, idx) => (
                                 <button
                                   key={idx}
@@ -691,8 +691,8 @@ const PublicProfile = () => {
                         )}
                         
                         {/* Main Video */}
-                        <div className="max-w-sm w-full">
-                          <div className="aspect-square rounded-xl overflow-hidden border border-cyan-400/30 shadow-[0_0_20px_rgba(34,211,238,0.2)]">
+                        <div className="w-80 flex-shrink-0">
+                          <div className="w-80 h-80 rounded-xl overflow-hidden border border-cyan-400/30 shadow-[0_0_20px_rgba(34,211,238,0.2)] bg-black/50">
                             <video
                               src={videos[currentVideoIndex]?.url}
                               controls
@@ -702,7 +702,7 @@ const PublicProfile = () => {
                           
                           {/* Thumbnails below */}
                           {videos.length > 1 && (
-                            <div className="flex justify-center gap-2 mt-4 overflow-x-auto pb-2">
+                            <div className="flex justify-center gap-2 mt-6 pt-2 overflow-x-auto pb-2">
                               {videos.map((video, idx) => (
                                 <button
                                   key={idx}

@@ -282,23 +282,29 @@ const OnDemand = () => {
           </span>
         )}
 
-        {/* Price badge */}
-        {!content.is_free && (
-          <Badge className="absolute top-2 left-2 bg-amber-500 hover:bg-amber-500 text-white border-0 text-xs">
-            ${content.price}
-          </Badge>
-        )}
       </div>
 
-      <h3 className="font-medium text-sm line-clamp-2 text-foreground group-hover:text-primary transition-colors">
-        {content.title}
-      </h3>
-      {content.band_name && (
-        <p className="text-xs text-muted-foreground mt-1">{content.band_name}</p>
-      )}
-      <p className="text-xs text-muted-foreground/70 mt-0.5">
-        {content.views_count.toLocaleString()} vistas
-      </p>
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-medium text-sm line-clamp-2 text-foreground group-hover:text-primary transition-colors">
+            {content.title}
+          </h3>
+          {content.band_name && (
+            <p className="text-xs text-muted-foreground mt-1">{content.band_name}</p>
+          )}
+          <p className="text-xs text-muted-foreground/70 mt-0.5">
+            {content.views_count.toLocaleString()} vistas
+          </p>
+        </div>
+        <span className={cn(
+          "text-[10px] px-1.5 py-0.5 rounded mt-0.5 flex-shrink-0",
+          content.is_free 
+            ? "bg-cyan-500/20 text-cyan-400" 
+            : "bg-amber-500/20 text-amber-400"
+        )}>
+          {content.is_free ? "Libre" : "Pago"}
+        </span>
+      </div>
     </div>
   );
 
@@ -472,32 +478,16 @@ const OnDemand = () => {
                 </section>
               )}
 
-              {/* Free Content */}
-              {freeContents.length > 0 && (
+              {/* All Content */}
+              {filteredContents.length > 0 && (
                 <section>
                   <div className="flex items-center gap-2 mb-4">
-                    <Sparkles className="w-4 h-4 text-cyan-500" />
-                    <h2 className="text-lg font-medium">Contenido gratuito</h2>
-                    <span className="text-xs text-muted-foreground ml-2">{freeContents.length}</span>
+                    <Sparkles className="w-4 h-4 text-primary" />
+                    <h2 className="text-lg font-medium">Contenido</h2>
+                    <span className="text-xs text-muted-foreground ml-2">{filteredContents.length}</span>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                    {freeContents.map((content, index) => (
-                      <ContentCard key={content.id} content={content} index={index} />
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* Premium Content */}
-              {paidContents.length > 0 && (
-                <section>
-                  <div className="flex items-center gap-2 mb-4">
-                    <TrendingUp className="w-4 h-4 text-amber-500" />
-                    <h2 className="text-lg font-medium">Contenido premium</h2>
-                    <span className="text-xs text-muted-foreground ml-2">{paidContents.length}</span>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                    {paidContents.map((content, index) => (
+                    {filteredContents.map((content, index) => (
                       <ContentCard key={content.id} content={content} index={index} />
                     ))}
                   </div>

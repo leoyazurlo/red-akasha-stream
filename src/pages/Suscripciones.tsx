@@ -183,7 +183,7 @@ const Suscripciones = () => {
             <div className="absolute inset-0 bg-gradient-glow opacity-20 pointer-events-none" />
             
             <CardContent className="relative p-8 text-center">
-              <Badge className="mb-4 px-3 py-1 bg-primary/20 text-primary border-primary/30">
+              <Badge className="mb-4 px-3 py-1 bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 shadow-[0_0_15px_hsl(180_100%_50%/0.3)]">
                 <Globe className="w-3 h-3 mr-1" />
                 Para colaboradores fuera de Latinoamérica
               </Badge>

@@ -2,28 +2,24 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { useAuth } from "@/hooks/useAuth";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useFavorites } from "@/hooks/useFavorites";
-import { Play, Video, Music, Image as ImageIcon, Search, Filter, DollarSign, ChevronDown, ChevronUp, Info, Heart, Loader2, ListPlus } from "lucide-react";
+import { Play, Search, Loader2, TrendingUp, Clock, Sparkles, Flame } from "lucide-react";
 import { AddToPlaylistDialog } from "@/components/AddToPlaylistDialog";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Skeleton } from "@/components/ui/skeleton";
+import { HeroCarousel } from "@/components/ondemand/HeroCarousel";
+import { ContentCarouselSection } from "@/components/ondemand/ContentCarouselSection";
+import { CategoryFilter } from "@/components/ondemand/CategoryFilter";
+import { ContentGrid } from "@/components/ondemand/ContentGrid";
 
 interface Content {
   id: string;
@@ -62,7 +58,6 @@ const OnDemand = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [contents, setContents] = useState<Content[]>([]);
-  const [filteredContents, setFilteredContents] = useState<Content[]>([]);
   const [continueWatching, setContinueWatching] = useState<PlaybackHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [checkingProfile, setCheckingProfile] = useState(true);
@@ -99,10 +94,6 @@ const OnDemand = () => {
       }
     }
   }, [user, hasProfile]);
-
-  useEffect(() => {
-    filterContents();
-  }, [searchTerm, filterType, contents]);
 
   const checkUserProfile = async () => {
     try {
@@ -141,8 +132,6 @@ const OnDemand = () => {
         .in('content_type', ['video_musical_vivo', 'video_clip', 'podcast', 'corto', 'documental', 'pelicula'])
         .order('created_at', { ascending: false });
 
-      // Si hay usuario, mostrar su contenido pendiente + todo lo aprobado
-      // Si no hay usuario, solo mostrar contenido aprobado
       if (user) {
         query = query.or(`status.eq.approved,and(status.eq.pending,uploader_id.eq.${user.id})`);
       } else {
@@ -183,7 +172,6 @@ const OnDemand = () => {
 
       if (error) throw error;
 
-      // Filtrar solo los que tienen contenido y progreso mayor a 30 segundos
       const validHistory = (data || [])
         .filter(item => item.content && item.last_position > 30)
         .map(item => ({
@@ -197,10 +185,10 @@ const OnDemand = () => {
     }
   };
 
-  const filterContents = () => {
+  // Filtered and categorized content
+  const filteredContents = useMemo(() => {
     let filtered = [...contents];
 
-    // Filtrar por búsqueda
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(content => 
@@ -211,46 +199,55 @@ const OnDemand = () => {
       );
     }
 
-    // Filtrar por tipo
     if (filterType !== "all") {
       filtered = filtered.filter(content => content.content_type === filterType);
     }
 
-    setFilteredContents(filtered);
-  };
+    return filtered;
+  }, [contents, searchTerm, filterType]);
 
-  // Separar contenido en gratuito y pago
-  const freeContents = filteredContents.filter(c => c.is_free);
-  const paidContents = filteredContents.filter(c => !c.is_free);
+  // Content counts for category filter
+  const categoryCounts = useMemo(() => {
+    const countByType = (type: string) => 
+      type === "all" 
+        ? contents.length 
+        : contents.filter(c => c.content_type === type).length;
 
-  const getContentIcon = (type: string) => {
-    switch (type) {
-      case 'video_musical_vivo':
-      case 'video_clip':
-      case 'corto':
-      case 'documental':
-      case 'pelicula':
-        return <Video className="w-5 h-5" />;
-      case 'podcast':
-        return <Music className="w-5 h-5" />;
-      default:
-        return <Play className="w-5 h-5" />;
-    }
-  };
+    return {
+      all: contents.length,
+      video_musical_vivo: countByType('video_musical_vivo'),
+      video_clip: countByType('video_clip'),
+      podcast: countByType('podcast'),
+      corto: countByType('corto'),
+      documental: countByType('documental'),
+      pelicula: countByType('pelicula'),
+    };
+  }, [contents]);
 
-  const formatDuration = (seconds: number | null) => {
-    if (!seconds) return "";
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+  // Smart sections
+  const trendingContents = useMemo(() => 
+    [...contents].sort((a, b) => b.views_count - a.views_count).slice(0, 10),
+    [contents]
+  );
 
-  const getContentTypeLabel = (type: string) => {
-    return t(`onDemand.types.${type}`, type);
-  };
+  const newContents = useMemo(() => 
+    [...contents]
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, 10),
+    [contents]
+  );
+
+  const freeContents = useMemo(() => 
+    filteredContents.filter(c => c.is_free),
+    [filteredContents]
+  );
+
+  const paidContents = useMemo(() => 
+    filteredContents.filter(c => !c.is_free),
+    [filteredContents]
+  );
 
   const handleContentClick = (content: Content) => {
-    // Navegar a la página de detalle
     navigate(`/video/${content.id}`);
   };
 
@@ -259,11 +256,13 @@ const OnDemand = () => {
     navigate(`/video/${history.content.id}`);
   };
 
-  const handlePurchase = () => {
-    toast({
-      title: t('onDemand.comingSoon'),
-      description: t('onDemand.paymentSoon'),
-    });
+  const handleFavoriteClick = (contentId: string) => {
+    toggleFavorite(contentId);
+  };
+
+  const handlePlaylistClick = (contentId: string) => {
+    setSelectedContentId(contentId);
+    setShowAddToPlaylist(true);
   };
 
   if (checkingProfile) {
@@ -322,31 +321,31 @@ const OnDemand = () => {
         <Header />
         
         <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          {/* Hero Section */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
-              {t('onDemand.title')}
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              {t('onDemand.subtitle')}
-            </p>
-          </div>
+          {/* Hero Carousel */}
+          {!loading && contents.length > 0 && (
+            <HeroCarousel 
+              contents={contents} 
+              onContentClick={handleContentClick}
+            />
+          )}
 
           {/* Continue Watching Section */}
           {user && continueWatching.length > 0 && (
-            <Card className="mb-8 bg-card/50 backdrop-blur-sm border-border">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Play className="w-5 h-5" />
-                  {t('onDemand.continueWatching')}
-                </CardTitle>
-                <CardDescription>
-                  {t('onDemand.resumeWhere')}
-                </CardDescription>
+            <Card className="mb-8 bg-card/50 backdrop-blur-sm border-border overflow-hidden">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
+                    <Play className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl">{t('onDemand.continueWatching')}</CardTitle>
+                    <CardDescription>{t('onDemand.resumeWhere')}</CardDescription>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {continueWatching.map((history) => {
+                  {continueWatching.map((history, index) => {
                     const content = history.content as Content;
                     if (!content) return null;
                     
@@ -355,7 +354,8 @@ const OnDemand = () => {
                     return (
                       <Card 
                         key={history.id}
-                        className="group overflow-hidden border-border bg-card/30 hover:bg-card/60 transition-all cursor-pointer"
+                        className="group overflow-hidden border-border bg-card/30 hover:bg-card/60 transition-all cursor-pointer animate-fade-in"
+                        style={{ animationDelay: `${index * 0.1}s` }}
                         onClick={() => handleContinueWatching(history)}
                       >
                         <div className="relative overflow-hidden">
@@ -364,11 +364,11 @@ const OnDemand = () => {
                               <img
                                 src={content.thumbnail_url}
                                 alt={content.title}
-                                className="object-cover w-full h-full"
+                                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center bg-secondary/30">
-                                {getContentIcon(content.content_type)}
+                                <Play className="w-6 h-6 text-muted-foreground" />
                               </div>
                             )}
                           </AspectRatio>
@@ -383,7 +383,9 @@ const OnDemand = () => {
 
                           {/* Play Overlay */}
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                            <Play className="w-12 h-12 text-white" fill="white" />
+                            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
+                              <Play className="w-6 h-6 text-primary-foreground" fill="currentColor" />
+                            </div>
                           </div>
                         </div>
 
@@ -401,58 +403,36 @@ const OnDemand = () => {
             </Card>
           )}
 
-          {/* Filters */}
-          <Card className="mb-8 bg-card/50 backdrop-blur-sm border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Filter className="w-5 h-5" />
-                {t('onDemand.filters')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Search */}
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                  <Input
-                    placeholder={t('onDemand.searchPlaceholder')}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
+          {/* Search Bar */}
+          <div className="relative mb-6">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+            <Input
+              placeholder={t('onDemand.searchPlaceholder')}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-12 h-12 text-base bg-card/50 border-border focus:border-primary"
+            />
+          </div>
 
-                {/* Type Filter */}
-                <Select value={filterType} onValueChange={setFilterType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('onDemand.contentType')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">{t('onDemand.allTypes')}</SelectItem>
-                    <SelectItem value="corto">{t('onDemand.shorts')}</SelectItem>
-                    <SelectItem value="documental">{t('onDemand.documentaries')}</SelectItem>
-                    <SelectItem value="video_musical_vivo">{t('onDemand.liveMusicalVideos')}</SelectItem>
-                    <SelectItem value="pelicula">{t('onDemand.movies')}</SelectItem>
-                    <SelectItem value="podcast">{t('onDemand.podcasts')}</SelectItem>
-                    <SelectItem value="video_clip">{t('onDemand.videoClips')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Category Filter */}
+          <CategoryFilter 
+            selectedType={filterType}
+            onTypeChange={setFilterType}
+            counts={categoryCounts}
+          />
 
           {/* Loading State */}
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {[...Array(8)].map((_, i) => (
-                <Card key={i} className="overflow-hidden">
-                  <Skeleton className="h-48 w-full" />
-                  <CardContent className="p-4 space-y-2">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-3 w-1/2" />
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="space-y-8">
+              <div className="flex gap-4 overflow-hidden">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="flex-shrink-0 w-[280px]">
+                    <Skeleton className="h-40 w-full rounded-lg" />
+                    <Skeleton className="h-4 w-3/4 mt-3" />
+                    <Skeleton className="h-3 w-1/2 mt-2" />
+                  </div>
+                ))}
+              </div>
             </div>
           ) : filteredContents.length === 0 ? (
             <div className="text-center py-16">
@@ -465,315 +445,70 @@ const OnDemand = () => {
               </p>
             </div>
           ) : (
-            <div className="space-y-12">
-              {/* FREE CONTENT SECTION */}
-              {freeContents.length > 0 && (
-                <section>
-                  <div className="mb-6">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="h-10 w-1 bg-gradient-to-b from-cyan-500 to-cyan-600 rounded-full"></div>
-                      <h2 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-cyan-500 bg-clip-text text-transparent">
-                        {t('onDemand.freeContent')}
-                      </h2>
-                    </div>
-                    <p className="text-muted-foreground ml-7">
-                      {freeContents.length} {t('onDemand.videosAvailable')}
-                    </p>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {freeContents.map((content) => {
-                      const isExpanded = expandedCards.has(content.id);
-                      return (
-                        <Card 
-                          key={content.id} 
-                          className="group border-2 border-cyan-500/40 bg-gradient-to-br from-cyan-500/5 to-cyan-600/5 backdrop-blur-sm hover:from-cyan-500/10 hover:to-cyan-600/10 hover:border-cyan-500/60 transition-all"
-                          style={{
-                            boxShadow: '0 0 15px rgba(6, 182, 212, 0.25)'
-                          }}
-                        >
-                          {/* Thumbnail */}
-                          <div 
-                            className="relative overflow-hidden bg-secondary/20 cursor-pointer m-1 rounded-md"
-                            onClick={() => handleContentClick(content)}
-                          >
-                            <AspectRatio ratio={16 / 9}>
-                              {content.thumbnail_url ? (
-                                <img
-                                  src={content.thumbnail_url}
-                                  alt={content.title}
-                                  className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-secondary/30">
-                                  {getContentIcon(content.content_type)}
-                                </div>
-                              )}
-                            </AspectRatio>
-
-                            {/* Favorite Button */}
-                            <Button
-                              size="icon"
-                              variant="secondary"
-                              className={`absolute top-2 right-2 transition-opacity bg-background/80 hover:bg-background z-20 ${
-                                isFavorite(content.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                              }`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleFavorite(content.id);
-                              }}
-                              disabled={favLoading}
-                            >
-                              {favLoading ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Heart 
-                                  className={`h-4 w-4 ${isFavorite(content.id) ? 'fill-red-500 text-red-500' : ''}`}
-                                />
-                              )}
-                            </Button>
-
-                            {/* Add to Playlist Button */}
-                            <Button
-                              size="icon"
-                              variant="secondary"
-                              className="absolute top-2 right-12 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background z-20"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedContentId(content.id);
-                                setShowAddToPlaylist(true);
-                              }}
-                            >
-                              <ListPlus className="h-4 w-4" />
-                            </Button>
-
-                            {/* Duration Badge */}
-                            {content.duration && (
-                              <Badge className="absolute bottom-2 right-2 bg-black/70 text-white border-none">
-                                {formatDuration(content.duration)}
-                              </Badge>
-                            )}
-
-                            {/* Play Overlay */}
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100 z-10 pointer-events-none">
-                              <Play className="w-12 h-12 text-white" fill="white" />
-                            </div>
-                          </div>
-
-                          {/* Título visible siempre */}
-                          <CardHeader className="p-4 pb-2">
-                            <CardTitle className="text-base line-clamp-2">{content.title}</CardTitle>
-                          </CardHeader>
-
-                          {/* Información colapsable */}
-                          <CardContent className="p-4 pt-0">
-                            <Collapsible 
-                              open={isExpanded}
-                              onOpenChange={() => toggleCardInfo(content.id)}
-                            >
-                              <CollapsibleTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="w-full flex items-center justify-center gap-2 text-xs text-cyan-500 hover:text-cyan-400 hover:bg-cyan-500/10"
-                                >
-                                  <Info className="w-3 h-3" />
-                                  {isExpanded ? "Ver menos" : "Ver más información"}
-                                  {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                                </Button>
-                              </CollapsibleTrigger>
-                              
-                              <CollapsibleContent className="mt-3 space-y-3">
-                                <Badge variant="outline" className="border-cyan-500 text-cyan-500 w-fit">
-                                  {getContentTypeLabel(content.content_type)}
-                                </Badge>
-                                
-                                {content.description && (
-                                  <CardDescription className="text-sm">
-                                    {content.description}
-                                  </CardDescription>
-                                )}
-
-                                <div className="space-y-1 text-xs text-muted-foreground pt-2 border-t border-cyan-500/20">
-                                  {content.band_name && (
-                                    <p>Banda: {content.band_name}</p>
-                                  )}
-                                  {content.producer_name && (
-                                    <p>Productor: {content.producer_name}</p>
-                                  )}
-                                  <p className="flex items-center gap-1">
-                                    <Play className="w-3 h-3" />
-                                    {content.views_count} reproducciones
-                                  </p>
-                                </div>
-                              </CollapsibleContent>
-                            </Collapsible>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                </section>
+            <div className="space-y-4">
+              {/* Trending Section */}
+              {filterType === "all" && !searchTerm && (
+                <ContentCarouselSection
+                  title="Tendencias"
+                  subtitle="Lo más visto esta semana"
+                  icon={<TrendingUp className="w-5 h-5 text-white" />}
+                  contents={trendingContents}
+                  gradientFrom="from-rose-500"
+                  gradientTo="to-pink-600"
+                  onContentClick={handleContentClick}
+                  onFavoriteClick={handleFavoriteClick}
+                  onPlaylistClick={handlePlaylistClick}
+                  isFavorite={isFavorite}
+                  favLoading={favLoading}
+                />
               )}
 
-              {/* PREMIUM CONTENT SECTION */}
-              {paidContents.length > 0 && (
-                <section>
-                  <div className="mb-6">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="h-10 w-1 bg-gradient-to-b from-amber-500 via-yellow-500 to-orange-500 rounded-full"></div>
-                      <h2 className="text-3xl font-bold bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500 bg-clip-text text-transparent">
-                        {t('onDemand.premiumContent')}
-                      </h2>
-                    </div>
-                    <p className="text-muted-foreground ml-7">
-                      {paidContents.length} {t('onDemand.exclusiveVideos')}
-                    </p>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {paidContents.map((content) => {
-                      const isExpanded = expandedCards.has(`premium-${content.id}`);
-                      return (
-                        <Card 
-                          key={content.id} 
-                          className="group border-2 border-cyan-500/40 bg-gradient-to-br from-amber-500/10 via-yellow-500/5 to-orange-500/10 backdrop-blur-sm hover:from-amber-500/15 hover:via-yellow-500/10 hover:to-orange-500/15 hover:border-cyan-500/60 transition-all relative"
-                          style={{
-                            boxShadow: '0 0 15px rgba(6, 182, 212, 0.25)'
-                          }}
-                        >
-                          {/* Premium Shine Effect */}
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none"></div>
-                          
-                          {/* Thumbnail */}
-                          <div 
-                            className="relative overflow-hidden bg-secondary/20 cursor-pointer m-1 rounded-md"
-                            onClick={() => handleContentClick(content)}
-                          >
-                            <AspectRatio ratio={16 / 9}>
-                              {content.thumbnail_url ? (
-                                <img
-                                  src={content.thumbnail_url}
-                                  alt={content.title}
-                                  className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center bg-secondary/30">
-                                  {getContentIcon(content.content_type)}
-                                </div>
-                              )}
-                            </AspectRatio>
-                            
-                            {/* Premium Badge */}
-                            <Badge className="absolute top-2 left-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white border-none flex items-center gap-1 shadow-lg shadow-amber-500/50">
-                              <DollarSign className="w-3 h-3" />
-                              {content.price} {content.currency}
-                            </Badge>
-
-                            {/* Favorite Button */}
-                            <Button
-                              size="icon"
-                              variant="secondary"
-                              className={`absolute top-2 right-2 transition-opacity bg-background/80 hover:bg-background z-20 ${
-                                isFavorite(content.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                              }`}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleFavorite(content.id);
-                              }}
-                              disabled={favLoading}
-                            >
-                              {favLoading ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Heart 
-                                  className={`h-4 w-4 ${isFavorite(content.id) ? 'fill-red-500 text-red-500' : ''}`}
-                                />
-                              )}
-                            </Button>
-
-                            {/* Add to Playlist Button */}
-                            <Button
-                              size="icon"
-                              variant="secondary"
-                              className="absolute top-2 right-12 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background z-20"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedContentId(content.id);
-                                setShowAddToPlaylist(true);
-                              }}
-                            >
-                              <ListPlus className="h-4 w-4" />
-                            </Button>
-
-                            {/* Duration Badge */}
-                            {content.duration && (
-                              <Badge className="absolute bottom-2 right-2 bg-black/70 text-white border-none">
-                                {formatDuration(content.duration)}
-                              </Badge>
-                            )}
-
-                            {/* Play Overlay */}
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100 z-10 pointer-events-none">
-                              <Play className="w-12 h-12 text-white" fill="white" />
-                            </div>
-                          </div>
-
-                          {/* Título visible siempre */}
-                          <CardHeader className="p-4 pb-2 relative z-10">
-                            <CardTitle className="text-base line-clamp-2">{content.title}</CardTitle>
-                          </CardHeader>
-
-                          {/* Información colapsable */}
-                          <CardContent className="p-4 pt-0 relative z-10">
-                            <Collapsible 
-                              open={isExpanded}
-                              onOpenChange={() => toggleCardInfo(`premium-${content.id}`)}
-                            >
-                              <CollapsibleTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="w-full flex items-center justify-center gap-2 text-xs text-amber-500 hover:text-amber-400 hover:bg-amber-500/10"
-                                >
-                                  <Info className="w-3 h-3" />
-                                  {isExpanded ? "Ver menos" : "Ver más información"}
-                                  {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                                </Button>
-                              </CollapsibleTrigger>
-                              
-                              <CollapsibleContent className="mt-3 space-y-3">
-                                <Badge variant="outline" className="border-amber-500 text-amber-500 w-fit">
-                                  {getContentTypeLabel(content.content_type)}
-                                </Badge>
-                                
-                                {content.description && (
-                                  <CardDescription className="text-sm">
-                                    {content.description}
-                                  </CardDescription>
-                                )}
-
-                                <div className="space-y-1 text-xs text-muted-foreground pt-2 border-t border-amber-500/20">
-                                  {content.band_name && (
-                                    <p>Banda: {content.band_name}</p>
-                                  )}
-                                  {content.producer_name && (
-                                    <p>Productor: {content.producer_name}</p>
-                                  )}
-                                  <p className="flex items-center gap-1">
-                                    <Play className="w-3 h-3" />
-                                    {content.views_count} reproducciones
-                                  </p>
-                                </div>
-                              </CollapsibleContent>
-                            </Collapsible>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                </section>
+              {/* New Content Section */}
+              {filterType === "all" && !searchTerm && (
+                <ContentCarouselSection
+                  title="Recién Agregados"
+                  subtitle="Lo último en la plataforma"
+                  icon={<Sparkles className="w-5 h-5 text-white" />}
+                  contents={newContents}
+                  gradientFrom="from-violet-500"
+                  gradientTo="to-purple-600"
+                  onContentClick={handleContentClick}
+                  onFavoriteClick={handleFavoriteClick}
+                  onPlaylistClick={handlePlaylistClick}
+                  isFavorite={isFavorite}
+                  favLoading={favLoading}
+                />
               )}
+
+              {/* Free Content Grid */}
+              <ContentGrid
+                title={t('onDemand.freeContent')}
+                subtitle={`${freeContents.length} ${t('onDemand.videosAvailable')}`}
+                contents={freeContents}
+                variant="free"
+                expandedCards={expandedCards}
+                onToggleCard={toggleCardInfo}
+                onContentClick={handleContentClick}
+                onFavoriteClick={handleFavoriteClick}
+                onPlaylistClick={handlePlaylistClick}
+                isFavorite={isFavorite}
+                favLoading={favLoading}
+              />
+
+              {/* Premium Content Grid */}
+              <ContentGrid
+                title={t('onDemand.premiumContent')}
+                subtitle={`${paidContents.length} ${t('onDemand.exclusiveVideos')}`}
+                contents={paidContents}
+                variant="premium"
+                expandedCards={expandedCards}
+                onToggleCard={toggleCardInfo}
+                onContentClick={handleContentClick}
+                onFavoriteClick={handleFavoriteClick}
+                onPlaylistClick={handlePlaylistClick}
+                isFavorite={isFavorite}
+                favLoading={favLoading}
+              />
             </div>
           )}
         </main>

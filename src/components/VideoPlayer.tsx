@@ -43,8 +43,9 @@ export const VideoPlayer = () => {
     }
   }, [isPlayingLocal, setIsPlaying]);
 
-  // Determinar si es un video de YouTube para usar iframe
+  // Determinar tipo de stream
   const isYouTubeUrl = liveData?.playbackUrl?.includes('youtube.com') || liveData?.playbackUrl?.includes('youtu.be');
+  const isRestreamUrl = liveData?.playbackUrl?.includes('player.restream.io');
   
   // Extraer video ID de YouTube si es necesario
   const getYouTubeVideoId = (url: string) => {
@@ -54,6 +55,9 @@ export const VideoPlayer = () => {
   };
 
   const youtubeVideoId = liveData?.playbackUrl ? getYouTubeVideoId(liveData.playbackUrl) : null;
+  
+  // URL de Restream hardcodeada (se puede mover a config o DB)
+  const restreamEmbedUrl = "https://player.restream.io/?token=2123471e69";
 
   return (
     <section 
@@ -154,20 +158,14 @@ export const VideoPlayer = () => {
               />
             </>
           ) : (
-            /* Placeholder when no live stream */
-            <div className="absolute inset-0 bg-gradient-dark flex items-center justify-center p-4">
-              <div className="text-center space-y-2 sm:space-y-3">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 mx-auto bg-primary/20 rounded-full flex items-center justify-center group-hover:bg-primary/30 transition-all duration-300 group-hover:animate-float">
-                  <Play className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-primary fill-primary ml-0.5" />
-                </div>
-                <div>
-                  <p className="text-sm sm:text-base md:text-lg font-light text-foreground tracking-wide font-sans">Transmisión en Vivo</p>
-                  <p className="text-xs sm:text-sm font-light text-muted-foreground mt-0.5 sm:mt-1 tracking-wide font-sans">
-                    Contenido exclusivo las 24 horas
-                  </p>
-                </div>
-              </div>
-            </div>
+            /* Restream player por defecto cuando no hay otro stream */
+            <iframe
+              src={restreamEmbedUrl}
+              className="absolute inset-0 w-full h-full"
+              allow="autoplay; fullscreen"
+              allowFullScreen
+              frameBorder="0"
+            />
           )}
 
           {/* Glow effect overlay */}

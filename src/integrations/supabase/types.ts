@@ -2757,55 +2757,100 @@ export type Database = {
     Views: {
       public_profiles: {
         Row: {
+          additional_profile_types: string[] | null
           avatar_url: string | null
           bio: string | null
+          capacity: number | null
           ciudad: string | null
           created_at: string | null
           display_name: string | null
-          facebook: string | null
+          formation_date: string | null
+          genre: Database["public"]["Enums"]["music_genre"] | null
           id: string | null
-          instagram: string | null
-          linkedin: string | null
           pais: string | null
           profile_type: Database["public"]["Enums"]["profile_type"] | null
           provincia: string | null
           updated_at: string | null
           user_id: string | null
-          whatsapp: string | null
+          venue_type: Database["public"]["Enums"]["sala_type"] | null
         }
         Insert: {
+          additional_profile_types?: string[] | null
           avatar_url?: string | null
           bio?: string | null
+          capacity?: number | null
           ciudad?: string | null
           created_at?: string | null
           display_name?: string | null
-          facebook?: string | null
+          formation_date?: string | null
+          genre?: Database["public"]["Enums"]["music_genre"] | null
           id?: string | null
-          instagram?: string | null
-          linkedin?: string | null
           pais?: string | null
           profile_type?: Database["public"]["Enums"]["profile_type"] | null
           provincia?: string | null
           updated_at?: string | null
           user_id?: string | null
-          whatsapp?: string | null
+          venue_type?: Database["public"]["Enums"]["sala_type"] | null
         }
         Update: {
+          additional_profile_types?: string[] | null
           avatar_url?: string | null
           bio?: string | null
+          capacity?: number | null
           ciudad?: string | null
           created_at?: string | null
           display_name?: string | null
-          facebook?: string | null
+          formation_date?: string | null
+          genre?: Database["public"]["Enums"]["music_genre"] | null
           id?: string | null
-          instagram?: string | null
-          linkedin?: string | null
           pais?: string | null
           profile_type?: Database["public"]["Enums"]["profile_type"] | null
           provincia?: string | null
           updated_at?: string | null
           user_id?: string | null
-          whatsapp?: string | null
+          venue_type?: Database["public"]["Enums"]["sala_type"] | null
+        }
+        Relationships: []
+      }
+      user_subscription_status: {
+        Row: {
+          created_at: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string | null
+          is_active: boolean | null
+          max_concurrent_viewers: number | null
+          max_storage_gb: number | null
+          max_streaming_hours: number | null
+          tier: Database["public"]["Enums"]["subscription_tier"] | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          max_concurrent_viewers?: number | null
+          max_storage_gb?: number | null
+          max_streaming_hours?: number | null
+          tier?: Database["public"]["Enums"]["subscription_tier"] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          max_concurrent_viewers?: number | null
+          max_storage_gb?: number | null
+          max_streaming_hours?: number | null
+          tier?: Database["public"]["Enums"]["subscription_tier"] | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }

@@ -58,10 +58,11 @@ interface PublicProfile {
   provincia: string | null;
   ciudad: string;
   bio: string | null;
-  instagram: string | null;
-  facebook: string | null;
-  linkedin: string | null;
-  whatsapp: string | null;
+  genre: string | null;
+  venue_type: string | null;
+  capacity: number | null;
+  formation_date: string | null;
+  additional_profile_types: string[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -572,26 +573,21 @@ const Circuito = () => {
                                 <p className="text-sm text-muted-foreground">{profile.bio}</p>
                               )}
 
-                              {/* Social Media */}
-                              {(profile.instagram || profile.facebook || profile.linkedin) && (
-                                <div className="flex gap-3 pt-2 border-t border-border">
-                                  {profile.instagram && (
-                                    <a href={`https://instagram.com/${profile.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                                      <Instagram className="w-5 h-5" />
-                                    </a>
-                                  )}
-                                  {profile.facebook && (
-                                    <a href={profile.facebook.startsWith('http') ? profile.facebook : `https://facebook.com/${profile.facebook}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                                      <Facebook className="w-5 h-5" />
-                                    </a>
-                                  )}
-                                  {profile.linkedin && (
-                                    <a href={profile.linkedin.startsWith('http') ? profile.linkedin : `https://linkedin.com/in/${profile.linkedin}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                                      <Linkedin className="w-5 h-5" />
-                                    </a>
-                                  )}
-                                </div>
-                              )}
+                              {/* Ver perfil completo para redes sociales */}
+                              <div className="pt-2 border-t border-border">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="w-full text-muted-foreground hover:text-primary"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/perfil/${profile.user_id}`);
+                                  }}
+                                >
+                                  <ExternalLink className="w-4 h-4 mr-2" />
+                                  Ver perfil completo
+                                </Button>
+                              </div>
                             </CardContent>
                           </Card>
                         ))}
@@ -659,10 +655,10 @@ const Circuito = () => {
                 profileType={selectedProfile.profile_type}
                 bio={selectedProfile.bio}
                 avatarUrl={selectedProfile.avatar_url}
-                instagram={selectedProfile.instagram}
-                facebook={selectedProfile.facebook}
-                linkedin={selectedProfile.linkedin}
-                whatsapp={selectedProfile.whatsapp}
+                instagram={null}
+                facebook={null}
+                linkedin={null}
+                whatsapp={null}
                 email={null}
               />
             )}

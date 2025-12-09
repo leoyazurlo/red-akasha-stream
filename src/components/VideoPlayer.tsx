@@ -56,8 +56,8 @@ export const VideoPlayer = () => {
 
   const youtubeVideoId = liveData?.playbackUrl ? getYouTubeVideoId(liveData.playbackUrl) : null;
   
-  // URL de Restream hardcodeada (se puede mover a config o DB)
-  const restreamEmbedUrl = "https://player.restream.io/?token=2123471e69";
+  // URL de Twitch hardcodeada (se puede mover a config o DB)
+  const twitchEmbedUrl = "https://player.twitch.tv/?channel=audiovisualesauditorio&parent=" + window.location.hostname;
 
   return (
     <section 
@@ -158,13 +158,12 @@ export const VideoPlayer = () => {
               />
             </>
           ) : (
-            /* Restream player por defecto cuando no hay otro stream */
+            /* Twitch player por defecto cuando no hay otro stream */
             <iframe
-              src={restreamEmbedUrl}
+              src={twitchEmbedUrl}
               className="absolute inset-0 w-full h-full"
-              allow="autoplay; fullscreen"
               allowFullScreen
-              frameBorder="0"
+              scrolling="no"
             />
           )}
 

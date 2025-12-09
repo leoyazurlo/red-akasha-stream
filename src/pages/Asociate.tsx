@@ -36,6 +36,7 @@ import { MusicianForm } from "@/components/profile-forms/MusicianForm";
 import { RecordLabelForm } from "@/components/profile-forms/RecordLabelForm";
 import { PercusionForm } from "@/components/profile-forms/PercusionForm";
 import { DanzaForm } from "@/components/profile-forms/DanzaForm";
+import { AudiovisualForm } from "@/components/profile-forms/AudiovisualForm";
 import { z } from "zod";
 import { validateFile, formatFileSize, FILE_COUNT_LIMITS } from "@/lib/storage-validation";
 
@@ -570,6 +571,8 @@ const Asociate = () => {
         return <PercusionForm formData={formData} onChange={handleProfileFieldChange} />;
       case "danza":
         return <DanzaForm formData={formData} onChange={handleProfileFieldChange} />;
+      case "productor_audiovisual":
+        return <AudiovisualForm formData={formData} onChange={handleProfileFieldChange} />;
       default:
         return null;
     }

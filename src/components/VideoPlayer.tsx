@@ -1,16 +1,8 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Play, Radio, Maximize } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { Button } from "@/components/ui/button";
 import { useLiveStream } from "@/contexts/LiveStreamContext";
-
-declare global {
-  interface Window {
-    Twitch?: {
-      Player: new (elementId: string, options: { channel: string; width?: string; height?: string; parent?: string[] }) => void;
-    };
-  }
-}
 
 export const VideoPlayer = () => {
   const { elementRef, isVisible } = useScrollAnimation({ threshold: 0.2 });
@@ -20,50 +12,7 @@ export const VideoPlayer = () => {
   const [isPlayingLocal, setIsPlayingLocal] = useState(false);
   const { liveData, isPlaying, setIsPlaying } = useLiveStream();
 
-  const twitchContainerRef = useRef<HTMLDivElement>(null);
-  const [twitchLoaded, setTwitchLoaded] = useState(false);
-
   const hasLiveStream = !!liveData?.playbackUrl;
-
-  // Load Twitch SDK
-  useEffect(() => {
-    if (hasLiveStream) return; // Don't load Twitch if there's another stream
-
-    const existingScript = document.querySelector('script[src="https://player.twitch.tv/js/embed/v1.js"]');
-    if (existingScript) {
-      setTwitchLoaded(true);
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = 'https://player.twitch.tv/js/embed/v1.js';
-    script.async = true;
-    script.onload = () => setTwitchLoaded(true);
-    document.body.appendChild(script);
-
-    return () => {
-      // Don't remove script on cleanup to avoid re-loading
-    };
-  }, [hasLiveStream]);
-
-  // Initialize Twitch Player
-  useEffect(() => {
-    if (!twitchLoaded || hasLiveStream || !twitchContainerRef.current) return;
-
-    // Clear previous player if any
-    if (twitchContainerRef.current) {
-      twitchContainerRef.current.innerHTML = '';
-    }
-
-    if (window.Twitch) {
-      new window.Twitch.Player("twitch-embed-container", {
-        channel: "audiovisualesauditorio",
-        width: "100%",
-        height: "100%",
-        parent: [window.location.hostname]
-      });
-    }
-  }, [twitchLoaded, hasLiveStream]);
 
   // Auto-start local playback when global isPlaying is true
   useEffect(() => {
@@ -209,11 +158,12 @@ export const VideoPlayer = () => {
               />
             </>
           ) : (
-            /* Twitch player por defecto usando SDK */
-            <div 
-              ref={twitchContainerRef}
-              id="twitch-embed-container" 
+            /* Twitch player por defecto cuando no hay otro stream */
+            <iframe
+              src={twitchEmbedUrl}
               className="absolute inset-0 w-full h-full"
+              allowFullScreen
+              scrolling="no"
             />
           )}
 

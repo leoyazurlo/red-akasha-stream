@@ -588,6 +588,97 @@ export default function StreamConfig() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Edit Destination Dialog */}
+            <Dialog open={!!editingDestination} onOpenChange={(open) => !open && setEditingDestination(null)}>
+              <DialogContent className="bg-gray-900 border-cyan-500/30">
+                <DialogHeader>
+                  <DialogTitle className="text-cyan-400">Editar Destino RTMP</DialogTitle>
+                  <DialogDescription className="text-cyan-300/60">
+                    Modifica los datos del destino de streaming
+                  </DialogDescription>
+                </DialogHeader>
+                {editingDestination && (
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-cyan-300">Plataforma</Label>
+                      <Select 
+                        value={editingDestination.platform} 
+                        onValueChange={(v) => {
+                          let rtmpUrl = editingDestination.rtmp_url;
+                          if (v === 'twitch') {
+                            rtmpUrl = 'rtmp://live.twitch.tv/app';
+                          } else if (v === 'youtube') {
+                            rtmpUrl = 'rtmp://a.rtmp.youtube.com/live2';
+                          } else if (v === 'facebook') {
+                            rtmpUrl = 'rtmps://live-api-s.facebook.com:443/rtmp/';
+                          }
+                          setEditingDestination({ ...editingDestination, platform: v, rtmp_url: rtmpUrl });
+                        }}
+                      >
+                        <SelectTrigger className="bg-black/40 border-cyan-500/30 text-cyan-100">
+                          <SelectValue placeholder="Seleccionar plataforma" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-gray-900 border-cyan-500/30">
+                          {PLATFORMS.map((p) => (
+                            <SelectItem key={p.value} value={p.value} className="text-cyan-100">
+                              <div className="flex items-center gap-2">
+                                <p.icon className={`w-4 h-4 ${p.color}`} />
+                                {p.label}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-cyan-300">Nombre / Canal</Label>
+                      <Input
+                        value={editingDestination.name}
+                        onChange={(e) => setEditingDestination({ ...editingDestination, name: e.target.value })}
+                        placeholder="Nombre del canal"
+                        className="bg-black/40 border-cyan-500/30 text-cyan-100"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-cyan-300">URL RTMP</Label>
+                      <Input
+                        value={editingDestination.rtmp_url}
+                        onChange={(e) => setEditingDestination({ ...editingDestination, rtmp_url: e.target.value })}
+                        placeholder="rtmp://..."
+                        className="bg-black/40 border-cyan-500/30 text-cyan-100"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-cyan-300">Stream Key</Label>
+                      <Input
+                        type="password"
+                        value={editingDestination.stream_key}
+                        onChange={(e) => setEditingDestination({ ...editingDestination, stream_key: e.target.value })}
+                        placeholder="Tu clave de transmisión"
+                        className="bg-black/40 border-cyan-500/30 text-cyan-100"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-cyan-300">URL de Reproducción (opcional)</Label>
+                      <Input
+                        value={editingDestination.playback_url || ''}
+                        onChange={(e) => setEditingDestination({ ...editingDestination, playback_url: e.target.value })}
+                        placeholder="https://www.twitch.tv/tu_canal"
+                        className="bg-black/40 border-cyan-500/30 text-cyan-100"
+                      />
+                    </div>
+                    <Button
+                      onClick={() => updateDestinationMutation.mutate(editingDestination)}
+                      disabled={!editingDestination.platform || !editingDestination.name || !editingDestination.rtmp_url || !editingDestination.stream_key}
+                      className="w-full bg-cyan-500 hover:bg-cyan-600 text-black"
+                    >
+                      {updateDestinationMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Guardar Cambios"}
+                    </Button>
+                  </div>
+                )}
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           {/* Connection Status Tab */}

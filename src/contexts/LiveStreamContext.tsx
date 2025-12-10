@@ -9,6 +9,7 @@ interface LiveStreamData {
   playbackUrl: string;
   thumbnailUrl?: string | null;
   platform?: string;
+  twitchChannel?: string;
 }
 
 interface LiveStreamContextType {
@@ -59,16 +60,30 @@ export const LiveStreamProvider = ({ children }: { children: ReactNode }) => {
         .from("streaming_destinations")
         .select("*")
         .eq("is_active", true)
-        .not("playback_url", "is", null)
         .limit(1)
         .maybeSingle();
       
-      if (destData?.playback_url) {
+      if (destData) {
+        // Si es Twitch, extraer el canal de la URL RTMP o playback_url
+        let twitchChannel: string | undefined;
+        if (destData.platform === 'twitch') {
+          // Intentar extraer del playback_url si existe
+          if (destData.playback_url?.includes('twitch.tv')) {
+            const match = destData.playback_url.match(/twitch\.tv\/([^/?]+)/);
+            twitchChannel = match?.[1];
+          }
+          // Si no, usar el nombre del destino como canal
+          if (!twitchChannel) {
+            twitchChannel = destData.name.toLowerCase().replace(/\s+/g, '');
+          }
+        }
+        
         return {
           title: destData.name,
           description: `Transmitiendo en ${destData.platform}`,
-          playbackUrl: destData.playback_url,
+          playbackUrl: destData.playback_url || '',
           platform: destData.platform,
+          twitchChannel,
         };
       }
       

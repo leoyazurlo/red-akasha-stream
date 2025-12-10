@@ -427,7 +427,24 @@ export default function StreamConfig() {
                     <div className="space-y-4">
                       <div>
                         <Label className="text-cyan-300">Plataforma</Label>
-                        <Select value={newDestination.platform} onValueChange={(v) => setNewDestination({ ...newDestination, platform: v })}>
+                        <Select 
+                          value={newDestination.platform} 
+                          onValueChange={(v) => {
+                            let rtmpUrl = newDestination.rtmp_url;
+                            let playbackUrl = newDestination.playback_url;
+                            
+                            // Autocompletar URLs según plataforma
+                            if (v === 'twitch') {
+                              rtmpUrl = 'rtmp://live.twitch.tv/app';
+                            } else if (v === 'youtube') {
+                              rtmpUrl = 'rtmp://a.rtmp.youtube.com/live2';
+                            } else if (v === 'facebook') {
+                              rtmpUrl = 'rtmps://live-api-s.facebook.com:443/rtmp/';
+                            }
+                            
+                            setNewDestination({ ...newDestination, platform: v, rtmp_url: rtmpUrl, playback_url: playbackUrl });
+                          }}
+                        >
                           <SelectTrigger className="bg-black/40 border-cyan-500/30 text-cyan-100">
                             <SelectValue placeholder="Seleccionar plataforma" />
                           </SelectTrigger>
@@ -444,39 +461,64 @@ export default function StreamConfig() {
                         </Select>
                       </div>
                       <div>
-                        <Label className="text-cyan-300">Nombre</Label>
+                        <Label className="text-cyan-300">Nombre / Canal</Label>
                         <Input
                           value={newDestination.name}
-                          onChange={(e) => setNewDestination({ ...newDestination, name: e.target.value })}
-                          placeholder="Mi canal de YouTube"
+                          onChange={(e) => {
+                            const name = e.target.value;
+                            let playbackUrl = newDestination.playback_url;
+                            
+                            // Si es Twitch, actualizar automáticamente el playback_url
+                            if (newDestination.platform === 'twitch' && name) {
+                              playbackUrl = `https://www.twitch.tv/${name.toLowerCase().replace(/\s+/g, '')}`;
+                            }
+                            
+                            setNewDestination({ ...newDestination, name, playback_url: playbackUrl });
+                          }}
+                          placeholder={newDestination.platform === 'twitch' ? 'audiovisualesauditorio' : 'Mi canal'}
                           className="bg-black/40 border-cyan-500/30 text-cyan-100"
                         />
+                        {newDestination.platform === 'twitch' && (
+                          <p className="text-xs text-cyan-300/50 mt-1">
+                            Ingresa el nombre de tu canal de Twitch (sin @)
+                          </p>
+                        )}
                       </div>
                       <div>
                         <Label className="text-cyan-300">URL RTMP</Label>
                         <Input
                           value={newDestination.rtmp_url}
                           onChange={(e) => setNewDestination({ ...newDestination, rtmp_url: e.target.value })}
-                          placeholder="rtmp://a.rtmp.youtube.com/live2"
+                          placeholder="rtmp://live.twitch.tv/app"
                           className="bg-black/40 border-cyan-500/30 text-cyan-100"
                         />
+                        {newDestination.platform === 'twitch' && (
+                          <p className="text-xs text-green-400/70 mt-1">
+                            ✓ URL RTMP de Twitch autocompletada
+                          </p>
+                        )}
                       </div>
                       <div>
-                        <Label className="text-cyan-300">Stream Key</Label>
+                        <Label className="text-cyan-300">Stream Key (Clave de Transmisión)</Label>
                         <Input
                           type="password"
                           value={newDestination.stream_key}
                           onChange={(e) => setNewDestination({ ...newDestination, stream_key: e.target.value })}
-                          placeholder="xxxx-xxxx-xxxx-xxxx"
+                          placeholder="live_xxxxxxxxxxxxxxxxxx"
                           className="bg-black/40 border-cyan-500/30 text-cyan-100"
                         />
+                        {newDestination.platform === 'twitch' && (
+                          <p className="text-xs text-cyan-300/50 mt-1">
+                            Encuéntrala en: twitch.tv/dashboard → Configuración → Stream
+                          </p>
+                        )}
                       </div>
                       <div>
                         <Label className="text-cyan-300">URL de Reproducción (Playback)</Label>
                         <Input
                           value={newDestination.playback_url}
                           onChange={(e) => setNewDestination({ ...newDestination, playback_url: e.target.value })}
-                          placeholder="https://www.youtube.com/watch?v=VIDEO_ID"
+                          placeholder={newDestination.platform === 'twitch' ? 'https://www.twitch.tv/tu_canal' : 'https://www.youtube.com/watch?v=VIDEO_ID'}
                           className="bg-black/40 border-cyan-500/30 text-cyan-100"
                         />
                         <p className="text-xs text-cyan-300/50 mt-1">

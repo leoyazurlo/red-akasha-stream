@@ -45,7 +45,7 @@ export const VideoPlayer = () => {
 
   // Determinar tipo de stream
   const isYouTubeUrl = liveData?.playbackUrl?.includes('youtube.com') || liveData?.playbackUrl?.includes('youtu.be');
-  const isRestreamUrl = liveData?.playbackUrl?.includes('player.restream.io');
+  const isTwitchStream = liveData?.platform === 'twitch';
   
   // Extraer video ID de YouTube si es necesario
   const getYouTubeVideoId = (url: string) => {
@@ -56,8 +56,9 @@ export const VideoPlayer = () => {
 
   const youtubeVideoId = liveData?.playbackUrl ? getYouTubeVideoId(liveData.playbackUrl) : null;
   
-  // URL de Twitch hardcodeada (se puede mover a config o DB)
-  const twitchEmbedUrl = "https://player.twitch.tv/?channel=audiovisualesauditorio&parent=" + window.location.hostname;
+  // URL de Twitch desde el contexto o canal por defecto
+  const twitchChannel = liveData?.twitchChannel || 'audiovisualesauditorio';
+  const twitchEmbedUrl = `https://player.twitch.tv/?channel=${twitchChannel}&parent=${window.location.hostname}`;
 
   return (
     <section 
@@ -142,6 +143,14 @@ export const VideoPlayer = () => {
                 </Button>
               )}
             </>
+          ) : isTwitchStream || !hasLiveStream ? (
+            /* Twitch player - desde config DB o canal por defecto */
+            <iframe
+              src={twitchEmbedUrl}
+              className="absolute inset-0 w-full h-full"
+              allowFullScreen
+              scrolling="no"
+            />
           ) : hasLiveStream && liveData?.playbackUrl ? (
             <>
               {/* Video nativo para otras URLs */}
@@ -157,15 +166,7 @@ export const VideoPlayer = () => {
                 }}
               />
             </>
-          ) : (
-            /* Twitch player por defecto cuando no hay otro stream */
-            <iframe
-              src={twitchEmbedUrl}
-              className="absolute inset-0 w-full h-full"
-              allowFullScreen
-              scrolling="no"
-            />
-          )}
+          ) : null}
 
           {/* Glow effect overlay */}
           <div className="absolute inset-0 bg-gradient-glow opacity-35 pointer-events-none" />

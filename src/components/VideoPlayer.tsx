@@ -58,7 +58,10 @@ export const VideoPlayer = () => {
   
   // URL de Twitch desde el contexto o canal por defecto
   const twitchChannel = liveData?.twitchChannel || 'audiovisualesauditorio';
-  const twitchEmbedUrl = `https://player.twitch.tv/?channel=${twitchChannel}&parent=${window.location.hostname}`;
+  // Twitch requiere parent domains válidos - incluir localhost y dominios de producción
+  const hostname = window.location.hostname;
+  const validParents = [hostname, 'localhost', 'lovableproject.com', 'lovable.app'].filter(Boolean).join('&parent=');
+  const twitchEmbedUrl = `https://player.twitch.tv/?channel=${twitchChannel}&parent=${validParents}&muted=false`;
 
   return (
     <section 

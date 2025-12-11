@@ -546,24 +546,16 @@ export default function StreamConfig() {
                         />
                       </div>
 
-                      <div>
-                        <Label className="text-cyan-300">URL de Reproducción (Playback)</Label>
+                      <div className="border-t border-cyan-500/10 pt-3 mt-2">
+                        <Label className="text-cyan-300/60 text-sm">URL de Reproducción (Opcional)</Label>
                         <Input
                           value={newDestination.playback_url}
                           onChange={(e) => setNewDestination({ ...newDestination, playback_url: e.target.value })}
-                          placeholder={
-                            newDestination.platform === 'restream' ? 'https://www.twitch.tv/tu_canal (donde retransmite Restream)' :
-                            newDestination.platform === 'twitch' ? 'https://www.twitch.tv/tu_canal' :
-                            newDestination.platform === 'youtube' ? 'https://www.youtube.com/watch?v=VIDEO_ID' :
-                            'URL del video en vivo'
-                          }
-                          className="bg-black/40 border-cyan-500/30 text-cyan-100"
+                          placeholder="Opcional - URL donde se ve el stream"
+                          className="bg-black/20 border-cyan-500/20 text-cyan-100/70 text-sm"
                         />
-                        <p className="text-xs text-cyan-300/50 mt-1">
-                          {newDestination.platform === 'restream' 
-                            ? 'Ingresa la URL del canal final donde Restream retransmite (ej: tu canal de Twitch)'
-                            : 'URL del video en vivo para mostrar en el reproductor principal'
-                          }
+                        <p className="text-xs text-cyan-300/40 mt-1">
+                          Solo necesario si quieres mostrar el reproductor embebido
                         </p>
                       </div>
 
@@ -713,20 +705,16 @@ export default function StreamConfig() {
                       />
                     </div>
 
-                    <div>
-                      <Label className="text-cyan-300">URL de Reproducción</Label>
+                    <div className="border-t border-cyan-500/10 pt-3 mt-2">
+                      <Label className="text-cyan-300/60 text-sm">URL de Reproducción (Opcional)</Label>
                       <Input
                         value={editingDestination.playback_url || ''}
                         onChange={(e) => setEditingDestination({ ...editingDestination, playback_url: e.target.value })}
-                        placeholder={
-                          editingDestination.platform === 'restream' 
-                            ? 'https://www.twitch.tv/tu_canal (destino final)' 
-                            : 'https://www.twitch.tv/tu_canal'
-                        }
-                        className="bg-black/40 border-cyan-500/30 text-cyan-100"
+                        placeholder="Opcional - URL donde se ve el stream"
+                        className="bg-black/20 border-cyan-500/20 text-cyan-100/70 text-sm"
                       />
-                      <p className="text-xs text-cyan-300/50 mt-1">
-                        URL donde se mostrará el stream en el reproductor principal
+                      <p className="text-xs text-cyan-300/40 mt-1">
+                        Solo necesario si quieres mostrar el reproductor embebido
                       </p>
                     </div>
 

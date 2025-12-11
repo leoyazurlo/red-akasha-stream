@@ -40,13 +40,14 @@ import {
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const PLATFORMS = [
-  { value: "youtube", label: "YouTube", icon: Youtube, color: "text-red-500" },
-  { value: "facebook", label: "Facebook", icon: Facebook, color: "text-blue-500" },
-  { value: "instagram", label: "Instagram", icon: Instagram, color: "text-pink-500" },
-  { value: "twitch", label: "Twitch", icon: Twitch, color: "text-purple-500" },
-  { value: "vimeo", label: "Vimeo", icon: Radio, color: "text-cyan-500" },
-  { value: "x", label: "X (Twitter)", icon: Globe, color: "text-gray-400" },
-  { value: "custom", label: "Personalizado", icon: Globe, color: "text-cyan-400" },
+  { value: "restream", label: "Restream", icon: Radio, color: "text-green-500", rtmpUrl: "", playbackPrefix: "" },
+  { value: "twitch", label: "Twitch", icon: Twitch, color: "text-purple-500", rtmpUrl: "rtmp://live.twitch.tv/app", playbackPrefix: "https://www.twitch.tv/" },
+  { value: "youtube", label: "YouTube", icon: Youtube, color: "text-red-500", rtmpUrl: "rtmp://a.rtmp.youtube.com/live2", playbackPrefix: "https://www.youtube.com/watch?v=" },
+  { value: "facebook", label: "Facebook", icon: Facebook, color: "text-blue-500", rtmpUrl: "rtmps://live-api-s.facebook.com:443/rtmp/", playbackPrefix: "" },
+  { value: "instagram", label: "Instagram", icon: Instagram, color: "text-pink-500", rtmpUrl: "", playbackPrefix: "" },
+  { value: "vimeo", label: "Vimeo", icon: Radio, color: "text-cyan-500", rtmpUrl: "", playbackPrefix: "" },
+  { value: "x", label: "X (Twitter)", icon: Globe, color: "text-gray-400", rtmpUrl: "", playbackPrefix: "" },
+  { value: "custom", label: "Personalizado", icon: Globe, color: "text-cyan-400", rtmpUrl: "", playbackPrefix: "" },
 ];
 
 const OVERLAY_TYPES = [
@@ -430,19 +431,13 @@ export default function StreamConfig() {
                         <Select 
                           value={newDestination.platform} 
                           onValueChange={(v) => {
-                            let rtmpUrl = newDestination.rtmp_url;
-                            let playbackUrl = newDestination.playback_url;
-                            
-                            // Autocompletar URLs según plataforma
-                            if (v === 'twitch') {
-                              rtmpUrl = 'rtmp://live.twitch.tv/app';
-                            } else if (v === 'youtube') {
-                              rtmpUrl = 'rtmp://a.rtmp.youtube.com/live2';
-                            } else if (v === 'facebook') {
-                              rtmpUrl = 'rtmps://live-api-s.facebook.com:443/rtmp/';
-                            }
-                            
-                            setNewDestination({ ...newDestination, platform: v, rtmp_url: rtmpUrl, playback_url: playbackUrl });
+                            const platform = PLATFORMS.find(p => p.value === v);
+                            setNewDestination({ 
+                              ...newDestination, 
+                              platform: v, 
+                              rtmp_url: platform?.rtmpUrl || '',
+                              playback_url: ''
+                            });
                           }}
                         >
                           <SelectTrigger className="bg-black/40 border-cyan-500/30 text-cyan-100">
@@ -460,71 +455,118 @@ export default function StreamConfig() {
                           </SelectContent>
                         </Select>
                       </div>
+
+                      {/* Instrucciones específicas por plataforma */}
+                      {newDestination.platform === 'restream' && (
+                        <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                          <p className="text-green-400 text-sm font-medium mb-2">📡 Configuración de Restream</p>
+                          <ol className="text-xs text-green-300/80 space-y-1 list-decimal list-inside">
+                            <li>Inicia sesión en <a href="https://restream.io" target="_blank" className="underline">restream.io</a></li>
+                            <li>Ve a "Streaming Settings" o "Configuración"</li>
+                            <li>Copia la "RTMP URL" y "Stream Key"</li>
+                            <li>Para el playback, usa la URL del canal donde retransmites (Twitch, YouTube, etc.)</li>
+                          </ol>
+                        </div>
+                      )}
+
+                      {newDestination.platform === 'twitch' && (
+                        <div className="p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+                          <p className="text-purple-400 text-sm font-medium mb-2">🎮 Configuración de Twitch</p>
+                          <ol className="text-xs text-purple-300/80 space-y-1 list-decimal list-inside">
+                            <li>Ve a <a href="https://dashboard.twitch.tv/settings/stream" target="_blank" className="underline">dashboard.twitch.tv</a></li>
+                            <li>Copia tu "Primary Stream Key"</li>
+                            <li>La URL RTMP ya está configurada automáticamente</li>
+                          </ol>
+                        </div>
+                      )}
+
+                      {newDestination.platform === 'youtube' && (
+                        <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                          <p className="text-red-400 text-sm font-medium mb-2">📺 Configuración de YouTube</p>
+                          <ol className="text-xs text-red-300/80 space-y-1 list-decimal list-inside">
+                            <li>Ve a <a href="https://studio.youtube.com" target="_blank" className="underline">YouTube Studio</a> → Crear → Transmitir en vivo</li>
+                            <li>Copia la "Stream Key" desde la configuración del stream</li>
+                            <li>El playback URL será tu canal o el enlace del directo</li>
+                          </ol>
+                        </div>
+                      )}
+
                       <div>
                         <Label className="text-cyan-300">Nombre / Canal</Label>
                         <Input
                           value={newDestination.name}
                           onChange={(e) => {
                             const name = e.target.value;
+                            const platform = PLATFORMS.find(p => p.value === newDestination.platform);
                             let playbackUrl = newDestination.playback_url;
                             
-                            // Si es Twitch, actualizar automáticamente el playback_url
-                            if (newDestination.platform === 'twitch' && name) {
-                              playbackUrl = `https://www.twitch.tv/${name.toLowerCase().replace(/\s+/g, '')}`;
+                            if (platform?.playbackPrefix && name) {
+                              playbackUrl = `${platform.playbackPrefix}${name.toLowerCase().replace(/\s+/g, '')}`;
                             }
                             
                             setNewDestination({ ...newDestination, name, playback_url: playbackUrl });
                           }}
-                          placeholder={newDestination.platform === 'twitch' ? 'audiovisualesauditorio' : 'Mi canal'}
+                          placeholder={
+                            newDestination.platform === 'twitch' ? 'nombre_de_canal' : 
+                            newDestination.platform === 'restream' ? 'Red Akasha Live' :
+                            'Mi canal'
+                          }
                           className="bg-black/40 border-cyan-500/30 text-cyan-100"
                         />
-                        {newDestination.platform === 'twitch' && (
-                          <p className="text-xs text-cyan-300/50 mt-1">
-                            Ingresa el nombre de tu canal de Twitch (sin @)
-                          </p>
-                        )}
                       </div>
+
                       <div>
                         <Label className="text-cyan-300">URL RTMP</Label>
                         <Input
                           value={newDestination.rtmp_url}
                           onChange={(e) => setNewDestination({ ...newDestination, rtmp_url: e.target.value })}
-                          placeholder="rtmp://live.twitch.tv/app"
+                          placeholder={
+                            newDestination.platform === 'restream' ? 'rtmp://live.restream.io/live' :
+                            'rtmp://...'
+                          }
                           className="bg-black/40 border-cyan-500/30 text-cyan-100"
                         />
-                        {newDestination.platform === 'twitch' && (
-                          <p className="text-xs text-green-400/70 mt-1">
-                            ✓ URL RTMP de Twitch autocompletada
-                          </p>
+                        {newDestination.platform && PLATFORMS.find(p => p.value === newDestination.platform)?.rtmpUrl && (
+                          <p className="text-xs text-green-400/70 mt-1">✓ URL RTMP autocompletada</p>
                         )}
                       </div>
+
                       <div>
                         <Label className="text-cyan-300">Stream Key (Clave de Transmisión)</Label>
                         <Input
                           type="password"
                           value={newDestination.stream_key}
                           onChange={(e) => setNewDestination({ ...newDestination, stream_key: e.target.value })}
-                          placeholder="live_xxxxxxxxxxxxxxxxxx"
+                          placeholder={
+                            newDestination.platform === 'restream' ? 're_xxxxxxxxx_xxxxxxxxxxxxx' :
+                            newDestination.platform === 'twitch' ? 'live_xxxxxxxxxxxxxxxxxx' :
+                            'Tu clave de transmisión'
+                          }
                           className="bg-black/40 border-cyan-500/30 text-cyan-100"
                         />
-                        {newDestination.platform === 'twitch' && (
-                          <p className="text-xs text-cyan-300/50 mt-1">
-                            Encuéntrala en: twitch.tv/dashboard → Configuración → Stream
-                          </p>
-                        )}
                       </div>
+
                       <div>
                         <Label className="text-cyan-300">URL de Reproducción (Playback)</Label>
                         <Input
                           value={newDestination.playback_url}
                           onChange={(e) => setNewDestination({ ...newDestination, playback_url: e.target.value })}
-                          placeholder={newDestination.platform === 'twitch' ? 'https://www.twitch.tv/tu_canal' : 'https://www.youtube.com/watch?v=VIDEO_ID'}
+                          placeholder={
+                            newDestination.platform === 'restream' ? 'https://www.twitch.tv/tu_canal (donde retransmite Restream)' :
+                            newDestination.platform === 'twitch' ? 'https://www.twitch.tv/tu_canal' :
+                            newDestination.platform === 'youtube' ? 'https://www.youtube.com/watch?v=VIDEO_ID' :
+                            'URL del video en vivo'
+                          }
                           className="bg-black/40 border-cyan-500/30 text-cyan-100"
                         />
                         <p className="text-xs text-cyan-300/50 mt-1">
-                          URL del video en vivo para mostrar en el reproductor principal
+                          {newDestination.platform === 'restream' 
+                            ? 'Ingresa la URL del canal final donde Restream retransmite (ej: tu canal de Twitch)'
+                            : 'URL del video en vivo para mostrar en el reproductor principal'
+                          }
                         </p>
                       </div>
+
                       <Button
                         onClick={() => addDestinationMutation.mutate(newDestination)}
                         disabled={!newDestination.platform || !newDestination.name || !newDestination.rtmp_url || !newDestination.stream_key}
@@ -605,15 +647,12 @@ export default function StreamConfig() {
                       <Select 
                         value={editingDestination.platform} 
                         onValueChange={(v) => {
-                          let rtmpUrl = editingDestination.rtmp_url;
-                          if (v === 'twitch') {
-                            rtmpUrl = 'rtmp://live.twitch.tv/app';
-                          } else if (v === 'youtube') {
-                            rtmpUrl = 'rtmp://a.rtmp.youtube.com/live2';
-                          } else if (v === 'facebook') {
-                            rtmpUrl = 'rtmps://live-api-s.facebook.com:443/rtmp/';
-                          }
-                          setEditingDestination({ ...editingDestination, platform: v, rtmp_url: rtmpUrl });
+                          const platform = PLATFORMS.find(p => p.value === v);
+                          setEditingDestination({ 
+                            ...editingDestination, 
+                            platform: v, 
+                            rtmp_url: platform?.rtmpUrl || editingDestination.rtmp_url
+                          });
                         }}
                       >
                         <SelectTrigger className="bg-black/40 border-cyan-500/30 text-cyan-100">
@@ -631,6 +670,18 @@ export default function StreamConfig() {
                         </SelectContent>
                       </Select>
                     </div>
+
+                    {/* Instrucciones para Restream */}
+                    {editingDestination.platform === 'restream' && (
+                      <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                        <p className="text-green-400 text-sm font-medium mb-2">📡 Restream</p>
+                        <p className="text-xs text-green-300/80">
+                          Asegúrate de copiar la RTMP URL y Stream Key desde tu panel de Restream.
+                          El Playback URL debe ser el canal donde Restream retransmite (Twitch, YouTube, etc.)
+                        </p>
+                      </div>
+                    )}
+
                     <div>
                       <Label className="text-cyan-300">Nombre / Canal</Label>
                       <Input
@@ -640,6 +691,7 @@ export default function StreamConfig() {
                         className="bg-black/40 border-cyan-500/30 text-cyan-100"
                       />
                     </div>
+
                     <div>
                       <Label className="text-cyan-300">URL RTMP</Label>
                       <Input
@@ -649,6 +701,7 @@ export default function StreamConfig() {
                         className="bg-black/40 border-cyan-500/30 text-cyan-100"
                       />
                     </div>
+
                     <div>
                       <Label className="text-cyan-300">Stream Key</Label>
                       <Input
@@ -659,15 +712,24 @@ export default function StreamConfig() {
                         className="bg-black/40 border-cyan-500/30 text-cyan-100"
                       />
                     </div>
+
                     <div>
-                      <Label className="text-cyan-300">URL de Reproducción (opcional)</Label>
+                      <Label className="text-cyan-300">URL de Reproducción</Label>
                       <Input
                         value={editingDestination.playback_url || ''}
                         onChange={(e) => setEditingDestination({ ...editingDestination, playback_url: e.target.value })}
-                        placeholder="https://www.twitch.tv/tu_canal"
+                        placeholder={
+                          editingDestination.platform === 'restream' 
+                            ? 'https://www.twitch.tv/tu_canal (destino final)' 
+                            : 'https://www.twitch.tv/tu_canal'
+                        }
                         className="bg-black/40 border-cyan-500/30 text-cyan-100"
                       />
+                      <p className="text-xs text-cyan-300/50 mt-1">
+                        URL donde se mostrará el stream en el reproductor principal
+                      </p>
                     </div>
+
                     <Button
                       onClick={() => updateDestinationMutation.mutate(editingDestination)}
                       disabled={!editingDestination.platform || !editingDestination.name || !editingDestination.rtmp_url || !editingDestination.stream_key}

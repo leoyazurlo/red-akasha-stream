@@ -64,24 +64,26 @@ export const LiveStreamProvider = ({ children }: { children: ReactNode }) => {
         .maybeSingle();
       
       if (destData) {
-        // Si es Twitch, extraer el canal de la URL RTMP o playback_url
         let twitchChannel: string | undefined;
-        if (destData.platform === 'twitch') {
-          // Intentar extraer del playback_url si existe
-          if (destData.playback_url?.includes('twitch.tv')) {
-            const match = destData.playback_url.match(/twitch\.tv\/([^/?]+)/);
-            twitchChannel = match?.[1];
-          }
-          // Si no, usar el nombre del destino como canal
-          if (!twitchChannel) {
-            twitchChannel = destData.name.toLowerCase().replace(/\s+/g, '');
-          }
+        let finalPlaybackUrl = destData.playback_url || '';
+        
+        // Detectar canal de Twitch desde playback_url (funciona para Restream también)
+        if (finalPlaybackUrl.includes('twitch.tv')) {
+          const match = finalPlaybackUrl.match(/twitch\.tv\/([^/?]+)/);
+          twitchChannel = match?.[1];
+        }
+        
+        // Si es Twitch directo
+        if (destData.platform === 'twitch' && !twitchChannel) {
+          twitchChannel = destData.name.toLowerCase().replace(/\s+/g, '');
         }
         
         return {
           title: destData.name,
-          description: `Transmitiendo en ${destData.platform}`,
-          playbackUrl: destData.playback_url || '',
+          description: destData.platform === 'restream' 
+            ? `Transmitiendo via Restream` 
+            : `Transmitiendo en ${destData.platform}`,
+          playbackUrl: finalPlaybackUrl,
           platform: destData.platform,
           twitchChannel,
         };

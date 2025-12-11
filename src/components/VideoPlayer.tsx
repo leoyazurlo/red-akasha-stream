@@ -43,25 +43,36 @@ export const VideoPlayer = () => {
     }
   }, [isPlayingLocal, setIsPlaying]);
 
-  // Determinar tipo de stream
-  const isYouTubeUrl = liveData?.playbackUrl?.includes('youtube.com') || liveData?.playbackUrl?.includes('youtu.be');
-  const isTwitchStream = liveData?.platform === 'twitch';
+  // Detectar tipo de URL automáticamente desde playback_url
+  const playbackUrl = liveData?.playbackUrl || '';
   
-  // Extraer video ID de YouTube si es necesario
+  // YouTube detection
+  const isYouTubeUrl = playbackUrl.includes('youtube.com') || playbackUrl.includes('youtu.be');
   const getYouTubeVideoId = (url: string) => {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|live\/)([^#&?]*).*/;
     const match = url.match(regExp);
     return match && match[2].length === 11 ? match[2] : null;
   };
-
-  const youtubeVideoId = liveData?.playbackUrl ? getYouTubeVideoId(liveData.playbackUrl) : null;
+  const youtubeVideoId = isYouTubeUrl ? getYouTubeVideoId(playbackUrl) : null;
   
-  // URL de Twitch desde el contexto o canal por defecto
-  const twitchChannel = liveData?.twitchChannel || 'audiovisualesauditorio';
-  // Twitch requiere parent domains válidos - incluir localhost y dominios de producción
+  // Twitch detection - desde URL o canal configurado
+  const isTwitchUrl = playbackUrl.includes('twitch.tv');
+  const getTwitchChannel = (url: string) => {
+    const match = url.match(/twitch\.tv\/([^/?]+)/);
+    return match?.[1] || null;
+  };
+  const twitchChannel = isTwitchUrl 
+    ? getTwitchChannel(playbackUrl) 
+    : (liveData?.twitchChannel || 'audiovisualesauditorio');
+  
+  // Twitch embed con parents válidos
   const hostname = window.location.hostname;
   const validParents = [hostname, 'localhost', 'lovableproject.com', 'lovable.app'].filter(Boolean).join('&parent=');
   const twitchEmbedUrl = `https://player.twitch.tv/?channel=${twitchChannel}&parent=${validParents}&muted=false`;
+  
+  // Determinar qué reproductor usar
+  const useYouTubePlayer = isYouTubeUrl && youtubeVideoId;
+  const useTwitchPlayer = isTwitchUrl || (!hasLiveStream); // Twitch por defecto si no hay stream
 
   return (
     <section 
@@ -91,85 +102,88 @@ export const VideoPlayer = () => {
           ref={containerRef}
           className="relative aspect-video bg-card rounded-lg sm:rounded-xl overflow-hidden border-2 border-cyan-400/40 group shadow-[0_0_30px_hsl(180_100%_50%/0.35)] hover:shadow-[0_0_45px_hsl(180_100%_50%/0.5)] transition-shadow duration-300"
         >
-          {hasLiveStream && isYouTubeUrl && youtubeVideoId ? (
-            <>
-              {/* YouTube iframe */}
-              {isPlayingLocal ? (
-                <iframe
-                  ref={iframeRef}
-                  src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&rel=0`}
-                  className="absolute inset-0 w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
+          {useYouTubePlayer ? (
+            /* YouTube Player */
+            isPlayingLocal ? (
+              <iframe
+                ref={iframeRef}
+                src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&rel=0`}
+                className="absolute inset-0 w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            ) : (
+              <div 
+                className="absolute inset-0 bg-black/50 flex items-center justify-center cursor-pointer z-10"
+                onClick={handlePlay}
+              >
+                <img 
+                  src={`https://img.youtube.com/vi/${youtubeVideoId}/maxresdefault.jpg`}
+                  alt={liveData?.title || 'Stream'}
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
-              ) : (
-                <div 
-                  className="absolute inset-0 bg-black/50 flex items-center justify-center cursor-pointer z-10"
-                  onClick={handlePlay}
-                >
-                  {/* Thumbnail */}
-                  <img 
-                    src={`https://img.youtube.com/vi/${youtubeVideoId}/maxresdefault.jpg`}
-                    alt={liveData.title}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/40" />
-                  
-                  <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-primary/30 rounded-full flex items-center justify-center hover:bg-primary/50 transition-all">
-                    <Play className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-primary fill-primary ml-1" />
-                  </div>
-                  
-                  <div className="absolute bottom-8 left-4 right-4 text-center">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <div className="flex items-center gap-1.5 bg-red-600 px-2 py-0.5 rounded text-xs font-semibold text-white">
-                        <Radio className="w-3 h-3" />
-                        EN VIVO
-                      </div>
-                    </div>
-                    <p className="text-white text-lg font-semibold">{liveData.title}</p>
-                    {liveData.description && (
-                      <p className="text-white/70 text-sm mt-1 line-clamp-2">{liveData.description}</p>
-                    )}
-                  </div>
+                <div className="absolute inset-0 bg-black/40" />
+                
+                <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-primary/30 rounded-full flex items-center justify-center hover:bg-primary/50 transition-all">
+                  <Play className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-primary fill-primary ml-1" />
                 </div>
-              )}
-
-              {/* Fullscreen button when playing */}
-              {isPlayingLocal && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={toggleFullscreen}
-                  className="absolute bottom-4 right-4 text-white hover:bg-white/20 z-20"
-                >
-                  <Maximize className="w-5 h-5" />
-                </Button>
-              )}
-            </>
-          ) : isTwitchStream || !hasLiveStream ? (
-            /* Twitch player - desde config DB o canal por defecto */
+                
+                <div className="absolute bottom-8 left-4 right-4 text-center">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <div className="flex items-center gap-1.5 bg-red-600 px-2 py-0.5 rounded text-xs font-semibold text-white">
+                      <Radio className="w-3 h-3" />
+                      EN VIVO
+                    </div>
+                  </div>
+                  {liveData?.title && <p className="text-white text-lg font-semibold">{liveData.title}</p>}
+                  {liveData?.description && (
+                    <p className="text-white/70 text-sm mt-1 line-clamp-2">{liveData.description}</p>
+                  )}
+                </div>
+              </div>
+            )
+          ) : useTwitchPlayer ? (
+            /* Twitch Player - detecta canal desde URL o usa default */
             <iframe
               src={twitchEmbedUrl}
               className="absolute inset-0 w-full h-full"
               allowFullScreen
               scrolling="no"
             />
-          ) : hasLiveStream && liveData?.playbackUrl ? (
-            <>
-              {/* Video nativo para otras URLs */}
-              <video
-                src={liveData.playbackUrl}
-                className="absolute inset-0 w-full h-full object-cover"
-                controls
-                autoPlay={isPlayingLocal}
-                playsInline
-                onPlay={() => {
-                  setIsPlayingLocal(true);
-                  setIsPlaying(true);
-                }}
-              />
-            </>
-          ) : null}
+          ) : hasLiveStream ? (
+            /* Video nativo para otras URLs (HLS, MP4, etc) */
+            <video
+              src={playbackUrl}
+              className="absolute inset-0 w-full h-full object-cover"
+              controls
+              autoPlay={isPlayingLocal}
+              playsInline
+              onPlay={() => {
+                setIsPlayingLocal(true);
+                setIsPlaying(true);
+              }}
+            />
+          ) : (
+            /* Fallback: Twitch por defecto */
+            <iframe
+              src={twitchEmbedUrl}
+              className="absolute inset-0 w-full h-full"
+              allowFullScreen
+              scrolling="no"
+            />
+          )}
+          
+          {/* Fullscreen button */}
+          {(useYouTubePlayer && isPlayingLocal) && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleFullscreen}
+              className="absolute bottom-4 right-4 text-white hover:bg-white/20 z-20"
+            >
+              <Maximize className="w-5 h-5" />
+            </Button>
+          )}
 
           {/* Glow effect overlay */}
           <div className="absolute inset-0 bg-gradient-glow opacity-35 pointer-events-none" />

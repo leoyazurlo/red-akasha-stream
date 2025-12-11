@@ -37,7 +37,7 @@ export const LiveStreamProvider = ({ children }: { children: ReactNode }) => {
   const { data: liveData } = useQuery({
     queryKey: ["live-stream-global"],
     queryFn: async () => {
-      // Primero buscar en streams table
+      // Primero buscar en streams table (streams activos)
       const { data: streamData } = await supabase
         .from("streams")
         .select("id, title, description, playback_url, thumbnail_url, status")
@@ -52,6 +52,7 @@ export const LiveStreamProvider = ({ children }: { children: ReactNode }) => {
           description: streamData.description,
           playbackUrl: streamData.playback_url,
           thumbnailUrl: streamData.thumbnail_url,
+          twitchChannel: extractTwitchChannel(streamData.playback_url),
         };
       }
 
@@ -64,28 +65,15 @@ export const LiveStreamProvider = ({ children }: { children: ReactNode }) => {
         .maybeSingle();
       
       if (destData) {
-        let twitchChannel: string | undefined;
-        let finalPlaybackUrl = destData.playback_url || '';
-        
-        // Detectar canal de Twitch desde playback_url (funciona para Restream también)
-        if (finalPlaybackUrl.includes('twitch.tv')) {
-          const match = finalPlaybackUrl.match(/twitch\.tv\/([^/?]+)/);
-          twitchChannel = match?.[1];
-        }
-        
-        // Si es Twitch directo
-        if (destData.platform === 'twitch' && !twitchChannel) {
-          twitchChannel = destData.name.toLowerCase().replace(/\s+/g, '');
-        }
+        // La URL de reproducción es lo importante - detectamos el tipo desde ahí
+        const playbackUrl = destData.playback_url || '';
         
         return {
           title: destData.name,
-          description: destData.platform === 'restream' 
-            ? `Transmitiendo via Restream` 
-            : `Transmitiendo en ${destData.platform}`,
-          playbackUrl: finalPlaybackUrl,
+          description: `Transmitiendo en ${destData.platform}`,
+          playbackUrl: playbackUrl,
           platform: destData.platform,
-          twitchChannel,
+          twitchChannel: extractTwitchChannel(playbackUrl),
         };
       }
       
@@ -93,6 +81,16 @@ export const LiveStreamProvider = ({ children }: { children: ReactNode }) => {
     },
     refetchInterval: 30000,
   });
+
+  // Extraer canal de Twitch de cualquier URL
+  const extractTwitchChannel = (url: string): string | undefined => {
+    if (!url) return undefined;
+    if (url.includes('twitch.tv')) {
+      const match = url.match(/twitch\.tv\/([^/?]+)/);
+      return match?.[1];
+    }
+    return undefined;
+  };
 
   // Auto-start cuando hay un stream disponible
   useEffect(() => {

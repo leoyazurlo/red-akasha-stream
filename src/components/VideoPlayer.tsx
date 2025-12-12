@@ -55,24 +55,28 @@ export const VideoPlayer = () => {
   };
   const youtubeVideoId = isYouTubeUrl ? getYouTubeVideoId(playbackUrl) : null;
   
-  // Twitch detection - desde URL o canal configurado
+  // Twitch/Restream detection - desde URL o canal configurado
   const isTwitchUrl = playbackUrl.includes('twitch.tv');
+  const isRestreamUrl = playbackUrl.includes('restream.io');
   const getTwitchChannel = (url: string) => {
     const match = url.match(/twitch\.tv\/([^/?]+)/);
     return match?.[1] || null;
   };
+  
+  // Canal por defecto para Twitch/Restream
+  const defaultChannel = 'audiovisualesauditorio';
   const twitchChannel = isTwitchUrl 
-    ? getTwitchChannel(playbackUrl) 
-    : (liveData?.twitchChannel || 'audiovisualesauditorio');
+    ? (getTwitchChannel(playbackUrl) || defaultChannel)
+    : (liveData?.twitchChannel || defaultChannel);
   
   // Twitch embed con parents válidos
   const hostname = window.location.hostname;
   const validParents = [hostname, 'localhost', 'lovableproject.com', 'lovable.app'].filter(Boolean).join('&parent=');
   const twitchEmbedUrl = `https://player.twitch.tv/?channel=${twitchChannel}&parent=${validParents}&muted=false`;
   
-  // Determinar qué reproductor usar
+  // Determinar qué reproductor usar - SIEMPRE usar iframe para plataformas de streaming
   const useYouTubePlayer = isYouTubeUrl && youtubeVideoId;
-  const useTwitchPlayer = isTwitchUrl || (!hasLiveStream); // Twitch por defecto si no hay stream
+  const useTwitchPlayer = isTwitchUrl || isRestreamUrl || !useYouTubePlayer; // Twitch/Restream o default
 
   return (
     <section 
@@ -142,29 +146,8 @@ export const VideoPlayer = () => {
                 </div>
               </div>
             )
-          ) : useTwitchPlayer ? (
-            /* Twitch Player - detecta canal desde URL o usa default */
-            <iframe
-              src={twitchEmbedUrl}
-              className="absolute inset-0 w-full h-full"
-              allowFullScreen
-              scrolling="no"
-            />
-          ) : hasLiveStream ? (
-            /* Video nativo para otras URLs (HLS, MP4, etc) */
-            <video
-              src={playbackUrl}
-              className="absolute inset-0 w-full h-full object-cover"
-              controls
-              autoPlay={isPlayingLocal}
-              playsInline
-              onPlay={() => {
-                setIsPlayingLocal(true);
-                setIsPlaying(true);
-              }}
-            />
           ) : (
-            /* Fallback: Twitch por defecto */
+            /* Twitch/Restream Player - siempre usa iframe */
             <iframe
               src={twitchEmbedUrl}
               className="absolute inset-0 w-full h-full"

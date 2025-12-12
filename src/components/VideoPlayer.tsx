@@ -55,37 +55,51 @@ export const VideoPlayer = () => {
   };
   const youtubeVideoId = isYouTubeUrl ? getYouTubeVideoId(playbackUrl) : null;
   
-  // Twitch/Restream detection - desde URL o canal configurado
+  // Restream detection - usa su propio player con token
+  const isRestreamUrl = playbackUrl.includes('restream.io') || playbackUrl.includes('player.restream.io');
+  const getRestreamToken = (url: string) => {
+    // Extrae el token de URLs como: player.restream.io/?token=XXXXX o el token directo
+    const tokenMatch = url.match(/token=([a-zA-Z0-9]+)/);
+    if (tokenMatch) return tokenMatch[1];
+    // Si es solo el token sin URL completa
+    if (/^[a-zA-Z0-9]{20,}$/.test(url.trim())) return url.trim();
+    return null;
+  };
+  const restreamToken = isRestreamUrl ? getRestreamToken(playbackUrl) : null;
+  const restreamEmbedUrl = restreamToken 
+    ? `https://player.restream.io/?token=${restreamToken}`
+    : null;
+  
+  // Twitch detection
   const isTwitchUrl = playbackUrl.includes('twitch.tv');
-  const isRestreamUrl = playbackUrl.includes('restream.io');
   const getTwitchChannel = (url: string) => {
     const match = url.match(/twitch\.tv\/([^/?]+)/);
     return match?.[1] || null;
   };
   
-  // Canal por defecto para Twitch/Restream
+  // Canal por defecto para Twitch
   const defaultChannel = 'audiovisualesauditorio';
   const twitchChannel = isTwitchUrl 
     ? (getTwitchChannel(playbackUrl) || defaultChannel)
     : (liveData?.twitchChannel || defaultChannel);
   
-  // Twitch embed con parents válidos - incluir TODOS los dominios posibles
+  // Twitch embed con parents válidos
   const hostname = window.location.hostname;
   const parentDomains = [
     hostname,
     'localhost',
     'lovable.app',
     'lovableproject.com',
-    // Incluir variantes de subdominios de Lovable
     ...hostname.includes('.lovable.app') ? [hostname.split('.').slice(-2).join('.')] : [],
-  ].filter((v, i, a) => v && a.indexOf(v) === i); // Eliminar duplicados
+  ].filter((v, i, a) => v && a.indexOf(v) === i);
   
   const parentsParam = parentDomains.map(d => `parent=${d}`).join('&');
   const twitchEmbedUrl = `https://player.twitch.tv/?channel=${twitchChannel}&${parentsParam}&muted=false`;
   
-  // Determinar qué reproductor usar - SIEMPRE usar iframe para plataformas de streaming
+  // Determinar qué reproductor usar
   const useYouTubePlayer = isYouTubeUrl && youtubeVideoId;
-  const useTwitchPlayer = isTwitchUrl || isRestreamUrl || !useYouTubePlayer; // Twitch/Restream o default
+  const useRestreamPlayer = isRestreamUrl && restreamEmbedUrl;
+  const useTwitchPlayer = isTwitchUrl && !useRestreamPlayer;
 
   return (
     <section 
@@ -155,14 +169,30 @@ export const VideoPlayer = () => {
                 </div>
               </div>
             )
-          ) : (
-            /* Twitch/Restream Player - siempre usa iframe */
+          ) : useRestreamPlayer ? (
+            /* Restream Player - usa su propio player con token */
+            <iframe
+              src={restreamEmbedUrl}
+              className="absolute inset-0 w-full h-full"
+              allow="autoplay; fullscreen"
+              allowFullScreen
+            />
+          ) : useTwitchPlayer ? (
+            /* Twitch Player */
             <iframe
               src={twitchEmbedUrl}
               className="absolute inset-0 w-full h-full"
               allowFullScreen
               scrolling="no"
             />
+          ) : (
+            /* Fallback - sin stream */
+            <div className="absolute inset-0 flex items-center justify-center bg-black/80">
+              <div className="text-center">
+                <Radio className="w-12 h-12 text-primary mx-auto mb-4" />
+                <p className="text-white/70">Configura un stream en el panel de administración</p>
+              </div>
+            </div>
           )}
           
           {/* Fullscreen button */}

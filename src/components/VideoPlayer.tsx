@@ -69,10 +69,19 @@ export const VideoPlayer = () => {
     ? (getTwitchChannel(playbackUrl) || defaultChannel)
     : (liveData?.twitchChannel || defaultChannel);
   
-  // Twitch embed con parents válidos
+  // Twitch embed con parents válidos - incluir TODOS los dominios posibles
   const hostname = window.location.hostname;
-  const validParents = [hostname, 'localhost', 'lovableproject.com', 'lovable.app'].filter(Boolean).join('&parent=');
-  const twitchEmbedUrl = `https://player.twitch.tv/?channel=${twitchChannel}&parent=${validParents}&muted=false`;
+  const parentDomains = [
+    hostname,
+    'localhost',
+    'lovable.app',
+    'lovableproject.com',
+    // Incluir variantes de subdominios de Lovable
+    ...hostname.includes('.lovable.app') ? [hostname.split('.').slice(-2).join('.')] : [],
+  ].filter((v, i, a) => v && a.indexOf(v) === i); // Eliminar duplicados
+  
+  const parentsParam = parentDomains.map(d => `parent=${d}`).join('&');
+  const twitchEmbedUrl = `https://player.twitch.tv/?channel=${twitchChannel}&${parentsParam}&muted=false`;
   
   // Determinar qué reproductor usar - SIEMPRE usar iframe para plataformas de streaming
   const useYouTubePlayer = isYouTubeUrl && youtubeVideoId;

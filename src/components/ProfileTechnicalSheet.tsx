@@ -136,26 +136,51 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
   const [messageText, setMessageText] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
   
+  // Profile data loaded from database
+  const [profileData, setProfileData] = useState<{
+    bio: string | null;
+    instagram: string | null;
+    facebook: string | null;
+    linkedin: string | null;
+    whatsapp: string | null;
+    email: string | null;
+  }>({
+    bio: bio,
+    instagram: instagram,
+    facebook: facebook,
+    linkedin: linkedin,
+    whatsapp: whatsapp,
+    email: email,
+  });
+  
   // Get the user_id for following functionality
   const [targetUserId, setTargetUserId] = useState<string | null>(null);
   const { isFollowing, isLoading: followLoading, toggleFollow, followersCount } = useFollow(targetUserId);
 
-  // Fetch the user_id from profile_details
+  // Fetch full profile data from database
   useEffect(() => {
-    const fetchTargetUserId = async () => {
-      const { data } = await supabase
+    const fetchProfileData = async () => {
+      const { data, error } = await supabase
         .from('profile_details')
-        .select('user_id')
+        .select('user_id, bio, instagram, facebook, linkedin, whatsapp, email')
         .eq('id', profileId)
         .single();
       
-      if (data) {
+      if (data && !error) {
         setTargetUserId(data.user_id);
+        setProfileData({
+          bio: data.bio,
+          instagram: data.instagram,
+          facebook: data.facebook,
+          linkedin: data.linkedin,
+          whatsapp: data.whatsapp,
+          email: data.email,
+        });
       }
     };
     
     if (profileId) {
-      fetchTargetUserId();
+      fetchProfileData();
     }
   }, [profileId]);
 
@@ -572,7 +597,7 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
   const videos = gallery.filter(item => item.media_type === 'video');
   
   // Check if there are any social media links or whatsapp
-  const hasSocialMedia = instagram || facebook || linkedin || whatsapp;
+  const hasSocialMedia = profileData.instagram || profileData.facebook || profileData.linkedin || profileData.whatsapp;
   
   // Check if there's any content in trabajos realizados
   const hasContent = photos.length > 0 || videos.length > 0 || audioPlaylist.length > 0;
@@ -769,7 +794,7 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
               )}
               
               <p className="text-muted-foreground/80 text-sm leading-relaxed mb-5 font-light max-w-xl">
-                {bio || "Sin información cargada, a la espera de que el socio active"}
+                {profileData.bio || "Sin información cargada, a la espera de que el socio active"}
               </p>
               
             </div>
@@ -1165,9 +1190,9 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
                   <div className="h-px flex-1 max-w-20 bg-gradient-to-l from-transparent to-primary/30" />
                 </div>
                 <div className="flex flex-wrap gap-3 justify-center sm:justify-start">
-                  {instagram && (
+                  {profileData.instagram && (
                     <a
-                      href={`https://instagram.com/${instagram.replace('@', '')}`}
+                      href={`https://instagram.com/${profileData.instagram.replace('@', '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="group relative p-3 rounded-xl transition-all duration-300 hover:scale-110"
@@ -1180,9 +1205,9 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
                       </div>
                     </a>
                   )}
-                  {facebook && (
+                  {profileData.facebook && (
                     <a
-                      href={facebook.startsWith('http') ? facebook : `https://facebook.com/${facebook}`}
+                      href={profileData.facebook.startsWith('http') ? profileData.facebook : `https://facebook.com/${profileData.facebook}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="group relative p-3 rounded-xl transition-all duration-300 hover:scale-110"
@@ -1195,9 +1220,9 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
                       </div>
                     </a>
                   )}
-                  {linkedin && (
+                  {profileData.linkedin && (
                     <a
-                      href={linkedin.startsWith('http') ? linkedin : `https://linkedin.com/in/${linkedin}`}
+                      href={profileData.linkedin.startsWith('http') ? profileData.linkedin : `https://linkedin.com/in/${profileData.linkedin}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="group relative p-3 rounded-xl transition-all duration-300 hover:scale-110"
@@ -1210,9 +1235,9 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
                       </div>
                     </a>
                   )}
-                  {whatsapp && (
+                  {profileData.whatsapp && (
                     <a
-                      href={`https://wa.me/${whatsapp.replace(/[^0-9+]/g, '').replace(/^\+/, '')}`}
+                      href={`https://wa.me/${profileData.whatsapp.replace(/[^0-9+]/g, '').replace(/^\+/, '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="group relative p-3 rounded-xl transition-all duration-300 hover:scale-110"

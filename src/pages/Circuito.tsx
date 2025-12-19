@@ -569,10 +569,6 @@ const Circuito = () => {
                               </div>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                   {profile.bio && (
-                                <p className="text-sm text-muted-foreground">{profile.bio}</p>
-                              )}
-
                               {/* Ver perfil completo para redes sociales */}
                               <div className="pt-2 border-t border-border">
                                 <Button

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Header } from "@/components/Header";
@@ -17,6 +17,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ImageUpload } from "@/components/ImageUpload";
 import { Autocomplete } from "@/components/ui/autocomplete";
 import { validateFile, FILE_COUNT_LIMITS } from "@/lib/storage-validation";
+import { useProfileEditDraft } from "@/contexts/ProfileEditDraftContext";
 import {
   Select,
   SelectContent,
@@ -122,6 +123,7 @@ const EditarPerfil = () => {
   const { toast } = useToast();
   const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
+  const { getDraft, setDraft, clearDraft } = useProfileEditDraft();
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -129,6 +131,7 @@ const EditarPerfil = () => {
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [newImages, setNewImages] = useState<File[]>([]);
   const [uploadingGallery, setUploadingGallery] = useState(false);
+  const draftRestoredRef = useRef(false);
   const [formData, setFormData] = useState({
     display_name: "",
     bio: "",
@@ -154,6 +157,12 @@ const EditarPerfil = () => {
     }
   }, [user, authLoading]);
 
+  // Save draft on formData/newImages changes (after initial load)
+  useEffect(() => {
+    if (!user || loading || !draftRestoredRef.current) return;
+    setDraft(user.id, { formData, newImages });
+  }, [formData, newImages, user, loading, setDraft]);
+
   const fetchProfile = async () => {
     try {
       const { data: profileData, error: profileError } = await supabase
@@ -172,22 +181,34 @@ const EditarPerfil = () => {
 
       setProfileId(profileData.id);
 
-      setFormData({
-        display_name: profileData.display_name || "",
-        bio: profileData.bio || "",
-        avatar_url: profileData.avatar_url || "",
-        pais: profileData.pais || "",
-        provincia: profileData.provincia || "",
-        ciudad: profileData.ciudad || "",
-        instagram: profileData.instagram || "",
-        facebook: profileData.facebook || "",
-        linkedin: profileData.linkedin || "",
-        whatsapp: profileData.whatsapp || "",
-        telefono: profileData.telefono || "",
-        email: profileData.email || "",
-        profile_type: profileData.profile_type || "",
-        additional_profile_types: (profileData as any).additional_profile_types || []
-      });
+      // Check for existing draft
+      const existingDraft = getDraft(user!.id);
+      if (existingDraft) {
+        // Restore draft data
+        setFormData({
+          ...existingDraft.formData,
+          // Keep main profile_type from DB (cannot change)
+          profile_type: profileData.profile_type || ""
+        });
+        setNewImages(existingDraft.newImages);
+      } else {
+        setFormData({
+          display_name: profileData.display_name || "",
+          bio: profileData.bio || "",
+          avatar_url: profileData.avatar_url || "",
+          pais: profileData.pais || "",
+          provincia: profileData.provincia || "",
+          ciudad: profileData.ciudad || "",
+          instagram: profileData.instagram || "",
+          facebook: profileData.facebook || "",
+          linkedin: profileData.linkedin || "",
+          whatsapp: profileData.whatsapp || "",
+          telefono: profileData.telefono || "",
+          email: profileData.email || "",
+          profile_type: profileData.profile_type || "",
+          additional_profile_types: (profileData as any).additional_profile_types || []
+        });
+      }
 
       // Fetch gallery photos
       const { data: galleryData } = await supabase
@@ -198,6 +219,7 @@ const EditarPerfil = () => {
         .order("order_index");
 
       setGallery(galleryData || []);
+      draftRestoredRef.current = true;
     } catch (error) {
       console.error("Error fetching profile:", error);
       toast({
@@ -403,6 +425,11 @@ const EditarPerfil = () => {
         .eq("user_id", user?.id);
 
       if (error) throw error;
+
+      // Clear draft on successful save
+      if (user) {
+        clearDraft(user.id);
+      }
 
       toast({
         title: "¡Perfil actualizado!",

@@ -12,10 +12,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, ArrowLeft, Save, MapPin, X } from "lucide-react";
+import { Loader2, ArrowLeft, Save, MapPin, X, Plus, Trash2, Image as ImageIcon } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ImageUpload } from "@/components/ImageUpload";
 import { Autocomplete } from "@/components/ui/autocomplete";
+import { validateFile, FILE_COUNT_LIMITS } from "@/lib/storage-validation";
 import {
   Select,
   SelectContent,
@@ -23,6 +24,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+interface GalleryItem {
+  id: string;
+  url: string;
+  title: string | null;
+  media_type: string;
+  order_index: number;
+}
 
 // Location data
 const argentinaProvincias = [
@@ -116,6 +125,10 @@ const EditarPerfil = () => {
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [profileId, setProfileId] = useState<string | null>(null);
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
   const [formData, setFormData] = useState({
     display_name: "",
     bio: "",
@@ -157,6 +170,8 @@ const EditarPerfil = () => {
         throw profileError;
       }
 
+      setProfileId(profileData.id);
+
       setFormData({
         display_name: profileData.display_name || "",
         bio: profileData.bio || "",
@@ -173,6 +188,16 @@ const EditarPerfil = () => {
         profile_type: profileData.profile_type || "",
         additional_profile_types: (profileData as any).additional_profile_types || []
       });
+
+      // Fetch gallery photos
+      const { data: galleryData } = await supabase
+        .from("profile_galleries")
+        .select("*")
+        .eq("profile_id", profileData.id)
+        .in("media_type", ["photo", "image"])
+        .order("order_index");
+
+      setGallery(galleryData || []);
     } catch (error) {
       console.error("Error fetching profile:", error);
       toast({
@@ -182,6 +207,112 @@ const EditarPerfil = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Gallery handlers
+  const handleGalleryImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles: File[] = [];
+
+    const totalPhotos = gallery.length + newImages.length + files.length;
+    if (totalPhotos > FILE_COUNT_LIMITS.PHOTOS) {
+      toast({
+        title: "Límite de fotos alcanzado",
+        description: `Solo puedes tener máximo ${FILE_COUNT_LIMITS.PHOTOS} fotos. Actualmente tienes ${gallery.length} y ${newImages.length} pendientes.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    files.forEach(file => {
+      const validation = validateFile(file, 'image');
+      if (validation.valid) {
+        validFiles.push(file);
+      } else {
+        toast({
+          title: "Archivo no válido",
+          description: validation.error,
+          variant: "destructive"
+        });
+      }
+    });
+
+    setNewImages(prev => [...prev, ...validFiles]);
+  };
+
+  const removeNewImage = (index: number) => {
+    setNewImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const deleteGalleryItem = async (itemId: string) => {
+    try {
+      const { error } = await supabase
+        .from("profile_galleries")
+        .delete()
+        .eq("id", itemId);
+
+      if (error) throw error;
+
+      setGallery(prev => prev.filter(item => item.id !== itemId));
+      toast({
+        title: "Eliminado",
+        description: "La foto se eliminó correctamente"
+      });
+    } catch (error) {
+      console.error("Error deleting gallery item:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar la foto",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const uploadGalleryImages = async () => {
+    if (!profileId || newImages.length === 0) return;
+
+    setUploadingGallery(true);
+    try {
+      const currentMaxIndex = Math.max(...gallery.map(g => g.order_index || 0), -1);
+      let orderIndex = currentMaxIndex + 1;
+
+      for (const file of newImages) {
+        const fileName = `${profileId}/${Date.now()}-${file.name}`;
+        const { data: imageData, error: imageError } = await supabase.storage
+          .from("profile-avatars")
+          .upload(fileName, file);
+
+        if (imageError) throw imageError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from("profile-avatars")
+          .getPublicUrl(imageData.path);
+
+        await supabase.from("profile_galleries").insert({
+          profile_id: profileId,
+          url: publicUrl,
+          media_type: "photo",
+          order_index: orderIndex++
+        });
+      }
+
+      setNewImages([]);
+      await fetchProfile();
+
+      toast({
+        title: "¡Fotos subidas!",
+        description: "Las fotos se agregaron a tu galería"
+      });
+    } catch (error) {
+      console.error("Error uploading gallery:", error);
+      toast({
+        title: "Error",
+        description: "No se pudieron subir las fotos",
+        variant: "destructive"
+      });
+    } finally {
+      setUploadingGallery(false);
     }
   };
 
@@ -404,13 +535,128 @@ const EditarPerfil = () => {
                   )}
                 </div>
 
-                {/* Avatar */}
-                <div className="space-y-2">
+                {/* Avatar - Foto de Perfil Principal */}
+                <div className="space-y-4 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                      <ImageIcon className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <Label className="font-semibold text-lg">Foto de Perfil Principal</Label>
+                      <p className="text-xs text-muted-foreground">Esta imagen aparecerá como tu avatar en toda la plataforma</p>
+                    </div>
+                  </div>
                   <ImageUpload
-                    label="Foto de Perfil"
+                    label=""
                     value={formData.avatar_url}
                     onChange={(url) => handleChange("avatar_url", url)}
                   />
+                </div>
+
+                {/* Galería de Fotos */}
+                <div className="space-y-4 p-4 bg-accent/5 rounded-lg border border-accent/20">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-accent/20 flex items-center justify-center">
+                        <ImageIcon className="w-4 h-4 text-accent" />
+                      </div>
+                      <div>
+                        <Label className="font-semibold text-lg">Galería de Fotos</Label>
+                        <p className="text-xs text-muted-foreground">
+                          Agrega hasta {FILE_COUNT_LIMITS.PHOTOS} fotos a tu galería ({gallery.length}/{FILE_COUNT_LIMITS.PHOTOS})
+                        </p>
+                      </div>
+                    </div>
+                    {newImages.length > 0 && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={uploadGalleryImages}
+                        disabled={uploadingGallery}
+                        className="bg-accent hover:bg-accent/80"
+                      >
+                        {uploadingGallery ? (
+                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        ) : (
+                          <Save className="w-4 h-4 mr-2" />
+                        )}
+                        Subir {newImages.length} foto{newImages.length > 1 ? 's' : ''}
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Existing Gallery Photos */}
+                  {gallery.length > 0 && (
+                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                      {gallery.map((photo) => (
+                        <div key={photo.id} className="relative group aspect-square">
+                          <img
+                            src={photo.url}
+                            alt={photo.title || "Foto de galería"}
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="destructive"
+                            className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6"
+                            onClick={() => deleteGalleryItem(photo.id)}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* New Photos Preview */}
+                  {newImages.length > 0 && (
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-2">Fotos pendientes de subir:</p>
+                      <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                        {newImages.map((file, index) => (
+                          <div key={index} className="relative aspect-square">
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt={file.name}
+                              className="w-full h-full object-cover rounded-lg border-2 border-dashed border-accent/50"
+                            />
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              className="absolute top-1 right-1 bg-black/50 hover:bg-black/70 h-5 w-5"
+                              onClick={() => removeNewImage(index)}
+                            >
+                              <X className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Upload Button */}
+                  {(gallery.length + newImages.length) < FILE_COUNT_LIMITS.PHOTOS && (
+                    <div>
+                      <Label htmlFor="gallery-images" className="cursor-pointer">
+                        <div className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-accent/30 rounded-lg hover:border-accent/50 transition-colors bg-accent/5">
+                          <Plus className="w-5 h-5 text-accent" />
+                          <span className="text-accent">
+                            Agregar Fotos ({FILE_COUNT_LIMITS.PHOTOS - gallery.length - newImages.length} disponibles)
+                          </span>
+                        </div>
+                      </Label>
+                      <Input
+                        id="gallery-images"
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={handleGalleryImageSelect}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* Display Name */}

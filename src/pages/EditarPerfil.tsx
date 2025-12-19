@@ -403,6 +403,21 @@ const EditarPerfil = () => {
 
     setSaving(true);
     
+    // Sanitize Instagram: only allow valid username or URL
+    const sanitizeInstagram = (value: string): string | null => {
+      const trimmed = value.trim();
+      if (!trimmed) return null;
+      // If it's a URL, validate it's Instagram
+      if (trimmed.includes('instagram.com')) {
+        const urlPattern = /^https?:\/\/(www\.)?instagram\.com\/.+$/i;
+        return urlPattern.test(trimmed) ? trimmed : null;
+      }
+      // Otherwise treat as username - remove @ if present and validate
+      const username = trimmed.replace(/^@/, '');
+      const usernamePattern = /^[A-Za-z0-9._]{1,30}$/;
+      return usernamePattern.test(username) ? username : null;
+    };
+
     try {
       const { error } = await supabase
         .from("profile_details")
@@ -413,7 +428,7 @@ const EditarPerfil = () => {
           pais: formData.pais,
           provincia: formData.provincia || null,
           ciudad: formData.ciudad,
-          instagram: formData.instagram.trim() || null,
+          instagram: sanitizeInstagram(formData.instagram),
           facebook: formData.facebook.trim() || null,
           linkedin: formData.linkedin.trim() || null,
           whatsapp: formData.whatsapp.trim() || null,

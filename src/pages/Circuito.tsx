@@ -569,7 +569,7 @@ const Circuito = () => {
                               </div>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                              {/* Ver perfil completo para redes sociales */}
+                              {/* Ver perfil completo abre el dialog */}
                               <div className="pt-2 border-t border-border">
                                 <Button
                                   variant="ghost"
@@ -577,7 +577,15 @@ const Circuito = () => {
                                   className="w-full text-muted-foreground hover:text-primary"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    navigate(`/perfil/${profile.user_id}`);
+                                    // Open the ProfileTechnicalSheet dialog
+                                    if (selectedProfile && selectedProfile.id !== profile.id) {
+                                      setMinimizedProfiles(prev => {
+                                        const exists = prev.some(p => p.id === selectedProfile.id);
+                                        if (exists) return prev;
+                                        return [...prev, selectedProfile];
+                                      });
+                                    }
+                                    setSelectedProfile(profile);
                                   }}
                                 >
                                   <ExternalLink className="w-4 h-4 mr-2" />

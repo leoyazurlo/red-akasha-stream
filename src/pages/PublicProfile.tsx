@@ -5,6 +5,10 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { ProfilePaidContent } from "@/components/profile/ProfilePaidContent";
+import { FollowButton } from "@/components/profile/FollowButton";
+import { SendMessageButton } from "@/components/profile/SendMessageButton";
+import { FollowStats } from "@/components/profile/FollowStats";
+import { useFollow } from "@/hooks/useFollow";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -101,9 +105,7 @@ const PublicProfile = () => {
   const [hoveredStar, setHoveredStar] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const profileUrl = `${window.location.origin}/circuito/perfil/${id}`;
-
-  // Fetch profile from profile_details
+  // Fetch profile first to get user_id for follow hook
   const { data: profile, isLoading } = useQuery({
     queryKey: ["public-profile", id],
     queryFn: async () => {
@@ -118,6 +120,12 @@ const PublicProfile = () => {
     },
     enabled: !!id,
   });
+
+  // Use follow hook with profile's user_id
+  // Use follow hook with profile's user_id
+  const { followersCount, followingCount } = useFollow(profile?.user_id || null);
+
+  const profileUrl = `${window.location.origin}/circuito/perfil/${id}`;
 
   useEffect(() => {
     if (id) {
@@ -492,8 +500,30 @@ const PublicProfile = () => {
                     )}
                   </div>
 
+                  {/* Followers Stats */}
+                  <div className="flex flex-wrap gap-6 mb-6 justify-center md:justify-start text-sm">
+                    <div className="text-center">
+                      <span className="block text-2xl font-bold text-primary">{followersCount}</span>
+                      <span className="text-muted-foreground">Seguidores</span>
+                    </div>
+                    <div className="text-center">
+                      <span className="block text-2xl font-bold text-primary">{followingCount}</span>
+                      <span className="text-muted-foreground">Siguiendo</span>
+                    </div>
+                  </div>
+
                   {/* Actions */}
                   <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+                    {/* Follow Button - usando el user_id del perfil */}
+                    <FollowButton userId={profile.user_id} currentUserId={user?.id} />
+                    
+                    {/* Send Message Button */}
+                    <SendMessageButton 
+                      receiverId={profile.user_id} 
+                      receiverName={profile.display_name}
+                      currentUserId={user?.id}
+                    />
+
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/20 hover:text-cyan-300 hover:border-cyan-400">

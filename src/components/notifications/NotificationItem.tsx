@@ -18,6 +18,7 @@ const notificationIcons = {
   new_vote: ThumbsUp,
   mention_thread: AtSign,
   mention_post: AtSign,
+  new_message: MessageSquare,
 };
 
 export const NotificationItem = ({ notification, onClose }: NotificationItemProps) => {

@@ -34,6 +34,16 @@ export const SendMessageButton = ({ receiverId, receiverName, currentUserId }: S
 
     setSending(true);
     try {
+      // Obtener el nombre del remitente
+      const { data: senderProfile } = await supabase
+        .from('profiles')
+        .select('username, full_name')
+        .eq('id', currentUserId)
+        .single();
+
+      const senderName = senderProfile?.username || senderProfile?.full_name || 'Un usuario';
+
+      // Enviar el mensaje
       const { error } = await supabase
         .from('direct_messages')
         .insert({
@@ -43,6 +53,18 @@ export const SendMessageButton = ({ receiverId, receiverName, currentUserId }: S
         });
 
       if (error) throw error;
+
+      // Crear notificación para el receptor
+      await supabase
+        .from('notifications')
+        .insert({
+          user_id: receiverId,
+          type: 'new_message',
+          title: 'Nuevo mensaje',
+          message: `${senderName} te ha enviado un mensaje`,
+          link: '/mi-perfil?tab=mensajes',
+          related_user_id: currentUserId,
+        });
 
       toast({
         title: "Mensaje enviado",

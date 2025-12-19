@@ -680,10 +680,10 @@ const EditarPerfil = () => {
                     onChange={(e) => handleChange("bio", e.target.value)}
                     placeholder="Cuéntanos sobre ti..."
                     className="bg-background/50 min-h-[120px]"
-                    maxLength={500}
+                    maxLength={700}
                   />
-                  <p className={`text-xs text-right ${formData.bio.length > 450 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                    {formData.bio.length}/500
+                  <p className={`text-xs text-right ${formData.bio.length > 650 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                    {formData.bio.length}/700
                   </p>
                 </div>
 

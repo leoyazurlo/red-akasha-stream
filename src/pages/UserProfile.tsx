@@ -7,6 +7,7 @@ import { CosmicBackground } from "@/components/CosmicBackground";
 import { ShareProfile } from "@/components/profile/ShareProfile";
 import { ExportAchievements } from "@/components/profile/ExportAchievements";
 import { FollowButton } from "@/components/profile/FollowButton";
+import { SendMessageButton } from "@/components/profile/SendMessageButton";
 import { FollowStats } from "@/components/profile/FollowStats";
 import { FollowingActivity } from "@/components/profile/FollowingActivity";
 import { useFollow } from "@/hooks/useFollow";
@@ -266,8 +267,13 @@ const UserProfile = () => {
                     <h1 className="text-3xl font-bold">
                       {profile.username || profile.full_name || "Usuario"}
                     </h1>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <FollowButton userId={id!} currentUserId={user?.id} />
+                      <SendMessageButton 
+                        receiverId={id!} 
+                        receiverName={profile.username || profile.full_name || "Usuario"}
+                        currentUserId={user?.id}
+                      />
                       <ShareProfile 
                         userId={id!} 
                         userName={profile.username || profile.full_name || "Usuario"} 

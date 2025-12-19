@@ -524,12 +524,14 @@ const MiPerfil = () => {
               <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
                 <CardHeader>
                   <CardTitle>Galería de Fotos</CardTitle>
-                  <CardDescription>Administra las fotos de tu perfil</CardDescription>
+                  <CardDescription>
+                    Administra las fotos de tu perfil ({photos.length}/{FILE_COUNT_LIMITS.PHOTOS} fotos)
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Existing Photos */}
                   {photos.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                       {photos.map((photo) => (
                         <div key={photo.id} className="relative group">
                           <img
@@ -554,7 +556,7 @@ const MiPerfil = () => {
                   {newImages.length > 0 && (
                     <div>
                       <h4 className="text-sm font-medium mb-2 text-muted-foreground">Nuevas fotos por subir:</h4>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         {newImages.map((file, index) => (
                           <div key={index} className="relative">
                             <img
@@ -577,22 +579,30 @@ const MiPerfil = () => {
                   )}
 
                   {/* Upload Button */}
-                  <div>
-                    <Label htmlFor="new-images" className="cursor-pointer">
-                      <div className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-primary/30 rounded-lg hover:border-primary/50 transition-colors">
-                        <Plus className="w-5 h-5 text-primary" />
-                        <span className="text-primary">Agregar Fotos</span>
-                      </div>
-                    </Label>
-                    <Input
-                      id="new-images"
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                      onChange={handleImageUpload}
-                    />
-                  </div>
+                  {(photos.length + newImages.length) < FILE_COUNT_LIMITS.PHOTOS ? (
+                    <div>
+                      <Label htmlFor="new-images" className="cursor-pointer">
+                        <div className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-primary/30 rounded-lg hover:border-primary/50 transition-colors">
+                          <Plus className="w-5 h-5 text-primary" />
+                          <span className="text-primary">
+                            Agregar Fotos ({FILE_COUNT_LIMITS.PHOTOS - photos.length - newImages.length} disponibles)
+                          </span>
+                        </div>
+                      </Label>
+                      <Input
+                        id="new-images"
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={handleImageUpload}
+                      />
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-muted/50 rounded-lg text-center text-muted-foreground">
+                      Has alcanzado el límite máximo de {FILE_COUNT_LIMITS.PHOTOS} fotos
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>

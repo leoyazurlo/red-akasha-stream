@@ -11,7 +11,7 @@ export const FILE_SIZE_LIMITS = {
 
 // Límites de cantidad por perfil
 export const FILE_COUNT_LIMITS = {
-  PHOTOS: 30,   // Máximo 30 fotos
+  PHOTOS: 10,   // Máximo 10 fotos
   VIDEOS: 10,   // Máximo 10 videos
 } as const;
 

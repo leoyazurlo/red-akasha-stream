@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.detect-country]
 verify_jwt = false
+
+[functions.add-profile]
+verify_jwt = false

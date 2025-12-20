@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate, Link } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, CheckCircle2, Upload, X, Video, Image as ImageIcon, Music, Check, User } from "lucide-react";
+import { Loader2, CheckCircle2, Upload, X, Video, Image as ImageIcon, Music, Check, User, LogIn } from "lucide-react";
 import { ImageUpload } from "@/components/ImageUpload";
 import {
   Select,
@@ -92,6 +93,7 @@ const latinAmericanCountries = [
 const Asociate = () => {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [showMediaUpload, setShowMediaUpload] = useState(false);
@@ -99,6 +101,32 @@ const Asociate = () => {
   const [uploadedVideos, setUploadedVideos] = useState<File[]>([]);
   const [uploadedImages, setUploadedImages] = useState<File[]>([]);
   const [uploadedAudios, setUploadedAudios] = useState<File[]>([]);
+  const [currentUser, setCurrentUser] = useState<{ id: string; email: string } | null>(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  // Check if user is logged in
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setCurrentUser({ id: session.user.id, email: session.user.email || '' });
+      }
+      setCheckingAuth(false);
+    };
+    
+    checkAuth();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setCurrentUser({ id: session.user.id, email: session.user.email || '' });
+      } else {
+        setCurrentUser(null);
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, []);
+
   const [formData, setFormData] = useState({
     nombre: "",
     email: "",
@@ -324,6 +352,16 @@ const Asociate = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Require login to add profiles
+    if (!currentUser) {
+      toast({
+        title: "Iniciar sesión requerido",
+        description: "Para agregar un perfil, primero debes iniciar sesión con tu cuenta.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (selectedProfiles.length === 0) {
       toast({
         title: "Error",
@@ -333,21 +371,32 @@ const Asociate = () => {
       return;
     }
 
-    // Client-side validation - validate for primary profile (first selected)
-    try {
-      const primaryProfile = selectedProfiles[0];
-      const validationSchema = getValidationSchema(primaryProfile);
-      validationSchema.parse(formData);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const firstError = error.errors[0];
-        toast({
-          title: "Error de validación",
-          description: firstError.message,
-          variant: "destructive",
-        });
-        return;
-      }
+    // Simplified client-side validation for logged-in users (no password required)
+    if (!formData.avatar_url) {
+      toast({
+        title: "Error de validación",
+        description: "La foto de perfil es obligatoria.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.bio || formData.bio.trim().length < 10) {
+      toast({
+        title: "Error de validación",
+        description: "La biografía debe tener al menos 10 caracteres.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.pais || !formData.ciudad) {
+      toast({
+        title: "Error de validación",
+        description: "País y ciudad son obligatorios.",
+        variant: "destructive",
+      });
+      return;
     }
 
     setLoading(true);
@@ -383,14 +432,11 @@ const Asociate = () => {
         }
       }
 
-      // Step 2: Call secure Edge Function for server-side validation and registration
-      const registrationData = {
+      // Step 2: Call add-profile edge function (user must be logged in)
+      const profileData = {
         profile_type: profileTypeMap[selectedProfiles[0]],
         profile_types: selectedProfiles.map(p => profileTypeMap[p]),
-        nombre: formData.nombre,
-        email: formData.email,
-        password: formData.password,
-        confirmPassword: formData.confirmPassword,
+        nombre: formData.nombre || currentUser.email.split('@')[0],
         display_name: formData.display_name,
         bio: formData.bio,
         pais: formData.pais,
@@ -423,8 +469,8 @@ const Asociate = () => {
         services: formData.services,
       };
 
-      const response = await supabase.functions.invoke('validate-registration', {
-        body: registrationData
+      const response = await supabase.functions.invoke('add-profile', {
+        body: profileData
       });
 
       if (response.error) {
@@ -433,18 +479,12 @@ const Asociate = () => {
       }
 
       if (!response.data?.success) {
-        throw new Error(response.data?.error || 'Error al crear la cuenta');
+        throw new Error(response.data?.error || 'Error al crear el perfil');
       }
 
       // Continue with file uploads if any
-      const userId = response.data.user_id;
-      const { data: profileQuery } = await supabase
-        .from('profile_details')
-        .select('id')
-        .eq('user_id', userId)
-        .single();
-      
-      const profileId = profileQuery?.id;
+      const userId = currentUser.id;
+      const profileId = response.data.profile_id;
 
       // Step 3: Upload multimedia files if any
       if (profileId) {
@@ -630,28 +670,65 @@ const Asociate = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-                {submitted ? (
-                  <div className="text-center py-12 animate-scale-in">
-                    <div className="relative inline-block mb-6">
-                      <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse-glow"></div>
-                      <CheckCircle2 className="w-20 h-20 text-primary mx-auto relative" />
-                    </div>
-                    <h3 className="text-3xl font-bold mb-3 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                      {t('asociate.successTitle')}
-                    </h3>
-                    <p className="text-muted-foreground text-lg">{t('asociate.successMessage')}</p>
+              {checkingAuth ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : !currentUser ? (
+                <div className="text-center py-12 animate-fade-in">
+                  <LogIn className="w-16 h-16 text-primary mx-auto mb-6" />
+                  <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    Iniciar sesión requerido
+                  </h3>
+                  <p className="text-muted-foreground mb-6">
+                    Para agregar un nuevo perfil, primero debes iniciar sesión con tu cuenta existente.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <Link to="/auth">
+                      <Button size="lg" className="gap-2">
+                        <LogIn className="w-4 h-4" />
+                        Iniciar sesión
+                      </Button>
+                    </Link>
+                    <Link to="/auth">
+                      <Button variant="outline" size="lg">
+                        Crear cuenta nueva
+                      </Button>
+                    </Link>
                   </div>
-                ) : (
-                  <form onSubmit={handleSubmit} className="space-y-8">
-                    {/* Profile Type Selection - Multiple Selection */}
-                    <div className="space-y-4 p-6 rounded-xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all duration-300">
-                      <Label className="text-base font-semibold flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                        {t('asociate.profileType')} *
-                        <span className="text-sm font-normal text-muted-foreground ml-2">
-                          ({t('asociate.selectMultiple')})
-                        </span>
-                      </Label>
+                </div>
+              ) : submitted ? (
+                <div className="text-center py-12 animate-scale-in">
+                  <div className="relative inline-block mb-6">
+                    <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse-glow"></div>
+                    <CheckCircle2 className="w-20 h-20 text-primary mx-auto relative" />
+                  </div>
+                  <h3 className="text-3xl font-bold mb-3 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                    {t('asociate.successTitle')}
+                  </h3>
+                  <p className="text-muted-foreground text-lg">{t('asociate.successMessage')}</p>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-8">
+                  {/* Logged in user info */}
+                  <div className="p-4 rounded-xl bg-primary/10 border border-primary/30">
+                    <p className="text-sm text-muted-foreground">
+                      Sesión iniciada como: <span className="font-medium text-foreground">{currentUser.email}</span>
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      El nuevo perfil se agregará a tu cuenta existente.
+                    </p>
+                  </div>
+                  
+                  {/* Profile Type Selection - Multiple Selection */}
+                  <div className="space-y-4 p-6 rounded-xl bg-muted/30 border border-border/50 hover:border-primary/30 transition-all duration-300">
+                    <Label className="text-base font-semibold flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                      {t('asociate.profileType')} *
+                      <span className="text-sm font-normal text-muted-foreground ml-2">
+                        ({t('asociate.selectMultiple')})
+                      </span>
+                    </Label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {perfilOptions.map((option) => {
                           const isSelected = selectedProfiles.includes(option.value);
@@ -765,26 +842,11 @@ const Asociate = () => {
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="email" className="text-sm font-medium">{t('asociate.email')} *</Label>
-                          <Input
-                            id="email"
-                            name="email"
-                            type="email"
-                            required
-                            value={formData.email}
-                            onChange={handleChange}
-                            placeholder={t('asociate.emailPlaceholder')}
-                            className="h-11 hover:border-primary/50 focus:border-primary transition-colors"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="telefono" className="text-sm font-medium">{t('asociate.phone')} *</Label>
+                          <Label htmlFor="telefono" className="text-sm font-medium">{t('asociate.phone')}</Label>
                           <Input
                             id="telefono"
                             name="telefono"
                             type="tel"
-                            required
                             value={formData.telefono}
                             onChange={handleChange}
                             placeholder={t('asociate.phonePlaceholder')}
@@ -793,31 +855,16 @@ const Asociate = () => {
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="password" className="text-sm font-medium">{t('asociate.password')} *</Label>
+                          <Label htmlFor="nombre" className="text-sm font-medium">{t('asociate.fullName')}</Label>
                           <Input
-                            id="password"
-                            name="password"
-                            type="password"
-                            required
-                            value={formData.password}
+                            id="nombre"
+                            name="nombre"
+                            value={formData.nombre}
                             onChange={handleChange}
-                            placeholder={t('asociate.passwordPlaceholder')}
+                            placeholder={t('asociate.fullNamePlaceholder')}
                             className="h-11 hover:border-primary/50 focus:border-primary transition-colors"
                           />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="confirmPassword" className="text-sm font-medium">{t('asociate.confirmPassword')} *</Label>
-                          <Input
-                            id="confirmPassword"
-                            name="confirmPassword"
-                            type="password"
-                            required
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            placeholder={t('asociate.confirmPasswordPlaceholder')}
-                            className="h-11 hover:border-primary/50 focus:border-primary transition-colors"
-                          />
+                          <p className="text-xs text-muted-foreground">Nombre para este perfil (opcional)</p>
                         </div>
 
                         <div className="space-y-2 md:col-span-2">

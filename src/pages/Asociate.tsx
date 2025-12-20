@@ -37,6 +37,7 @@ import { RecordLabelForm } from "@/components/profile-forms/RecordLabelForm";
 import { PercusionForm } from "@/components/profile-forms/PercusionForm";
 import { DanzaForm } from "@/components/profile-forms/DanzaForm";
 import { z } from "zod";
+import { FunctionsFetchError, FunctionsHttpError, FunctionsRelayError } from "@supabase/supabase-js";
 import { validateFile, formatFileSize, FILE_COUNT_LIMITS } from "@/lib/storage-validation";
 
 const argentinaProvincias = [
@@ -302,22 +303,22 @@ const Asociate = () => {
     });
   };
 
-  const getInvokeErrorMessage = (err: unknown) => {
-    const msg = typeof (err as any)?.message === "string" ? (err as any).message : "Error al crear la cuenta";
-
-    // supabase-js often formats function errors like:
-    // "Edge function returned 400: Error, {\"success\":false,\"error\":\"...\"}"
-    const jsonMatch = msg.match(/(\{[\s\S]*\})\s*$/);
-    if (jsonMatch) {
+  const getFunctionInvokeErrorMessage = async (err: unknown): Promise<string> => {
+    if (err instanceof FunctionsHttpError) {
       try {
-        const parsed = JSON.parse(jsonMatch[1]);
-        if (parsed?.error) return String(parsed.error);
+        const body = await err.context.json();
+        return String(body?.error || body?.message || `Error (${err.context.status})`);
       } catch {
-        // ignore
+        return `Error (${err.context.status})`;
       }
     }
 
-    return msg;
+    if (err instanceof FunctionsRelayError || err instanceof FunctionsFetchError) {
+      return err.message;
+    }
+
+    if (err instanceof Error) return err.message;
+    return "Error al crear la cuenta";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -427,7 +428,8 @@ const Asociate = () => {
       });
 
       if (response.error) {
-        throw new Error(getInvokeErrorMessage(response.error));
+        const msg = await getFunctionInvokeErrorMessage(response.error);
+        throw new Error(msg);
       }
 
       if (!response.data?.success) {

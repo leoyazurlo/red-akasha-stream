@@ -160,13 +160,22 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
   // Fetch full profile data from database
   useEffect(() => {
     const fetchProfileData = async () => {
+      console.log('ProfileTechnicalSheet: Fetching profile data for profileId:', profileId);
+      
       const { data, error } = await supabase
         .from('profile_details')
         .select('user_id, bio, instagram, facebook, linkedin, whatsapp, email')
         .eq('id', profileId)
-        .single();
+        .maybeSingle();
       
-      if (data && !error) {
+      console.log('ProfileTechnicalSheet: Profile data result:', { data, error });
+      
+      if (error) {
+        console.error('ProfileTechnicalSheet: Error fetching profile:', error);
+        return;
+      }
+      
+      if (data) {
         setTargetUserId(data.user_id);
         setProfileData({
           bio: data.bio,
@@ -398,6 +407,7 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
   }, [profileId, user]);
 
   const fetchGallery = async () => {
+    console.log('ProfileTechnicalSheet: Fetching gallery for profileId:', profileId);
     try {
       const { data, error } = await supabase
         .from('profile_galleries')
@@ -405,6 +415,7 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
         .eq('profile_id', profileId)
         .order('order_index', { ascending: true });
 
+      console.log('ProfileTechnicalSheet: Gallery result:', { data, error });
       if (error) throw error;
       setGallery(data || []);
     } catch (error) {
@@ -413,6 +424,7 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
   };
 
   const fetchAudioPlaylist = async () => {
+    console.log('ProfileTechnicalSheet: Fetching audio for profileId:', profileId);
     try {
       const { data, error } = await supabase
         .from('audio_playlist')
@@ -420,6 +432,7 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
         .eq('profile_id', profileId)
         .order('order_index', { ascending: true });
 
+      console.log('ProfileTechnicalSheet: Audio result:', { data, error });
       if (error) throw error;
       setAudioPlaylist(data || []);
     } catch (error) {

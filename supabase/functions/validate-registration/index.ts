@@ -137,9 +137,13 @@ serve(async (req) => {
     });
 
     if (signUpError) {
-      if (signUpError.message.includes('already registered') || signUpError.message.includes('User already registered')) {
+      const msg = signUpError.message ? String(signUpError.message).toLowerCase() : "";
+      const code = (signUpError as any).code;
+
+      if (code === "email_exists" || msg.includes("registered")) {
         throw new Error('Este email ya está en uso. Por favor, inicia sesión o usa otro email.');
       }
+
       throw signUpError;
     }
 

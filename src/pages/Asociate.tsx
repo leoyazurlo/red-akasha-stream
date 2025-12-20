@@ -302,6 +302,24 @@ const Asociate = () => {
     });
   };
 
+  const getInvokeErrorMessage = (err: unknown) => {
+    const msg = typeof (err as any)?.message === "string" ? (err as any).message : "Error al crear la cuenta";
+
+    // supabase-js often formats function errors like:
+    // "Edge function returned 400: Error, {\"success\":false,\"error\":\"...\"}"
+    const jsonMatch = msg.match(/(\{[\s\S]*\})\s*$/);
+    if (jsonMatch) {
+      try {
+        const parsed = JSON.parse(jsonMatch[1]);
+        if (parsed?.error) return String(parsed.error);
+      } catch {
+        // ignore
+      }
+    }
+
+    return msg;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -409,7 +427,7 @@ const Asociate = () => {
       });
 
       if (response.error) {
-        throw new Error(response.error.message || 'Error al crear la cuenta');
+        throw new Error(getInvokeErrorMessage(response.error));
       }
 
       if (!response.data?.success) {

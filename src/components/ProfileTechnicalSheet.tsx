@@ -43,6 +43,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useMiniPlayer } from "@/contexts/MiniPlayerContext";
 import { useFollow } from "@/hooks/useFollow";
+import { useFollowedProfiles } from "@/hooks/useFollowedProfiles";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -156,6 +157,9 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
   // Get the user_id for following functionality
   const [targetUserId, setTargetUserId] = useState<string | null>(null);
   const { isFollowing, isLoading: followLoading, toggleFollow, followersCount } = useFollow(targetUserId);
+  
+  // Get profiles that this profile's user follows
+  const { followedProfiles } = useFollowedProfiles(targetUserId);
 
   // Fetch full profile data from database
   useEffect(() => {
@@ -718,6 +722,32 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
               <h2 className="text-2xl sm:text-3xl font-light text-cyan-400 mb-2 tracking-wide drop-shadow-[0_0_10px_rgba(34,211,238,0.5)]">
                 {displayName}
               </h2>
+              
+              {/* Profiles this user follows */}
+              {followedProfiles.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  <span className="text-xs text-muted-foreground">Sigue a:</span>
+                  <div className="flex flex-wrap gap-1">
+                    {followedProfiles.slice(0, 5).map((profile, index) => (
+                      <Badge 
+                        key={profile.id}
+                        variant="outline" 
+                        className="text-xs border-cyan-400/30 text-cyan-300 bg-cyan-400/10 hover:bg-cyan-400/20 cursor-pointer transition-colors"
+                      >
+                        {profile.display_name}
+                      </Badge>
+                    ))}
+                    {followedProfiles.length > 5 && (
+                      <Badge 
+                        variant="outline" 
+                        className="text-xs border-primary/30 text-muted-foreground"
+                      >
+                        +{followedProfiles.length - 5} más
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              )}
               
               {/* Rating Stars - Clickable */}
               <div className="flex items-center gap-3 mb-4">

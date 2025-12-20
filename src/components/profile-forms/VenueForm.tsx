@@ -55,7 +55,7 @@ export const VenueForm = ({ formData, onChange }: VenueFormProps) => {
           id="capacity"
           type="number"
           value={formData.capacity || ""}
-          onChange={(e) => onChange("capacity", parseInt(e.target.value))}
+          onChange={(e) => onChange("capacity", e.target.value)}
           placeholder="Número de personas"
         />
       </div>

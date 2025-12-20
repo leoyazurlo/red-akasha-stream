@@ -202,7 +202,7 @@ const Asociate = () => {
       pais: z.string().min(1, "Debes seleccionar un país").max(100),
       provincia: z.string().max(100).optional().or(z.literal("")),
       ciudad: z.string().min(1, "Debes seleccionar o ingresar una ciudad").max(100),
-      password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres para mayor seguridad").max(100, "La contraseña es demasiado larga"),
+      password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres para mayor seguridad").max(100, "La contraseña es demasiado larga"),
       confirmPassword: z.string(),
       avatar_url: z.string().min(1, "La foto de perfil es obligatoria. Por favor sube una imagen."),
       bio: z.string().trim().min(10, "La biografía debe tener al menos 10 caracteres para dar una buena descripción").max(1000, "La biografía no puede exceder 1000 caracteres"),

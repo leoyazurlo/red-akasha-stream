@@ -1,5 +1,6 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ImageUpload } from "@/components/ImageUpload";
 
@@ -56,6 +57,17 @@ export const VenueForm = ({ formData, onChange }: VenueFormProps) => {
           value={formData.capacity || ""}
           onChange={(e) => onChange("capacity", parseInt(e.target.value))}
           placeholder="Número de personas"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="bio">Biografía</Label>
+        <Textarea
+          id="bio"
+          value={formData.bio || ""}
+          onChange={(e) => onChange("bio", e.target.value)}
+          placeholder="Describe la historia, características y eventos destacados de la sala..."
+          rows={4}
         />
       </div>
 

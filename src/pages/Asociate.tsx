@@ -235,7 +235,7 @@ const Asociate = () => {
       case "sala_concierto":
         profileSpecificSchema = {
           venue_type: z.string().min(1, "Debes seleccionar el tipo de sala o venue"),
-          capacity: z.string().min(1, "Debes ingresar la capacidad de la sala").refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+          capacity: z.union([z.string(), z.number()]).transform(val => String(val)).refine((val) => val.length > 0 && !isNaN(Number(val)) && Number(val) > 0, {
             message: "La capacidad debe ser un número mayor a 0"
           }),
         };

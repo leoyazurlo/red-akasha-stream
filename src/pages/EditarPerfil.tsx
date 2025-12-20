@@ -418,6 +418,32 @@ const EditarPerfil = () => {
       return usernamePattern.test(username) ? username : null;
     };
 
+    // Sanitize phone number: only allow valid format (7-20 chars with digits, +, spaces, -, ())
+    const sanitizeTelefono = (value: string): string | null => {
+      const trimmed = value.trim();
+      if (!trimmed) return null;
+      // Remove any characters that aren't digits, +, spaces, -, or ()
+      const cleaned = trimmed.replace(/[^\d+\s\-()]/g, '');
+      // Validate the format: 7-20 characters
+      const telefonoPattern = /^[+]?[\d\s\-()]{7,20}$/;
+      if (telefonoPattern.test(cleaned)) {
+        return cleaned;
+      }
+      return null;
+    };
+
+    // Validate phone before submission
+    const sanitizedTelefono = sanitizeTelefono(formData.telefono);
+    if (formData.telefono.trim() && !sanitizedTelefono) {
+      toast({
+        title: "Error",
+        description: "El formato del teléfono no es válido. Debe tener entre 7 y 20 caracteres (solo números, +, espacios, guiones o paréntesis)",
+        variant: "destructive"
+      });
+      setSaving(false);
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from("profile_details")
@@ -432,7 +458,7 @@ const EditarPerfil = () => {
           facebook: formData.facebook.trim() || null,
           linkedin: formData.linkedin.trim() || null,
           whatsapp: formData.whatsapp.trim() || null,
-          telefono: formData.telefono.trim() || null,
+          telefono: sanitizedTelefono,
           email: formData.email.trim() || null,
           additional_profile_types: formData.additional_profile_types,
           updated_at: new Date().toISOString()

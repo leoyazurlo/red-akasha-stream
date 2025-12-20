@@ -24,12 +24,41 @@ const validatePhone = (phone: string): boolean => {
 
 const validateUrl = (url: string): boolean => {
   if (!url) return true; // Optional field
+  const trimmed = String(url).trim();
+  if (!trimmed) return true;
+  if (trimmed.length > 500) return false;
+
   try {
-    const parsed = new URL(url);
-    return ['http:', 'https:'].includes(parsed.protocol) && url.length <= 500;
+    const parsed = new URL(trimmed.includes('://') ? trimmed : `https://${trimmed}`);
+    return ['http:', 'https:'].includes(parsed.protocol);
   } catch {
     return false;
   }
+};
+
+const validateInstagram = (value: string): boolean => {
+  if (!value) return true;
+  const v = String(value).trim();
+  if (!v) return true;
+
+  // Accept @handle or plain handle
+  const handle = v.startsWith('@') ? v.slice(1) : v;
+  if (/^[A-Za-z0-9._]{1,50}$/.test(handle)) return true;
+
+  // Or accept an URL (with or without protocol)
+  return validateUrl(v);
+};
+
+const validateWhatsApp = (value: string): boolean => {
+  if (!value) return true;
+  const v = String(value).trim();
+  if (!v) return true;
+
+  // If it looks like a link (wa.me / api.whatsapp / etc), validate as URL
+  if (/[/.]/.test(v)) return validateUrl(v);
+
+  // Otherwise validate as phone
+  return validatePhone(v);
 };
 
 const sanitizeString = (str: string, maxLength: number): string => {
@@ -75,11 +104,23 @@ serve(async (req) => {
       throw new Error('Número de teléfono inválido');
     }
 
-    // Validate URLs
-    const urlFields = ['instagram', 'facebook', 'linkedin', 'website', 'whatsapp', 'producer_instagram', 'portfolio_url'];
+    if (requestData.whatsapp && !validateWhatsApp(requestData.whatsapp)) {
+      throw new Error('WhatsApp inválido');
+    }
+
+    // Validate URLs (accepts with or without protocol)
+    const urlFields = ['facebook', 'linkedin', 'website', 'portfolio_url'];
     for (const field of urlFields) {
       if (requestData[field] && !validateUrl(requestData[field])) {
         throw new Error(`URL inválida en campo ${field}`);
+      }
+    }
+
+    // Validate Instagram handles/URLs
+    const igFields = ['instagram', 'producer_instagram'];
+    for (const field of igFields) {
+      if (requestData[field] && !validateInstagram(requestData[field])) {
+        throw new Error(`Instagram inválido en campo ${field}`);
       }
     }
 

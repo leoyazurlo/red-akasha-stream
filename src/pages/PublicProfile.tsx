@@ -455,9 +455,21 @@ const PublicProfile = () => {
                 </Avatar>
 
                 <div className="flex-1 text-center md:text-left">
-                  <Badge className="mb-3 px-3 py-1 bg-primary/20 text-primary border-primary/30">
-                    {profileTypeLabels[profile.profile_type] || profile.profile_type}
-                  </Badge>
+                  {/* Profile types - Principal + Secondary */}
+                  <div className="flex flex-wrap gap-2 mb-3 justify-center md:justify-start">
+                    <Badge className="px-3 py-1 bg-primary/20 text-primary border-primary/30">
+                      {profileTypeLabels[profile.profile_type] || profile.profile_type}
+                    </Badge>
+                    {profile.additional_profile_types?.map((type: string) => (
+                      <Badge 
+                        key={type} 
+                        variant="outline" 
+                        className="px-3 py-1 border-primary/30 text-primary/80"
+                      >
+                        {profileTypeLabels[type] || type}
+                      </Badge>
+                    ))}
+                  </div>
                   
                   <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-primary-glow to-accent bg-clip-text text-transparent">
                     {profile.display_name}

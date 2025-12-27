@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { MessagesTab } from "@/components/profile/MessagesTab";
 import { validateFile, formatFileSize, FILE_COUNT_LIMITS } from "@/lib/storage-validation";
+import { buildProfileObjectPath, uploadWithRetry } from "@/lib/storage-keys";
 
 interface ProfileData {
   id: string;
@@ -302,7 +303,7 @@ const MiPerfil = () => {
 
   const uploadNewContent = async () => {
     if (!profile) return;
-    
+
     if (newVideos.length === 0 && newImages.length === 0 && newAudios.length === 0) {
       toast({
         title: "Sin contenido nuevo",
@@ -312,27 +313,30 @@ const MiPerfil = () => {
     }
 
     setUploading(true);
-    
+
     try {
       const currentMaxIndex = Math.max(
-        ...gallery.map(g => g.order_index),
-        ...audioPlaylist.map(a => a.order_index),
+        ...gallery.map((g) => g.order_index),
+        ...audioPlaylist.map((a) => a.order_index),
         -1
       );
       let orderIndex = currentMaxIndex + 1;
 
+      const bucket = supabase.storage.from("profile-avatars");
+
       // Upload videos
       for (const file of newVideos) {
-        const fileName = `${profile.id}/${Date.now()}-${file.name}`;
-        const { data: videoData, error: videoError } = await supabase.storage
-          .from("profile-avatars")
-          .upload(fileName, file);
+        const fileName = buildProfileObjectPath(profile.id, file.name);
+        const { data: videoData, error: videoError } = await uploadWithRetry(() =>
+          bucket.upload(fileName, file)
+        );
 
         if (videoError) throw videoError;
+        if (!videoData) throw new Error("No se pudo subir el video");
 
-        const { data: { publicUrl } } = supabase.storage
-          .from("profile-avatars")
-          .getPublicUrl(videoData.path);
+        const {
+          data: { publicUrl }
+        } = bucket.getPublicUrl(videoData.path);
 
         await supabase.from("profile_galleries").insert({
           profile_id: profile.id,
@@ -344,16 +348,17 @@ const MiPerfil = () => {
 
       // Upload images
       for (const file of newImages) {
-        const fileName = `${profile.id}/${Date.now()}-${file.name}`;
-        const { data: imageData, error: imageError } = await supabase.storage
-          .from("profile-avatars")
-          .upload(fileName, file);
+        const fileName = buildProfileObjectPath(profile.id, file.name);
+        const { data: imageData, error: imageError } = await uploadWithRetry(() =>
+          bucket.upload(fileName, file)
+        );
 
         if (imageError) throw imageError;
+        if (!imageData) throw new Error("No se pudo subir la imagen");
 
-        const { data: { publicUrl } } = supabase.storage
-          .from("profile-avatars")
-          .getPublicUrl(imageData.path);
+        const {
+          data: { publicUrl }
+        } = bucket.getPublicUrl(imageData.path);
 
         await supabase.from("profile_galleries").insert({
           profile_id: profile.id,
@@ -365,16 +370,17 @@ const MiPerfil = () => {
 
       // Upload audios
       for (const file of newAudios) {
-        const fileName = `${profile.id}/${Date.now()}-${file.name}`;
-        const { data: audioData, error: audioError } = await supabase.storage
-          .from("profile-avatars")
-          .upload(fileName, file);
+        const fileName = buildProfileObjectPath(profile.id, file.name);
+        const { data: audioData, error: audioError } = await uploadWithRetry(() =>
+          bucket.upload(fileName, file)
+        );
 
         if (audioError) throw audioError;
+        if (!audioData) throw new Error("No se pudo subir el audio");
 
-        const { data: { publicUrl } } = supabase.storage
-          .from("profile-avatars")
-          .getPublicUrl(audioData.path);
+        const {
+          data: { publicUrl }
+        } = bucket.getPublicUrl(audioData.path);
 
         await supabase.from("audio_playlist").insert({
           profile_id: profile.id,

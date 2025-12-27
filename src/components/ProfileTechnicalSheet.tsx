@@ -111,6 +111,30 @@ const profileTypeLabels: Record<string, string> = {
   amante_de_la_musica: "AMANTE DE LA MÚSICA"
 };
 
+// Helper function to get embed URL from video URL
+const getVideoEmbedUrl = (url: string): { embedUrl: string; isEmbed: boolean } => {
+  // YouTube
+  const youtubeMatch = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  if (youtubeMatch) {
+    return { embedUrl: `https://www.youtube.com/embed/${youtubeMatch[1]}`, isEmbed: true };
+  }
+  
+  // Vimeo
+  const vimeoMatch = url.match(/(?:vimeo\.com\/)(\d+)/);
+  if (vimeoMatch) {
+    return { embedUrl: `https://player.vimeo.com/video/${vimeoMatch[1]}`, isEmbed: true };
+  }
+  
+  // Dailymotion
+  const dailymotionMatch = url.match(/(?:dailymotion\.com\/video\/)([a-zA-Z0-9]+)/);
+  if (dailymotionMatch) {
+    return { embedUrl: `https://www.dailymotion.com/embed/video/${dailymotionMatch[1]}`, isEmbed: true };
+  }
+  
+  // Direct video URL
+  return { embedUrl: url, isEmbed: false };
+};
+
 export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, ProfileTechnicalSheetProps>(({
   profileId,
   displayName,
@@ -1055,19 +1079,42 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
                     <div className="absolute -inset-0.5 bg-gradient-primary rounded-2xl blur opacity-30 group-hover:opacity-60 transition-opacity duration-500" />
                     
                     <div className="relative aspect-video bg-background/50 backdrop-blur-sm rounded-2xl overflow-hidden border border-primary/20">
-                      <video 
-                        key={videos[currentVideoIndex].url}
-                        controls 
-                        className={`w-full h-full object-cover transition-all duration-500 ${
-                          videoTransition === 'exit' 
-                            ? 'opacity-0 scale-95' 
-                            : videoTransition === 'enter' 
-                            ? 'opacity-0 scale-95 animate-video-enter' 
-                            : 'opacity-100 scale-100'
-                        }`}
-                      >
-                        <source src={videos[currentVideoIndex].url} type="video/mp4" />
-                      </video>
+                      {(() => {
+                        const { embedUrl, isEmbed } = getVideoEmbedUrl(videos[currentVideoIndex].url);
+                        if (isEmbed) {
+                          return (
+                            <iframe
+                              key={videos[currentVideoIndex].url}
+                              src={embedUrl}
+                              className={`w-full h-full transition-all duration-500 ${
+                                videoTransition === 'exit' 
+                                  ? 'opacity-0 scale-95' 
+                                  : videoTransition === 'enter' 
+                                  ? 'opacity-0 scale-95 animate-video-enter' 
+                                  : 'opacity-100 scale-100'
+                              }`}
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              title={videos[currentVideoIndex].title || `Video ${currentVideoIndex + 1}`}
+                            />
+                          );
+                        }
+                        return (
+                          <video 
+                            key={videos[currentVideoIndex].url}
+                            controls 
+                            className={`w-full h-full object-cover transition-all duration-500 ${
+                              videoTransition === 'exit' 
+                                ? 'opacity-0 scale-95' 
+                                : videoTransition === 'enter' 
+                                ? 'opacity-0 scale-95 animate-video-enter' 
+                                : 'opacity-100 scale-100'
+                            }`}
+                          >
+                            <source src={videos[currentVideoIndex].url} type="video/mp4" />
+                          </video>
+                        );
+                      })()}
                       
                       {/* Expand button */}
                       <Button
@@ -1433,15 +1480,33 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
             </>
           )}
 
-          <video 
-            key={videos[expandedVideo].url}
-            controls 
-            autoPlay
-            className="max-w-full max-h-[90vh] rounded-lg shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <source src={videos[expandedVideo].url} type="video/mp4" />
-          </video>
+          {(() => {
+            const { embedUrl, isEmbed } = getVideoEmbedUrl(videos[expandedVideo].url);
+            if (isEmbed) {
+              return (
+                <iframe
+                  key={videos[expandedVideo].url}
+                  src={embedUrl}
+                  className="w-full max-w-5xl aspect-video rounded-lg shadow-2xl"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={videos[expandedVideo].title || `Video ${expandedVideo + 1}`}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              );
+            }
+            return (
+              <video 
+                key={videos[expandedVideo].url}
+                controls 
+                autoPlay
+                className="max-w-full max-h-[90vh] rounded-lg shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <source src={videos[expandedVideo].url} type="video/mp4" />
+              </video>
+            );
+          })()}
 
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 px-4 py-2 rounded-full text-white text-sm font-medium">
             {expandedVideo + 1} / {videos.length}

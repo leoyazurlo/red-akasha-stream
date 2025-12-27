@@ -17,6 +17,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ImageUpload } from "@/components/ImageUpload";
 import { Autocomplete } from "@/components/ui/autocomplete";
 import { validateFile, FILE_COUNT_LIMITS } from "@/lib/storage-validation";
+import { buildProfileObjectPath, uploadWithRetry } from "@/lib/storage-keys";
 import { useProfileEditDraft } from "@/contexts/ProfileEditDraftContext";
 import {
   Select,
@@ -296,20 +297,23 @@ const EditarPerfil = () => {
 
     setUploadingGallery(true);
     try {
-      const currentMaxIndex = Math.max(...gallery.map(g => g.order_index || 0), -1);
+      const currentMaxIndex = Math.max(...gallery.map((g) => g.order_index || 0), -1);
       let orderIndex = currentMaxIndex + 1;
 
+      const bucket = supabase.storage.from("profile-avatars");
+
       for (const file of newImages) {
-        const fileName = `${profileId}/${Date.now()}-${file.name}`;
-        const { data: imageData, error: imageError } = await supabase.storage
-          .from("profile-avatars")
-          .upload(fileName, file);
+        const fileName = buildProfileObjectPath(profileId, file.name);
+        const { data: imageData, error: imageError } = await uploadWithRetry(() =>
+          bucket.upload(fileName, file)
+        );
 
         if (imageError) throw imageError;
+        if (!imageData) throw new Error("No se pudo subir la imagen");
 
-        const { data: { publicUrl } } = supabase.storage
-          .from("profile-avatars")
-          .getPublicUrl(imageData.path);
+        const {
+          data: { publicUrl }
+        } = bucket.getPublicUrl(imageData.path);
 
         await supabase.from("profile_galleries").insert({
           profile_id: profileId,

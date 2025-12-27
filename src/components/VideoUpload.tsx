@@ -1,157 +1,115 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Link, X, Play, ExternalLink } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Upload, X, Video, Loader2 } from "lucide-react";
+import { validateFile, formatFileSize } from "@/lib/storage-validation";
 
 interface VideoUploadProps {
   label: string;
   value: string;
   onChange: (url: string) => void;
+  onFileSelect?: (file: File) => void;
   onMetadataExtracted?: (metadata: { thumbnail: string; width: number; height: number; size: number; duration: number }) => void;
   required?: boolean;
   description?: string;
 }
 
-// Helper para detectar plataformas de video
-const getVideoPlatform = (url: string): { platform: string; embedUrl: string; thumbnail: string } | null => {
-  try {
-    const urlObj = new URL(url);
-    
-    // YouTube
-    if (urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be')) {
-      let videoId = '';
-      if (urlObj.hostname.includes('youtu.be')) {
-        videoId = urlObj.pathname.slice(1);
-      } else {
-        videoId = urlObj.searchParams.get('v') || '';
-      }
-      if (videoId) {
-        return {
-          platform: 'YouTube',
-          embedUrl: `https://www.youtube.com/embed/${videoId}`,
-          thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
-        };
-      }
-    }
-    
-    // Vimeo
-    if (urlObj.hostname.includes('vimeo.com')) {
-      const videoId = urlObj.pathname.split('/').pop();
-      if (videoId) {
-        return {
-          platform: 'Vimeo',
-          embedUrl: `https://player.vimeo.com/video/${videoId}`,
-          thumbnail: ''
-        };
-      }
-    }
-    
-    // Dailymotion
-    if (urlObj.hostname.includes('dailymotion.com') || urlObj.hostname.includes('dai.ly')) {
-      let videoId = '';
-      if (urlObj.hostname.includes('dai.ly')) {
-        videoId = urlObj.pathname.slice(1);
-      } else {
-        videoId = urlObj.pathname.split('/video/')[1]?.split('_')[0] || '';
-      }
-      if (videoId) {
-        return {
-          platform: 'Dailymotion',
-          embedUrl: `https://www.dailymotion.com/embed/video/${videoId}`,
-          thumbnail: `https://www.dailymotion.com/thumbnail/video/${videoId}`
-        };
-      }
-    }
-    
-    // URL directa de video (mp4, webm, etc.)
-    if (url.match(/\.(mp4|webm|ogg|mov)(\?.*)?$/i)) {
-      return {
-        platform: 'Direct',
-        embedUrl: url,
-        thumbnail: ''
-      };
-    }
-    
-    return null;
-  } catch {
-    return null;
-  }
-};
-
-const isValidUrl = (string: string): boolean => {
-  try {
-    new URL(string);
-    return true;
-  } catch {
-    return false;
-  }
-};
-
-export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, required, description }: VideoUploadProps) => {
+export const VideoUpload = ({ label, value, onChange, onFileSelect, onMetadataExtracted, required, description }: VideoUploadProps) => {
   const { toast } = useToast();
-  const [inputUrl, setInputUrl] = useState(value);
-  const [videoInfo, setVideoInfo] = useState<{ platform: string; embedUrl: string; thumbnail: string } | null>(
-    value ? getVideoPlatform(value) : null
-  );
+  const [preview, setPreview] = useState<string | null>(value || null);
+  const [loading, setLoading] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleUrlChange = (url: string) => {
-    setInputUrl(url);
-  };
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  const handleAddUrl = () => {
-    if (!inputUrl.trim()) {
+    const validation = validateFile(file, 'video');
+    if (!validation.valid) {
       toast({
-        title: "Error",
-        description: "Ingresa un enlace de video",
+        title: "Archivo no válido",
+        description: validation.error,
         variant: "destructive",
       });
       return;
     }
 
-    if (!isValidUrl(inputUrl)) {
+    setLoading(true);
+
+    try {
+      const objectUrl = URL.createObjectURL(file);
+      setPreview(objectUrl);
+      
+      if (onFileSelect) {
+        onFileSelect(file);
+      }
+
+      // Extract metadata from video
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.src = objectUrl;
+
+      video.onloadedmetadata = () => {
+        const metadata = {
+          thumbnail: '',
+          width: video.videoWidth,
+          height: video.videoHeight,
+          size: file.size,
+          duration: video.duration
+        };
+
+        // Generate thumbnail from first frame
+        video.currentTime = 1;
+        video.onseeked = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(video, 0, 0);
+            metadata.thumbnail = canvas.toDataURL('image/jpeg', 0.8);
+          }
+          
+          if (onMetadataExtracted) {
+            onMetadataExtracted(metadata);
+          }
+          
+          setLoading(false);
+        };
+      };
+
+      video.onerror = () => {
+        setLoading(false);
+        toast({
+          title: "Error",
+          description: "No se pudo procesar el video",
+          variant: "destructive",
+        });
+      };
+
+      onChange(objectUrl);
+    } catch (error) {
+      setLoading(false);
       toast({
         title: "Error",
-        description: "El enlace no es válido",
+        description: "No se pudo cargar el video",
         variant: "destructive",
       });
-      return;
     }
-
-    const info = getVideoPlatform(inputUrl);
-    if (!info) {
-      toast({
-        title: "Advertencia",
-        description: "No se reconoció la plataforma, pero el enlace se guardará",
-      });
-    }
-
-    setVideoInfo(info);
-    onChange(inputUrl);
-
-    // Notificar metadatos al componente padre si hay thumbnail
-    if (info?.thumbnail && onMetadataExtracted) {
-      onMetadataExtracted({
-        thumbnail: info.thumbnail,
-        width: 1920,
-        height: 1080,
-        size: 0,
-        duration: 0
-      });
-    }
-
-    toast({
-      title: "¡Enlace agregado!",
-      description: info ? `Video de ${info.platform} detectado` : "Enlace guardado correctamente",
-    });
   };
 
   const handleRemove = () => {
-    setInputUrl("");
-    setVideoInfo(null);
+    if (preview && preview.startsWith('blob:')) {
+      URL.revokeObjectURL(preview);
+    }
+    setPreview(null);
     onChange("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   return (
@@ -160,51 +118,15 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
         {label} {required && "*"}
       </Label>
       
-      {/* Información de plataformas soportadas */}
-      <Alert className="border-primary/20 bg-primary/5">
-        <Link className="h-4 w-4 text-primary" />
-        <AlertDescription className="text-xs">
-          <strong>Plataformas:</strong> YouTube, Vimeo, Dailymotion o enlace directo (mp4, webm)
-        </AlertDescription>
-      </Alert>
-      
       <div className="flex flex-col gap-4">
-        {/* Preview del video */}
-        {value && videoInfo && (
+        {preview ? (
           <div className="relative w-full max-w-md rounded-lg overflow-hidden border-2 border-border">
-            {videoInfo.platform === 'Direct' ? (
-              <video 
-                src={videoInfo.embedUrl} 
-                controls
-                className="w-full h-auto"
-              />
-            ) : (
-              <div className="relative aspect-video">
-                {videoInfo.thumbnail ? (
-                  <>
-                    <img 
-                      src={videoInfo.thumbnail} 
-                      alt="Miniatura del video"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/placeholder.svg';
-                      }}
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                      <Play className="w-16 h-16 text-white opacity-80" />
-                    </div>
-                  </>
-                ) : (
-                  <div className="w-full h-full bg-muted flex items-center justify-center">
-                    <div className="text-center">
-                      <Play className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
-                      <span className="text-sm text-muted-foreground">{videoInfo.platform}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-            
+            <video
+              ref={videoRef}
+              src={preview}
+              controls
+              className="w-full h-auto max-h-64 object-contain bg-black"
+            />
             <button
               type="button"
               onClick={handleRemove}
@@ -212,41 +134,31 @@ export const VideoUpload = ({ label, value, onChange, onMetadataExtracted, requi
             >
               <X className="w-4 h-4" />
             </button>
-            
-            {/* Badge de plataforma */}
-            <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/70 text-white text-xs rounded flex items-center gap-1">
-              <ExternalLink className="w-3 h-3" />
-              {videoInfo.platform}
-            </div>
+          </div>
+        ) : (
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className="flex flex-col items-center justify-center w-full max-w-md h-40 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary/50 transition-colors bg-muted/20"
+          >
+            {loading ? (
+              <Loader2 className="w-10 h-10 text-muted-foreground animate-spin" />
+            ) : (
+              <>
+                <Video className="w-10 h-10 text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">Haz clic para seleccionar un video</p>
+                <p className="text-xs text-muted-foreground mt-1">MP4, WebM, MOV (máx. 500MB)</p>
+              </>
+            )}
           </div>
         )}
 
-        {/* Input de URL */}
-        <div className="space-y-2">
-          <div className="flex gap-2">
-            <Input
-              type="url"
-              value={inputUrl}
-              onChange={(e) => handleUrlChange(e.target.value)}
-              placeholder="https://youtube.com/watch?v=... o https://vimeo.com/..."
-              className="flex-1"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleAddUrl}
-            >
-              <Link className="mr-2 h-4 w-4" />
-              {value ? "Cambiar" : "Agregar"}
-            </Button>
-          </div>
-          
-          {value && (
-            <p className="text-xs text-muted-foreground truncate">
-              Enlace actual: {value}
-            </p>
-          )}
-        </div>
+        <Input
+          ref={fileInputRef}
+          type="file"
+          accept="video/mp4,video/webm,video/quicktime,video/x-msvideo,.mp4,.webm,.mov,.avi"
+          onChange={handleFileChange}
+          className="hidden"
+        />
       </div>
 
       {description && (

@@ -95,7 +95,20 @@ const profileTypeLabels: Record<string, string> = {
   estudio_grabacion: "ESTUDIO DE GRABACIÓN",
   productor_artistico: "PRODUCTOR ARTÍSTICO",
   promotor_artistico: "PROMOTOR ARTÍSTICO",
-  productor_audiovisual: "PRODUCTOR AUDIOVISUAL"
+  productor_audiovisual: "PRODUCTOR AUDIOVISUAL",
+  musico: "MÚSICO",
+  dj: "DJ",
+  vj: "VJ",
+  sello_discografico: "SELLO DISCOGRÁFICO",
+  management: "MANAGEMENT",
+  representante: "REPRESENTANTE",
+  marketing_digital: "MARKETING DIGITAL",
+  contenido: "CREADOR DE CONTENIDO",
+  arte_digital: "ARTE DIGITAL",
+  percusion: "PERCUSIÓN",
+  danza: "DANZA",
+  melomano: "MELÓMANO",
+  amante_de_la_musica: "AMANTE DE LA MÚSICA"
 };
 
 export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, ProfileTechnicalSheetProps>(({
@@ -145,6 +158,7 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
     linkedin: string | null;
     whatsapp: string | null;
     email: string | null;
+    additional_profile_types: string[] | null;
   }>({
     bio: bio,
     instagram: instagram,
@@ -152,6 +166,7 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
     linkedin: linkedin,
     whatsapp: whatsapp,
     email: email,
+    additional_profile_types: null,
   });
   
   // Get the user_id for following functionality
@@ -168,7 +183,7 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
       
       const { data, error } = await supabase
         .from('profile_details')
-        .select('user_id, bio, instagram, facebook, linkedin, whatsapp, email')
+        .select('user_id, bio, instagram, facebook, linkedin, whatsapp, email, additional_profile_types')
         .eq('id', profileId)
         .maybeSingle();
       
@@ -188,6 +203,7 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
           linkedin: data.linkedin,
           whatsapp: data.whatsapp,
           email: data.email,
+          additional_profile_types: data.additional_profile_types,
         });
       }
     };
@@ -710,13 +726,29 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
         <div className="backdrop-blur-xl bg-card/40 rounded-3xl border border-primary/20 p-6 sm:p-8 mb-6 shadow-glow hover:shadow-elegant transition-all duration-500">
           <div className="flex flex-col sm:flex-row justify-between items-start gap-6">
             <div className="flex-1 max-w-3xl">
-              {/* Badge with profile type */}
-              <div className="inline-flex items-center gap-2 mb-4">
-                <div className="h-px w-8 bg-gradient-to-r from-transparent to-primary/30" />
-                <span className="text-foreground/70 text-base sm:text-lg font-light tracking-[0.4em] uppercase">
-                  {profileTypeLabels[profileType] || profileType}
-                </span>
-                <div className="h-px w-8 bg-gradient-to-l from-transparent to-primary/30" />
+              {/* Badge with profile type - Principal */}
+              <div className="flex flex-wrap items-center gap-2 mb-4">
+                <div className="inline-flex items-center gap-2">
+                  <div className="h-px w-8 bg-gradient-to-r from-transparent to-primary/30" />
+                  <span className="text-foreground/70 text-base sm:text-lg font-light tracking-[0.4em] uppercase">
+                    {profileTypeLabels[profileType] || profileType}
+                  </span>
+                  <div className="h-px w-8 bg-gradient-to-l from-transparent to-primary/30" />
+                </div>
+                {/* Secondary profile types */}
+                {profileData.additional_profile_types && profileData.additional_profile_types.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 ml-2">
+                    {profileData.additional_profile_types.map((type) => (
+                      <Badge 
+                        key={type} 
+                        variant="outline" 
+                        className="text-xs border-primary/30 text-primary/80 bg-primary/5 uppercase tracking-wider"
+                      >
+                        {profileTypeLabels[type] || type}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </div>
               
               <h2 className="text-2xl sm:text-3xl font-light text-cyan-400 mb-2 tracking-wide drop-shadow-[0_0_10px_rgba(34,211,238,0.5)]">

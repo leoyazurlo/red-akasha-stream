@@ -94,10 +94,11 @@ const MiPerfil = () => {
   const [audioPlaylist, setAudioPlaylist] = useState<AudioTrack[]>([]);
   
   // New uploads
-  const [newVideos, setNewVideos] = useState<File[]>([]);
+  const [newVideoLinks, setNewVideoLinks] = useState<string[]>([]);
   const [newImages, setNewImages] = useState<File[]>([]);
   const [newAudios, setNewAudios] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [videoLinkInput, setVideoLinkInput] = useState("");
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -159,35 +160,48 @@ const MiPerfil = () => {
   const currentPhotos = gallery.filter(item => item.media_type === 'photo' || item.media_type === 'image');
   const currentVideos = gallery.filter(item => item.media_type === 'video');
 
-  const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    const validFiles: File[] = [];
-
-    // Verificar límite de videos
-    const totalVideos = currentVideos.length + newVideos.length + files.length;
-    if (totalVideos > FILE_COUNT_LIMITS.VIDEOS) {
+  const handleAddVideoLink = () => {
+    if (!videoLinkInput.trim()) {
       toast({
-        title: "Límite de videos alcanzado",
-        description: `Solo puedes tener máximo ${FILE_COUNT_LIMITS.VIDEOS} videos. Actualmente tienes ${currentVideos.length} y ${newVideos.length} pendientes de subir.`,
+        title: "Error",
+        description: "Ingresa un enlace de video",
         variant: "destructive"
       });
       return;
     }
 
-    files.forEach(file => {
-      const validation = validateFile(file, 'video');
-      if (validation.valid) {
-        validFiles.push(file);
-      } else {
-        toast({
-          title: "Archivo no válido",
-          description: validation.error,
-          variant: "destructive"
-        });
-      }
-    });
+    // Verificar límite de videos
+    const totalVideos = currentVideos.length + newVideoLinks.length + 1;
+    if (totalVideos > FILE_COUNT_LIMITS.VIDEOS) {
+      toast({
+        title: "Límite de videos alcanzado",
+        description: `Solo puedes tener máximo ${FILE_COUNT_LIMITS.VIDEOS} videos.`,
+        variant: "destructive"
+      });
+      return;
+    }
 
-    setNewVideos(prev => [...prev, ...validFiles]);
+    try {
+      new URL(videoLinkInput);
+    } catch {
+      toast({
+        title: "Enlace no válido",
+        description: "El enlace ingresado no es una URL válida",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setNewVideoLinks(prev => [...prev, videoLinkInput]);
+    setVideoLinkInput("");
+    toast({
+      title: "Enlace agregado",
+      description: "El enlace de video se agregó a la lista"
+    });
+  };
+
+  const removeNewVideoLink = (index: number) => {
+    setNewVideoLinks(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -239,10 +253,6 @@ const MiPerfil = () => {
     });
 
     setNewAudios(prev => [...prev, ...validFiles]);
-  };
-
-  const removeNewVideo = (index: number) => {
-    setNewVideos(prev => prev.filter((_, i) => i !== index));
   };
 
   const removeNewImage = (index: number) => {
@@ -304,10 +314,10 @@ const MiPerfil = () => {
   const uploadNewContent = async () => {
     if (!profile) return;
 
-    if (newVideos.length === 0 && newImages.length === 0 && newAudios.length === 0) {
+    if (newVideoLinks.length === 0 && newImages.length === 0 && newAudios.length === 0) {
       toast({
         title: "Sin contenido nuevo",
-        description: "Selecciona archivos para subir"
+        description: "Agrega enlaces o archivos para subir"
       });
       return;
     }
@@ -324,23 +334,11 @@ const MiPerfil = () => {
 
       const bucket = supabase.storage.from("profile-avatars");
 
-      // Upload videos
-      for (const file of newVideos) {
-        const fileName = buildProfileObjectPath(profile.id, file.name);
-        const { data: videoData, error: videoError } = await uploadWithRetry(() =>
-          bucket.upload(fileName, file)
-        );
-
-        if (videoError) throw videoError;
-        if (!videoData) throw new Error("No se pudo subir el video");
-
-        const {
-          data: { publicUrl }
-        } = bucket.getPublicUrl(videoData.path);
-
+      // Save video links
+      for (const videoUrl of newVideoLinks) {
         await supabase.from("profile_galleries").insert({
           profile_id: profile.id,
-          url: publicUrl,
+          url: videoUrl,
           media_type: "video",
           order_index: orderIndex++
         });
@@ -390,8 +388,8 @@ const MiPerfil = () => {
         });
       }
 
-      // Clear new files and refresh
-      setNewVideos([]);
+      // Clear new content and refresh
+      setNewVideoLinks([]);
       setNewImages([]);
       setNewAudios([]);
       await fetchProfile();
@@ -643,23 +641,22 @@ const MiPerfil = () => {
                     </div>
                   )}
 
-                  {/* New Videos Preview */}
-                  {newVideos.length > 0 && (
+                  {/* New Video Links Preview */}
+                  {newVideoLinks.length > 0 && (
                     <div>
-                      <h4 className="text-sm font-medium mb-2 text-muted-foreground">Nuevos videos por subir:</h4>
+                      <h4 className="text-sm font-medium mb-2 text-muted-foreground">Nuevos enlaces por guardar:</h4>
                       <div className="space-y-2">
-                        {newVideos.map((file, index) => (
+                        {newVideoLinks.map((url, index) => (
                           <div key={index} className="flex items-center justify-between p-3 bg-background/50 rounded-lg border border-primary/20">
                             <div className="flex items-center gap-3">
                               <Video className="w-5 h-5 text-primary" />
-                              <span className="text-sm truncate max-w-[200px]">{file.name}</span>
-                              <span className="text-xs text-muted-foreground">{formatFileSize(file.size)}</span>
+                              <span className="text-sm truncate max-w-[300px]">{url}</span>
                             </div>
                             <Button
                               size="icon"
                               variant="ghost"
                               className="h-6 w-6"
-                              onClick={() => removeNewVideo(index)}
+                              onClick={() => removeNewVideoLink(index)}
                             >
                               <X className="w-3 h-3" />
                             </Button>
@@ -669,22 +666,29 @@ const MiPerfil = () => {
                     </div>
                   )}
 
-                  {/* Upload Button */}
-                  <div>
-                    <Label htmlFor="new-videos" className="cursor-pointer">
-                      <div className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-primary/30 rounded-lg hover:border-primary/50 transition-colors">
-                        <Plus className="w-5 h-5 text-primary" />
-                        <span className="text-primary">Agregar Videos</span>
-                      </div>
-                    </Label>
-                    <Input
-                      id="new-videos"
-                      type="file"
-                      accept="video/*"
-                      multiple
-                      className="hidden"
-                      onChange={handleVideoUpload}
-                    />
+                  {/* Add Link Input */}
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Input
+                        type="url"
+                        value={videoLinkInput}
+                        onChange={(e) => setVideoLinkInput(e.target.value)}
+                        placeholder="https://youtube.com/watch?v=... o https://vimeo.com/..."
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleAddVideoLink}
+                        className="border-primary/50 text-primary hover:bg-primary/20"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Agregar
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Soporta: YouTube, Vimeo, Dailymotion o enlaces directos (mp4, webm)
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -774,7 +778,7 @@ const MiPerfil = () => {
           </Tabs>
 
           {/* Save Button */}
-          {(newVideos.length > 0 || newImages.length > 0 || newAudios.length > 0) && (
+          {(newVideoLinks.length > 0 || newImages.length > 0 || newAudios.length > 0) && (
             <div className="fixed bottom-24 left-0 right-0 flex justify-center z-50">
               <Button 
                 size="lg"
@@ -785,12 +789,12 @@ const MiPerfil = () => {
                 {uploading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Subiendo...
+                    Guardando...
                   </>
                 ) : (
                   <>
                     <Upload className="w-4 h-4 mr-2" />
-                    Subir {newVideos.length + newImages.length + newAudios.length} archivo(s)
+                    Guardar {newVideoLinks.length + newImages.length + newAudios.length} elemento(s)
                   </>
                 )}
               </Button>

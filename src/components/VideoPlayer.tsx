@@ -218,7 +218,7 @@ export const VideoPlayer = () => {
             Plataforma colaborativa para artistas, productores del medio artístico y cultural
           </p>
           <p className="text-cyan-400 text-xs sm:text-sm font-light tracking-wide drop-shadow-[0_0_8px_hsl(180_100%_50%/0.6)] mt-1 font-sans">
-            ESTE PROYECTO ES DE LIBRE USO PARA LATINOAMÉRICA
+            ESTE PROYECTO ES DE LIBRE USO PARA LATAM
           </p>
         </div>
       </div>

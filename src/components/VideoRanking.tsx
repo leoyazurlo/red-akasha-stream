@@ -85,8 +85,8 @@ const getCountryFlag = (country: string | null | undefined): string => {
 
 const CATEGORIES = [
   { key: 'all', label: 'ranking.all', types: [] as string[] },
-  { key: 'video_clip', label: 'ranking.videoClip', types: ['video_clip'] },
   { key: 'video_musical_vivo', label: 'ranking.liveMusic', types: ['video_musical_vivo'] },
+  { key: 'video_clip', label: 'ranking.videoClip', types: ['video_clip'] },
   { key: 'podcast', label: 'ranking.podcast', types: ['podcast'] },
   { key: 'documental', label: 'ranking.documentary', types: ['documental'] },
   { key: 'corto', label: 'ranking.short', types: ['corto'] },

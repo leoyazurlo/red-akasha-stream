@@ -929,7 +929,7 @@ const Asociate = () => {
                       </div>
                     </div>
 
-                    {selectedProfiles.length > 0 && (
+                    {selectedProfiles.length > 0 && !selectedProfiles.every(p => p === "amante_de_la_musica") && (
                       <div className="border-t border-border/50 pt-8 animate-fade-in">
                         <div className="flex items-center gap-3 mb-6">
                           <div className="w-1 h-6 bg-gradient-primary rounded-full"></div>

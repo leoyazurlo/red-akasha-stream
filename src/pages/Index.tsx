@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
 import { Header } from "@/components/Header";
-import { VideoPlayer } from "@/components/VideoPlayer";
 import { VideoCarousel } from "@/components/VideoCarousel";
 import { VideoRanking } from "@/components/VideoRanking";
 import { Footer } from "@/components/Footer";
@@ -9,6 +8,7 @@ import { ScrollProgressBar } from "@/components/ScrollProgressBar";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import akashaBg from "@/assets/akasha-bg.png";
+import { HomeVideoPlayer } from "@/components/HomeVideoPlayer";
 
 const Index = () => {
   const { t } = useTranslation();
@@ -122,7 +122,7 @@ const Index = () => {
         <Header />
       
       <main className="pt-8">
-        <VideoPlayer />
+        <HomeVideoPlayer />
         
         <div className="space-y-0 pb-8">
           <VideoCarousel

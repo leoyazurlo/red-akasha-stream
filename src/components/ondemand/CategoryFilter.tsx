@@ -17,12 +17,11 @@ interface CategoryFilterProps {
 }
 
 const categories = [
-  { value: "all", icon: PlayCircle, label: "Todos" },
-  { value: "video_musical_vivo", icon: Music2, label: "En Vivo" },
-  { value: "video_clip", icon: Video, label: "Video Clips" },
-  { value: "podcast", icon: Mic2, label: "Podcasts" },
+  { value: "video_musical_vivo", icon: Music2, label: "Video Musical en Vivo" },
+  { value: "video_clip", icon: Video, label: "Video Clip" },
+  { value: "podcast", icon: Mic2, label: "Podcast" },
+  { value: "documental", icon: Clapperboard, label: "Documental" },
   { value: "corto", icon: Film, label: "Cortos" },
-  { value: "documental", icon: Clapperboard, label: "Documentales" },
   { value: "pelicula", icon: Film, label: "Películas" },
 ];
 

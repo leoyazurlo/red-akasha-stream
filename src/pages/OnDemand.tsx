@@ -388,6 +388,7 @@ const OnDemand = () => {
           {/* Category Pills */}
           <div className="flex gap-2 mb-10 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
             {[
+              { value: "all", label: "Todo" },
               { value: "video_musical_vivo", label: "Video Musical en Vivo" },
               { value: "video_clip", label: "Video Clip" },
               { value: "podcast", label: "Podcast" },

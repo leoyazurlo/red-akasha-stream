@@ -39,6 +39,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { ProposalCodePreview } from "@/components/admin/ProposalCodePreview";
 import { ProposalWorkflow } from "@/components/admin/ProposalWorkflow";
 import { AIProviderManager } from "@/components/admin/AIProviderManager";
+import { LovableInstructionsGenerator } from "@/components/admin/LovableInstructionsGenerator";
 import { 
   Bot, 
   Users, 
@@ -676,14 +677,40 @@ export default function IAManagement() {
                                       </div>
                                     )}
 
-                                    {/* Code Preview Component */}
-                                    <ProposalCodePreview
-                                      proposalId={proposal.id}
-                                      title={proposal.title}
-                                      description={proposal.description}
-                                      proposedCode={proposal.proposed_code}
-                                      onCodeUpdate={loadProposals}
-                                    />
+                                    {/* Tabs for Code Preview and Lovable Implementation */}
+                                    <Tabs defaultValue="preview" className="w-full">
+                                      <TabsList className="w-full grid grid-cols-2">
+                                        <TabsTrigger value="preview" className="gap-2">
+                                          <Code className="h-4 w-4" />
+                                          Preview de Código
+                                        </TabsTrigger>
+                                        <TabsTrigger value="implement" className="gap-2">
+                                          <ArrowRight className="h-4 w-4" />
+                                          Implementar en Lovable
+                                        </TabsTrigger>
+                                      </TabsList>
+
+                                      <TabsContent value="preview" className="mt-4">
+                                        <ProposalCodePreview
+                                          proposalId={proposal.id}
+                                          title={proposal.title}
+                                          description={proposal.description}
+                                          proposedCode={proposal.proposed_code}
+                                          onCodeUpdate={loadProposals}
+                                        />
+                                      </TabsContent>
+
+                                      <TabsContent value="implement" className="mt-4">
+                                        <LovableInstructionsGenerator
+                                          proposalId={proposal.id}
+                                          title={proposal.title}
+                                          description={proposal.description}
+                                          frontendCode={proposal.proposed_code?.match(/\/\/ FRONTEND\n([\s\S]*?)(?=\/\/ BACKEND|-- DATABASE|$)/)?.[1]?.trim() || ""}
+                                          backendCode={proposal.proposed_code?.match(/\/\/ BACKEND\n([\s\S]*?)(?=-- DATABASE|$)/)?.[1]?.trim() || ""}
+                                          databaseCode={proposal.proposed_code?.match(/-- DATABASE\n([\s\S]*?)$/)?.[1]?.trim() || ""}
+                                        />
+                                      </TabsContent>
+                                    </Tabs>
 
                                     {/* Review Notes */}
                                     <div className="space-y-2">

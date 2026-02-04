@@ -47,7 +47,10 @@ import {
   Eye,
   Settings,
   Loader2,
-  Search
+  Search,
+  Sparkles,
+  RefreshCw,
+  MessageSquare
 } from "lucide-react";
 
 interface AuthorizedUser {
@@ -108,6 +111,8 @@ export default function IAManagement() {
   const [addUserDialogOpen, setAddUserDialogOpen] = useState(false);
   const [selectedProposal, setSelectedProposal] = useState<FeatureProposal | null>(null);
   const [reviewNotes, setReviewNotes] = useState("");
+  const [analyzingForum, setAnalyzingForum] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   useEffect(() => {
     loadData();
@@ -256,6 +261,36 @@ export default function IAManagement() {
     loadAPIConfigs();
   };
 
+  const analyzeForumWithAI = async () => {
+    setAnalyzingForum(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-forum`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || "Error al analizar el foro");
+      }
+
+      toast.success(data.message || "Análisis completado");
+      loadProposals();
+    } catch (error) {
+      console.error("Error analyzing forum:", error);
+      toast.error(error instanceof Error ? error.message : "Error al analizar el foro");
+    } finally {
+      setAnalyzingForum(false);
+    }
+  };
+
   const updateProposalStatus = async (id: string, status: string) => {
     await supabase
       .from("ia_feature_proposals")
@@ -272,6 +307,10 @@ export default function IAManagement() {
     setReviewNotes("");
     loadProposals();
   };
+
+  const filteredProposals = proposals.filter(p => 
+    statusFilter === "all" || p.status === statusFilter
+  );
 
   const getStatusBadge = (status: string) => {
     const colors: Record<string, string> = {
@@ -540,16 +579,51 @@ export default function IAManagement() {
           <TabsContent value="proposals">
             <Card>
               <CardHeader>
-                <CardTitle>Propuestas de Funcionalidades</CardTitle>
-                <CardDescription>
-                  Revisa y aprueba propuestas generadas por la comunidad con ayuda de la IA
-                </CardDescription>
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Lightbulb className="h-5 w-5 text-primary" />
+                      Propuestas de Funcionalidades
+                    </CardTitle>
+                    <CardDescription>
+                      Revisa y aprueba propuestas generadas por la comunidad y la IA
+                    </CardDescription>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="w-36">
+                        <SelectValue placeholder="Filtrar" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas</SelectItem>
+                        <SelectItem value="pending">Pendientes</SelectItem>
+                        <SelectItem value="reviewing">En Revisión</SelectItem>
+                        <SelectItem value="approved">Aprobadas</SelectItem>
+                        <SelectItem value="rejected">Rechazadas</SelectItem>
+                        <SelectItem value="implemented">Implementadas</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      onClick={analyzeForumWithAI}
+                      disabled={analyzingForum}
+                      className="bg-primary hover:bg-primary/90"
+                    >
+                      {analyzingForum ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Sparkles className="h-4 w-4 mr-2" />
+                      )}
+                      Analizar Foro con IA
+                    </Button>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Propuesta</TableHead>
+                      <TableHead>Categoría</TableHead>
                       <TableHead>Solicitante</TableHead>
                       <TableHead>Prioridad</TableHead>
                       <TableHead>Estado</TableHead>
@@ -558,13 +632,23 @@ export default function IAManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {proposals.map((proposal) => (
+                    {filteredProposals.map((proposal) => (
                       <TableRow key={proposal.id}>
                         <TableCell>
                           <p className="font-medium line-clamp-1">{proposal.title}</p>
                         </TableCell>
                         <TableCell>
-                          {proposal.profiles?.full_name || proposal.profiles?.username || "Desconocido"}
+                          <Badge variant="outline" className="text-xs">
+                            {proposal.category || "otro"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {proposal.profiles?.full_name || proposal.profiles?.username || (
+                            <span className="flex items-center gap-1 text-muted-foreground">
+                              <Sparkles className="h-3 w-3" />
+                              Auto-generada
+                            </span>
+                          )}
                         </TableCell>
                         <TableCell>{getPriorityBadge(proposal.priority)}</TableCell>
                         <TableCell>{getStatusBadge(proposal.status)}</TableCell>

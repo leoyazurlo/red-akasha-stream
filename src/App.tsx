@@ -32,6 +32,7 @@ import AdminPaymentSettings from "./pages/admin/PaymentSettings";
 import AdminSalesAnalytics from "./pages/admin/SalesAnalytics";
 import AdminCommunications from "./pages/admin/Communications";
 import AdminAdministrators from "./pages/admin/Administrators";
+import AdminIAManagement from "./pages/admin/IAManagement";
 import Asociate from "./pages/Asociate";
 import Circuito from "./pages/Circuito";
 import PublicProfile from "./pages/PublicProfile";
@@ -48,6 +49,7 @@ import MiColeccion from "./pages/MiColeccion";
 import MiPerfil from "./pages/MiPerfil";
 import EditarPerfil from "./pages/EditarPerfil";
 import NotFound from "./pages/NotFound";
+import AkashaIA from "./pages/AkashaIA";
 
 import VideoDetail from "./pages/VideoDetail";
 import ProyectoRedAkasha from "./pages/ProyectoRedAkasha";
@@ -105,6 +107,8 @@ const App = () => (
                     <Route path="/admin/stream-config" element={<AdminStreamConfig />} />
                     <Route path="/admin/payments" element={<AdminPaymentSettings />} />
                     <Route path="/admin/sales" element={<AdminSalesAnalytics />} />
+                    <Route path="/admin/ia-management" element={<AdminIAManagement />} />
+                    <Route path="/akasha-ia" element={<AkashaIA />} />
                     <Route path="/proyecto" element={<ProyectoRedAkasha />} />
                     <Route path="/contacto" element={<Contacto />} />
                     <Route path="/suscripciones" element={<Suscripciones />} />

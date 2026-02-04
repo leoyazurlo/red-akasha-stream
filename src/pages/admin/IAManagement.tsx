@@ -38,6 +38,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { ProposalCodePreview } from "@/components/admin/ProposalCodePreview";
 import { ProposalWorkflow } from "@/components/admin/ProposalWorkflow";
+import { AIProviderManager } from "@/components/admin/AIProviderManager";
 import { 
   Bot, 
   Users, 
@@ -516,68 +517,11 @@ export default function IAManagement() {
 
           {/* API Tab */}
           <TabsContent value="api">
-            <Card>
-              <CardHeader>
-                <CardTitle>Proveedores de IA</CardTitle>
-                <CardDescription>
-                  Configura los proveedores de IA disponibles para la plataforma
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {apiConfigs.map((config) => (
-                    <div
-                      key={config.id}
-                      className="flex items-center justify-between p-4 rounded-lg border border-cyan-500/20 bg-muted/30"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center">
-                          <Settings className="h-5 w-5 text-cyan-400" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <p className="font-medium">{config.display_name}</p>
-                            {config.is_default && (
-                              <Badge className="bg-cyan-500/20 text-cyan-400">
-                                Predeterminado
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground">
-                            Proveedor: {config.provider}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                          <Label htmlFor={`active-${config.id}`} className="text-sm">
-                            Activo
-                          </Label>
-                          <Switch
-                            id={`active-${config.id}`}
-                            checked={config.is_active}
-                            onCheckedChange={() => toggleAPIConfig(config.id, config.is_active)}
-                          />
-                        </div>
-                        {!config.is_default && config.is_active && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setDefaultProvider(config.id)}
-                          >
-                            Usar como predeterminado
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-sm text-muted-foreground mt-4">
-                  💡 Lovable AI está integrado y no requiere API key externa. Para agregar otros proveedores,
-                  contacta al equipo de desarrollo.
-                </p>
-              </CardContent>
-            </Card>
+            <AIProviderManager
+              configs={apiConfigs}
+              userId={user?.id}
+              onConfigsChange={loadAPIConfigs}
+            />
           </TabsContent>
 
           {/* Proposals Tab */}

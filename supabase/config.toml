@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.add-profile]
 verify_jwt = false
+
+[functions.akasha-ia-chat]
+verify_jwt = false

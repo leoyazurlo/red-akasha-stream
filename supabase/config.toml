@@ -14,3 +14,9 @@ verify_jwt = false
 
 [functions.analyze-forum]
 verify_jwt = false
+
+[functions.multi-ai-provider]
+verify_jwt = false
+
+[functions.generate-implementation]
+verify_jwt = false

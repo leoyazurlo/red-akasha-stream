@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { 
   Copy, 
@@ -12,7 +13,9 @@ import {
   Server,
   Wand2,
   ExternalLink,
-  Sparkles
+  Sparkles,
+  Download,
+  AlertTriangle
 } from "lucide-react";
 
 interface LovableInstructionsGeneratorProps {
@@ -22,6 +25,8 @@ interface LovableInstructionsGeneratorProps {
   frontendCode: string;
   backendCode: string;
   databaseCode: string;
+  provider?: string;
+  model?: string;
 }
 
 export function LovableInstructionsGenerator({
@@ -30,43 +35,97 @@ export function LovableInstructionsGenerator({
   frontendCode,
   backendCode,
   databaseCode,
+  provider = "lovable",
+  model = "default",
 }: LovableInstructionsGeneratorProps) {
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("full");
 
-  const generateLovablePrompt = () => {
+  const hasDatabase = databaseCode && databaseCode !== "-- No se generó código de base de datos";
+  const hasBackend = backendCode && backendCode !== "// No se generó código backend";
+  const hasFrontend = frontendCode && frontendCode !== "// No se generó código frontend";
+  const hasCode = hasDatabase || hasBackend || hasFrontend;
+
+  const generateFullPrompt = () => {
     const sections: string[] = [];
     
     sections.push(`# Implementación: ${title}\n`);
     sections.push(`## Descripción\n${description}\n`);
+    sections.push(`*Generado por: ${provider} (${model})*\n`);
 
-    if (databaseCode && databaseCode !== "-- No se generó código de base de datos") {
-      sections.push(`## 1. Cambios en Base de Datos\nEjecuta la siguiente migración SQL:\n\n\`\`\`sql\n${databaseCode}\n\`\`\`\n`);
+    if (hasDatabase) {
+      sections.push(`## 1. Base de Datos (Migración SQL)\nEjecuta esta migración usando la herramienta de migraciones:\n\n\`\`\`sql\n${databaseCode}\n\`\`\`\n`);
     }
 
-    if (backendCode && backendCode !== "// No se generó código backend") {
-      sections.push(`## 2. Edge Function\nCrea o actualiza la siguiente edge function:\n\n\`\`\`typescript\n${backendCode}\n\`\`\`\n`);
+    if (hasBackend) {
+      sections.push(`## 2. Edge Function\nCrea o actualiza esta edge function:\n\n\`\`\`typescript\n${backendCode}\n\`\`\`\n`);
     }
 
-    if (frontendCode && frontendCode !== "// No se generó código frontend") {
-      sections.push(`## 3. Componentes Frontend\nImplementa los siguientes componentes React:\n\n\`\`\`tsx\n${frontendCode}\n\`\`\`\n`);
+    if (hasFrontend) {
+      sections.push(`## 3. Componentes Frontend\nImplementa estos componentes React:\n\n\`\`\`tsx\n${frontendCode}\n\`\`\`\n`);
     }
 
-    sections.push(`\n---\n*Generado por Akasha IA para Red Akasha*`);
+    sections.push(`\n---\n*Implementa estos cambios en orden: primero base de datos, luego backend, finalmente frontend.*`);
 
     return sections.join("\n");
   };
 
-  const copyToClipboard = async () => {
-    const instructions = generateLovablePrompt();
-    await navigator.clipboard.writeText(instructions);
-    setCopied(true);
-    toast.success("Instrucciones copiadas - Pégalas en Lovable para implementar");
-    setTimeout(() => setCopied(false), 3000);
+  const generateStepPrompt = (step: "database" | "backend" | "frontend") => {
+    const prompts = {
+      database: `# Migración SQL para: ${title}
+
+Ejecuta esta migración en la base de datos:
+
+\`\`\`sql
+${databaseCode}
+\`\`\`
+
+**Importante:** Asegúrate de que las políticas RLS estén correctas antes de continuar.`,
+      
+      backend: `# Edge Function para: ${title}
+
+Crea o actualiza esta edge function:
+
+\`\`\`typescript
+${backendCode}
+\`\`\`
+
+**Importante:** No olvides actualizar config.toml si es una función nueva.`,
+      
+      frontend: `# Componentes React para: ${title}
+
+Implementa estos componentes:
+
+\`\`\`tsx
+${frontendCode}
+\`\`\`
+
+**Importante:** Asegúrate de importar los componentes donde sean necesarios.`,
+    };
+
+    return prompts[step];
   };
 
-  const hasCode = (frontendCode && frontendCode !== "// No se generó código frontend") ||
-                  (backendCode && backendCode !== "// No se generó código backend") ||
-                  (databaseCode && databaseCode !== "-- No se generó código de base de datos");
+  const copyToClipboard = async (content: string, type: string) => {
+    await navigator.clipboard.writeText(content);
+    setCopied(type);
+    toast.success(`${type === "full" ? "Instrucciones completas" : type.charAt(0).toUpperCase() + type.slice(1)} copiado`);
+    setTimeout(() => setCopied(null), 3000);
+  };
+
+  const downloadAsMarkdown = () => {
+    const content = generateFullPrompt();
+    const blob = new Blob([content], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${title.toLowerCase().replace(/\s+/g, "-")}-implementation.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success("Archivo descargado");
+  };
 
   if (!hasCode) {
     return (
@@ -89,75 +148,155 @@ export function LovableInstructionsGenerator({
             <Sparkles className="h-5 w-5 text-green-400" />
             Aplicar en Lovable
           </CardTitle>
-          <Badge className="bg-green-500/20 text-green-400">
-            Listo para implementar
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge className="bg-green-500/20 text-green-400">
+              Listo para implementar
+            </Badge>
+            <Badge variant="outline" className="text-xs">
+              {provider}
+            </Badge>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Status indicators */}
         <div className="grid grid-cols-3 gap-3 text-center">
-          <div className={`p-3 rounded-lg ${databaseCode && databaseCode !== "-- No se generó código de base de datos" ? "bg-purple-500/10" : "bg-muted/30"}`}>
-            <Database className={`h-5 w-5 mx-auto mb-1 ${databaseCode && databaseCode !== "-- No se generó código de base de datos" ? "text-purple-400" : "text-muted-foreground"}`} />
-            <span className="text-xs">{databaseCode && databaseCode !== "-- No se generó código de base de datos" ? "SQL ✓" : "Sin SQL"}</span>
+          <div className={`p-3 rounded-lg ${hasDatabase ? "bg-purple-500/10 border border-purple-500/30" : "bg-muted/30"}`}>
+            <Database className={`h-5 w-5 mx-auto mb-1 ${hasDatabase ? "text-purple-400" : "text-muted-foreground"}`} />
+            <span className="text-xs">{hasDatabase ? "SQL ✓" : "Sin SQL"}</span>
           </div>
-          <div className={`p-3 rounded-lg ${backendCode && backendCode !== "// No se generó código backend" ? "bg-blue-500/10" : "bg-muted/30"}`}>
-            <Server className={`h-5 w-5 mx-auto mb-1 ${backendCode && backendCode !== "// No se generó código backend" ? "text-blue-400" : "text-muted-foreground"}`} />
-            <span className="text-xs">{backendCode && backendCode !== "// No se generó código backend" ? "Backend ✓" : "Sin Backend"}</span>
+          <div className={`p-3 rounded-lg ${hasBackend ? "bg-blue-500/10 border border-blue-500/30" : "bg-muted/30"}`}>
+            <Server className={`h-5 w-5 mx-auto mb-1 ${hasBackend ? "text-blue-400" : "text-muted-foreground"}`} />
+            <span className="text-xs">{hasBackend ? "Backend ✓" : "Sin Backend"}</span>
           </div>
-          <div className={`p-3 rounded-lg ${frontendCode && frontendCode !== "// No se generó código frontend" ? "bg-cyan-500/10" : "bg-muted/30"}`}>
-            <FileCode className={`h-5 w-5 mx-auto mb-1 ${frontendCode && frontendCode !== "// No se generó código frontend" ? "text-cyan-400" : "text-muted-foreground"}`} />
-            <span className="text-xs">{frontendCode && frontendCode !== "// No se generó código frontend" ? "Frontend ✓" : "Sin Frontend"}</span>
+          <div className={`p-3 rounded-lg ${hasFrontend ? "bg-cyan-500/10 border border-cyan-500/30" : "bg-muted/30"}`}>
+            <FileCode className={`h-5 w-5 mx-auto mb-1 ${hasFrontend ? "text-cyan-400" : "text-muted-foreground"}`} />
+            <span className="text-xs">{hasFrontend ? "Frontend ✓" : "Sin Frontend"}</span>
           </div>
         </div>
 
-        <div className="bg-muted/30 rounded-lg p-4 space-y-3">
-          <h4 className="font-medium text-sm">Pasos para implementar:</h4>
-          <ol className="text-sm text-muted-foreground space-y-2">
-            <li className="flex items-start gap-2">
-              <span className="bg-cyan-500/20 text-cyan-400 rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0">1</span>
-              <span>Haz clic en "Copiar Instrucciones" abajo</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="bg-cyan-500/20 text-cyan-400 rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0">2</span>
-              <span>Ve al chat de Lovable y pega las instrucciones</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="bg-cyan-500/20 text-cyan-400 rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0">3</span>
-              <span>Lovable implementará los cambios automáticamente</span>
-            </li>
-          </ol>
-        </div>
+        {/* Copy options */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="w-full">
+            <TabsTrigger value="full" className="flex-1">Completo</TabsTrigger>
+            {hasDatabase && <TabsTrigger value="database">SQL</TabsTrigger>}
+            {hasBackend && <TabsTrigger value="backend">Backend</TabsTrigger>}
+            {hasFrontend && <TabsTrigger value="frontend">Frontend</TabsTrigger>}
+          </TabsList>
 
-        <ScrollArea className="h-[150px] rounded-md border border-muted bg-muted/20">
-          <pre className="p-3 text-xs font-mono whitespace-pre-wrap text-muted-foreground">
-            {generateLovablePrompt().slice(0, 500)}...
-          </pre>
-        </ScrollArea>
+          <TabsContent value="full" className="space-y-3">
+            <div className="bg-muted/30 rounded-lg p-4 space-y-3">
+              <h4 className="font-medium text-sm flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-yellow-400" />
+                Pasos para implementar:
+              </h4>
+              <ol className="text-sm text-muted-foreground space-y-2">
+                <li className="flex items-start gap-2">
+                  <span className="bg-cyan-500/20 text-cyan-400 rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0">1</span>
+                  <span>Copia las instrucciones completas</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="bg-cyan-500/20 text-cyan-400 rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0">2</span>
+                  <span>Pégalas en el chat de Lovable</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="bg-cyan-500/20 text-cyan-400 rounded-full w-5 h-5 flex items-center justify-center text-xs flex-shrink-0">3</span>
+                  <span>Lovable ejecutará los cambios automáticamente</span>
+                </li>
+              </ol>
+            </div>
 
-        <div className="flex gap-2">
-          <Button 
-            className="flex-1 bg-green-600 hover:bg-green-700" 
-            onClick={copyToClipboard}
-          >
-            {copied ? (
-              <>
-                <Check className="h-4 w-4 mr-2" />
-                ¡Copiado!
-              </>
-            ) : (
-              <>
-                <Copy className="h-4 w-4 mr-2" />
-                Copiar Instrucciones para Lovable
-              </>
-            )}
-          </Button>
-          <Button 
-            variant="outline"
-            onClick={() => window.open("https://lovable.dev", "_blank")}
-          >
-            <ExternalLink className="h-4 w-4" />
-          </Button>
-        </div>
+            <ScrollArea className="h-[150px] rounded-md border border-muted bg-muted/20">
+              <pre className="p-3 text-xs font-mono whitespace-pre-wrap text-muted-foreground">
+                {generateFullPrompt().slice(0, 800)}...
+              </pre>
+            </ScrollArea>
+
+            <div className="flex gap-2">
+              <Button 
+                className="flex-1 bg-green-600 hover:bg-green-700" 
+                onClick={() => copyToClipboard(generateFullPrompt(), "full")}
+              >
+                {copied === "full" ? (
+                  <>
+                    <Check className="h-4 w-4 mr-2" />
+                    ¡Copiado!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copiar Todo para Lovable
+                  </>
+                )}
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={downloadAsMarkdown}
+                title="Descargar como Markdown"
+              >
+                <Download className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => window.open("https://lovable.dev", "_blank")}
+                title="Abrir Lovable"
+              >
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+            </div>
+          </TabsContent>
+
+          {hasDatabase && (
+            <TabsContent value="database" className="space-y-3">
+              <ScrollArea className="h-[200px] rounded-md border border-purple-500/30 bg-purple-500/5">
+                <pre className="p-3 text-xs font-mono whitespace-pre-wrap text-purple-300">
+                  {databaseCode}
+                </pre>
+              </ScrollArea>
+              <Button 
+                className="w-full bg-purple-600 hover:bg-purple-700" 
+                onClick={() => copyToClipboard(generateStepPrompt("database"), "database")}
+              >
+                {copied === "database" ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
+                Copiar SQL para Lovable
+              </Button>
+            </TabsContent>
+          )}
+
+          {hasBackend && (
+            <TabsContent value="backend" className="space-y-3">
+              <ScrollArea className="h-[200px] rounded-md border border-blue-500/30 bg-blue-500/5">
+                <pre className="p-3 text-xs font-mono whitespace-pre-wrap text-blue-300">
+                  {backendCode}
+                </pre>
+              </ScrollArea>
+              <Button 
+                className="w-full bg-blue-600 hover:bg-blue-700" 
+                onClick={() => copyToClipboard(generateStepPrompt("backend"), "backend")}
+              >
+                {copied === "backend" ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
+                Copiar Edge Function para Lovable
+              </Button>
+            </TabsContent>
+          )}
+
+          {hasFrontend && (
+            <TabsContent value="frontend" className="space-y-3">
+              <ScrollArea className="h-[200px] rounded-md border border-cyan-500/30 bg-cyan-500/5">
+                <pre className="p-3 text-xs font-mono whitespace-pre-wrap text-cyan-300">
+                  {frontendCode}
+                </pre>
+              </ScrollArea>
+              <Button 
+                className="w-full bg-cyan-600 hover:bg-cyan-700" 
+                onClick={() => copyToClipboard(generateStepPrompt("frontend"), "frontend")}
+              >
+                {copied === "frontend" ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
+                Copiar Frontend para Lovable
+              </Button>
+            </TabsContent>
+          )}
+        </Tabs>
 
         <p className="text-xs text-muted-foreground text-center">
           Al pegar en Lovable, la IA implementará los cambios directamente en el código

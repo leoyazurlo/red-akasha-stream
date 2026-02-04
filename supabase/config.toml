@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.akasha-ia-chat]
 verify_jwt = false
+
+[functions.analyze-forum]
+verify_jwt = false

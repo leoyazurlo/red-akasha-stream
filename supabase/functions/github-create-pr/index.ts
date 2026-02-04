@@ -27,20 +27,40 @@ serve(async (req) => {
   }
 
   try {
-    const GITHUB_TOKEN = Deno.env.get("GITHUB_TOKEN");
-    const GITHUB_REPO = Deno.env.get("GITHUB_REPO"); // format: owner/repo
-    
-    if (!GITHUB_TOKEN) {
-      throw new Error("GITHUB_TOKEN no está configurado. Ve a Secrets en el panel de administración.");
-    }
-    
-    if (!GITHUB_REPO) {
-      throw new Error("GITHUB_REPO no está configurado. Formato: owner/repo");
-    }
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Try to get GitHub config from database first
+    const { data: configData } = await supabase
+      .from("platform_payment_settings")
+      .select("setting_value")
+      .eq("setting_key", "github_config")
+      .single();
+
+    let GITHUB_TOKEN = Deno.env.get("GITHUB_TOKEN");
+    let GITHUB_REPO = Deno.env.get("GITHUB_REPO");
+    let TARGET_BRANCH = "main";
+
+    // Use database config if available
+    if (configData?.setting_value) {
+      const dbConfig = configData.setting_value as Record<string, any>;
+      if (dbConfig.github_enabled) {
+        GITHUB_TOKEN = dbConfig.github_token || GITHUB_TOKEN;
+        GITHUB_REPO = dbConfig.github_repo || GITHUB_REPO;
+        TARGET_BRANCH = dbConfig.github_branch || TARGET_BRANCH;
+      } else {
+        throw new Error("La integración de GitHub está deshabilitada. Habilítala en Configuración → GitHub");
+      }
+    }
+    
+    if (!GITHUB_TOKEN) {
+      throw new Error("Token de GitHub no configurado. Ve a Configuración → GitHub en el panel de administración.");
+    }
+    
+    if (!GITHUB_REPO) {
+      throw new Error("Repositorio de GitHub no configurado. Formato: owner/repo");
+    }
 
     const { 
       proposalId, 
@@ -49,7 +69,7 @@ serve(async (req) => {
       frontendCode, 
       backendCode, 
       databaseCode,
-      targetBranch = "main" 
+      targetBranch = TARGET_BRANCH 
     }: CreatePRRequest = await req.json();
 
     const branchName = `akasha-ia/${proposalId.slice(0, 8)}-${title.toLowerCase().replace(/\s+/g, "-").slice(0, 30)}`;

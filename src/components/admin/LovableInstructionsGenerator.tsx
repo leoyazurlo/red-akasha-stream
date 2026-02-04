@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { 
   Copy, 
@@ -15,7 +16,9 @@ import {
   ExternalLink,
   Sparkles,
   Download,
-  AlertTriangle
+  AlertTriangle,
+  GitBranch,
+  Loader2
 } from "lucide-react";
 
 interface LovableInstructionsGeneratorProps {
@@ -30,6 +33,7 @@ interface LovableInstructionsGeneratorProps {
 }
 
 export function LovableInstructionsGenerator({
+  proposalId,
   title,
   description,
   frontendCode,
@@ -40,11 +44,51 @@ export function LovableInstructionsGenerator({
 }: LovableInstructionsGeneratorProps) {
   const [copied, setCopied] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("full");
+  const [creatingPR, setCreatingPR] = useState(false);
+  const [prUrl, setPrUrl] = useState<string | null>(null);
 
   const hasDatabase = databaseCode && databaseCode !== "-- No se generó código de base de datos";
   const hasBackend = backendCode && backendCode !== "// No se generó código backend";
   const hasFrontend = frontendCode && frontendCode !== "// No se generó código frontend";
   const hasCode = hasDatabase || hasBackend || hasFrontend;
+
+  const createGitHubPR = async () => {
+    setCreatingPR(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/github-create-pr`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            proposalId,
+            title,
+            description,
+            frontendCode: hasFrontend ? frontendCode : "",
+            backendCode: hasBackend ? backendCode : "",
+            databaseCode: hasDatabase ? databaseCode : "",
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Error al crear PR");
+      }
+
+      setPrUrl(data.prUrl);
+      toast.success("Pull Request creado exitosamente");
+    } catch (error) {
+      console.error("Error creating PR:", error);
+      toast.error(error instanceof Error ? error.message : "Error al crear PR");
+    } finally {
+      setCreatingPR(false);
+    }
+  };
 
   const generateFullPrompt = () => {
     const sections: string[] = [];
@@ -225,7 +269,7 @@ ${frontendCode}
                 ) : (
                   <>
                     <Copy className="h-4 w-4 mr-2" />
-                    Copiar Todo para Lovable
+                    Copiar para Lovable
                   </>
                 )}
               </Button>
@@ -243,6 +287,51 @@ ${frontendCode}
               >
                 <ExternalLink className="h-4 w-4" />
               </Button>
+            </div>
+
+            {/* GitHub PR Section */}
+            <div className="border-t border-border pt-4 mt-4">
+              <div className="flex items-center gap-2 mb-3">
+                <GitBranch className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">Integración GitHub (Auto-sync)</span>
+              </div>
+              
+              {prUrl ? (
+                <div className="bg-primary/10 rounded-lg p-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-green-500" />
+                    <span className="text-sm">PR creado exitosamente</span>
+                  </div>
+                  <Button size="sm" variant="outline" onClick={() => window.open(prUrl, "_blank")}>
+                    Ver en GitHub
+                    <ExternalLink className="h-3 w-3 ml-1" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">
+                    Crea un Pull Request automáticamente. Al hacer merge, Lovable sincroniza los cambios.
+                  </p>
+                  <Button 
+                    className="w-full"
+                    variant="outline"
+                    onClick={createGitHubPR}
+                    disabled={creatingPR}
+                  >
+                    {creatingPR ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Creando PR...
+                      </>
+                    ) : (
+                      <>
+                        <GitBranch className="h-4 w-4 mr-2" />
+                        Crear Pull Request en GitHub
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
           </TabsContent>
 

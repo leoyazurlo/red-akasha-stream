@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Table,
   TableBody,
@@ -35,6 +36,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { ProposalCodePreview } from "@/components/admin/ProposalCodePreview";
+import { ProposalWorkflow } from "@/components/admin/ProposalWorkflow";
 import { 
   Bot, 
   Users, 
@@ -50,7 +53,9 @@ import {
   Search,
   Sparkles,
   RefreshCw,
-  MessageSquare
+  MessageSquare,
+  Code,
+  ArrowRight
 } from "lucide-react";
 
 interface AuthorizedUser {
@@ -660,90 +665,130 @@ export default function IAManagement() {
                             <Dialog>
                               <DialogTrigger asChild>
                                 <Button
-                                  size="icon"
+                                  size="sm"
                                   variant="ghost"
-                                  onClick={() => setSelectedProposal(proposal)}
+                                  onClick={() => {
+                                    setSelectedProposal(proposal);
+                                    setReviewNotes(proposal.review_notes || "");
+                                  }}
                                 >
-                                  <Eye className="h-4 w-4" />
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  Ver
                                 </Button>
                               </DialogTrigger>
-                              <DialogContent className="max-w-2xl max-h-[80vh] overflow-auto">
+                              <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
                                 <DialogHeader>
-                                  <DialogTitle>{proposal.title}</DialogTitle>
-                                  <DialogDescription>
-                                    Propuesta de {proposal.profiles?.full_name || proposal.profiles?.username}
-                                  </DialogDescription>
+                                  <div className="flex items-center justify-between">
+                                    <div>
+                                      <DialogTitle className="flex items-center gap-2">
+                                        {proposal.title}
+                                        {getPriorityBadge(proposal.priority)}
+                                      </DialogTitle>
+                                      <DialogDescription className="flex items-center gap-2 mt-1">
+                                        {proposal.profiles?.full_name || proposal.profiles?.username ? (
+                                          <span>Propuesta de {proposal.profiles?.full_name || proposal.profiles?.username}</span>
+                                        ) : (
+                                          <span className="flex items-center gap-1">
+                                            <Sparkles className="h-3 w-3" />
+                                            Auto-generada por IA
+                                          </span>
+                                        )}
+                                        <span className="text-muted-foreground">•</span>
+                                        <Badge variant="outline" className="text-xs">{proposal.category || "otro"}</Badge>
+                                      </DialogDescription>
+                                    </div>
+                                  </div>
                                 </DialogHeader>
-                                <div className="space-y-4">
-                                  <div>
-                                    <Label>Descripción</Label>
-                                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                                      {proposal.description}
-                                    </p>
-                                  </div>
-                                  {proposal.ai_reasoning && (
-                                    <div>
-                                      <Label>Razonamiento de IA</Label>
-                                      <p className="text-sm text-muted-foreground">
-                                        {proposal.ai_reasoning}
-                                      </p>
-                                    </div>
-                                  )}
-                                  {proposal.proposed_code && (
-                                    <div>
-                                      <Label>Código Propuesto</Label>
-                                      <pre className="text-xs bg-muted p-2 rounded-md overflow-auto max-h-40">
-                                        {proposal.proposed_code}
-                                      </pre>
-                                    </div>
-                                  )}
-                                  <div>
-                                    <Label>Notas de Revisión</Label>
-                                    <Textarea
-                                      value={reviewNotes}
-                                      onChange={(e) => setReviewNotes(e.target.value)}
-                                      placeholder="Agrega notas sobre tu decisión..."
+                                
+                                <ScrollArea className="flex-1 pr-4">
+                                  <div className="space-y-6">
+                                    {/* Workflow Status */}
+                                    <ProposalWorkflow
+                                      proposalId={proposal.id}
+                                      currentStatus={proposal.status}
+                                      userId={user?.id}
+                                      reviewNotes={reviewNotes}
+                                      onStatusChange={loadProposals}
                                     />
+
+                                    {/* Description */}
+                                    <div className="space-y-2">
+                                      <Label className="text-sm font-medium">Descripción</Label>
+                                      <div className="text-sm text-muted-foreground whitespace-pre-wrap p-3 rounded-md bg-muted/30 border border-border/50">
+                                        {proposal.description}
+                                      </div>
+                                    </div>
+
+                                    {/* AI Reasoning */}
+                                    {proposal.ai_reasoning && (
+                                      <div className="space-y-2">
+                                        <Label className="text-sm font-medium flex items-center gap-2">
+                                          <Sparkles className="h-4 w-4 text-primary" />
+                                          Razonamiento de IA
+                                        </Label>
+                                        <div className="text-sm text-muted-foreground p-3 rounded-md bg-primary/5 border border-primary/20">
+                                          {proposal.ai_reasoning}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Code Preview Component */}
+                                    <ProposalCodePreview
+                                      proposalId={proposal.id}
+                                      title={proposal.title}
+                                      description={proposal.description}
+                                      proposedCode={proposal.proposed_code}
+                                      onCodeUpdate={loadProposals}
+                                    />
+
+                                    {/* Review Notes */}
+                                    <div className="space-y-2">
+                                      <Label className="text-sm font-medium">Notas de Revisión</Label>
+                                      <Textarea
+                                        value={reviewNotes}
+                                        onChange={(e) => setReviewNotes(e.target.value)}
+                                        placeholder="Agrega notas sobre tu decisión, feedback o instrucciones de implementación..."
+                                        className="min-h-[80px]"
+                                      />
+                                    </div>
+
+                                    {/* Priority Selector */}
+                                    <div className="flex items-center gap-4 p-3 rounded-md bg-muted/30 border border-border/50">
+                                      <Label className="text-sm font-medium">Prioridad:</Label>
+                                      <Select
+                                        value={proposal.priority}
+                                        onValueChange={(value) => {
+                                          supabase
+                                            .from("ia_feature_proposals")
+                                            .update({ priority: value })
+                                            .eq("id", proposal.id)
+                                            .then(() => {
+                                              toast.success("Prioridad actualizada");
+                                              loadProposals();
+                                            });
+                                        }}
+                                      >
+                                        <SelectTrigger className="w-32">
+                                          <SelectValue placeholder="Prioridad" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="low">Baja</SelectItem>
+                                          <SelectItem value="medium">Media</SelectItem>
+                                          <SelectItem value="high">Alta</SelectItem>
+                                          <SelectItem value="critical">Crítica</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
                                   </div>
-                                </div>
-                                <DialogFooter className="gap-2">
-                                  <Select
-                                    value={proposal.priority}
-                                    onValueChange={(value) => {
-                                      supabase
-                                        .from("ia_feature_proposals")
-                                        .update({ priority: value })
-                                        .eq("id", proposal.id)
-                                        .then(() => loadProposals());
-                                    }}
-                                  >
-                                    <SelectTrigger className="w-32">
-                                      <SelectValue placeholder="Prioridad" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="low">Baja</SelectItem>
-                                      <SelectItem value="medium">Media</SelectItem>
-                                      <SelectItem value="high">Alta</SelectItem>
-                                      <SelectItem value="critical">Crítica</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <Button
-                                    variant="destructive"
-                                    onClick={() => updateProposalStatus(proposal.id, "rejected")}
-                                  >
-                                    <X className="h-4 w-4 mr-2" />
-                                    Rechazar
-                                  </Button>
-                                  <Button
-                                    className="bg-green-600 hover:bg-green-700"
-                                    onClick={() => updateProposalStatus(proposal.id, "approved")}
-                                  >
-                                    <Check className="h-4 w-4 mr-2" />
-                                    Aprobar
-                                  </Button>
-                                </DialogFooter>
+                                </ScrollArea>
                               </DialogContent>
                             </Dialog>
+                            {proposal.proposed_code && (
+                              <Badge variant="outline" className="text-xs">
+                                <Code className="h-3 w-3 mr-1" />
+                                Código
+                              </Badge>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>

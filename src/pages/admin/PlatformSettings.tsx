@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { GitHubSettings } from "@/components/admin/GitHubSettings";
 import { 
   Mail, 
   Globe, 
@@ -25,7 +26,8 @@ import {
   Settings2,
   Search,
   Share2,
-  Languages
+  Languages,
+  GitBranch
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -266,7 +268,7 @@ export default function PlatformSettings() {
         </div>
 
         <Tabs defaultValue="email" className="space-y-6">
-          <TabsList className="grid grid-cols-6 w-full max-w-4xl">
+          <TabsList className="grid grid-cols-7 w-full max-w-5xl">
             <TabsTrigger value="email" className="gap-2">
               <Mail className="w-4 h-4" />
               Email/DNS
@@ -286,6 +288,10 @@ export default function PlatformSettings() {
             <TabsTrigger value="notifications" className="gap-2">
               <Bell className="w-4 h-4" />
               Notificaciones
+            </TabsTrigger>
+            <TabsTrigger value="github" className="gap-2">
+              <GitBranch className="w-4 h-4" />
+              GitHub
             </TabsTrigger>
             <TabsTrigger value="general" className="gap-2">
               <Settings2 className="w-4 h-4" />
@@ -855,6 +861,11 @@ export default function PlatformSettings() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* GitHub Tab */}
+          <TabsContent value="github" className="space-y-6">
+            <GitHubSettings />
           </TabsContent>
         </Tabs>
       </div>

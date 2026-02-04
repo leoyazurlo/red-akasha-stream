@@ -1,4 +1,4 @@
-import { LayoutDashboard, FolderTree, Users, Flag, ShieldAlert, Award, Radio, Film, Headphones, Calendar, FileText, UserCheck, ScrollText, Share2, Settings, CreditCard, TrendingUp, Mail, Shield, Bot } from "lucide-react";
+import { LayoutDashboard, FolderTree, Users, Flag, ShieldAlert, Award, Radio, Film, Headphones, Calendar, FileText, UserCheck, ScrollText, Share2, Settings, CreditCard, TrendingUp, Mail, Shield, Bot, Cog } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -21,6 +21,7 @@ const generalItems = [
   { title: "Curaduría", url: "/admin/content", icon: FileText },
   { title: "Auditoría", url: "/admin/audit-logs", icon: ScrollText },
   { title: "Akasha IA", url: "/admin/ia-management", icon: Bot },
+  { title: "Configuración", url: "/admin/platform-settings", icon: Cog },
 ];
 
 const streamingItems = [

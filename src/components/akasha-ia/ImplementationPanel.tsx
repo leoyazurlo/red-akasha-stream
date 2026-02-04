@@ -17,6 +17,9 @@ import {
   ExternalLink,
   Wand2,
   FileCode,
+  Eye,
+  ArrowRight,
+  Rocket,
 } from "lucide-react";
 
 interface GeneratedCode {
@@ -35,6 +38,43 @@ interface ImplementationPanelProps {
   onCodeGenerated?: (code: GeneratedCode) => void;
 }
 
+// Workflow steps component
+function WorkflowSteps({ currentStep }: { currentStep: number }) {
+  const steps = [
+    { icon: Code, label: "Generar", desc: "IA crea código" },
+    { icon: GitBranch, label: "PR", desc: "Push a GitHub" },
+    { icon: Eye, label: "Preview", desc: "Revisar cambios" },
+    { icon: Rocket, label: "Publicar", desc: "Merge y deploy" },
+  ];
+
+  return (
+    <div className="flex items-center justify-between mb-4 p-3 rounded-lg bg-muted/30 border border-cyan-500/10">
+      {steps.map((step, index) => (
+        <div key={index} className="flex items-center">
+          <div className={`flex flex-col items-center ${index <= currentStep ? 'text-cyan-400' : 'text-muted-foreground'}`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
+              index < currentStep ? 'bg-cyan-500 border-cyan-500' : 
+              index === currentStep ? 'border-cyan-500 bg-cyan-500/20' : 
+              'border-muted-foreground/30'
+            }`}>
+              {index < currentStep ? (
+                <CheckCircle className="h-4 w-4 text-white" />
+              ) : (
+                <step.icon className="h-4 w-4" />
+              )}
+            </div>
+            <span className="text-xs mt-1 font-medium">{step.label}</span>
+            <span className="text-[10px] text-muted-foreground">{step.desc}</span>
+          </div>
+          {index < steps.length - 1 && (
+            <ArrowRight className={`h-4 w-4 mx-2 ${index < currentStep ? 'text-cyan-500' : 'text-muted-foreground/30'}`} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function ImplementationPanel({
   proposalId,
   title,
@@ -47,6 +87,13 @@ export function ImplementationPanel({
   const [generatedCode, setGeneratedCode] = useState<GeneratedCode | null>(existingCode || null);
   const [prUrl, setPrUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  // Calculate current workflow step
+  const getCurrentStep = () => {
+    if (prUrl) return 2; // PR created, ready to preview
+    if (generatedCode) return 1; // Code generated
+    return 0; // Initial state
+  };
 
   const generateImplementation = async () => {
     setIsGenerating(true);
@@ -151,6 +198,9 @@ export function ImplementationPanel({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Workflow Steps Indicator */}
+        <WorkflowSteps currentStep={getCurrentStep()} />
+        
         {/* Botones de acción */}
         <div className="flex flex-wrap gap-2">
           <Button
@@ -166,7 +216,7 @@ export function ImplementationPanel({
             ) : (
               <>
                 <Code className="h-4 w-4 mr-2" />
-                Generar Código
+                1. Generar Código
               </>
             )}
           </Button>
@@ -186,27 +236,51 @@ export function ImplementationPanel({
               ) : (
                 <>
                   <GitBranch className="h-4 w-4 mr-2" />
-                  Crear Pull Request
+                  2. Crear Pull Request
                 </>
               )}
             </Button>
           )}
         </div>
 
-        {/* Estado del PR */}
+        {/* Estado del PR con instrucciones de preview */}
         {prUrl && (
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-            <CheckCircle className="h-5 w-5 text-green-400" />
-            <span className="text-sm text-green-400">PR Creado:</span>
-            <a
-              href={prUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-cyan-400 hover:underline flex items-center gap-1"
-            >
-              Ver en GitHub
-              <ExternalLink className="h-3 w-3" />
-            </a>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+              <CheckCircle className="h-5 w-5 text-green-400" />
+              <span className="text-sm text-green-400">PR Creado:</span>
+              <a
+                href={prUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-cyan-400 hover:underline flex items-center gap-1"
+              >
+                Ver en GitHub
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+            
+            {/* Preview instructions */}
+            <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
+              <div className="flex items-start gap-3">
+                <Eye className="h-5 w-5 text-blue-400 mt-0.5" />
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-blue-400">
+                    3. Revisar en Preview
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Los cambios del PR se sincronizarán automáticamente con Lovable. 
+                    Revisa el preview antes de mergear:
+                  </p>
+                  <ol className="text-xs text-muted-foreground list-decimal list-inside space-y-1">
+                    <li>Espera a que Lovable sincronice los cambios (~1-2 min)</li>
+                    <li>Revisa el preview en vivo para verificar los cambios</li>
+                    <li>Si todo está bien, mergea el PR en GitHub</li>
+                    <li>Publica la app desde Lovable cuando estés listo</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

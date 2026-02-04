@@ -22,9 +22,12 @@ import {
   Loader2,
   Plus,
   Trash2,
-  History
+  History,
+  Wand2,
+  GitBranch,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { ProposalCard } from "@/components/akasha-ia/ProposalCard";
 
 interface Message {
   role: "user" | "assistant";
@@ -44,6 +47,7 @@ interface FeatureProposal {
   description: string;
   status: string;
   priority: string;
+  proposed_code?: string | null;
   created_at: string;
 }
 
@@ -366,6 +370,10 @@ export default function AkashaIA() {
               <Lightbulb className="h-4 w-4" />
               Mis Propuestas
             </TabsTrigger>
+            <TabsTrigger value="implement" className="gap-2">
+              <Wand2 className="h-4 w-4" />
+              Implementar
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="chat" className="space-y-4">
@@ -531,22 +539,47 @@ export default function AkashaIA() {
                 ) : (
                   <div className="space-y-4">
                     {proposals.map((proposal) => (
-                      <div
-                        key={proposal.id}
-                        className="p-4 rounded-lg bg-muted/30 border border-cyan-500/10"
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <h4 className="font-medium text-foreground">{proposal.title}</h4>
-                          {getStatusBadge(proposal.status)}
-                        </div>
-                        <p className="text-sm text-muted-foreground line-clamp-3">
-                          {proposal.description}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {new Date(proposal.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
+                      <ProposalCard key={proposal.id} proposal={proposal} />
                     ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="implement">
+            <Card className="bg-card/50 border-cyan-500/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <GitBranch className="h-5 w-5 text-cyan-400" />
+                  Implementar Cambios en la Plataforma
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Aquí puedes ver tus propuestas aprobadas y generar código para implementarlas automáticamente.
+                </p>
+              </CardHeader>
+              <CardContent>
+                {proposals.filter(p => ["approved", "reviewing", "implementing"].includes(p.status)).length === 0 ? (
+                  <div className="text-center py-12">
+                    <Wand2 className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
+                    <p className="text-muted-foreground mb-2">
+                      No tienes propuestas listas para implementar
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Crea propuestas en el chat y espera la aprobación de un administrador
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {proposals
+                      .filter(p => ["approved", "reviewing", "implementing"].includes(p.status))
+                      .map((proposal) => (
+                        <ProposalCard 
+                          key={proposal.id} 
+                          proposal={proposal} 
+                          showImplementation={true}
+                        />
+                      ))}
                   </div>
                 )}
               </CardContent>

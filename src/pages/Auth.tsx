@@ -161,7 +161,13 @@ const Auth = () => {
             <h1 className="text-4xl font-light mb-2 bg-gradient-primary bg-clip-text text-transparent">
               Red Akasha
             </h1>
-            <p className="text-muted-foreground">Únete a nuestra comunidad</p>
+            <p className="text-muted-foreground text-lg font-medium">¡Únete a nuestra comunidad!</p>
+          </div>
+
+          <div className="text-center mb-6 p-4 rounded-lg border border-primary/20 bg-primary/5">
+            <p className="text-foreground leading-relaxed">
+              Para subir contenido debes asociarte gratis eligiendo el perfil que se ajuste como usuario consumidor o creador. <span className="font-semibold text-primary">¡Elige tu perfil!</span>
+            </p>
           </div>
 
           <Card className="border-border bg-card/80 backdrop-blur-sm">

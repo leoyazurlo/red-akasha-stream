@@ -102,32 +102,26 @@ export const Header = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="z-50 bg-popover">
-                    <DropdownMenuItem asChild className="cursor-pointer">
-                      <Link to={`/perfil/${user.id}`} className="flex items-center w-full">
+                    <DropdownMenuItem asChild className="cursor-pointer hover:!bg-cyan-500/20 hover:!text-cyan-400 focus:!bg-cyan-500/20 focus:!text-cyan-400 transition-all duration-200">
+                      <Link to="/mi-perfil" className="flex items-center w-full hover:text-cyan-400">
                         <User className="mr-2 h-4 w-4" />
-                        {t('auth.profile')}
+                        Mi Perfil
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="cursor-pointer">
-                      <Link to="/mi-perfil" className="flex items-center w-full">
-                        <Settings className="mr-2 h-4 w-4" />
-                        Mi Perfil Circuito
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="cursor-pointer">
-                      <Link to="/mi-coleccion" className="flex items-center w-full">
+                    <DropdownMenuItem asChild className="cursor-pointer hover:!bg-cyan-500/20 hover:!text-cyan-400 focus:!bg-cyan-500/20 focus:!text-cyan-400 transition-all duration-200">
+                      <Link to="/mi-coleccion" className="flex items-center w-full hover:text-cyan-400">
                         <Library className="mr-2 h-4 w-4" />
                         {t('auth.myCollection') || 'Mi Colección'}
                       </Link>
                     </DropdownMenuItem>
                     {isAdmin && (
-                      <DropdownMenuItem asChild className="cursor-pointer">
-                        <Link to="/admin" className="flex items-center w-full">
+                      <DropdownMenuItem asChild className="cursor-pointer hover:!bg-cyan-500/20 hover:!text-cyan-400 focus:!bg-cyan-500/20 focus:!text-cyan-400 transition-all duration-200">
+                        <Link to="/admin" className="flex items-center w-full hover:text-cyan-400">
                           {t('auth.controlPanel')}
                         </Link>
                       </DropdownMenuItem>
                     )}
-                    <DropdownMenuItem onSelect={handleLogout}>
+                    <DropdownMenuItem onSelect={handleLogout} className="cursor-pointer hover:!bg-cyan-500/20 hover:!text-cyan-400 focus:!bg-cyan-500/20 focus:!text-cyan-400 transition-all duration-200">
                       <LogOut className="mr-2 h-4 w-4" />
                       {t('auth.logout')}
                     </DropdownMenuItem>

@@ -181,7 +181,12 @@ const Auth = () => {
               <Tabs defaultValue="login" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="login">Iniciar Sesión</TabsTrigger>
-                  <TabsTrigger value="signup">Asociarse</TabsTrigger>
+                  <TabsTrigger 
+                    value="signup" 
+                    className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-[0_0_15px_rgba(34,211,238,0.5)] text-cyan-400 font-semibold"
+                  >
+                    Asociarse
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="login">

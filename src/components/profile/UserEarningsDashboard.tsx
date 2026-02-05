@@ -38,8 +38,8 @@
  export const UserEarningsDashboard = () => {
    const { user } = useAuth();
    const [platformSettings, setPlatformSettings] = useState<PlatformSettings>({
-     author_percentage: 70,
-     platform_percentage: 30,
+    author_percentage: 60,
+    platform_percentage: 40,
    });
  
    // Fetch platform settings
@@ -173,14 +173,14 @@
              Distribución de Ganancias
            </CardTitle>
            <CardDescription>
-             Así se distribuye cada venta de tu contenido
+            Distribución de ingresos por cada venta
            </CardDescription>
          </CardHeader>
          <CardContent>
            <div className="flex items-center gap-4">
              <div className="flex-1">
                <div className="flex items-center justify-between mb-2">
-                 <span className="text-sm text-muted-foreground">Para ti</span>
+                  <span className="text-sm text-muted-foreground">Tu ganancia</span>
                  <span className="text-lg font-bold text-green-400">{platformSettings.author_percentage}%</span>
                </div>
                <div className="h-3 bg-muted rounded-full overflow-hidden">
@@ -193,7 +193,7 @@
              <div className="text-2xl text-muted-foreground">/</div>
              <div className="flex-1">
                <div className="flex items-center justify-between mb-2">
-                 <span className="text-sm text-muted-foreground">Plataforma</span>
+                  <span className="text-sm text-muted-foreground">Red Akasha</span>
                  <span className="text-lg font-bold text-cyan-400">{platformSettings.platform_percentage}%</span>
                </div>
                <div className="h-3 bg-muted rounded-full overflow-hidden">

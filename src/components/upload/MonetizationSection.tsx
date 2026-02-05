@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   ShoppingCart, 
   Clock, 
@@ -19,13 +20,15 @@ import {
   CreditCard, 
   Wallet, 
   Bitcoin, 
-  Building2 
+  Building2,
+  Info
 } from "lucide-react";
 
 interface MonetizationSectionProps {
   isFree: boolean;
   price: string;
   currency: string;
+  contentType?: string;
   accessType?: string;
   rentalPrice?: string;
   rentalDurationHours?: number;
@@ -38,6 +41,15 @@ interface MonetizationSectionProps {
   onRentalDurationChange?: (value: number) => void;
   onPaymentMethodsChange?: (methods: string[]) => void;
 }
+
+const suggestedPrices: Record<string, { price: string; label: string }> = {
+  video_musical_vivo: { price: "9.99", label: "Video Musical en Vivo" },
+  video_clip: { price: "4.99", label: "Video Clip" },
+  podcast: { price: "2.99", label: "Podcast" },
+  documental: { price: "7.99", label: "Documental" },
+  corto: { price: "3.99", label: "Cortos" },
+  pelicula: { price: "12.99", label: "Películas" },
+};
 
 const currencies = [
   { value: "USD", label: "USD - Dollar" },
@@ -76,6 +88,7 @@ export const MonetizationSection = ({
   isFree,
   price,
   currency,
+  contentType = "",
   accessType = "purchase",
   rentalPrice = "",
   rentalDurationHours = 48,
@@ -89,6 +102,14 @@ export const MonetizationSection = ({
   onPaymentMethodsChange,
 }: MonetizationSectionProps) => {
   const { t } = useTranslation();
+  
+  const suggestedPrice = contentType ? suggestedPrices[contentType] : null;
+  
+  const handleApplySuggestedPrice = () => {
+    if (suggestedPrice) {
+      onPriceChange(suggestedPrice.price);
+    }
+  };
 
   const handlePaymentMethodToggle = (methodId: string, checked: boolean) => {
     if (!onPaymentMethodsChange) return;
@@ -109,6 +130,15 @@ export const MonetizationSection = ({
         </p>
       </div>
 
+      {/* Revenue Share Info */}
+      <Alert className="border-primary/30 bg-primary/5">
+        <Info className="h-4 w-4 text-primary" />
+        <AlertDescription className="text-sm">
+          <strong>Reparto de ingresos:</strong> Por cada venta recibirás el <span className="text-primary font-semibold">70%</span> del precio. 
+          El <span className="text-muted-foreground">30%</span> restante corresponde a Red Akasha por gastos de plataforma y transacción.
+        </AlertDescription>
+      </Alert>
+
       {/* Free/Paid Toggle */}
       <div className="flex items-center justify-between rounded-lg border border-border bg-card p-4">
         <div className="space-y-0.5">
@@ -128,6 +158,25 @@ export const MonetizationSection = ({
 
       {!isFree && (
         <div className="space-y-6">
+          {/* Suggested Price */}
+          {suggestedPrice && (
+            <div className="p-4 rounded-lg border border-cyan-400/30 bg-cyan-400/5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-cyan-400">Precio sugerido para {suggestedPrice.label}</p>
+                  <p className="text-2xl font-bold text-foreground">USD ${suggestedPrice.price}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleApplySuggestedPrice}
+                  className="px-4 py-2 text-sm font-medium rounded-lg border border-cyan-400 text-cyan-400 hover:bg-cyan-400/10 transition-colors"
+                >
+                  Aplicar precio
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Access Type Selection */}
           <div className="space-y-3">
             <Label className="text-sm font-medium">Tipo de acceso</Label>

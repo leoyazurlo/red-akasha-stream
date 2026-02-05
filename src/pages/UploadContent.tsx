@@ -133,12 +133,10 @@ const UploadContent = () => {
 
    // Handle content type change - set default price based on type
    const handleContentTypeChange = (value: string) => {
-     const contentType = contentTypes.find(ct => ct.value === value);
      setFormData(prev => ({
        ...prev,
        content_type: value,
-       price: contentType?.defaultPrice || "0",
-       is_free: false // Default to paid when selecting content type
+       is_free: true // Default to free, user can change to paid
      }));
    };
 
@@ -479,10 +477,7 @@ const UploadContent = () => {
                       <SelectContent>
                         {contentTypes.map((type) => (
                           <SelectItem key={type.value} value={type.value}>
-                            <div className="flex justify-between items-center w-full gap-4">
-                              <span>{type.label}</span>
-                              <span className="text-xs text-muted-foreground">USD ${type.defaultPrice}</span>
-                            </div>
+                           {type.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -625,6 +620,7 @@ const UploadContent = () => {
                     isFree={formData.is_free}
                     price={formData.price}
                     currency={formData.currency}
+                    contentType={formData.content_type}
                     onIsFreeChange={(value) => updateFormData('is_free', value)}
                     onPriceChange={(value) => updateFormData('price', value)}
                     onCurrencyChange={(value) => updateFormData('currency', value)}

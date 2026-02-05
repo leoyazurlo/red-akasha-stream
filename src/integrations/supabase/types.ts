@@ -2495,16 +2495,21 @@ export type Database = {
           account_holder_name: string | null
           account_number_encrypted: string | null
           account_type: string | null
+          bank_enabled: boolean | null
           bank_name: string | null
           cbu_cvu: string | null
           country: string | null
           created_at: string | null
+          crypto_enabled: boolean | null
           crypto_wallet_address: string | null
           crypto_wallet_type: string | null
           id: string
           is_verified: boolean | null
+          mercadopago_alias: string | null
           mercadopago_email: string | null
+          mercadopago_enabled: boolean | null
           paypal_email: string | null
+          paypal_enabled: boolean | null
           preferred_payment_method: string | null
           updated_at: string | null
           user_id: string
@@ -2513,16 +2518,21 @@ export type Database = {
           account_holder_name?: string | null
           account_number_encrypted?: string | null
           account_type?: string | null
+          bank_enabled?: boolean | null
           bank_name?: string | null
           cbu_cvu?: string | null
           country?: string | null
           created_at?: string | null
+          crypto_enabled?: boolean | null
           crypto_wallet_address?: string | null
           crypto_wallet_type?: string | null
           id?: string
           is_verified?: boolean | null
+          mercadopago_alias?: string | null
           mercadopago_email?: string | null
+          mercadopago_enabled?: boolean | null
           paypal_email?: string | null
+          paypal_enabled?: boolean | null
           preferred_payment_method?: string | null
           updated_at?: string | null
           user_id: string
@@ -2531,16 +2541,21 @@ export type Database = {
           account_holder_name?: string | null
           account_number_encrypted?: string | null
           account_type?: string | null
+          bank_enabled?: boolean | null
           bank_name?: string | null
           cbu_cvu?: string | null
           country?: string | null
           created_at?: string | null
+          crypto_enabled?: boolean | null
           crypto_wallet_address?: string | null
           crypto_wallet_type?: string | null
           id?: string
           is_verified?: boolean | null
+          mercadopago_alias?: string | null
           mercadopago_email?: string | null
+          mercadopago_enabled?: boolean | null
           paypal_email?: string | null
+          paypal_enabled?: boolean | null
           preferred_payment_method?: string | null
           updated_at?: string | null
           user_id?: string

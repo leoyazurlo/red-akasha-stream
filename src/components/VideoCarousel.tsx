@@ -65,6 +65,7 @@ interface VideoCarouselProps {
   sectionId: string;
   showSchedule?: boolean;
   loadSchedulesFromDB?: boolean;
+  isVertical?: boolean;
 }
 
 export const VideoCarousel = ({ 
@@ -72,7 +73,8 @@ export const VideoCarousel = ({
   videos, 
   sectionId, 
   showSchedule = false,
-  loadSchedulesFromDB = false
+  loadSchedulesFromDB = false,
+  isVertical = false
 }: VideoCarouselProps) => {
   const { t } = useTranslation();
   const [scrollPosition, setScrollPosition] = useState(0);
@@ -225,7 +227,7 @@ export const VideoCarousel = ({
                       navigate(`/video/${video.id}`);
                     }
                   }}
-                  className={`flex-none w-44 sm:w-52 md:w-56 group cursor-pointer transition-all duration-500 ${
+                  className={`flex-none ${isVertical ? 'w-32 sm:w-36 md:w-40' : 'w-44 sm:w-52 md:w-56'} group cursor-pointer transition-all duration-500 ${
                     isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
                   }`}
                   style={{ 
@@ -233,12 +235,15 @@ export const VideoCarousel = ({
                   }}
                 >
                 <div className="p-1">
-                  <div className="relative aspect-video bg-card rounded-lg md:rounded-xl overflow-hidden border-2 border-cyan-400/50 transition-all duration-300 group-hover:border-cyan-400 group-hover:shadow-[0_0_30px_rgba(34,211,238,0.5)]" style={{ boxShadow: '0 0 20px rgba(34, 211, 238, 0.3)' }}>
+                  <div 
+                    className={`relative ${isVertical ? 'aspect-[9/16]' : 'aspect-video'} bg-card rounded-lg md:rounded-xl overflow-hidden border-2 border-cyan-400/50 transition-all duration-300 group-hover:border-cyan-400 group-hover:shadow-[0_0_30px_rgba(34,211,238,0.5)]`} 
+                    style={{ boxShadow: '0 0 20px rgba(34, 211, 238, 0.3)' }}
+                  >
                     {/* Thumbnail */}
                     <ResponsiveImage
                       src={video.thumbnail}
                       alt={video.title}
-                      sizes="(max-width: 640px) 176px, (max-width: 768px) 208px, 224px"
+                      sizes={isVertical ? "(max-width: 640px) 128px, (max-width: 768px) 144px, 160px" : "(max-width: 640px) 176px, (max-width: 768px) 208px, 224px"}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                     

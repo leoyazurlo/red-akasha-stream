@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import logoAkasha from "@/assets/logo-akasha-cyan.png";
+import logoRedAkasha from "@/assets/logo-red-akasha-header.png";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -57,9 +58,11 @@ export const Header = () => {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 sm:space-x-3">
-            <span className="text-lg sm:text-xl md:text-2xl font-light tracking-wider bg-gradient-primary bg-clip-text text-transparent">
-              RED AKASHA
-            </span>
+            <img 
+              src={logoRedAkasha} 
+              alt="Red Akasha" 
+              className="h-8 sm:h-10 md:h-12 w-auto"
+            />
             <img 
               src={logoAkasha} 
               alt="Logo Akasha" 

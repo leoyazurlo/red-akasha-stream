@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { LogOut, User, Heart, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoAkasha from "@/assets/logo-akasha-cyan.png";
+import logoRedAkasha from "@/assets/logo-red-akasha-header.png";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -95,13 +96,18 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
             {/* Center: Logo clickable to home */}
             <Link to="/" className="absolute left-1/2 transform -translate-x-1/2 flex items-center space-x-2 sm:space-x-3 hover:opacity-80 transition-opacity">
               <img 
+                src={logoRedAkasha} 
+                alt="Red Akasha" 
+                className="h-6 sm:h-8 w-auto"
+              />
+              <img 
                 src={logoAkasha} 
                 alt="Logo Akasha" 
                 className="h-8 w-8 sm:h-10 sm:w-10"
                 style={{ filter: 'brightness(0) saturate(100%) invert(70%) sepia(100%) saturate(2500%) hue-rotate(160deg) brightness(120%) contrast(110%)' }}
               />
-              <span className="text-base sm:text-lg font-light tracking-wider text-foreground">
-                Red Akasha - <span className="text-cyan-400 drop-shadow-[0_0_8px_hsl(180,100%,50%)]">Administración</span>
+              <span className="text-cyan-400 drop-shadow-[0_0_8px_hsl(180,100%,50%)] text-sm sm:text-base font-light">
+                Administración
               </span>
             </Link>
 

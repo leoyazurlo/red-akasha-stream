@@ -1,4 +1,4 @@
- import { LayoutDashboard, FolderTree, Users, Flag, ShieldAlert, Award, Radio, Film, Headphones, Calendar, FileText, UserCheck, ScrollText, Share2, Settings, CreditCard, TrendingUp, Mail, Shield, Bot, Cog, Banknote, ChevronDown } from "lucide-react";
+ import { LayoutDashboard, FolderTree, Users, Flag, ShieldAlert, Award, Radio, Film, Headphones, Calendar, FileText, UserCheck, ScrollText, Share2, Settings, CreditCard, TrendingUp, Mail, Shield, Bot, Cog, Banknote, ChevronDown, BarChart3 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -20,6 +20,7 @@ import {
 
 const generalItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
+   { title: "Informes", url: "/admin/reports", icon: BarChart3 },
   { title: "Usuarios", url: "/admin/users", icon: Users },
   { title: "Administradores", url: "/admin/administrators", icon: Shield },
   { title: "Comunicación", url: "/admin/communications", icon: Mail },

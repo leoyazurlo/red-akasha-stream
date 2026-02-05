@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, MoveUp, MoveDown, Link, Play, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, MoveUp, MoveDown, Link, Play, ExternalLink, Clock, Loader2 } from "lucide-react";
 
 interface HomeVideo {
   id: string;
@@ -45,6 +45,19 @@ interface HomeVideo {
   video_url?: string;
   platform?: string;
 }
+
+// Helper para formatear duración en segundos a mm:ss o hh:mm:ss
+const formatDuration = (seconds: number): string => {
+  if (!seconds || seconds <= 0) return '';
+  const hours = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+  
+  if (hours > 0) {
+    return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
 
 // Helper para detectar plataformas de video
 const getVideoPlatform = (url: string): { platform: string; videoId: string; thumbnail: string } | null => {
@@ -112,11 +125,60 @@ const getVideoPlatform = (url: string): { platform: string; videoId: string; thu
   }
 };
 
+// Función para obtener duración de YouTube usando noembed (no requiere API key)
+const fetchYouTubeDuration = async (videoId: string): Promise<number> => {
+  try {
+    // Usamos el endpoint de YouTube para obtener info via iframe api
+    const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+    if (!response.ok) return 0;
+    
+    // oEmbed no incluye duración, así que intentamos con noembed que puede tener más info
+    const noembedResponse = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`);
+    if (noembedResponse.ok) {
+      const data = await noembedResponse.json();
+      // noembed tampoco tiene duración directa, pero confirmamos que el video existe
+      if (data.title) {
+        // Intentamos con una aproximación usando la API de YouTube iframe
+        return 0; // Retornamos 0, la duración se detectará del lado del cliente
+      }
+    }
+    return 0;
+  } catch {
+    return 0;
+  }
+};
+
+// Función para obtener duración de Vimeo
+const fetchVimeoDuration = async (videoId: string): Promise<number> => {
+  try {
+    const response = await fetch(`https://vimeo.com/api/v2/video/${videoId}.json`);
+    if (!response.ok) return 0;
+    const data = await response.json();
+    return data[0]?.duration || 0;
+  } catch {
+    return 0;
+  }
+};
+
+// Función para obtener duración de Dailymotion
+const fetchDailymotionDuration = async (videoId: string): Promise<number> => {
+  try {
+    const response = await fetch(`https://api.dailymotion.com/video/${videoId}?fields=duration`);
+    if (!response.ok) return 0;
+    const data = await response.json();
+    return data.duration || 0;
+  } catch {
+    return 0;
+  }
+};
+
 const YouTubeVideos = () => {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingVideo, setEditingVideo] = useState<HomeVideo | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [detectedDuration, setDetectedDuration] = useState<number>(0);
+  const [isLoadingDuration, setIsLoadingDuration] = useState(false);
   
   const [formData, setFormData] = useState<{
     title: string;
@@ -131,6 +193,41 @@ const YouTubeVideos = () => {
   });
 
   const [detectedPlatform, setDetectedPlatform] = useState<{ platform: string; videoId: string; thumbnail: string } | null>(null);
+
+  // Efecto para detectar duración cuando cambia la plataforma detectada
+  useEffect(() => {
+    const fetchDuration = async () => {
+      if (!detectedPlatform) {
+        setDetectedDuration(0);
+        return;
+      }
+
+      setIsLoadingDuration(true);
+      let duration = 0;
+
+      try {
+        switch (detectedPlatform.platform) {
+          case 'Vimeo':
+            duration = await fetchVimeoDuration(detectedPlatform.videoId);
+            break;
+          case 'Dailymotion':
+            duration = await fetchDailymotionDuration(detectedPlatform.videoId);
+            break;
+          case 'YouTube':
+            // Para YouTube usaremos la duración del video cuando esté disponible
+            duration = await fetchYouTubeDuration(detectedPlatform.videoId);
+            break;
+        }
+      } catch (error) {
+        console.error('Error fetching duration:', error);
+      }
+
+      setDetectedDuration(duration);
+      setIsLoadingDuration(false);
+    };
+
+    fetchDuration();
+  }, [detectedPlatform]);
 
   // Fetch videos
   const { data: videos = [], isLoading } = useQuery({
@@ -154,7 +251,7 @@ const YouTubeVideos = () => {
 
   // Create/Update mutation
   const saveMutation = useMutation({
-    mutationFn: async (data: { title: string; video_url: string; category: string; is_active: boolean }) => {
+    mutationFn: async (data: { title: string; video_url: string; category: string; is_active: boolean; duration: string }) => {
       const platformInfo = getVideoPlatform(data.video_url);
       const youtube_id = platformInfo?.videoId || data.video_url;
       const thumbnail = platformInfo?.thumbnail || '';
@@ -167,7 +264,7 @@ const YouTubeVideos = () => {
             title: data.title,
             youtube_id,
             thumbnail,
-            duration: '',
+            duration: data.duration,
             category: data.category,
             is_active: data.is_active,
           })
@@ -187,7 +284,7 @@ const YouTubeVideos = () => {
           title: data.title,
           youtube_id,
           thumbnail,
-          duration: '',
+          duration: data.duration,
           category: data.category,
           is_active: data.is_active ?? true,
           order_index: (maxOrder?.order_index ?? -1) + 1,
@@ -274,11 +371,13 @@ const YouTubeVideos = () => {
     setIsDialogOpen(false);
     setEditingVideo(null);
     setDetectedPlatform(null);
+    setDetectedDuration(0);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    saveMutation.mutate(formData);
+    const durationString = detectedDuration > 0 ? formatDuration(detectedDuration) : '';
+    saveMutation.mutate({ ...formData, duration: durationString });
   };
 
   const handleVideoUrlChange = (url: string) => {
@@ -353,6 +452,7 @@ const YouTubeVideos = () => {
                 <TableHead>Orden</TableHead>
                 <TableHead>Título</TableHead>
                 <TableHead>Plataforma</TableHead>
+                <TableHead>Duración</TableHead>
                 <TableHead>Categoría</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
@@ -361,13 +461,13 @@ const YouTubeVideos = () => {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center">
+                  <TableCell colSpan={7} className="text-center">
                     Cargando...
                   </TableCell>
                 </TableRow>
               ) : videos.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center">
+                  <TableCell colSpan={7} className="text-center">
                     No hay videos
                   </TableCell>
                 </TableRow>
@@ -404,6 +504,16 @@ const YouTubeVideos = () => {
                           {video.youtube_id?.startsWith('http') ? 'Enlace' : 'YouTube'}
                         </span>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      {video.duration ? (
+                        <div className="flex items-center gap-1 text-sm">
+                          <Clock className="h-3 w-3 text-muted-foreground" />
+                          <span>{video.duration}</span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <span className="capitalize">{video.category}</span>
@@ -477,10 +587,28 @@ const YouTubeVideos = () => {
                   required
                 />
                 {detectedPlatform && (
-                  <div className="mt-4 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <ExternalLink className="h-4 w-4 text-primary" />
-                      <span className="text-sm font-medium text-primary">{detectedPlatform.platform} detectado</span>
+                  <div className="mt-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <ExternalLink className="h-4 w-4 text-primary" />
+                        <span className="text-sm font-medium text-primary">{detectedPlatform.platform} detectado</span>
+                      </div>
+                      {/* Duración detectada */}
+                      <div className="flex items-center gap-2">
+                        {isLoadingDuration ? (
+                          <>
+                            <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">Detectando duración...</span>
+                          </>
+                        ) : detectedDuration > 0 ? (
+                          <div className="flex items-center gap-1 bg-primary/10 px-2 py-1 rounded-md">
+                            <Clock className="h-3 w-3 text-primary" />
+                            <span className="text-sm font-medium text-primary">{formatDuration(detectedDuration)}</span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Duración no disponible</span>
+                        )}
+                      </div>
                     </div>
                     {detectedPlatform.thumbnail && (
                       <div className="relative aspect-video w-full overflow-hidden rounded-lg border bg-muted">

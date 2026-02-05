@@ -1,4 +1,4 @@
- import { LayoutDashboard, FolderTree, Users, Flag, ShieldAlert, Award, Radio, Film, Headphones, Calendar, FileText, UserCheck, ScrollText, Share2, Settings, CreditCard, TrendingUp, Mail, Shield, Bot, Cog, Banknote } from "lucide-react";
+ import { LayoutDashboard, FolderTree, Users, Flag, ShieldAlert, Award, Radio, Film, Headphones, Calendar, FileText, UserCheck, ScrollText, Share2, Settings, CreditCard, TrendingUp, Mail, Shield, Bot, Cog, Banknote, ChevronDown } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -11,6 +11,12 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+ import {
+   Collapsible,
+   CollapsibleContent,
+   CollapsibleTrigger,
+ } from "@/components/ui/collapsible";
+ import { useState } from "react";
 
 const generalItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
@@ -24,10 +30,13 @@ const generalItems = [
   { title: "Configuración", url: "/admin/platform-settings", icon: Cog },
 ];
 
-const streamingItems = [
-  { title: "Pagos", url: "/admin/payments", icon: CreditCard },
+ const paymentItems = [
+   { title: "Configuración", url: "/admin/payments", icon: CreditCard },
    { title: "Payouts", url: "/admin/payouts", icon: Banknote },
-  { title: "Ventas", url: "/admin/sales", icon: TrendingUp },
+   { title: "Ventas", url: "/admin/sales", icon: TrendingUp },
+ ];
+ 
+const streamingItems = [
   { title: "Streams en Vivo", url: "/admin/streams", icon: Radio },
   { title: "Config. Streaming", url: "/admin/stream-config", icon: Settings },
   { title: "Videos (VOD)", url: "/admin/vod", icon: Film },
@@ -46,6 +55,10 @@ const forumItems = [
 
 export function AdminSidebar() {
   const { open } = useSidebar();
+   const location = useLocation();
+   const [paymentOpen, setPaymentOpen] = useState(
+     paymentItems.some(item => location.pathname === item.url)
+   );
 
   return (
     <Sidebar className={!open ? "w-14" : "w-60"} collapsible="icon">
@@ -77,6 +90,51 @@ export function AdminSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
+           <SidebarGroupLabel className="text-cyan-400/70 text-xs uppercase tracking-wider">Finanzas</SidebarGroupLabel>
+           <SidebarGroupContent>
+             <SidebarMenu>
+               <Collapsible open={paymentOpen} onOpenChange={setPaymentOpen}>
+                 <SidebarMenuItem>
+                   <CollapsibleTrigger asChild>
+                     <SidebarMenuButton className="w-full justify-between text-cyan-300/80 hover:text-cyan-300 hover:bg-cyan-500/10 hover:drop-shadow-[0_0_6px_hsl(180,100%,50%)] transition-all duration-200">
+                       <div className="flex items-center gap-2">
+                         <CreditCard className="h-4 w-4" />
+                         {open && <span>Pagos</span>}
+                       </div>
+                       {open && (
+                         <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${paymentOpen ? 'rotate-180' : ''}`} />
+                       )}
+                     </SidebarMenuButton>
+                   </CollapsibleTrigger>
+                   <CollapsibleContent>
+                     <SidebarMenu className="pl-4 mt-1">
+                       {paymentItems.map((item) => (
+                         <SidebarMenuItem key={item.title}>
+                           <SidebarMenuButton asChild>
+                             <NavLink
+                               to={item.url}
+                               end
+                               className={({ isActive }) =>
+                                 isActive
+                                   ? "bg-cyan-500/10 text-cyan-400 font-medium drop-shadow-[0_0_8px_hsl(180,100%,50%)]"
+                                   : "text-cyan-300/80 hover:text-cyan-300 hover:bg-cyan-500/10 hover:drop-shadow-[0_0_6px_hsl(180,100%,50%)] transition-all duration-200"
+                               }
+                             >
+                               <item.icon className="h-4 w-4" />
+                               {open && <span>{item.title}</span>}
+                             </NavLink>
+                           </SidebarMenuButton>
+                         </SidebarMenuItem>
+                       ))}
+                     </SidebarMenu>
+                   </CollapsibleContent>
+                 </SidebarMenuItem>
+               </Collapsible>
+             </SidebarMenu>
+           </SidebarGroupContent>
+         </SidebarGroup>
+ 
+         <SidebarGroup>
           <SidebarGroupLabel className="text-cyan-400/70 text-xs uppercase tracking-wider">Streaming</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>

@@ -25,7 +25,7 @@ interface AdminLayoutProps {
 export const AdminLayout = ({ children }: AdminLayoutProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, loading, isAdmin } = useAuth(true);
   const { t } = useTranslation();
 
   const navItems = [
@@ -42,6 +42,36 @@ export const AdminLayout = ({ children }: AdminLayoutProps) => {
     });
     navigate("/");
   };
+
+  if (loading) {
+    return <div className="min-h-screen bg-background" />;
+  }
+
+  // useAuth(true) will redirect to /auth when there's no session,
+  // but we still render a minimal shell while navigation happens.
+  if (!user) {
+    return <div className="min-h-screen bg-background" />;
+  }
+
+  // Hard gate: admin-only area.
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-16">
+          <div className="mx-auto max-w-xl rounded-xl border border-border bg-card p-6">
+            <h1 className="text-xl font-semibold text-foreground">Acceso restringido</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Tu cuenta no tiene permisos de administración.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              <Button onClick={() => navigate('/')}>Volver al inicio</Button>
+              <Button variant="outline" onClick={handleLogout}>Cerrar sesión</Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Vote, UserPlus, Palette, Share2, Facebook, Twitter, Linkedin, Mail, MessageCircle, Copy, Check, Youtube, Instagram, Music2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
@@ -9,14 +9,58 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import logoRedAkasha from "@/assets/logo-red-akasha-footer.png";
 import logoOpenSource from "@/assets/logo-open-source.png";
+
+interface SocialConfig {
+  social_youtube: string;
+  social_spotify: string;
+  social_instagram: string;
+  social_facebook: string;
+  social_tiktok: string;
+}
+
+const defaultSocial: SocialConfig = {
+  social_youtube: "https://youtube.com/@redakasha",
+  social_spotify: "https://open.spotify.com/user/redakasha",
+  social_instagram: "https://instagram.com/redakasha",
+  social_facebook: "https://facebook.com/redakasha",
+  social_tiktok: "https://tiktok.com/@redakasha",
+};
 
 export const Footer = () => {
   const { t } = useTranslation();
   const { elementRef, isVisible } = useScrollAnimation({ threshold: 0.1 });
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
+  const [socialLinks, setSocialLinks] = useState<SocialConfig>(defaultSocial);
+
+  useEffect(() => {
+    const loadSocialConfig = async () => {
+      try {
+        const { data } = await supabase
+          .from('platform_payment_settings')
+          .select('setting_value')
+          .eq('setting_key', 'platform_config')
+          .single();
+
+        if (data?.setting_value) {
+          const config = data.setting_value as Record<string, string>;
+          setSocialLinks({
+            social_youtube: config.social_youtube || defaultSocial.social_youtube,
+            social_spotify: config.social_spotify || defaultSocial.social_spotify,
+            social_instagram: config.social_instagram || defaultSocial.social_instagram,
+            social_facebook: config.social_facebook || defaultSocial.social_facebook,
+            social_tiktok: config.social_tiktok || defaultSocial.social_tiktok,
+          });
+        }
+      } catch (error) {
+        // Use defaults if config not found
+      }
+    };
+    loadSocialConfig();
+  }, []);
 
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
   const pageTitle = typeof document !== 'undefined' ? document.title : 'Red Akasha';
@@ -103,11 +147,55 @@ export const Footer = () => {
       href: "/proyecto",
     },
   ];
+
+  // Social media with brand colors
+  const socialMediaIcons = [
+    {
+      href: socialLinks.social_youtube,
+      icon: Youtube,
+      label: "YouTube",
+      bgColor: "bg-red-600",
+      hoverBg: "hover:bg-red-500",
+      iconColor: "text-white",
+    },
+    {
+      href: socialLinks.social_spotify,
+      icon: Music2,
+      label: "Spotify",
+      bgColor: "bg-[#1DB954]",
+      hoverBg: "hover:bg-[#1ed760]",
+      iconColor: "text-white",
+    },
+    {
+      href: socialLinks.social_instagram,
+      icon: Instagram,
+      label: "Instagram",
+      bgColor: "bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400",
+      hoverBg: "hover:opacity-90",
+      iconColor: "text-white",
+    },
+    {
+      href: socialLinks.social_facebook,
+      icon: Facebook,
+      label: "Facebook",
+      bgColor: "bg-[#1877F2]",
+      hoverBg: "hover:bg-[#166fe5]",
+      iconColor: "text-white",
+    },
+    {
+      href: socialLinks.social_tiktok,
+      customIcon: true,
+      label: "TikTok",
+      bgColor: "bg-black",
+      hoverBg: "hover:bg-zinc-800",
+      iconColor: "text-white",
+    },
+  ];
   
   return (
     <footer 
       ref={elementRef}
-      className={`border-t border-border bg-card mt-16 transition-all duration-700 ${
+      className={`border-t border-border bg-[#0a0a0a] mt-16 transition-all duration-700 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}
     >
@@ -128,7 +216,7 @@ export const Footer = () => {
                   transitionDelay: isVisible ? `${index * 100}ms` : '0ms'
                 }}
               >
-                <div className="flex flex-col items-center gap-1.5 md:gap-2 p-2 md:p-3 bg-secondary rounded-lg border border-cyan-400 shadow-[0_0_25px_hsl(180_100%_50%/0.4),0_0_50px_hsl(180_100%_50%/0.2)] hover:shadow-[0_0_35px_hsl(180_100%_50%/0.6),0_0_70px_hsl(180_100%_50%/0.3)] hover:scale-105 transition-all duration-300">
+                <div className="flex flex-col items-center gap-1.5 md:gap-2 p-2 md:p-3 bg-zinc-900/80 rounded-lg border border-cyan-400 shadow-[0_0_25px_hsl(180_100%_50%/0.4),0_0_50px_hsl(180_100%_50%/0.2)] hover:shadow-[0_0_35px_hsl(180_100%_50%/0.6),0_0_70px_hsl(180_100%_50%/0.3)] hover:scale-105 transition-all duration-300">
                   <div className="w-7 h-7 md:w-8 md:h-8 bg-primary/20 rounded-full flex items-center justify-center group-hover:bg-cyan-400/30 transition-all duration-300 group-hover:animate-float">
                     <Icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary group-hover:text-cyan-400 transition-colors" />
                   </div>
@@ -151,7 +239,7 @@ export const Footer = () => {
                   transitionDelay: isVisible ? `${3 * 100}ms` : '0ms'
                 }}
               >
-                <div className="flex flex-col items-center gap-1.5 md:gap-2 p-2 md:p-3 bg-secondary rounded-lg border border-cyan-400 shadow-[0_0_25px_hsl(180_100%_50%/0.4),0_0_50px_hsl(180_100%_50%/0.2)] hover:shadow-[0_0_35px_hsl(180_100%_50%/0.6),0_0_70px_hsl(180_100%_50%/0.3)] hover:scale-105 transition-all duration-300">
+                <div className="flex flex-col items-center gap-1.5 md:gap-2 p-2 md:p-3 bg-zinc-900/80 rounded-lg border border-cyan-400 shadow-[0_0_25px_hsl(180_100%_50%/0.4),0_0_50px_hsl(180_100%_50%/0.2)] hover:shadow-[0_0_35px_hsl(180_100%_50%/0.6),0_0_70px_hsl(180_100%_50%/0.3)] hover:scale-105 transition-all duration-300">
                   <div className="w-7 h-7 md:w-8 md:h-8 bg-primary/20 rounded-full flex items-center justify-center group-hover:bg-cyan-400/30 transition-all duration-300 group-hover:animate-float">
                     <Share2 className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary group-hover:text-cyan-400 transition-colors" />
                   </div>
@@ -184,7 +272,7 @@ export const Footer = () => {
         </div>
 
         {/* Footer Info with Logos and Social */}
-        <div className="border-t border-border pt-8">
+        <div className="border-t border-zinc-800 pt-8">
           <div className="flex flex-col gap-8">
             {/* Top row: Logos and Social */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
@@ -195,7 +283,7 @@ export const Footer = () => {
                   alt="Red Akasha" 
                   className="h-10 md:h-12 object-contain"
                 />
-                <div className="w-px h-8 bg-border" />
+                <div className="w-px h-8 bg-zinc-700" />
                 <img 
                   src={logoOpenSource} 
                   alt="Open Source" 
@@ -203,64 +291,37 @@ export const Footer = () => {
                 />
               </div>
 
-              {/* Social Media Icons */}
+              {/* Social Media Icons with Brand Colors */}
               <div className="flex items-center gap-3">
-                <a
-                  href="https://youtube.com/@redakasha"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group p-2.5 rounded-full bg-secondary/80 border border-border hover:border-red-500 hover:bg-red-500/10 transition-all duration-300"
-                  aria-label="YouTube"
-                >
-                  <Youtube className="w-5 h-5 text-muted-foreground group-hover:text-red-500 transition-colors" />
-                </a>
-                <a
-                  href="https://open.spotify.com/user/redakasha"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group p-2.5 rounded-full bg-secondary/80 border border-border hover:border-green-500 hover:bg-green-500/10 transition-all duration-300"
-                  aria-label="Spotify"
-                >
-                  <Music2 className="w-5 h-5 text-muted-foreground group-hover:text-green-500 transition-colors" />
-                </a>
-                <a
-                  href="https://instagram.com/redakasha"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group p-2.5 rounded-full bg-secondary/80 border border-border hover:border-pink-500 hover:bg-pink-500/10 transition-all duration-300"
-                  aria-label="Instagram"
-                >
-                  <Instagram className="w-5 h-5 text-muted-foreground group-hover:text-pink-500 transition-colors" />
-                </a>
-                <a
-                  href="https://facebook.com/redakasha"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group p-2.5 rounded-full bg-secondary/80 border border-border hover:border-blue-500 hover:bg-blue-500/10 transition-all duration-300"
-                  aria-label="Facebook"
-                >
-                  <Facebook className="w-5 h-5 text-muted-foreground group-hover:text-blue-500 transition-colors" />
-                </a>
-                <a
-                  href="https://tiktok.com/@redakasha"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group p-2.5 rounded-full bg-secondary/80 border border-border hover:border-foreground hover:bg-foreground/10 transition-all duration-300"
-                  aria-label="TikTok"
-                >
-                  <svg className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
-                  </svg>
-                </a>
+                {socialMediaIcons.map((social) => (
+                  social.href && (
+                    <a
+                      key={social.label}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`p-2.5 rounded-full ${social.bgColor} ${social.hoverBg} transition-all duration-300 hover:scale-110 shadow-lg`}
+                      aria-label={social.label}
+                    >
+                      {social.customIcon ? (
+                        <svg className={`w-5 h-5 ${social.iconColor}`} viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                        </svg>
+                      ) : (
+                        <social.icon className={`w-5 h-5 ${social.iconColor}`} />
+                      )}
+                    </a>
+                  )
+                ))}
               </div>
             </div>
 
             {/* Bottom row: Tagline and Rights */}
             <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
-              <p className="text-sm font-light text-muted-foreground">
+              <p className="text-sm font-light text-zinc-400">
                 {t('footer.tagline')}
               </p>
-              <p className="text-sm font-light text-muted-foreground">
+              <p className="text-sm font-light text-zinc-400">
                 {t('footer.rights')}
               </p>
             </div>

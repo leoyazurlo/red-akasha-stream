@@ -61,6 +61,7 @@ interface PlatformConfig {
   social_instagram: string;
   social_twitter: string;
   social_youtube: string;
+  social_spotify: string;
   social_tiktok: string;
   social_linkedin: string;
   
@@ -102,6 +103,7 @@ const defaultConfig: PlatformConfig = {
   social_instagram: '',
   social_twitter: '',
   social_youtube: '',
+  social_spotify: '',
   social_tiktok: '',
   social_linkedin: '',
   
@@ -662,6 +664,15 @@ export default function PlatformSettings() {
                       value={config.social_youtube}
                       onChange={(e) => updateConfig('social_youtube', e.target.value)}
                       placeholder="https://youtube.com/..."
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Spotify</Label>
+                    <Input
+                      value={config.social_spotify}
+                      onChange={(e) => updateConfig('social_spotify', e.target.value)}
+                      placeholder="https://open.spotify.com/..."
                     />
                   </div>
 

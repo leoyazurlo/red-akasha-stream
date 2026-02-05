@@ -157,7 +157,7 @@ const PaymentSettings = () => {
                    Compra Única de Contenido
                  </CardTitle>
                  <CardDescription>
-                   Precio por defecto y distribución para compras individuales (70% Creador / 30% Plataforma)
+                  Precio por defecto y distribución para compras individuales
                  </CardDescription>
                </CardHeader>
                <CardContent className="space-y-4">

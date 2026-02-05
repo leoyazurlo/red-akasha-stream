@@ -34,6 +34,7 @@ import AdminCommunications from "./pages/admin/Communications";
 import AdminAdministrators from "./pages/admin/Administrators";
 import AdminIAManagement from "./pages/admin/IAManagement";
 import AdminPlatformSettings from "./pages/admin/PlatformSettings";
+ import AdminUserPayouts from "./pages/admin/UserPayouts";
 import Asociate from "./pages/Asociate";
 import Circuito from "./pages/Circuito";
 import PublicProfile from "./pages/PublicProfile";
@@ -110,6 +111,7 @@ const App = () => (
                     <Route path="/admin/sales" element={<AdminSalesAnalytics />} />
                     <Route path="/admin/ia-management" element={<AdminIAManagement />} />
                     <Route path="/admin/platform-settings" element={<AdminPlatformSettings />} />
+                     <Route path="/admin/payouts" element={<AdminUserPayouts />} />
                     <Route path="/akasha-ia" element={<AkashaIA />} />
                     <Route path="/proyecto" element={<ProyectoRedAkasha />} />
                     <Route path="/contacto" element={<Contacto />} />

@@ -1,4 +1,4 @@
-import { LayoutDashboard, FolderTree, Users, Flag, ShieldAlert, Award, Radio, Film, Headphones, Calendar, FileText, UserCheck, ScrollText, Share2, Settings, CreditCard, TrendingUp, Mail, Shield, Bot, Cog } from "lucide-react";
+ import { LayoutDashboard, FolderTree, Users, Flag, ShieldAlert, Award, Radio, Film, Headphones, Calendar, FileText, UserCheck, ScrollText, Share2, Settings, CreditCard, TrendingUp, Mail, Shield, Bot, Cog, Banknote } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -26,6 +26,7 @@ const generalItems = [
 
 const streamingItems = [
   { title: "Pagos", url: "/admin/payments", icon: CreditCard },
+   { title: "Payouts", url: "/admin/payouts", icon: Banknote },
   { title: "Ventas", url: "/admin/sales", icon: TrendingUp },
   { title: "Streams en Vivo", url: "/admin/streams", icon: Radio },
   { title: "Config. Streaming", url: "/admin/stream-config", icon: Settings },

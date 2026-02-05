@@ -345,6 +345,9 @@ const Circuito = () => {
                   <CardTitle className="text-2xl">{t('circuit.joinRequired')}</CardTitle>
                 </CardHeader>
                 <CardContent>
+                  <p className="text-foreground leading-relaxed">
+                    Para ver y hacer uso de la base de datos de La Red Akasha debes asociarte gratis con un perfil de usuario consumidor o creador. <span className="font-semibold text-primary">¡Elige tu perfil!</span>
+                  </p>
                   <div className="mt-6 flex gap-4">
                     <Button onClick={() => navigate("/asociate")} className="flex-1">
                       {t('circuit.joinNow')}

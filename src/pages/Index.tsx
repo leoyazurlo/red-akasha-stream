@@ -137,6 +137,7 @@ const Index = () => {
         title={t('home.shorts')} 
         videos={shortVideos} 
         sectionId="short"
+        isVertical={true}
       />
           
           <VideoCarousel

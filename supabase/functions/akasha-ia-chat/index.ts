@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Version tracking for deployment verification
-const VERSION = "v1.0.1";
+const VERSION = "v1.1.0";
 const DEPLOYED_AT = new Date().toISOString();
 
 const corsHeaders = {
@@ -76,9 +76,11 @@ Red Akasha es una plataforma de streaming y comunidad para música electrónica 
 - Sistema de mensajería en tiempo real mejorado
 `;
 
-const SYSTEM_PROMPT = `Eres Akasha IA, el asistente inteligente de la plataforma Red Akasha - una comunidad dedicada a la música electrónica, artistas, productores, DJs y la escena underground.
+const getSystemPrompt = (platformStats: string) => `Eres Akasha IA, el asistente inteligente de la plataforma Red Akasha - una comunidad dedicada a la música electrónica, artistas, productores, DJs y la escena underground.
 
 ${PLATFORM_CONTEXT}
+
+${platformStats}
 
 ## Tu Rol:
 
@@ -88,17 +90,23 @@ ${PLATFORM_CONTEXT}
    - Sugiere el enfoque de implementación (frontend, backend, o ambos)
    - Estima complejidad (baja/media/alta)
 
-2. **Proponer Mejoras**: Basándote en tu conocimiento de la plataforma:
+2. **Analizar Datos**: Cuando el usuario pregunte sobre datos o movimientos:
+   - Interpreta las estadísticas de la plataforma proporcionadas
+   - Identifica tendencias y patrones
+   - Sugiere acciones basadas en los datos
+   - Responde con datos específicos cuando sea posible
+
+3. **Proponer Mejoras**: Basándote en tu conocimiento de la plataforma:
    - Sugiere optimizaciones de UX/UI
    - Identifica posibles bugs o inconsistencias
    - Propón nuevas funcionalidades alineadas con la visión de Red Akasha
 
-3. **Guiar Implementación**: Cuando sea apropiado:
+4. **Guiar Implementación**: Cuando sea apropiado:
    - Sugiere estructura de código (componentes, hooks, funciones)
    - Propón esquemas de base de datos
    - Indica políticas RLS necesarias
 
-4. **Analizar Tendencias**: Si te comparten información del foro:
+5. **Analizar Tendencias**: Basándote en los datos y el foro:
    - Identifica patrones en las solicitudes de los usuarios
    - Detecta necesidades recurrentes de la comunidad
    - Prioriza funcionalidades por impacto
@@ -129,6 +137,173 @@ Acción concreta para avanzar
 
 Responde siempre en español de forma clara y estructurada.`;
 
+// Función para obtener estadísticas de la plataforma
+async function getPlatformStats(supabase: any): Promise<string> {
+  try {
+    // Estadísticas de usuarios
+    const { count: totalUsers } = await supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true });
+
+    // Estadísticas de perfiles por tipo
+    const { data: profilesByType } = await supabase
+      .from("profile_details")
+      .select("profile_type");
+    
+    const profileTypeCounts: Record<string, number> = {};
+    profilesByType?.forEach((p: any) => {
+      profileTypeCounts[p.profile_type] = (profileTypeCounts[p.profile_type] || 0) + 1;
+    });
+
+    // Estadísticas de contenido
+    const { count: totalContent } = await supabase
+      .from("content_uploads")
+      .select("*", { count: "exact", head: true });
+
+    const { count: approvedContent } = await supabase
+      .from("content_uploads")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "approved");
+
+    const { count: pendingContent } = await supabase
+      .from("content_uploads")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "pending");
+
+    // Contenido por tipo
+    const { data: contentByType } = await supabase
+      .from("content_uploads")
+      .select("content_type");
+    
+    const contentTypeCounts: Record<string, number> = {};
+    contentByType?.forEach((c: any) => {
+      contentTypeCounts[c.content_type] = (contentTypeCounts[c.content_type] || 0) + 1;
+    });
+
+    // Interacciones
+    const { count: totalLikes } = await supabase
+      .from("content_likes")
+      .select("*", { count: "exact", head: true });
+
+    const { count: totalComments } = await supabase
+      .from("content_comments")
+      .select("*", { count: "exact", head: true });
+
+    const { count: totalShares } = await supabase
+      .from("content_shares")
+      .select("*", { count: "exact", head: true });
+
+    // Foro
+    const { count: totalThreads } = await supabase
+      .from("forum_threads")
+      .select("*", { count: "exact", head: true });
+
+    const { count: totalPosts } = await supabase
+      .from("forum_posts")
+      .select("*", { count: "exact", head: true });
+
+    // Playlists
+    const { count: totalPlaylists } = await supabase
+      .from("playlists")
+      .select("*", { count: "exact", head: true });
+
+    // Ventas/Compras
+    const { data: purchases } = await supabase
+      .from("content_purchases")
+      .select("amount, status, created_at")
+      .eq("status", "completed");
+
+    const totalRevenue = purchases?.reduce((sum: number, p: any) => sum + (p.amount || 0), 0) || 0;
+    const totalPurchases = purchases?.length || 0;
+
+    // Contenido más popular (top 5)
+    const { data: topContent } = await supabase
+      .from("content_uploads")
+      .select("title, views_count, likes_count, content_type")
+      .order("views_count", { ascending: false })
+      .limit(5);
+
+    // Hilos recientes del foro (últimos 10)
+    const { data: recentThreads } = await supabase
+      .from("forum_threads")
+      .select("title, views_count, created_at")
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    // Usuarios más activos (con más contenido)
+    const { data: activeUploaders } = await supabase
+      .from("content_uploads")
+      .select("uploader_id")
+      .eq("status", "approved");
+
+    const uploaderCounts: Record<string, number> = {};
+    activeUploaders?.forEach((u: any) => {
+      uploaderCounts[u.uploader_id] = (uploaderCounts[u.uploader_id] || 0) + 1;
+    });
+
+    // Formatear estadísticas
+    const profileTypeList = Object.entries(profileTypeCounts)
+      .map(([type, count]) => `  - ${type}: ${count}`)
+      .join("\n");
+
+    const contentTypeList = Object.entries(contentTypeCounts)
+      .map(([type, count]) => `  - ${type}: ${count}`)
+      .join("\n");
+
+    const topContentList = topContent?.map((c: any) => 
+      `  - "${c.title}" (${c.content_type}): ${c.views_count || 0} vistas, ${c.likes_count || 0} likes`
+    ).join("\n") || "  Sin datos";
+
+    const recentThreadsList = recentThreads?.map((t: any) => 
+      `  - "${t.title}": ${t.views_count || 0} vistas`
+    ).join("\n") || "  Sin datos";
+
+    return `
+## 📊 ESTADÍSTICAS EN TIEMPO REAL DE LA PLATAFORMA
+
+### Usuarios y Perfiles
+- **Total de usuarios registrados**: ${totalUsers || 0}
+- **Perfiles por tipo**:
+${profileTypeList || "  Sin datos"}
+
+### Contenido
+- **Total de contenido subido**: ${totalContent || 0}
+- **Contenido aprobado**: ${approvedContent || 0}
+- **Contenido pendiente de revisión**: ${pendingContent || 0}
+- **Por tipo de contenido**:
+${contentTypeList || "  Sin datos"}
+
+### Interacciones
+- **Total de likes**: ${totalLikes || 0}
+- **Total de comentarios**: ${totalComments || 0}
+- **Total de shares**: ${totalShares || 0}
+
+### Foro
+- **Total de hilos**: ${totalThreads || 0}
+- **Total de posts/respuestas**: ${totalPosts || 0}
+
+### Playlists
+- **Total de playlists creadas**: ${totalPlaylists || 0}
+
+### Monetización
+- **Total de compras completadas**: ${totalPurchases}
+- **Ingresos totales**: $${totalRevenue.toFixed(2)} USD
+
+### Top 5 Contenido Más Visto
+${topContentList}
+
+### Últimos 10 Hilos del Foro
+${recentThreadsList}
+
+---
+Usa estos datos para responder preguntas sobre el estado de la plataforma, tendencias y movimientos.
+`;
+  } catch (error) {
+    console.error("Error fetching platform stats:", error);
+    return "\n## Estadísticas no disponibles en este momento.\n";
+  }
+}
+
 serve(async (req) => {
   console.log(`[${VERSION}] Request received at ${new Date().toISOString()}, deployed: ${DEPLOYED_AT}`);
   
@@ -137,7 +312,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, includeForumContext, generateImplementation } = await req.json();
+    const { messages, includeForumContext, generateImplementation, includePlatformStats = true } = await req.json();
     console.log(`[${VERSION}] Processing request - generateImplementation: ${generateImplementation}`);
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
@@ -145,29 +320,36 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    let contextMessages = [{ role: "system", content: SYSTEM_PROMPT }];
+    // Crear cliente Supabase
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Obtener estadísticas de la plataforma
+    let platformStats = "";
+    if (includePlatformStats) {
+      platformStats = await getPlatformStats(supabase);
+    }
+
+    let contextMessages = [{ role: "system", content: getSystemPrompt(platformStats) }];
 
     // Si se solicita, agregar contexto del foro
     if (includeForumContext) {
-      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-      const supabase = createClient(supabaseUrl, supabaseKey);
-
       // Obtener hilos recientes del foro
       const { data: recentThreads } = await supabase
         .from("forum_threads")
-        .select("title, content, created_at")
+        .select("title, content, created_at, views_count")
         .order("created_at", { ascending: false })
-        .limit(20);
+        .limit(30);
 
       if (recentThreads && recentThreads.length > 0) {
         const forumSummary = recentThreads
-          .map(t => `- "${t.title}": ${t.content?.slice(0, 100)}...`)
+          .map(t => `- "${t.title}" (${t.views_count || 0} vistas): ${t.content?.slice(0, 150)}...`)
           .join("\n");
 
         contextMessages.push({
           role: "system",
-          content: `## Contexto del Foro (últimos 20 hilos):\n${forumSummary}\n\nAnaliza estos temas para identificar necesidades de la comunidad.`
+          content: `## Contexto Detallado del Foro (últimos 30 hilos):\n${forumSummary}\n\nAnaliza estos temas para identificar necesidades, quejas, sugerencias y patrones de la comunidad.`
         });
       }
     }

@@ -5,6 +5,7 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Select,
   SelectContent,
@@ -30,9 +31,9 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, MoveUp, MoveDown } from "lucide-react";
+import { Plus, Pencil, Trash2, MoveUp, MoveDown, Link, Play, ExternalLink } from "lucide-react";
 
-interface YouTubeVideo {
+interface HomeVideo {
   id: string;
   title: string;
   youtube_id: string;
@@ -41,31 +42,101 @@ interface YouTubeVideo {
   category: "programas" | "shorts" | "destacados";
   order_index: number;
   is_active: boolean;
+  video_url?: string;
+  platform?: string;
 }
+
+// Helper para detectar plataformas de video
+const getVideoPlatform = (url: string): { platform: string; videoId: string; thumbnail: string } | null => {
+  try {
+    const urlObj = new URL(url);
+    
+    // YouTube
+    if (urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be')) {
+      let videoId = '';
+      if (urlObj.hostname.includes('youtu.be')) {
+        videoId = urlObj.pathname.slice(1);
+      } else {
+        videoId = urlObj.searchParams.get('v') || '';
+      }
+      if (videoId) {
+        return {
+          platform: 'YouTube',
+          videoId,
+          thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+        };
+      }
+    }
+    
+    // Vimeo
+    if (urlObj.hostname.includes('vimeo.com')) {
+      const videoId = urlObj.pathname.split('/').pop() || '';
+      if (videoId) {
+        return {
+          platform: 'Vimeo',
+          videoId,
+          thumbnail: ''
+        };
+      }
+    }
+    
+    // Dailymotion
+    if (urlObj.hostname.includes('dailymotion.com') || urlObj.hostname.includes('dai.ly')) {
+      let videoId = '';
+      if (urlObj.hostname.includes('dai.ly')) {
+        videoId = urlObj.pathname.slice(1);
+      } else {
+        videoId = urlObj.pathname.split('/video/')[1]?.split('_')[0] || '';
+      }
+      if (videoId) {
+        return {
+          platform: 'Dailymotion',
+          videoId,
+          thumbnail: `https://www.dailymotion.com/thumbnail/video/${videoId}`
+        };
+      }
+    }
+    
+    // URL directa de video
+    if (url.match(/\.(mp4|webm|ogg|mov)(\?.*)?$/i)) {
+      return {
+        platform: 'Direct',
+        videoId: url,
+        thumbnail: ''
+      };
+    }
+    
+    return null;
+  } catch {
+    return null;
+  }
+};
 
 const YouTubeVideos = () => {
   const queryClient = useQueryClient();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingVideo, setEditingVideo] = useState<YouTubeVideo | null>(null);
+  const [editingVideo, setEditingVideo] = useState<HomeVideo | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>("all");
   
   const [formData, setFormData] = useState<{
     title: string;
-    youtube_id: string;
+    video_url: string;
     duration: string;
     category: "programas" | "shorts" | "destacados";
     is_active: boolean;
   }>({
     title: "",
-    youtube_id: "",
+    video_url: "",
     duration: "",
     category: "programas",
     is_active: true,
   });
 
+  const [detectedPlatform, setDetectedPlatform] = useState<{ platform: string; videoId: string; thumbnail: string } | null>(null);
+
   // Fetch videos
   const { data: videos = [], isLoading } = useQuery({
-    queryKey: ["youtube-videos", filterCategory],
+    queryKey: ["home-videos", filterCategory],
     queryFn: async () => {
       let query = supabase
         .from("youtube_videos")
@@ -79,17 +150,29 @@ const YouTubeVideos = () => {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as YouTubeVideo[];
+      return data as HomeVideo[];
     },
   });
 
   // Create/Update mutation
   const saveMutation = useMutation({
-    mutationFn: async (data: Partial<YouTubeVideo>) => {
+    mutationFn: async (data: { title: string; video_url: string; duration: string; category: string; is_active: boolean }) => {
+      const platformInfo = getVideoPlatform(data.video_url);
+      const youtube_id = platformInfo?.videoId || data.video_url;
+      const thumbnail = platformInfo?.thumbnail || '';
+      const platform = platformInfo?.platform || 'Unknown';
+      
       if (editingVideo) {
-        const { error } = await supabase
+        const { error } = await supabase 
           .from("youtube_videos")
-          .update(data)
+          .update({
+            title: data.title,
+            youtube_id,
+            thumbnail,
+            duration: data.duration,
+            category: data.category,
+            is_active: data.is_active,
+          })
           .eq("id", editingVideo.id);
         if (error) throw error;
       } else {
@@ -102,14 +185,12 @@ const YouTubeVideos = () => {
           .limit(1)
           .single();
         
-        const thumbnail = `https://img.youtube.com/vi/${data.youtube_id}/maxresdefault.jpg`;
-        
         const { error } = await supabase.from("youtube_videos").insert([{
-          title: data.title!,
-          youtube_id: data.youtube_id!,
+          title: data.title,
+          youtube_id,
           thumbnail,
-          duration: data.duration!,
-          category: data.category!,
+          duration: data.duration,
+          category: data.category,
           is_active: data.is_active ?? true,
           order_index: (maxOrder?.order_index ?? -1) + 1,
         }]);
@@ -117,7 +198,7 @@ const YouTubeVideos = () => {
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["youtube-videos"] });
+      queryClient.invalidateQueries({ queryKey: ["home-videos"] });
       toast.success(editingVideo ? "Video actualizado" : "Video agregado");
       handleCloseDialog();
     },
@@ -136,7 +217,7 @@ const YouTubeVideos = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["youtube-videos"] });
+      queryClient.invalidateQueries({ queryKey: ["home-videos"] });
       toast.success("Video eliminado");
     },
     onError: (error) => {
@@ -160,29 +241,35 @@ const YouTubeVideos = () => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["youtube-videos"] });
+      queryClient.invalidateQueries({ queryKey: ["home-videos"] });
     },
   });
 
-  const handleOpenDialog = (video?: YouTubeVideo) => {
+  const handleOpenDialog = (video?: HomeVideo) => {
     if (video) {
       setEditingVideo(video);
+      // Reconstruir la URL si es YouTube
+      const videoUrl = video.youtube_id.startsWith('http') 
+        ? video.youtube_id 
+        : `https://www.youtube.com/watch?v=${video.youtube_id}`;
       setFormData({
         title: video.title,
-        youtube_id: video.youtube_id,
+        video_url: videoUrl,
         duration: video.duration,
         category: video.category,
         is_active: video.is_active,
       });
+      setDetectedPlatform(getVideoPlatform(videoUrl));
     } else {
       setEditingVideo(null);
       setFormData({
         title: "",
-        youtube_id: "",
+        video_url: "",
         duration: "",
         category: "programas",
         is_active: true,
       });
+      setDetectedPlatform(null);
     }
     setIsDialogOpen(true);
   };
@@ -190,6 +277,7 @@ const YouTubeVideos = () => {
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setEditingVideo(null);
+    setDetectedPlatform(null);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -197,7 +285,13 @@ const YouTubeVideos = () => {
     saveMutation.mutate(formData);
   };
 
-  const handleReorder = (video: YouTubeVideo, direction: "up" | "down") => {
+  const handleVideoUrlChange = (url: string) => {
+    setFormData({ ...formData, video_url: url });
+    const platform = getVideoPlatform(url);
+    setDetectedPlatform(platform);
+  };
+
+  const handleReorder = (video: HomeVideo, direction: "up" | "down") => {
     const sameCategory = videos.filter((v) => v.category === video.category);
     const currentIndex = sameCategory.findIndex((v) => v.id === video.id);
     
@@ -223,9 +317,9 @@ const YouTubeVideos = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Videos de YouTube</h1>
+            <h1 className="text-3xl font-bold">Videos Home</h1>
             <p className="text-muted-foreground">
-              Gestiona los videos que se muestran en el Home
+              Gestiona los videos de cualquier plataforma para el Home
             </p>
           </div>
           <Button onClick={() => handleOpenDialog()}>
@@ -233,6 +327,14 @@ const YouTubeVideos = () => {
             Agregar Video
           </Button>
         </div>
+
+        <Alert className="border-primary/20 bg-primary/5">
+          <Link className="h-4 w-4 text-primary" />
+          <AlertDescription className="text-sm">
+            <strong>Plataformas soportadas:</strong> YouTube, Vimeo, Dailymotion o enlace directo (mp4, webm).
+            Los <strong>Shorts</strong> deben ser videos verticales.
+          </AlertDescription>
+        </Alert>
 
         <div className="flex gap-2">
           <Select value={filterCategory} onValueChange={setFilterCategory}>
@@ -254,7 +356,7 @@ const YouTubeVideos = () => {
               <TableRow>
                 <TableHead>Orden</TableHead>
                 <TableHead>Título</TableHead>
-                <TableHead>ID YouTube</TableHead>
+                <TableHead>Plataforma</TableHead>
                 <TableHead>Duración</TableHead>
                 <TableHead>Categoría</TableHead>
                 <TableHead>Estado</TableHead>
@@ -298,7 +400,16 @@ const YouTubeVideos = () => {
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">{video.title}</TableCell>
-                    <TableCell>{video.youtube_id}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {video.thumbnail && (
+                          <img src={video.thumbnail} alt="" className="w-12 h-8 object-cover rounded" />
+                        )}
+                        <span className="text-xs text-muted-foreground">
+                          {video.youtube_id?.startsWith('http') ? 'Enlace' : 'YouTube'}
+                        </span>
+                      </div>
+                    </TableCell>
                     <TableCell>{video.duration}</TableCell>
                     <TableCell>
                       <span className="capitalize">{video.category}</span>
@@ -345,7 +456,7 @@ const YouTubeVideos = () => {
               {editingVideo ? "Editar Video" : "Agregar Video"}
             </DialogTitle>
             <DialogDescription>
-              Configura los detalles del video de YouTube
+              Agrega un video de YouTube, Vimeo, Dailymotion u otra plataforma
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
@@ -362,30 +473,38 @@ const YouTubeVideos = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="youtube_id">ID de YouTube</Label>
+                <Label htmlFor="video_url">URL del Video</Label>
                 <Input
-                  id="youtube_id"
-                  value={formData.youtube_id}
-                  onChange={(e) =>
-                    setFormData({ ...formData, youtube_id: e.target.value })
-                  }
-                  placeholder="dQw4w9WgXcQ"
+                  id="video_url"
+                  type="url"
+                  value={formData.video_url}
+                  onChange={(e) => handleVideoUrlChange(e.target.value)}
+                  placeholder="https://youtube.com/watch?v=... o https://vimeo.com/..."
                   required
                 />
-                {formData.youtube_id && (
+                {detectedPlatform && (
                   <div className="mt-4 space-y-2">
-                    <Label>Vista previa del thumbnail</Label>
-                    <div className="relative aspect-video w-full overflow-hidden rounded-lg border bg-muted">
-                      <img
-                        src={`https://img.youtube.com/vi/${formData.youtube_id}/maxresdefault.jpg`}
-                        alt="Thumbnail preview"
-                        className="h-full w-full object-cover"
-                        onError={(e) => {
-                          // Fallback to medium quality if maxres doesn't exist
-                          e.currentTarget.src = `https://img.youtube.com/vi/${formData.youtube_id}/hqdefault.jpg`;
-                        }}
-                      />
+                    <div className="flex items-center gap-2">
+                      <ExternalLink className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-medium text-primary">{detectedPlatform.platform} detectado</span>
                     </div>
+                    {detectedPlatform.thumbnail && (
+                      <div className="relative aspect-video w-full overflow-hidden rounded-lg border bg-muted">
+                        <img
+                          src={detectedPlatform.thumbnail}
+                          alt="Thumbnail preview"
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            if (detectedPlatform.platform === 'YouTube') {
+                              e.currentTarget.src = `https://img.youtube.com/vi/${detectedPlatform.videoId}/hqdefault.jpg`;
+                            }
+                          }}
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                          <Play className="w-12 h-12 text-white opacity-80" />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -402,7 +521,7 @@ const YouTubeVideos = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="category">Categoría</Label>
+                <Label htmlFor="category">Categoría (Short = videos verticales)</Label>
                 <Select
                   value={formData.category}
                   onValueChange={(value: any) =>
@@ -414,7 +533,7 @@ const YouTubeVideos = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="programas">Programas</SelectItem>
-                    <SelectItem value="shorts">Shorts</SelectItem>
+                    <SelectItem value="shorts">Short (Vertical)</SelectItem>
                     <SelectItem value="destacados">Destacados</SelectItem>
                   </SelectContent>
                 </Select>

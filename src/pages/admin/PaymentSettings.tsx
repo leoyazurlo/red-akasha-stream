@@ -709,6 +709,36 @@ const PaymentSettings = () => {
                </CardContent>
              </Card>
            </TabsContent>
+
+           {/* Fixed Save Button at bottom */}
+           <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t border-cyan-500/20 p-4 -mx-6 mt-6">
+             <div className="flex justify-end gap-3">
+               <Button 
+                 variant="outline" 
+                 onClick={() => window.location.reload()}
+                 className="border-muted-foreground/30"
+               >
+                 Cancelar
+               </Button>
+               <Button 
+                 onClick={handleSaveAll} 
+                 disabled={updateMutation.isPending}
+                 className="bg-cyan-500 hover:bg-cyan-600 text-black min-w-[150px]"
+               >
+                 {updateMutation.isPending ? (
+                   <>
+                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                     Guardando...
+                   </>
+                 ) : (
+                   <>
+                     <Save className="h-4 w-4 mr-2" />
+                     Guardar Cambios
+                   </>
+                 )}
+               </Button>
+             </div>
+           </div>
          </Tabs>
       </div>
     </AdminLayout>

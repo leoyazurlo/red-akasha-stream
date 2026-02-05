@@ -121,13 +121,11 @@ const YouTubeVideos = () => {
   const [formData, setFormData] = useState<{
     title: string;
     video_url: string;
-    duration: string;
     category: "programas" | "shorts" | "destacados";
     is_active: boolean;
   }>({
     title: "",
     video_url: "",
-    duration: "",
     category: "programas",
     is_active: true,
   });
@@ -156,7 +154,7 @@ const YouTubeVideos = () => {
 
   // Create/Update mutation
   const saveMutation = useMutation({
-    mutationFn: async (data: { title: string; video_url: string; duration: string; category: string; is_active: boolean }) => {
+    mutationFn: async (data: { title: string; video_url: string; category: string; is_active: boolean }) => {
       const platformInfo = getVideoPlatform(data.video_url);
       const youtube_id = platformInfo?.videoId || data.video_url;
       const thumbnail = platformInfo?.thumbnail || '';
@@ -169,7 +167,7 @@ const YouTubeVideos = () => {
             title: data.title,
             youtube_id,
             thumbnail,
-            duration: data.duration,
+            duration: '',
             category: data.category,
             is_active: data.is_active,
           })
@@ -189,7 +187,7 @@ const YouTubeVideos = () => {
           title: data.title,
           youtube_id,
           thumbnail,
-          duration: data.duration,
+          duration: '',
           category: data.category,
           is_active: data.is_active ?? true,
           order_index: (maxOrder?.order_index ?? -1) + 1,
@@ -255,7 +253,6 @@ const YouTubeVideos = () => {
       setFormData({
         title: video.title,
         video_url: videoUrl,
-        duration: video.duration,
         category: video.category,
         is_active: video.is_active,
       });
@@ -265,7 +262,6 @@ const YouTubeVideos = () => {
       setFormData({
         title: "",
         video_url: "",
-        duration: "",
         category: "programas",
         is_active: true,
       });
@@ -357,7 +353,6 @@ const YouTubeVideos = () => {
                 <TableHead>Orden</TableHead>
                 <TableHead>Título</TableHead>
                 <TableHead>Plataforma</TableHead>
-                <TableHead>Duración</TableHead>
                 <TableHead>Categoría</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
@@ -366,13 +361,13 @@ const YouTubeVideos = () => {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center">
+                  <TableCell colSpan={6} className="text-center">
                     Cargando...
                   </TableCell>
                 </TableRow>
               ) : videos.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center">
+                  <TableCell colSpan={6} className="text-center">
                     No hay videos
                   </TableCell>
                 </TableRow>
@@ -410,7 +405,6 @@ const YouTubeVideos = () => {
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell>{video.duration}</TableCell>
                     <TableCell>
                       <span className="capitalize">{video.category}</span>
                     </TableCell>
@@ -507,18 +501,6 @@ const YouTubeVideos = () => {
                     )}
                   </div>
                 )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="duration">Duración</Label>
-                <Input
-                  id="duration"
-                  value={formData.duration}
-                  onChange={(e) =>
-                    setFormData({ ...formData, duration: e.target.value })
-                  }
-                  placeholder="10:30"
-                  required
-                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="category">Categoría (Short = videos verticales)</Label>

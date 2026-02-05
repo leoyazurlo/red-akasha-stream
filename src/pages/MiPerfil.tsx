@@ -32,6 +32,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MessagesTab } from "@/components/profile/MessagesTab";
  import { UserBankingForm } from "@/components/profile/UserBankingForm";
  import { UserEarningsDashboard } from "@/components/profile/UserEarningsDashboard";
+ import { ForumActivitySection } from "@/components/profile/ForumActivitySection";
 import { validateFile, formatFileSize, FILE_COUNT_LIMITS } from "@/lib/storage-validation";
 import { buildProfileObjectPath, uploadWithRetry } from "@/lib/storage-keys";
 
@@ -798,6 +799,9 @@ const MiPerfil = () => {
               <MessagesTab />
             </TabsContent>
           </Tabs>
+
+         {/* Forum Activity Section - Datos de Movimientos */}
+         {user?.id && <ForumActivitySection userId={user.id} />}
 
           {/* Save Button */}
           {(newVideoLinks.length > 0 || newImages.length > 0 || newAudios.length > 0) && (

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Vote, UserPlus, Palette, Share2, Facebook, Twitter, Linkedin, Mail, MessageCircle, Copy, Check } from "lucide-react";
+import { Vote, UserPlus, Palette, Share2, Facebook, Twitter, Linkedin, Mail, MessageCircle, Copy, Check, Youtube, Instagram, Music2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import {
@@ -9,6 +9,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import logoRedAkasha from "@/assets/logo-red-akasha-footer.png";
+import logoOpenSource from "@/assets/logo-open-source.png";
 
 export const Footer = () => {
   const { t } = useTranslation();
@@ -181,19 +183,83 @@ export const Footer = () => {
           </DropdownMenu>
         </div>
 
-        {/* Footer Info */}
+        {/* Footer Info with Logos and Social */}
         <div className="border-t border-border pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="text-center md:text-left">
-              <h3 className="text-xl font-light tracking-wider bg-gradient-primary bg-clip-text text-transparent mb-2">
-                RED AKASHA
-              </h3>
+          <div className="flex flex-col gap-8">
+            {/* Top row: Logos and Social */}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              {/* Logos */}
+              <div className="flex items-center gap-6">
+                <img 
+                  src={logoRedAkasha} 
+                  alt="Red Akasha" 
+                  className="h-10 md:h-12 object-contain"
+                />
+                <div className="w-px h-8 bg-border" />
+                <img 
+                  src={logoOpenSource} 
+                  alt="Open Source" 
+                  className="h-8 md:h-10 object-contain"
+                />
+              </div>
+
+              {/* Social Media Icons */}
+              <div className="flex items-center gap-3">
+                <a
+                  href="https://youtube.com/@redakasha"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group p-2.5 rounded-full bg-secondary/80 border border-border hover:border-red-500 hover:bg-red-500/10 transition-all duration-300"
+                  aria-label="YouTube"
+                >
+                  <Youtube className="w-5 h-5 text-muted-foreground group-hover:text-red-500 transition-colors" />
+                </a>
+                <a
+                  href="https://open.spotify.com/user/redakasha"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group p-2.5 rounded-full bg-secondary/80 border border-border hover:border-green-500 hover:bg-green-500/10 transition-all duration-300"
+                  aria-label="Spotify"
+                >
+                  <Music2 className="w-5 h-5 text-muted-foreground group-hover:text-green-500 transition-colors" />
+                </a>
+                <a
+                  href="https://instagram.com/redakasha"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group p-2.5 rounded-full bg-secondary/80 border border-border hover:border-pink-500 hover:bg-pink-500/10 transition-all duration-300"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="w-5 h-5 text-muted-foreground group-hover:text-pink-500 transition-colors" />
+                </a>
+                <a
+                  href="https://facebook.com/redakasha"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group p-2.5 rounded-full bg-secondary/80 border border-border hover:border-blue-500 hover:bg-blue-500/10 transition-all duration-300"
+                  aria-label="Facebook"
+                >
+                  <Facebook className="w-5 h-5 text-muted-foreground group-hover:text-blue-500 transition-colors" />
+                </a>
+                <a
+                  href="https://tiktok.com/@redakasha"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group p-2.5 rounded-full bg-secondary/80 border border-border hover:border-foreground hover:bg-foreground/10 transition-all duration-300"
+                  aria-label="TikTok"
+                >
+                  <svg className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            {/* Bottom row: Tagline and Rights */}
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
               <p className="text-sm font-light text-muted-foreground">
                 {t('footer.tagline')}
               </p>
-            </div>
-
-            <div className="text-center md:text-right">
               <p className="text-sm font-light text-muted-foreground">
                 {t('footer.rights')}
               </p>

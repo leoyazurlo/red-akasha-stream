@@ -112,12 +112,12 @@ const UploadContent = () => {
    
 
   const contentTypes = useMemo(() => [
-    { value: "video_musical_vivo", label: t('upload.contentTypes.video_musical_vivo') },
-    { value: "video_clip", label: t('upload.contentTypes.video_clip') },
-    { value: "podcast", label: t('upload.contentTypes.podcast') },
-    { value: "documental", label: t('upload.contentTypes.documental') },
-    { value: "corto", label: t('upload.contentTypes.corto') },
-    { value: "pelicula", label: t('upload.contentTypes.pelicula') }
+    { value: "video_musical_vivo", label: t('upload.contentTypes.video_musical_vivo'), defaultPrice: "9.99" },
+    { value: "video_clip", label: t('upload.contentTypes.video_clip'), defaultPrice: "4.99" },
+    { value: "podcast", label: t('upload.contentTypes.podcast'), defaultPrice: "2.99" },
+    { value: "documental", label: t('upload.contentTypes.documental'), defaultPrice: "7.99" },
+    { value: "corto", label: t('upload.contentTypes.corto'), defaultPrice: "3.99" },
+    { value: "pelicula", label: t('upload.contentTypes.pelicula'), defaultPrice: "12.99" }
   ], [t]);
 
   const podcastCategories = useMemo(() => [
@@ -130,6 +130,17 @@ const UploadContent = () => {
 
   const isVideoMusicalVivo = formData.content_type === 'video_musical_vivo';
   const isPodcast = formData.content_type === 'podcast';
+
+   // Handle content type change - set default price based on type
+   const handleContentTypeChange = (value: string) => {
+     const contentType = contentTypes.find(ct => ct.value === value);
+     setFormData(prev => ({
+       ...prev,
+       content_type: value,
+       price: contentType?.defaultPrice || "0",
+       is_free: false // Default to paid when selecting content type
+     }));
+   };
 
   useEffect(() => {
     checkUserProfile();
@@ -345,6 +356,11 @@ const UploadContent = () => {
       });
 
       setFormData(initialFormData);
+       
+       // Redirect to on-demand page after successful upload
+       setTimeout(() => {
+         navigate('/on-demand');
+       }, 1500);
     } catch (error: unknown) {
       console.error('Error al subir contenido:', error);
       toast({
@@ -454,7 +470,7 @@ const UploadContent = () => {
                     <Label htmlFor="content_type">{t('upload.contentType')} *</Label>
                     <Select
                       value={formData.content_type}
-                      onValueChange={(value) => updateFormData('content_type', value)}
+                      onValueChange={handleContentTypeChange}
                       required
                     >
                       <SelectTrigger>
@@ -463,7 +479,10 @@ const UploadContent = () => {
                       <SelectContent>
                         {contentTypes.map((type) => (
                           <SelectItem key={type.value} value={type.value}>
-                            {type.label}
+                            <div className="flex justify-between items-center w-full gap-4">
+                              <span>{type.label}</span>
+                              <span className="text-xs text-muted-foreground">USD ${type.defaultPrice}</span>
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>

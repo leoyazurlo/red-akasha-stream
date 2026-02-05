@@ -166,7 +166,7 @@ const Auth = () => {
 
           <div className="text-center mb-6 p-4 rounded-lg border border-primary/20 bg-primary/5">
             <p className="text-foreground leading-relaxed">
-              Para subir contenido debes asociarte gratis eligiendo el perfil que se ajuste como usuario consumidor o creador. <span className="font-semibold text-primary">¡Elige tu perfil!</span>
+              Para ver y hacer uso de la base de datos de La Red Akasha debes asociarte gratis con un perfil de usuario consumidor o creador. <span className="font-semibold text-primary">¡Elige tu perfil!</span>
             </p>
           </div>
 

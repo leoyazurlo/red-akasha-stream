@@ -109,6 +109,7 @@ const UploadContent = () => {
   const [studios, setStudios] = useState<ProfileOption[]>([]);
   const [venues, setVenues] = useState<ProfileOption[]>([]);
   const [promoters, setPromoters] = useState<ProfileOption[]>([]);
+   
 
   const contentTypes = useMemo(() => [
     { value: "video_musical_vivo", label: t('upload.contentTypes.video_musical_vivo') },
@@ -178,56 +179,6 @@ const UploadContent = () => {
       setCheckingProfile(false);
     }
   };
-
-   // Helper function to upload blob/base64 to storage
-   const uploadThumbnailToStorage = async (thumbnailData: string, userId: string): Promise<string | null> => {
-     if (!thumbnailData) return null;
-     
-     // If it's already a https URL, return as-is
-     if (thumbnailData.startsWith('https://')) {
-       return thumbnailData;
-     }
-     
-     try {
-       let blob: Blob;
-       
-       // Handle base64 data URLs (from canvas.toDataURL)
-       if (thumbnailData.startsWith('data:')) {
-         const response = await fetch(thumbnailData);
-         blob = await response.blob();
-       } 
-       // Handle blob URLs
-       else if (thumbnailData.startsWith('blob:')) {
-         const response = await fetch(thumbnailData);
-         blob = await response.blob();
-       } else {
-         return null;
-       }
-       
-       const fileName = `thumbnails/${userId}/${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
-       
-       const { data, error } = await supabase.storage
-         .from('content-uploads')
-         .upload(fileName, blob, {
-           contentType: 'image/jpeg',
-           upsert: true
-         });
-       
-       if (error) {
-         console.error('Error uploading thumbnail:', error);
-         return null;
-       }
-       
-       const { data: { publicUrl } } = supabase.storage
-         .from('content-uploads')
-         .getPublicUrl(fileName);
-       
-       return publicUrl;
-     } catch (error) {
-       console.error('Error processing thumbnail:', error);
-       return null;
-     }
-   };
 
   const updateFormData = <K extends keyof FormData>(field: K, value: FormData[K]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -327,18 +278,48 @@ const UploadContent = () => {
       }
 
        // Upload thumbnail to storage if it's a blob/base64
+       // Only upload thumbnail if it's not already a https URL
+       let thumbnailUrl: string | null = null;
        const thumbnailSource = formData.custom_thumbnail_url || formData.thumbnail_url;
-       const uploadedThumbnailUrl = await uploadThumbnailToStorage(thumbnailSource, user.id);
+       
+       if (thumbnailSource) {
+         if (thumbnailSource.startsWith('https://')) {
+           thumbnailUrl = thumbnailSource;
+         } else if (thumbnailSource.startsWith('data:') || thumbnailSource.startsWith('blob:')) {
+           // Upload thumbnail from base64/blob to storage
+           try {
+             const response = await fetch(thumbnailSource);
+             const blob = await response.blob();
+             const fileName = `thumbnails/${user.id}/${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
+             
+             const { data, error } = await supabase.storage
+               .from('content-uploads')
+               .upload(fileName, blob, {
+                 contentType: 'image/jpeg',
+                 upsert: true
+               });
+             
+             if (!error && data) {
+               const { data: { publicUrl } } = supabase.storage
+                 .from('content-uploads')
+                 .getPublicUrl(fileName);
+               thumbnailUrl = publicUrl;
+             }
+           } catch (err) {
+             console.error('Error uploading thumbnail:', err);
+           }
+         }
+       }
 
       const { error } = await supabase.from('content_uploads').insert({
         uploader_id: user.id,
         content_type: formData.content_type as "corto" | "documental" | "pelicula" | "podcast" | "video_clip" | "video_musical_vivo",
         title: formData.title,
         description: formData.description || null,
-        video_url: formData.video_url || null,
-        audio_url: formData.audio_url || null,
-        photo_url: formData.photo_url || null,
-         thumbnail_url: uploadedThumbnailUrl,
+         video_url: formData.video_url || null,
+         audio_url: formData.audio_url || null,
+         photo_url: formData.photo_url || null,
+         thumbnail_url: thumbnailUrl,
         status: 'pending',
         is_free: formData.is_free,
         price: formData.is_free ? 0 : parseFloat(formData.price) || 0,

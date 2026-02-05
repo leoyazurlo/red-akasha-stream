@@ -13,11 +13,15 @@ import {
   Lock,
   DollarSign,
   SkipForward,
-  SkipBack
+  SkipBack,
+  Globe
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useContentAccess } from "@/hooks/useContentAccess";
+
+const PREVIEW_LIMIT_SECONDS = 25;
 
 interface OnDemandPlayerProps {
   open: boolean;
@@ -61,6 +65,7 @@ export const OnDemandPlayer = ({
   playlistContext
 }: OnDemandPlayerProps) => {
   const { user } = useAuth();
+  const contentAccess = useContentAccess(content.id);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(initialPosition);
   const [duration, setDuration] = useState(0);
@@ -68,6 +73,7 @@ export const OnDemandPlayer = ({
   const [isMuted, setIsMuted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
+  const [previewLimitReached, setPreviewLimitReached] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -78,11 +84,17 @@ export const OnDemandPlayer = ({
   const mediaRef = isVideo ? videoRef : audioRef;
   const mediaUrl = isVideo ? content.video_url : content.audio_url;
 
-  const canPlay = content.is_free || isPurchased;
+  // Determine if user has full access or only preview
+  const isLatinAmerica = contentAccess.isLatinAmerica;
+  const hasFullAccess = content.is_free || isPurchased || isLatinAmerica || contentAccess.accessType === 'subscription';
+  const isPreviewMode = !content.is_free && !hasFullAccess;
+  
+  const canPlay = content.is_free || isPurchased || isPreviewMode || hasFullAccess;
 
   useEffect(() => {
     if (!open) {
       setIsPlaying(false);
+      setPreviewLimitReached(false);
       // Guardar progreso al cerrar
       if (user && hasStarted) {
         savePlaybackPosition(false);
@@ -121,11 +133,33 @@ export const OnDemandPlayer = ({
     };
   }, [isPlaying, user, canPlay]);
 
+  // Check preview limit for non-LATAM users on paid content
+  useEffect(() => {
+    if (isPreviewMode && currentTime >= PREVIEW_LIMIT_SECONDS && !previewLimitReached) {
+      setPreviewLimitReached(true);
+      setIsPlaying(false);
+      const media = mediaRef.current;
+      if (media) {
+        media.pause();
+      }
+    }
+  }, [currentTime, isPreviewMode, previewLimitReached]);
+
   useEffect(() => {
     const media = mediaRef.current;
     if (!media) return;
 
-    const handleTimeUpdate = () => setCurrentTime(media.currentTime);
+    const handleTimeUpdate = () => {
+      const time = media.currentTime;
+      setCurrentTime(time);
+      
+      // Stop at preview limit for non-LATAM users
+      if (isPreviewMode && time >= PREVIEW_LIMIT_SECONDS) {
+        media.pause();
+        setIsPlaying(false);
+        setPreviewLimitReached(true);
+      }
+    };
     const handleDurationChange = () => setDuration(media.duration);
     const handleEnded = () => {
       setIsPlaying(false);
@@ -135,7 +169,7 @@ export const OnDemandPlayer = ({
       }
       
       // Handle repeat modes
-      if (playlistContext?.repeatMode === 'one' && canPlay) {
+      if (playlistContext?.repeatMode === 'one' && canPlay && hasFullAccess) {
         // Repeat current video
         setTimeout(() => {
           const media = mediaRef.current;
@@ -145,7 +179,7 @@ export const OnDemandPlayer = ({
             setIsPlaying(true);
           }
         }, 500);
-      } else if (playlistContext?.onNext && canPlay) {
+      } else if (playlistContext?.onNext && canPlay && hasFullAccess) {
         // Auto-play next video in playlist (works for both 'all' and 'none' repeat modes)
         setTimeout(() => {
           playlistContext.onNext?.();
@@ -162,7 +196,7 @@ export const OnDemandPlayer = ({
       media.removeEventListener('durationchange', handleDurationChange);
       media.removeEventListener('ended', handleEnded);
     };
-  }, [mediaRef, user]);
+  }, [mediaRef, user, isPreviewMode, hasFullAccess]);
 
   const savePlaybackPosition = async (completed: boolean) => {
     if (!user) return;
@@ -196,7 +230,7 @@ export const OnDemandPlayer = ({
 
   const togglePlayPause = () => {
     const media = mediaRef.current;
-    if (!media || !canPlay) return;
+    if (!media || !canPlay || previewLimitReached) return;
 
     if (isPlaying) {
       media.pause();
@@ -210,8 +244,14 @@ export const OnDemandPlayer = ({
     const media = mediaRef.current;
     if (!media || !canPlay) return;
     
-    media.currentTime = value[0];
-    setCurrentTime(value[0]);
+    // Limit seeking in preview mode
+    let seekTime = value[0];
+    if (isPreviewMode && seekTime >= PREVIEW_LIMIT_SECONDS) {
+      seekTime = PREVIEW_LIMIT_SECONDS - 1;
+    }
+    
+    media.currentTime = seekTime;
+    setCurrentTime(seekTime);
   };
 
   const handleVolumeChange = (value: number[]) => {
@@ -356,8 +396,42 @@ export const OnDemandPlayer = ({
               </AspectRatio>
             )}
 
-            {/* Play/Pause Overlay (only when can play) */}
-            {canPlay && !isPlaying && (
+            {/* Preview Limit Overlay for non-LATAM users */}
+            {previewLimitReached && isPreviewMode && (
+              <div className="absolute inset-0 flex items-center justify-center z-30 bg-black/80 backdrop-blur-sm">
+                <div className="text-center p-8 max-w-md">
+                  <Globe className="w-16 h-16 text-primary mx-auto mb-4" />
+                  <h3 className="text-2xl font-bold text-white mb-2">Vista previa finalizada</h3>
+                  <p className="text-white/80 mb-2">
+                    Has visto {PREVIEW_LIMIT_SECONDS} segundos de vista previa.
+                  </p>
+                  <p className="text-white/60 text-sm mb-6">
+                    Suscríbete para acceder al contenido completo desde cualquier lugar del mundo.
+                  </p>
+                  <div className="flex flex-col gap-3">
+                    <Button size="lg" onClick={onPurchase} className="gap-2 w-full">
+                      <DollarSign className="w-4 h-4" />
+                      Suscribirse
+                    </Button>
+                    <p className="text-white/50 text-xs">
+                      El contenido es gratuito para usuarios en Latinoamérica
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Preview Mode Indicator */}
+            {isPreviewMode && !previewLimitReached && isPlaying && (
+              <div className="absolute top-20 right-4 z-20">
+                <Badge variant="outline" className="bg-black/60 border-primary/50 text-primary">
+                  Vista previa: {Math.max(0, PREVIEW_LIMIT_SECONDS - Math.floor(currentTime))}s restantes
+                </Badge>
+              </div>
+            )}
+
+            {/* Play/Pause Overlay (only when can play and not limit reached) */}
+            {canPlay && !isPlaying && !previewLimitReached && (
               <div 
                 className="absolute inset-0 flex items-center justify-center cursor-pointer z-10"
                 onClick={togglePlayPause}

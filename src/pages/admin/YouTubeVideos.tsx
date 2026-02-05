@@ -272,13 +272,15 @@ const YouTubeVideos = () => {
         if (error) throw error;
       } else {
         // Get max order_index for category
-        const { data: maxOrder } = await supabase
+         const { data: maxOrder, error: maxOrderError } = await supabase
           .from("youtube_videos")
           .select("order_index")
           .eq("category", data.category)
           .order("order_index", { ascending: false })
           .limit(1)
-          .single();
+           .maybeSingle();
+
+         if (maxOrderError) throw maxOrderError;
         
         const { error } = await supabase.from("youtube_videos").insert([{
           title: data.title,

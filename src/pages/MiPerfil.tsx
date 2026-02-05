@@ -13,21 +13,25 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { 
-  Loader2, 
-  Upload, 
-  X, 
-  Video, 
-  Image as ImageIcon, 
-  Music, 
-  Plus,
-  Trash2,
-  Eye,
-  Save,
-  Pencil,
-  MessageSquare
-} from "lucide-react";
+ import { 
+   Loader2, 
+   Upload, 
+   X, 
+   Video, 
+   Image as ImageIcon, 
+   Music, 
+   Plus,
+   Trash2,
+   Eye,
+   Save,
+   Pencil,
+   MessageSquare,
+   DollarSign,
+   Building2
+ } from "lucide-react";
 import { MessagesTab } from "@/components/profile/MessagesTab";
+ import { UserBankingForm } from "@/components/profile/UserBankingForm";
+ import { UserEarningsDashboard } from "@/components/profile/UserEarningsDashboard";
 import { validateFile, formatFileSize, FILE_COUNT_LIMITS } from "@/lib/storage-validation";
 import { buildProfileObjectPath, uploadWithRetry } from "@/lib/storage-keys";
 
@@ -503,26 +507,44 @@ const MiPerfil = () => {
           </Card>
 
           {/* Content Management */}
-          <Tabs defaultValue="gallery" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4 h-auto p-2 bg-card/50">
+           <Tabs defaultValue="earnings" className="space-y-6">
+             <TabsList className="grid w-full grid-cols-6 h-auto p-2 bg-card/50">
+               <TabsTrigger value="earnings" className="gap-2 py-4 text-sm md:text-lg font-light tracking-widest uppercase">
+                 <DollarSign className="w-5 h-5 md:w-7 md:h-7" />
+                 <span className="hidden sm:inline">Ganancias</span>
+               </TabsTrigger>
+               <TabsTrigger value="banking" className="gap-2 py-4 text-sm md:text-lg font-light tracking-widest uppercase">
+                 <Building2 className="w-5 h-5 md:w-7 md:h-7" />
+                 <span className="hidden sm:inline">Cobros</span>
+               </TabsTrigger>
               <TabsTrigger value="gallery" className="gap-2 py-4 text-sm md:text-lg font-light tracking-widest uppercase">
                 <ImageIcon className="w-5 h-5 md:w-7 md:h-7" />
-                <span className="hidden sm:inline">Galería</span> ({photos.length})
+                 <span className="hidden sm:inline">Fotos</span>
               </TabsTrigger>
               <TabsTrigger value="videos" className="gap-2 py-4 text-sm md:text-lg font-light tracking-widest uppercase">
                 <Video className="w-5 h-5 md:w-7 md:h-7" />
-                <span className="hidden sm:inline">Videos</span> ({videos.length})
+                 <span className="hidden sm:inline">Videos</span>
               </TabsTrigger>
               <TabsTrigger value="audio" className="gap-2 py-4 text-sm md:text-lg font-light tracking-widest uppercase">
                 <Music className="w-5 h-5 md:w-7 md:h-7" />
-                <span className="hidden sm:inline">Música</span> ({audioPlaylist.length})
+                 <span className="hidden sm:inline">Música</span>
               </TabsTrigger>
               <TabsTrigger value="mensajes" className="gap-2 py-4 text-sm md:text-lg font-light tracking-widest uppercase">
                 <MessageSquare className="w-5 h-5 md:w-7 md:h-7" />
-                <span className="hidden sm:inline">Mensajes</span>
+                 <span className="hidden sm:inline">Inbox</span>
               </TabsTrigger>
             </TabsList>
 
+             {/* Earnings Tab */}
+             <TabsContent value="earnings">
+               <UserEarningsDashboard />
+             </TabsContent>
+ 
+             {/* Banking Tab */}
+             <TabsContent value="banking">
+               <UserBankingForm />
+             </TabsContent>
+ 
             {/* Photos Tab */}
             <TabsContent value="gallery">
               <Card className="bg-card/50 backdrop-blur-sm border-primary/20">

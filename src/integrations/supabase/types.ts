@@ -2490,6 +2490,123 @@ export type Database = {
           },
         ]
       }
+      user_banking_info: {
+        Row: {
+          account_holder_name: string | null
+          account_number_encrypted: string | null
+          account_type: string | null
+          bank_name: string | null
+          cbu_cvu: string | null
+          country: string | null
+          created_at: string | null
+          crypto_wallet_address: string | null
+          crypto_wallet_type: string | null
+          id: string
+          is_verified: boolean | null
+          mercadopago_email: string | null
+          paypal_email: string | null
+          preferred_payment_method: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          account_holder_name?: string | null
+          account_number_encrypted?: string | null
+          account_type?: string | null
+          bank_name?: string | null
+          cbu_cvu?: string | null
+          country?: string | null
+          created_at?: string | null
+          crypto_wallet_address?: string | null
+          crypto_wallet_type?: string | null
+          id?: string
+          is_verified?: boolean | null
+          mercadopago_email?: string | null
+          paypal_email?: string | null
+          preferred_payment_method?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          account_holder_name?: string | null
+          account_number_encrypted?: string | null
+          account_type?: string | null
+          bank_name?: string | null
+          cbu_cvu?: string | null
+          country?: string | null
+          created_at?: string | null
+          crypto_wallet_address?: string | null
+          crypto_wallet_type?: string | null
+          id?: string
+          is_verified?: boolean | null
+          mercadopago_email?: string | null
+          paypal_email?: string | null
+          preferred_payment_method?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_earnings: {
+        Row: {
+          content_id: string | null
+          created_at: string | null
+          currency: string | null
+          gross_amount: number
+          id: string
+          net_amount: number
+          paid_at: string | null
+          platform_fee_amount: number
+          platform_fee_percentage: number
+          purchase_id: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          content_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          gross_amount: number
+          id?: string
+          net_amount: number
+          paid_at?: string | null
+          platform_fee_amount: number
+          platform_fee_percentage: number
+          purchase_id?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          content_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          gross_amount?: number
+          id?: string
+          net_amount?: number
+          paid_at?: string | null
+          platform_fee_amount?: number
+          platform_fee_percentage?: number
+          purchase_id?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_earnings_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "content_uploads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_earnings_purchase_id_fkey"
+            columns: ["purchase_id"]
+            isOneToOne: false
+            referencedRelation: "content_purchases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_favorites: {
         Row: {
           content_id: string

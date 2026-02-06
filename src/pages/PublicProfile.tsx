@@ -536,12 +536,13 @@ const PublicProfile = () => {
                     <SendMessageButton 
                       receiverId={profile.user_id} 
                       receiverName={profile.display_name}
+                      receiverAvatar={profile.avatar_url}
                       currentUserId={user?.id}
                     />
 
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/20 hover:text-cyan-300 hover:border-cyan-400">
+                        <Button variant="outline" className="border-accent/50 text-accent hover:bg-accent/20 hover:text-accent hover:border-accent">
                           <Share2 className="w-4 h-4 mr-2" />
                           Compartir
                         </Button>

@@ -19,7 +19,11 @@ const notificationIcons = {
   mention_thread: AtSign,
   mention_post: AtSign,
   new_message: MessageSquare,
+  direct_message: MessageSquare,
 };
+
+const isMessageNotification = (type: string) => 
+  type === 'new_message' || type === 'direct_message';
 
 export const NotificationItem = ({ notification, onClose }: NotificationItemProps) => {
   const navigate = useNavigate();
@@ -47,13 +51,13 @@ export const NotificationItem = ({ notification, onClose }: NotificationItemProp
       <div className="flex gap-3">
         <div className={cn(
           'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center',
-          notification.type === 'new_message' 
+          isMessageNotification(notification.type)
             ? 'bg-cyan-400/20' 
             : !notification.read ? 'bg-primary/20' : 'bg-muted'
         )}>
           <Icon className={cn(
             'h-5 w-5',
-            notification.type === 'new_message' 
+            isMessageNotification(notification.type)
               ? 'text-cyan-400' 
               : !notification.read ? 'text-primary' : 'text-muted-foreground'
           )} />
@@ -62,7 +66,7 @@ export const NotificationItem = ({ notification, onClose }: NotificationItemProp
         <div className="flex-1 min-w-0">
           <p className={cn(
             'text-sm mb-1',
-            notification.type === 'new_message' 
+            isMessageNotification(notification.type)
               ? 'font-semibold text-cyan-400'
               : !notification.read ? 'font-semibold text-foreground' : 'text-foreground'
           )}>

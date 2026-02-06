@@ -639,7 +639,7 @@ const Auth = () => {
       <Header />
       
       <main className="relative pt-24 pb-16 flex items-center justify-center min-h-[calc(100vh-4rem)] px-4">
-        <div className="w-full max-w-lg">
+        <div className="w-full max-w-2xl">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-light mb-2 bg-gradient-primary bg-clip-text text-transparent">
               Red Akasha

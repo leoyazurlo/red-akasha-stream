@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useUnreadMessages } from '@/hooks/useUnreadMessages';
+import { useNotifications } from '@/hooks/useNotifications';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useGlobalChat } from '@/contexts/GlobalChatContext';
@@ -7,7 +7,7 @@ import { MessageSquare } from 'lucide-react';
 
 export const UnreadMessagesAlert = () => {
   const { user } = useAuth();
-  const { unreadCount, unreadConversations, loading } = useUnreadMessages();
+  const { unreadMessagesCount, unreadMessages, isLoading } = useNotifications();
   const { toast } = useToast();
   const { openChat } = useGlobalChat();
   const hasShownAlert = useRef(false);
@@ -23,20 +23,20 @@ export const UnreadMessagesAlert = () => {
     // Show alert only once per session when user has unread messages
     if (
       user && 
-      !loading && 
-      unreadCount > 0 && 
-      unreadConversations.length > 0 &&
+      !isLoading && 
+      unreadMessagesCount > 0 && 
+      unreadMessages.length > 0 &&
       !hasShownAlert.current
     ) {
       hasShownAlert.current = true;
       
       // Get the most recent unread conversation
-      const mostRecent = unreadConversations[0];
+      const mostRecent = unreadMessages[0];
       
       toast({
-        title: `💬 Tienes ${unreadCount} mensaje${unreadCount > 1 ? 's' : ''} sin leer`,
+        title: `💬 Tienes ${unreadMessagesCount} mensaje${unreadMessagesCount > 1 ? 's' : ''} sin leer`,
         description: mostRecent 
-          ? `Último mensaje de ${mostRecent.partnerName}` 
+          ? `Último mensaje de ${mostRecent.senderName}` 
           : "Haz clic para ver tus mensajes",
         duration: 8000,
         action: (
@@ -44,9 +44,9 @@ export const UnreadMessagesAlert = () => {
             onClick={() => {
               if (mostRecent) {
                 openChat({
-                  id: mostRecent.partnerId,
-                  name: mostRecent.partnerName,
-                  avatar: mostRecent.partnerAvatar,
+                  id: mostRecent.senderId,
+                  name: mostRecent.senderName,
+                  avatar: mostRecent.senderAvatar,
                 });
               }
             }}
@@ -58,7 +58,7 @@ export const UnreadMessagesAlert = () => {
         ),
       });
     }
-  }, [user, unreadCount, unreadConversations, loading, toast, openChat]);
+  }, [user, unreadMessagesCount, unreadMessages, isLoading, toast, openChat]);
 
   return null;
 };

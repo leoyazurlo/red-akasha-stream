@@ -6,6 +6,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useGlobalChat } from '@/contexts/GlobalChatContext';
 
 interface NotificationListProps {
   onClose: () => void;
@@ -15,6 +17,7 @@ export const NotificationList = ({ onClose }: NotificationListProps) => {
   const { 
     notifications, 
     announcements, 
+    unreadMessages,
     unreadCount, 
     isLoading, 
     markAllAsRead, 
@@ -22,6 +25,7 @@ export const NotificationList = ({ onClose }: NotificationListProps) => {
     isAnnouncementRead 
   } = useNotifications();
   const navigate = useNavigate();
+  const { openChat } = useGlobalChat();
 
   const handleAnnouncementClick = (announcement: { id: string; link: string | null }) => {
     markAnnouncementAsRead(announcement.id);
@@ -29,6 +33,15 @@ export const NotificationList = ({ onClose }: NotificationListProps) => {
       navigate(announcement.link);
       onClose();
     }
+  };
+
+  const handleMessageClick = (msg: { senderId: string; senderName: string; senderAvatar: string | null }) => {
+    openChat({
+      id: msg.senderId,
+      name: msg.senderName,
+      avatar: msg.senderAvatar,
+    });
+    onClose();
   };
 
   if (isLoading) {
@@ -39,7 +52,7 @@ export const NotificationList = ({ onClose }: NotificationListProps) => {
     );
   }
 
-  const hasContent = notifications.length > 0 || announcements.length > 0;
+  const hasContent = notifications.length > 0 || announcements.length > 0 || unreadMessages.length > 0;
 
   return (
     <div className="flex flex-col">
@@ -68,6 +81,50 @@ export const NotificationList = ({ onClose }: NotificationListProps) => {
           </div>
         ) : (
           <div className="divide-y divide-border">
+            {/* Unread Messages Section */}
+            {unreadMessages.length > 0 && (
+              <>
+                <div className="px-4 py-2 bg-primary/5 border-b border-primary/20">
+                  <p className="text-xs font-medium text-primary flex items-center gap-2">
+                    <MessageSquare className="w-3 h-3" />
+                    Mensajes sin leer ({unreadMessages.reduce((acc, m) => acc + m.unreadCount, 0)})
+                  </p>
+                </div>
+                {unreadMessages.map((msg) => (
+                  <div
+                    key={`msg-${msg.senderId}`}
+                    onClick={() => handleMessageClick(msg)}
+                    className="flex items-center gap-3 p-4 cursor-pointer transition-colors hover:bg-accent/50 bg-primary/5"
+                  >
+                    <Avatar className="h-10 w-10 border-2 border-primary/30">
+                      <AvatarImage src={msg.senderAvatar || ''} />
+                      <AvatarFallback className="bg-primary/20 text-primary text-sm">
+                        {msg.senderName.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-foreground">
+                          {msg.senderName}
+                        </p>
+                        <span className="flex-shrink-0 w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {msg.unreadCount} mensaje{msg.unreadCount > 1 ? 's' : ''} sin leer
+                      </p>
+                      <p className="text-xs text-muted-foreground/70 mt-0.5">
+                        {formatDistanceToNow(new Date(msg.lastMessageDate), {
+                          addSuffix: true,
+                          locale: es,
+                        })}
+                      </p>
+                    </div>
+                    <MessageSquare className="w-5 h-5 text-primary" />
+                  </div>
+                ))}
+              </>
+            )}
+
             {/* Platform Announcements */}
             {announcements.map((announcement) => {
               const isRead = isAnnouncementRead(announcement.id);

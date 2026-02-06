@@ -32,3 +32,12 @@ verify_jwt = false
 
 [functions.akasha-ia-predictions]
 verify_jwt = false
+
+[functions.akasha-ia-artist-assistant]
+verify_jwt = false
+
+[functions.akasha-ia-moderator]
+verify_jwt = false
+
+[functions.akasha-ia-content-generator]
+verify_jwt = false

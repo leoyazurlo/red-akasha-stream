@@ -62,7 +62,9 @@ export const NotificationItem = ({ notification, onClose }: NotificationItemProp
         <div className="flex-1 min-w-0">
           <p className={cn(
             'text-sm mb-1',
-            !notification.read ? 'font-semibold text-foreground' : 'text-foreground'
+            notification.type === 'new_message' 
+              ? 'font-semibold text-cyan-400'
+              : !notification.read ? 'font-semibold text-foreground' : 'text-foreground'
           )}>
             {notification.title}
           </p>

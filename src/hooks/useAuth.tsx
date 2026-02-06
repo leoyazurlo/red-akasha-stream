@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
@@ -8,6 +8,8 @@ export const useAuth = (requireAuth = false) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [adminChecked, setAdminChecked] = useState(false);
+  const adminCheckInProgress = useRef(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,6 +26,7 @@ export const useAuth = (requireAuth = false) => {
           }, 0);
         } else {
           setIsAdmin(false);
+          setAdminChecked(true);
         }
       }
     );
@@ -32,14 +35,18 @@ export const useAuth = (requireAuth = false) => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setLoading(false);
       
       if (requireAuth && !session?.user) {
+        setLoading(false);
+        setAdminChecked(true);
         navigate('/auth');
-      }
-      
-      if (session?.user) {
-        checkAdminRole(session.user.id);
+      } else if (session?.user) {
+        checkAdminRole(session.user.id).finally(() => {
+          setLoading(false);
+        });
+      } else {
+        setLoading(false);
+        setAdminChecked(true);
       }
     });
 
@@ -47,15 +54,27 @@ export const useAuth = (requireAuth = false) => {
   }, [requireAuth, navigate]);
 
   const checkAdminRole = async (userId: string) => {
-    const { data } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', userId)
-      .eq('role', 'admin')
-      .single();
+    // Prevent duplicate checks
+    if (adminCheckInProgress.current) return;
+    adminCheckInProgress.current = true;
     
-    setIsAdmin(!!data);
+    try {
+      const { data } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .single();
+      
+      setIsAdmin(!!data);
+    } finally {
+      setAdminChecked(true);
+      adminCheckInProgress.current = false;
+    }
   };
 
-  return { user, session, loading, isAdmin };
+  // Only return loading=false when admin check is also complete
+  const isLoading = loading || (!!user && !adminChecked);
+
+  return { user, session, loading: isLoading, isAdmin };
 };

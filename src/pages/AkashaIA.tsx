@@ -428,7 +428,7 @@ export default function AkashaIA() {
                         <div
                           key={conv.id}
                           className={`group flex items-center gap-2 p-2 rounded-md cursor-pointer hover:bg-muted/50 ${
-                            currentConversationId === conv.id ? "bg-cyan-500/10" : ""
+                            currentConversationId === conv.id ? "bg-cyan-500/10 border border-cyan-500/30" : ""
                           }`}
                           onClick={() => loadConversation(conv)}
                         >
@@ -439,11 +439,12 @@ export default function AkashaIA() {
                           <Button
                             size="icon"
                             variant="ghost"
-                            className="h-6 w-6 opacity-0 group-hover:opacity-100"
+                            className="h-6 w-6 opacity-70 hover:opacity-100 hover:bg-destructive/20 hover:text-destructive flex-shrink-0"
                             onClick={(e) => {
                               e.stopPropagation();
                               deleteConversation(conv.id);
                             }}
+                            title="Eliminar conversación"
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>

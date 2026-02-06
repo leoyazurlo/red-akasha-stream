@@ -30,7 +30,7 @@ export const SendMessageButton = ({
         onClick={() => setChatOpen(true)}
       >
         <MessageCircle className="h-4 w-4" />
-        Mensaje
+        Iniciar Chat
       </Button>
 
       <ChatDialog

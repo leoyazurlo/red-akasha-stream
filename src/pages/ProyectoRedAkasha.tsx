@@ -8,46 +8,20 @@ import logoAkasha from "@/assets/logo-akasha-cyan.png";
 
 const ProyectoRedAkasha = () => {
   const { elementRef: heroRef, isVisible: heroVisible } = useScrollAnimation();
-  const { elementRef: missionRef, isVisible: missionVisible } = useScrollAnimation();
-  const { elementRef: featuresRef, isVisible: featuresVisible } = useScrollAnimation();
-  const { elementRef: audienceRef, isVisible: audienceVisible } = useScrollAnimation();
-  const { elementRef: ctaRef, isVisible: ctaVisible } = useScrollAnimation();
+  const { elementRef: contentRef, isVisible: contentVisible } = useScrollAnimation();
 
-  const features = [
-    {
-      icon: Users,
-      title: "Comunidad Colaborativa",
-      description: "Asociate de manera gratuita y convertite en parte activa de una comunidad transparente"
-    },
-    {
-      icon: Vote,
-      title: "Voz y Voto",
-      description: "El valor del contenido se mide por el aporte de la comunidad y el consenso colectivo"
-    },
-    {
-      icon: MessageSquare,
-      title: "Foros Activos",
-      description: "Espacios de discusión creados y alimentados por la misma comunidad"
-    },
-    {
-      icon: Sparkles,
-      title: "Blockchain",
-      description: "Transparencia y seguridad respaldadas por tecnología blockchain"
-    }
-  ];
-
-  const audience = [
-    { icon: Music, text: "Músicos que buscan ser escuchados", color: "from-cyan-500 to-blue-500" },
-    { icon: Building2, text: "Productores y estudios que desean colaborar con nuevos talentos", color: "from-purple-500 to-pink-500" },
-    { icon: Target, text: "Teatros y venues que quieren abrir sus puertas a propuestas frescas", color: "from-orange-500 to-red-500" },
-    { icon: Heart, text: "Consumidores de buen contenido que valoran el arte auténtico", color: "from-green-500 to-teal-500" }
+  const highlights = [
+    { icon: Users, text: "Comunidad colaborativa y transparente" },
+    { icon: Vote, text: "Voz y voto para cada miembro" },
+    { icon: MessageSquare, text: "Foros creados por la comunidad" },
+    { icon: Sparkles, text: "Tecnología blockchain" },
   ];
 
   return (
     <div className="min-h-screen bg-background overflow-hidden">
       <Header />
       
-      {/* Hero Section - Full Screen */}
+      {/* Hero Section - INTACTO */}
       <section 
         ref={heroRef}
         className="relative min-h-[90vh] flex items-center justify-center"
@@ -114,197 +88,92 @@ const ProyectoRedAkasha = () => {
         </div>
       </section>
 
-      {/* Mission Section */}
+      {/* Contenido Simplificado */}
       <section 
-        ref={missionRef}
-        className="py-20 md:py-32 relative"
+        ref={contentRef}
+        className="py-16 md:py-24"
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-secondary/30 to-transparent" />
         <div 
-          className={`container mx-auto px-4 relative transition-all duration-1000 ${
-            missionVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          className={`container mx-auto px-4 max-w-4xl transition-all duration-1000 ${
+            contentVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
         >
-          <div className="max-w-5xl mx-auto">
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/60 via-primary/40 to-cyan-500/60 rounded-3xl blur-xl opacity-40 group-hover:opacity-60 transition duration-500" />
-              <div className="relative p-8 md:p-12 bg-card/80 backdrop-blur-sm rounded-3xl border border-cyan-500/30">
-                <div className="space-y-8 text-center">
-                  <p className="text-lg md:text-xl text-foreground/90 leading-relaxed">
-                    En un mundo donde demasiadas veces el talento queda silenciado por la falta de oportunidades, 
-                    <span className="text-primary font-semibold"> Red Akasha</span> nace como un espacio libre, abierto y colaborativo.
-                  </p>
-                  
-                  <p className="text-lg md:text-xl text-foreground/90 leading-relaxed">
-                    Una plataforma digital de contenidos audiovisuales que une a músicos, productores, estudios, teatros 
-                    y venues en torno a un mismo sueño: <span className="text-primary font-semibold">dar voz y voto a los artistas emergentes.</span>
-                  </p>
-                  
-                  <p className="text-lg md:text-xl text-foreground/80 leading-relaxed">
-                    No se trata solo de escuchar música: se trata de{" "}
-                    <span className="text-primary font-semibold">participar en la creación de una nueva industria cultural</span>, 
-                    donde el valor del contenido se mide por el aporte de la comunidad y el apoyo de quienes 
-                    creen en un futuro más justo y colaborativo.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+          {/* Texto Principal Unificado */}
+          <div className="space-y-6 text-lg md:text-xl text-foreground/85 leading-relaxed mb-12">
+            <p>
+              En un mundo donde el talento queda silenciado por la falta de oportunidades, 
+              <span className="text-primary font-semibold"> Red Akasha</span> nace como un espacio 
+              <span className="text-primary"> libre, abierto y colaborativo</span>.
+            </p>
+            
+            <p>
+              Una plataforma digital de contenidos audiovisuales que une a <span className="font-medium text-foreground">músicos</span>, <span className="font-medium text-foreground">productores</span>, <span className="font-medium text-foreground">estudios</span>, <span className="font-medium text-foreground">teatros</span> y <span className="font-medium text-foreground">venues</span> en 
+              torno a un mismo sueño: dar voz y voto a los artistas emergentes.
+            </p>
 
-      {/* Features Section */}
-      <section 
-        ref={featuresRef}
-        className="py-20 md:py-32"
-      >
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-            <span className="bg-gradient-to-r from-primary to-cyan-400 bg-clip-text text-transparent">
-              Nuestra Esencia
-            </span>
-          </h2>
-          <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-            Construimos sobre la transparencia del blockchain y la fuerza del consenso colectivo
-          </p>
-          
-          <div 
-            className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 transition-all duration-1000 ${
-              featuresVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-            }`}
-          >
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-              return (
-                <div 
-                  key={index}
-                  className="group relative"
-                  style={{ transitionDelay: `${index * 100}ms` }}
-                >
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-cyan-500 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-500 blur" />
-                  <div className="relative p-6 bg-card rounded-2xl border border-border h-full hover:border-transparent transition-all duration-300">
-                    <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-cyan-500/20 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
-                      <Icon className="w-7 h-7 text-primary" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-foreground mb-3">{feature.title}</h3>
-                    <p className="text-muted-foreground">{feature.description}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Forums Highlight */}
-      <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-cyan-500/10 to-primary/5" />
-        <div className="container mx-auto px-4 relative">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary to-cyan-500 rounded-2xl mb-8 shadow-lg shadow-primary/30">
-              <MessageSquare className="w-10 h-10 text-white" />
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              El <span className="text-primary">Corazón</span> de la Plataforma
-            </h2>
-            <p className="text-lg md:text-xl text-foreground/80 leading-relaxed">
-              Los foros de discusión no son espacios vacíos: son creados y alimentados por la misma comunidad. 
-              <span className="text-primary font-medium"> Cada opinión, cada voto, cada aporte suma</span> para que los 
-              artistas emergentes tengan un camino más fácil hacia el desarrollo y la visibilidad.
+            <p className="text-muted-foreground">
+              No se trata solo de escuchar música: se trata de participar en la creación de una nueva 
+              industria cultural, donde el valor del contenido se mide por el aporte de la comunidad.
             </p>
           </div>
-        </div>
-      </section>
 
-      {/* Audience Section */}
-      <section 
-        ref={audienceRef}
-        className="py-20 md:py-32"
-      >
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
-            Queremos <span className="text-primary">Acercar</span> a Todos
-          </h2>
-          <p className="text-muted-foreground text-center mb-12">
-            Una red que conecta talentos, oportunidades y pasiones
-          </p>
-          
-          <div 
-            className={`grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto transition-all duration-1000 ${
-              audienceVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-            }`}
-          >
-            {audience.map((item, index) => {
+          {/* Highlights en línea */}
+          <div className="flex flex-wrap justify-center gap-3 mb-16">
+            {highlights.map((item, index) => {
               const Icon = item.icon;
               return (
                 <div 
                   key={index}
-                  className="group flex items-center gap-5 p-5 bg-card rounded-xl border border-border hover:border-primary/50 transition-all duration-300"
-                  style={{ transitionDelay: `${index * 100}ms` }}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full text-sm text-foreground/80"
                 >
-                  <div className={`w-14 h-14 bg-gradient-to-br ${item.color} rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                    <Icon className="w-7 h-7 text-white" />
-                  </div>
-                  <p className="text-foreground/90 font-medium">{item.text}</p>
+                  <Icon className="w-4 h-4 text-primary" />
+                  <span>{item.text}</span>
                 </div>
               );
             })}
           </div>
-        </div>
-      </section>
 
-      {/* CTA Section */}
-      <section 
-        ref={ctaRef}
-        className="py-20 md:py-32 relative"
-      >
-        <div className="absolute inset-0 bg-gradient-to-t from-primary/10 via-transparent to-transparent" />
-        <div 
-          className={`container mx-auto px-4 text-center relative transition-all duration-1000 ${
-            ctaVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-          }`}
-        >
-          <div className="max-w-4xl mx-auto">
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-primary via-cyan-500 to-primary rounded-3xl blur-lg opacity-30 group-hover:opacity-50 transition duration-500" />
-              <div className="relative p-10 md:p-16 bg-card rounded-3xl border border-primary/30 overflow-hidden">
-                {/* Decorative Elements */}
-                <div className="absolute top-0 right-0 w-40 h-40 bg-primary/10 rounded-full blur-3xl" />
-                <div className="absolute bottom-0 left-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl" />
-                
-                <div className="relative z-10">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/20 rounded-2xl mb-8">
-                    <HandHeart className="w-8 h-8 text-primary" />
+          {/* Quiénes se benefician */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
+            {[
+              { icon: Music, label: "Músicos" },
+              { icon: Building2, label: "Productores" },
+              { icon: Target, label: "Venues" },
+              { icon: Heart, label: "Amantes del arte" },
+            ].map((item, index) => {
+              const Icon = item.icon;
+              return (
+                <div 
+                  key={index}
+                  className="flex flex-col items-center gap-2 p-4 text-center"
+                >
+                  <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-cyan-500/20 rounded-xl flex items-center justify-center">
+                    <Icon className="w-6 h-6 text-primary" />
                   </div>
-                  
-                  <p className="text-lg md:text-xl text-foreground/90 leading-relaxed mb-8">
-                    Este es un llamado a quienes creen que la cultura puede ser más democrática, más transparente y más humana. 
-                    <span className="text-primary font-semibold"> Red Akasha.org no es solo una plataforma: es un movimiento.</span>
-                  </p>
-                  
-                  <p className="text-muted-foreground mb-10">
-                    Es la oportunidad de construir juntos una red donde el arte se expanda sin fronteras y donde cada persona 
-                    que se asocie sienta que está dejando huella en la historia de nuestra música y nuestro idioma.
-                  </p>
-
-                  <div className="border-t border-border pt-10">
-                    <p className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-cyan-400 bg-clip-text text-transparent mb-4">
-                      Sumate, asociate, colaborá.
-                    </p>
-                    <p className="text-muted-foreground mb-8">
-                      Porque la industria que soñamos empieza aquí, y empieza con vos.
-                    </p>
-                    
-                    <Link to="/asociate">
-                      <Button size="lg" className="group text-lg px-10 py-6 bg-gradient-to-r from-primary to-cyan-500 hover:from-primary/90 hover:to-cyan-500/90">
-                        Asociate Gratis
-                        <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                      </Button>
-                    </Link>
-                  </div>
+                  <span className="text-sm text-muted-foreground">{item.label}</span>
                 </div>
-              </div>
+              );
+            })}
+          </div>
+
+          {/* CTA Final */}
+          <div className="text-center border-t border-border pt-12">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <HandHeart className="w-6 h-6 text-primary" />
+              <p className="text-2xl font-semibold bg-gradient-to-r from-primary to-cyan-400 bg-clip-text text-transparent">
+                Sumate, asociate, colaborá.
+              </p>
             </div>
+            <p className="text-muted-foreground mb-6">
+              La industria que soñamos empieza aquí, y empieza con vos.
+            </p>
+            
+            <Link to="/asociate">
+              <Button size="lg" className="group bg-gradient-to-r from-primary to-cyan-500 hover:from-primary/90 hover:to-cyan-500/90">
+                Asociate Gratis
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

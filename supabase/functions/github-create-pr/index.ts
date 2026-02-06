@@ -21,6 +21,40 @@ interface FileChange {
   content: string;
 }
 
+// Helper function to verify admin authentication
+async function verifyAdminAuth(req: Request, supabase: any): Promise<{ userId: string } | null> {
+  const authHeader = req.headers.get("Authorization");
+  
+  if (!authHeader?.startsWith("Bearer ")) {
+    return null;
+  }
+
+  const token = authHeader.replace("Bearer ", "");
+  const { data, error } = await supabase.auth.getUser(token);
+  
+  if (error || !data?.user) {
+    return null;
+  }
+
+  // Check if user is admin - REQUIRED for this endpoint
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
+
+  const { data: roleData } = await serviceClient
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", data.user.id)
+    .eq("role", "admin")
+    .single();
+
+  if (!roleData) {
+    return null;
+  }
+
+  return { userId: data.user.id };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -28,8 +62,27 @@ serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    // Create client for auth verification
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: req.headers.get("Authorization") || "" } }
+    });
+
+    // Verify ADMIN authentication - REQUIRED for this endpoint
+    const auth = await verifyAdminAuth(req, authClient);
+    
+    if (!auth) {
+      console.log("[github-create-pr] Unauthorized request - admin access required");
+      return new Response(
+        JSON.stringify({ error: "Acceso denegado. Se requiere rol de administrador." }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Create service client for data operations
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Try to get GitHub config from database first
     const { data: configData } = await supabase
@@ -74,7 +127,7 @@ serve(async (req) => {
 
     const branchName = `akasha-ia/${proposalId.slice(0, 8)}-${title.toLowerCase().replace(/\s+/g, "-").slice(0, 30)}`;
     
-    console.log(`[github-create-pr] Creating PR for proposal ${proposalId}`);
+    console.log(`[github-create-pr] Admin ${auth.userId} creating PR for proposal ${proposalId}`);
     console.log(`[github-create-pr] Branch: ${branchName}, Target: ${targetBranch}`);
 
     // Step 1: Get the latest commit SHA from target branch
@@ -205,6 +258,7 @@ ${description}
 
 Propuesta ID: ${proposalId}
 Generado automáticamente por Akasha IA
+Aprobado por: ${auth.userId}
 
 Archivos modificados:
 ${files.map(f => `- ${f.path}`).join("\n")}`;
@@ -296,7 +350,8 @@ ${files.map(f => `- \`${f.path}\``).join("\n")}
 
 ---
 *Generado automáticamente por Akasha IA*
-*Propuesta ID: ${proposalId}*`;
+*Propuesta ID: ${proposalId}*
+*Aprobado por Admin: ${auth.userId}*`;
 
     const prResponse = await fetch(
       `https://api.github.com/repos/${GITHUB_REPO}/pulls`,
@@ -369,7 +424,7 @@ ${files.map(f => `- \`${f.path}\``).join("\n")}
       })
       .eq("id", proposalId);
 
-    console.log(`[github-create-pr] PR created successfully: ${prData.html_url}`);
+    console.log(`[github-create-pr] PR created successfully by admin ${auth.userId}: ${prData.html_url}`);
 
     return new Response(
       JSON.stringify({

@@ -126,6 +126,24 @@ Responde siempre con bloques de código claramente marcados:
 
 Incluye comentarios explicativos y sigue las mejores prácticas de la plataforma.`;
 
+// Helper function to verify authentication
+async function verifyAuth(req: Request, supabase: any): Promise<{ userId: string } | null> {
+  const authHeader = req.headers.get("Authorization");
+  
+  if (!authHeader?.startsWith("Bearer ")) {
+    return null;
+  }
+
+  const token = authHeader.replace("Bearer ", "");
+  const { data, error } = await supabase.auth.getUser(token);
+  
+  if (error || !data?.user) {
+    return null;
+  }
+
+  return { userId: data.user.id };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -133,8 +151,29 @@ serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    
+    // Create client for auth verification
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: req.headers.get("Authorization") || "" } }
+    });
+
+    // Verify authentication - REQUIRED for this endpoint
+    const auth = await verifyAuth(req, authClient);
+    
+    if (!auth) {
+      console.log("[multi-ai-provider] Unauthorized request - no valid auth token");
+      return new Response(
+        JSON.stringify({ error: "Autenticación requerida. Por favor inicia sesión." }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`[multi-ai-provider] Authenticated user: ${auth.userId}`);
+
+    // Create service client for data operations
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { messages, provider, model, stream = true, generateCode }: ChatRequest = await req.json();
 
@@ -213,7 +252,7 @@ serve(async (req) => {
       ...providerConfig.authHeader(apiKey || ""),
     };
 
-    console.log(`[multi-ai-provider] Using provider: ${providerName}, model: ${model || "default"}`);
+    console.log(`[multi-ai-provider] User ${auth.userId} using provider: ${providerName}, model: ${model || "default"}`);
 
     // Make the request
     const response = await fetch(requestUrl, {

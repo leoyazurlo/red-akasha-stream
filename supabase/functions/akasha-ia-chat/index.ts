@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Version tracking for deployment verification
-const VERSION = "v1.1.0";
+const VERSION = "v1.2.0";
 const DEPLOYED_AT = new Date().toISOString();
 
 const corsHeaders = {
@@ -304,6 +304,35 @@ Usa estos datos para responder preguntas sobre el estado de la plataforma, tende
   }
 }
 
+// Helper function to verify authentication
+async function verifyAuth(req: Request, supabase: any): Promise<{ userId: string; isAdmin: boolean } | null> {
+  const authHeader = req.headers.get("Authorization");
+  
+  if (!authHeader?.startsWith("Bearer ")) {
+    return null;
+  }
+
+  const token = authHeader.replace("Bearer ", "");
+  const { data, error } = await supabase.auth.getUser(token);
+  
+  if (error || !data?.user) {
+    return null;
+  }
+
+  // Check if user is admin
+  const { data: roleData } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", data.user.id)
+    .eq("role", "admin")
+    .single();
+
+  return {
+    userId: data.user.id,
+    isAdmin: !!roleData,
+  };
+}
+
 serve(async (req) => {
   console.log(`[${VERSION}] Request received at ${new Date().toISOString()}, deployed: ${DEPLOYED_AT}`);
   
@@ -312,18 +341,40 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, includeForumContext, generateImplementation, includePlatformStats = true } = await req.json();
-    console.log(`[${VERSION}] Processing request - generateImplementation: ${generateImplementation}`);
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Crear cliente Supabase
+    // Crear cliente Supabase con service role para operaciones admin
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    
+    // Create client for auth verification
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: req.headers.get("Authorization") || "" } }
+    });
+    
+    // Verify authentication - REQUIRED for this endpoint
+    const auth = await verifyAuth(req, authClient);
+    
+    if (!auth) {
+      console.log(`[${VERSION}] Unauthorized request - no valid auth token`);
+      return new Response(
+        JSON.stringify({ error: "Autenticación requerida. Por favor inicia sesión." }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`[${VERSION}] Authenticated user: ${auth.userId}, isAdmin: ${auth.isAdmin}`);
+
+    // Create service client for data operations
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const { messages, includeForumContext, generateImplementation, includePlatformStats = true } = await req.json();
+    console.log(`[${VERSION}] Processing request - generateImplementation: ${generateImplementation}`);
 
     // Obtener estadísticas de la plataforma
     let platformStats = "";

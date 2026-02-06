@@ -60,6 +60,40 @@ interface ValidateRequest {
   description: string;
 }
 
+// Helper function to verify admin authentication
+async function verifyAdminAuth(req: Request, supabase: any): Promise<{ userId: string } | null> {
+  const authHeader = req.headers.get("Authorization");
+  
+  if (!authHeader?.startsWith("Bearer ")) {
+    return null;
+  }
+
+  const token = authHeader.replace("Bearer ", "");
+  const { data, error } = await supabase.auth.getUser(token);
+  
+  if (error || !data?.user) {
+    return null;
+  }
+
+  // Check if user is admin - REQUIRED for this endpoint
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
+
+  const { data: roleData } = await serviceClient
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", data.user.id)
+    .eq("role", "admin")
+    .single();
+
+  if (!roleData) {
+    return null;
+  }
+
+  return { userId: data.user.id };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -67,17 +101,35 @@ serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY no está configurada");
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Create client for auth verification
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: req.headers.get("Authorization") || "" } }
+    });
+
+    // Verify ADMIN authentication - REQUIRED for this endpoint
+    const auth = await verifyAdminAuth(req, authClient);
+    
+    if (!auth) {
+      console.log("[validate-code] Unauthorized request - admin access required");
+      return new Response(
+        JSON.stringify({ error: "Acceso denegado. Se requiere rol de administrador." }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Create service client for data operations
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const { proposalId, code, title, description }: ValidateRequest = await req.json();
 
-    console.log(`[validate-code] Starting validation for proposal ${proposalId}`);
+    console.log(`[validate-code] Admin ${auth.userId} starting validation for proposal ${proposalId}`);
 
     // Update proposal to validating stage
     await supabase
@@ -202,7 +254,7 @@ Por favor, valida este código siguiendo los criterios establecidos y responde e
       })
       .eq("id", proposalId);
 
-    console.log(`[validate-code] Validation complete for ${proposalId}: ${newStage} (score: ${validationResult.overallScore})`);
+    console.log(`[validate-code] Validation complete for ${proposalId} by admin ${auth.userId}: ${newStage} (score: ${validationResult.overallScore})`);
 
     return new Response(
       JSON.stringify({

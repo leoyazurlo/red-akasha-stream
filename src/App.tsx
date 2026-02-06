@@ -10,6 +10,7 @@ import { LiveStreamProvider } from "@/contexts/LiveStreamContext";
 import { FloatingLivePlayer } from "@/components/FloatingLivePlayer";
 import { GeoRestrictionGuard } from "@/components/GeoRestrictionGuard";
 import { ProfileEditDraftProvider } from "@/contexts/ProfileEditDraftContext";
+import { GlobalChatProvider } from "@/contexts/GlobalChatContext";
 import { UnreadMessagesAlert } from "@/components/notifications/UnreadMessagesAlert";
 import Index from "./pages/Index";
 import Forum from "./pages/Forum";
@@ -72,7 +73,8 @@ const App = () => (
             <LiveStreamProvider>
               <GeoRestrictionGuard>
                 <ProfileEditDraftProvider>
-                  <Routes>
+                  <GlobalChatProvider>
+                    <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/on-demand" element={<OnDemand />} />
                     <Route path="/mi-coleccion" element={<MiColeccion />} />
@@ -121,10 +123,11 @@ const App = () => (
                     <Route path="/suscripciones" element={<Suscripciones />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
-                  </Routes>
-                  <MiniPlayer />
-                  <FloatingLivePlayer />
-                  <UnreadMessagesAlert />
+                    </Routes>
+                    <MiniPlayer />
+                    <FloatingLivePlayer />
+                    <UnreadMessagesAlert />
+                  </GlobalChatProvider>
                 </ProfileEditDraftProvider>
               </GeoRestrictionGuard>
             </LiveStreamProvider>

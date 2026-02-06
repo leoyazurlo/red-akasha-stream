@@ -47,11 +47,15 @@ export const NotificationItem = ({ notification, onClose }: NotificationItemProp
       <div className="flex gap-3">
         <div className={cn(
           'flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center',
-          !notification.read ? 'bg-primary/20' : 'bg-muted'
+          notification.type === 'new_message' 
+            ? 'bg-cyan-400/20' 
+            : !notification.read ? 'bg-primary/20' : 'bg-muted'
         )}>
           <Icon className={cn(
             'h-5 w-5',
-            !notification.read ? 'text-primary' : 'text-muted-foreground'
+            notification.type === 'new_message' 
+              ? 'text-cyan-400' 
+              : !notification.read ? 'text-primary' : 'text-muted-foreground'
           )} />
         </div>
         

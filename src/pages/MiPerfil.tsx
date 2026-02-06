@@ -517,38 +517,38 @@ const MiPerfil = () => {
 
           {/* Content Management */}
            <Tabs defaultValue="notifications" className="space-y-6">
-             <TabsList className="grid w-full grid-cols-8 h-auto p-2 bg-card/50">
-               <TabsTrigger value="notifications" className="gap-2 py-4 text-sm md:text-lg font-light tracking-widest uppercase">
-                 <Bell className="w-5 h-5 md:w-7 md:h-7" />
-                 <span className="hidden sm:inline">Avisos</span>
+             <TabsList className="flex w-full h-auto p-2 bg-card/50 overflow-x-auto gap-1">
+               <TabsTrigger value="notifications" className="flex-shrink-0 gap-2 py-3 px-3 text-xs md:text-sm font-light tracking-wide uppercase">
+                 <Bell className="w-4 h-4 md:w-5 md:h-5" />
+                 <span className="hidden lg:inline">Avisos</span>
                </TabsTrigger>
-               <TabsTrigger value="followers" className="gap-2 py-4 text-sm md:text-lg font-light tracking-widest uppercase">
-                 <Users className="w-5 h-5 md:w-7 md:h-7" />
-                 <span className="hidden sm:inline">Seguidores</span>
+               <TabsTrigger value="followers" className="flex-shrink-0 gap-2 py-3 px-3 text-xs md:text-sm font-light tracking-wide uppercase">
+                 <Users className="w-4 h-4 md:w-5 md:h-5" />
+                 <span className="hidden lg:inline">Seguidores</span>
                </TabsTrigger>
-               <TabsTrigger value="earnings" className="gap-2 py-4 text-sm md:text-lg font-light tracking-widest uppercase">
-                 <DollarSign className="w-5 h-5 md:w-7 md:h-7" />
-                 <span className="hidden sm:inline">Ganancias</span>
+               <TabsTrigger value="earnings" className="flex-shrink-0 gap-2 py-3 px-3 text-xs md:text-sm font-light tracking-wide uppercase">
+                 <DollarSign className="w-4 h-4 md:w-5 md:h-5" />
+                 <span className="hidden lg:inline">Ganancias</span>
                </TabsTrigger>
-               <TabsTrigger value="banking" className="gap-2 py-4 text-sm md:text-lg font-light tracking-widest uppercase">
-                 <Building2 className="w-5 h-5 md:w-7 md:h-7" />
-                 <span className="hidden sm:inline">Cobros</span>
+               <TabsTrigger value="banking" className="flex-shrink-0 gap-2 py-3 px-3 text-xs md:text-sm font-light tracking-wide uppercase">
+                 <Building2 className="w-4 h-4 md:w-5 md:h-5" />
+                 <span className="hidden lg:inline">Cobros</span>
                </TabsTrigger>
-              <TabsTrigger value="gallery" className="gap-2 py-4 text-sm md:text-lg font-light tracking-widest uppercase">
-                <ImageIcon className="w-5 h-5 md:w-7 md:h-7" />
-                 <span className="hidden sm:inline">Fotos</span>
+              <TabsTrigger value="gallery" className="flex-shrink-0 gap-2 py-3 px-3 text-xs md:text-sm font-light tracking-wide uppercase">
+                <ImageIcon className="w-4 h-4 md:w-5 md:h-5" />
+                 <span className="hidden lg:inline">Fotos</span>
               </TabsTrigger>
-              <TabsTrigger value="videos" className="gap-2 py-4 text-sm md:text-lg font-light tracking-widest uppercase">
-                <Video className="w-5 h-5 md:w-7 md:h-7" />
-                 <span className="hidden sm:inline">Videos</span>
+              <TabsTrigger value="videos" className="flex-shrink-0 gap-2 py-3 px-3 text-xs md:text-sm font-light tracking-wide uppercase">
+                <Video className="w-4 h-4 md:w-5 md:h-5" />
+                 <span className="hidden lg:inline">Videos</span>
               </TabsTrigger>
-              <TabsTrigger value="audio" className="gap-2 py-4 text-sm md:text-lg font-light tracking-widest uppercase">
-                <Music className="w-5 h-5 md:w-7 md:h-7" />
-                 <span className="hidden sm:inline">Música</span>
+              <TabsTrigger value="audio" className="flex-shrink-0 gap-2 py-3 px-3 text-xs md:text-sm font-light tracking-wide uppercase">
+                <Music className="w-4 h-4 md:w-5 md:h-5" />
+                 <span className="hidden lg:inline">Música</span>
               </TabsTrigger>
-              <TabsTrigger value="mensajes" className="gap-2 py-4 text-sm md:text-lg font-light tracking-widest uppercase">
-                <MessageSquare className="w-5 h-5 md:w-7 md:h-7" />
-                 <span className="hidden sm:inline">Chats</span>
+              <TabsTrigger value="mensajes" className="flex-shrink-0 gap-2 py-3 px-3 text-xs md:text-sm font-light tracking-wide uppercase">
+                <MessageSquare className="w-4 h-4 md:w-5 md:h-5" />
+                 <span className="hidden lg:inline">Chats</span>
               </TabsTrigger>
             </TabsList>
 

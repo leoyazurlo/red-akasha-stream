@@ -185,13 +185,21 @@ export default function AkashaIA() {
     let assistantContent = "";
 
     try {
+      // Obtener el token de sesión del usuario autenticado
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+      
+      if (!accessToken) {
+        throw new Error("No hay sesión activa. Por favor, vuelve a iniciar sesión.");
+      }
+
       const response = await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/akasha-ia-chat`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify({ messages: newMessages }),
         }

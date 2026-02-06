@@ -460,8 +460,8 @@ export default function AkashaIA() {
               </Card>
 
               {/* Chat principal */}
-              <Card className="lg:col-span-3 bg-card/50 border-cyan-500/20">
-                <CardContent className="p-4">
+              <Card className="lg:col-span-3 bg-card/50 border-cyan-500/20 overflow-hidden">
+                <CardContent className="p-4 overflow-hidden">
                   <ScrollArea className="h-[400px] pr-4">
                     <div className="space-y-4">
                       {messages.length === 0 && (
@@ -487,18 +487,18 @@ export default function AkashaIA() {
                             </div>
                           )}
                           <div
-                            className={`max-w-[80%] rounded-lg p-3 ${
+                            className={`max-w-[90%] sm:max-w-[80%] rounded-lg p-3 ${
                               msg.role === "user"
                                 ? "bg-cyan-500/20 text-foreground"
                                 : "bg-muted/50 text-foreground"
                             }`}
                           >
                             {msg.role === "assistant" ? (
-                              <div className="prose prose-sm prose-invert max-w-none">
+                              <div className="prose prose-sm prose-invert max-w-none break-words overflow-hidden">
                                 <ReactMarkdown>{msg.content}</ReactMarkdown>
                               </div>
                             ) : (
-                              <p className="text-sm">{msg.content}</p>
+                              <p className="text-sm break-words">{msg.content}</p>
                             )}
                           </div>
                         </div>

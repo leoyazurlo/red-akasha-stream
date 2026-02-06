@@ -84,29 +84,44 @@ ${platformStats}
 
 ## Tu Rol:
 
-1. **Analizar Solicitudes**: Cuando un usuario propone una funcionalidad:
+1. **RECORDAR ARTISTAS Y PERFILES**: Tienes acceso a información completa de cada artista, venue y perfil de Red Akasha:
+   - Nombres, biografías, fotos de perfil y galerías
+   - Ubicaciones geográficas (ciudad, país)
+   - Géneros musicales, estilos, redes sociales
+   - Contenido subido (videos, audios, thumbnails)
+   - Historial y estadísticas de cada uno
+   
+   **USA ESTA INFORMACIÓN** cuando el usuario pregunte sobre un artista específico, quiera generar contenido relacionado, o necesite datos de cualquier perfil.
+
+2. **GENERAR IMÁGENES CONTEXTUALIZADAS**: Cuando el usuario pida generar imágenes:
+   - Si menciona un artista/venue, usa los datos reales que tienes (fotos, estilo, ubicación)
+   - Describe con precisión basándote en las imágenes de galería y avatar
+   - Mantén consistencia con la identidad visual del artista
+   - Para venues como "Auditorio Oeste", usa los datos de capacidad, ubicación y fotos
+
+3. **Analizar Solicitudes**: Cuando un usuario propone una funcionalidad:
    - Evalúa viabilidad técnica considerando la arquitectura actual
    - Identifica qué tablas/componentes se verían afectados
    - Sugiere el enfoque de implementación (frontend, backend, o ambos)
    - Estima complejidad (baja/media/alta)
 
-2. **Analizar Datos**: Cuando el usuario pregunte sobre datos o movimientos:
+4. **Analizar Datos**: Cuando el usuario pregunte sobre datos o movimientos:
    - Interpreta las estadísticas de la plataforma proporcionadas
    - Identifica tendencias y patrones
    - Sugiere acciones basadas en los datos
    - Responde con datos específicos cuando sea posible
 
-3. **Proponer Mejoras**: Basándote en tu conocimiento de la plataforma:
+5. **Proponer Mejoras**: Basándote en tu conocimiento de la plataforma:
    - Sugiere optimizaciones de UX/UI
    - Identifica posibles bugs o inconsistencias
    - Propón nuevas funcionalidades alineadas con la visión de Red Akasha
 
-4. **Guiar Implementación**: Cuando sea apropiado:
+6. **Guiar Implementación**: Cuando sea apropiado:
    - Sugiere estructura de código (componentes, hooks, funciones)
    - Propón esquemas de base de datos
    - Indica políticas RLS necesarias
 
-5. **Analizar Tendencias**: Basándote en los datos y el foro:
+7. **Analizar Tendencias**: Basándote en los datos y el foro:
    - Identifica patrones en las solicitudes de los usuarios
    - Detecta necesidades recurrentes de la comunidad
    - Prioriza funcionalidades por impacto
@@ -136,6 +151,170 @@ Breve descripción de la propuesta
 Acción concreta para avanzar
 
 Responde siempre en español de forma clara y estructurada.`;
+
+// Función para obtener contexto completo de artistas y perfiles
+async function getArtistsAndProfilesContext(supabase: any): Promise<string> {
+  try {
+    // Obtener todos los perfiles con sus datos completos
+    const { data: profiles } = await supabase
+      .from("profile_details")
+      .select(`
+        id,
+        user_id,
+        profile_type,
+        display_name,
+        bio,
+        avatar_url,
+        ciudad,
+        pais,
+        provincia,
+        instagram,
+        facebook,
+        linkedin,
+        whatsapp,
+        telefono,
+        genre,
+        technical_specs,
+        capacity,
+        venue_type,
+        members,
+        formation_date,
+        additional_profile_types
+      `)
+      .order("created_at", { ascending: false });
+
+    // Obtener galerías de imágenes de cada perfil
+    const { data: galleries } = await supabase
+      .from("profile_galleries")
+      .select("profile_id, url, media_type, title, description");
+
+    // Obtener contenido subido (videos, audios)
+    const { data: content } = await supabase
+      .from("content_uploads")
+      .select(`
+        id,
+        title,
+        description,
+        content_type,
+        video_url,
+        audio_url,
+        thumbnail_url,
+        uploader_id,
+        tags,
+        views_count,
+        likes_count
+      `)
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    // Obtener información de usuarios (nombres de usuario)
+    const { data: userProfiles } = await supabase
+      .from("profiles")
+      .select("id, username, full_name, avatar_url");
+
+    // Mapear user_id a username
+    const userMap: Record<string, any> = {};
+    userProfiles?.forEach((u: any) => {
+      userMap[u.id] = u;
+    });
+
+    // Mapear galerías por profile_id
+    const galleryMap: Record<string, any[]> = {};
+    galleries?.forEach((g: any) => {
+      if (!galleryMap[g.profile_id]) galleryMap[g.profile_id] = [];
+      galleryMap[g.profile_id].push(g);
+    });
+
+    // Mapear contenido por uploader_id
+    const contentMap: Record<string, any[]> = {};
+    content?.forEach((c: any) => {
+      if (!contentMap[c.uploader_id]) contentMap[c.uploader_id] = [];
+      contentMap[c.uploader_id].push(c);
+    });
+
+    // Construir contexto detallado de cada perfil/artista
+    let artistContext = "## 🎭 ARTISTAS Y PERFILES DE RED AKASHA\n\n";
+    artistContext += "Esta es la información detallada de cada artista, venue y perfil registrado. Usa estos datos para responder preguntas, generar imágenes basadas en características reales, y recordar información de cada uno.\n\n";
+
+    const venueProfiles: any[] = [];
+    const artistProfiles: any[] = [];
+
+    profiles?.forEach((p: any) => {
+      const user = userMap[p.user_id];
+      const gallery = galleryMap[p.id] || [];
+      const userContent = contentMap[p.user_id] || [];
+      
+      // Clasificar por tipo
+      if (p.profile_type === "sala_concierto" || p.profile_type === "venue") {
+        venueProfiles.push({ ...p, user, gallery, content: userContent });
+      } else {
+        artistProfiles.push({ ...p, user, gallery, content: userContent });
+      }
+    });
+
+    // Sección de Venues
+    if (venueProfiles.length > 0) {
+      artistContext += "### 🏛️ VENUES Y SALAS DE CONCIERTO\n\n";
+      venueProfiles.forEach((v: any) => {
+        artistContext += `**${v.display_name || "Sin nombre"}**\n`;
+        artistContext += `- Tipo: ${v.venue_type || v.profile_type}\n`;
+        artistContext += `- Ubicación: ${v.ciudad || ""}, ${v.provincia || ""}, ${v.pais || ""}\n`;
+        if (v.capacity) artistContext += `- Capacidad: ${v.capacity} personas\n`;
+        if (v.bio) artistContext += `- Descripción: ${v.bio}\n`;
+        if (v.technical_specs) artistContext += `- Specs técnicos: ${v.technical_specs}\n`;
+        if (v.avatar_url) artistContext += `- Imagen principal: ${v.avatar_url}\n`;
+        if (v.gallery.length > 0) {
+          artistContext += `- Galería de fotos (${v.gallery.length} imágenes): ${v.gallery.map((g: any) => g.url).join(", ")}\n`;
+        }
+        if (v.instagram) artistContext += `- Instagram: @${v.instagram}\n`;
+        artistContext += "\n";
+      });
+    }
+
+    // Sección de Artistas
+    if (artistProfiles.length > 0) {
+      artistContext += "### 🎵 ARTISTAS Y CREADORES\n\n";
+      artistProfiles.forEach((a: any) => {
+        const username = a.user?.username || "desconocido";
+        artistContext += `**${a.display_name || username}** (@${username})\n`;
+        artistContext += `- Tipo de perfil: ${a.profile_type}\n`;
+        if (a.additional_profile_types?.length > 0) {
+          artistContext += `- Roles adicionales: ${a.additional_profile_types.join(", ")}\n`;
+        }
+        artistContext += `- Ubicación: ${a.ciudad || ""}, ${a.provincia || ""}, ${a.pais || ""}\n`;
+        if (a.genre) artistContext += `- Género musical: ${a.genre}\n`;
+        if (a.bio) artistContext += `- Biografía: ${a.bio}\n`;
+        if (a.members) artistContext += `- Miembros: ${a.members}\n`;
+        if (a.formation_date) artistContext += `- Fecha de formación: ${a.formation_date}\n`;
+        if (a.avatar_url) artistContext += `- Foto de perfil: ${a.avatar_url}\n`;
+        if (a.gallery.length > 0) {
+          artistContext += `- Galería de fotos (${a.gallery.length} imágenes): ${a.gallery.map((g: any) => g.url).join(", ")}\n`;
+        }
+        if (a.content.length > 0) {
+          artistContext += `- Contenido subido (${a.content.length} items):\n`;
+          a.content.forEach((c: any) => {
+            artistContext += `  • "${c.title}" (${c.content_type}): ${c.views_count || 0} vistas\n`;
+            if (c.video_url) artistContext += `    Video: ${c.video_url}\n`;
+            if (c.audio_url) artistContext += `    Audio: ${c.audio_url}\n`;
+            if (c.thumbnail_url) artistContext += `    Thumbnail: ${c.thumbnail_url}\n`;
+          });
+        }
+        // Redes sociales
+        const socials = [];
+        if (a.instagram) socials.push(`Instagram: @${a.instagram}`);
+        if (a.facebook) socials.push(`Facebook: ${a.facebook}`);
+        if (a.linkedin) socials.push(`LinkedIn: ${a.linkedin}`);
+        if (socials.length > 0) artistContext += `- Redes: ${socials.join(", ")}\n`;
+        artistContext += "\n";
+      });
+    }
+
+    return artistContext;
+  } catch (error) {
+    console.error("Error fetching artists context:", error);
+    return "\n## Contexto de artistas no disponible.\n";
+  }
+}
 
 // Función para obtener estadísticas de la plataforma
 async function getPlatformStats(supabase: any): Promise<string> {
@@ -230,17 +409,6 @@ async function getPlatformStats(supabase: any): Promise<string> {
       .order("created_at", { ascending: false })
       .limit(10);
 
-    // Usuarios más activos (con más contenido)
-    const { data: activeUploaders } = await supabase
-      .from("content_uploads")
-      .select("uploader_id")
-      .eq("status", "approved");
-
-    const uploaderCounts: Record<string, number> = {};
-    activeUploaders?.forEach((u: any) => {
-      uploaderCounts[u.uploader_id] = (uploaderCounts[u.uploader_id] || 0) + 1;
-    });
-
     // Formatear estadísticas
     const profileTypeList = Object.entries(profileTypeCounts)
       .map(([type, count]) => `  - ${type}: ${count}`)
@@ -296,7 +464,6 @@ ${topContentList}
 ${recentThreadsList}
 
 ---
-Usa estos datos para responder preguntas sobre el estado de la plataforma, tendencias y movimientos.
 `;
   } catch (error) {
     console.error("Error fetching platform stats:", error);
@@ -373,8 +540,8 @@ serve(async (req) => {
     // Create service client for data operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { messages, includeForumContext, generateImplementation, includePlatformStats = true } = await req.json();
-    console.log(`[${VERSION}] Processing request - generateImplementation: ${generateImplementation}`);
+    const { messages, includeForumContext, generateImplementation, includePlatformStats = true, includeArtistsContext = true } = await req.json();
+    console.log(`[${VERSION}] Processing request - generateImplementation: ${generateImplementation}, includeArtistsContext: ${includeArtistsContext}`);
 
     // Obtener estadísticas de la plataforma
     let platformStats = "";
@@ -382,7 +549,13 @@ serve(async (req) => {
       platformStats = await getPlatformStats(supabase);
     }
 
-    let contextMessages = [{ role: "system", content: getSystemPrompt(platformStats) }];
+    // Obtener contexto completo de artistas y perfiles
+    let artistsContext = "";
+    if (includeArtistsContext) {
+      artistsContext = await getArtistsAndProfilesContext(supabase);
+    }
+
+    let contextMessages = [{ role: "system", content: getSystemPrompt(platformStats + "\n" + artistsContext) }];
 
     // Si se solicita, agregar contexto del foro
     if (includeForumContext) {

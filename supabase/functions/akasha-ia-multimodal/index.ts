@@ -114,11 +114,71 @@ async function analyzeAudioMetadata(metadata: any, apiKey: string): Promise<stri
   return data.choices?.[0]?.message?.content || "No se pudo analizar el audio";
 }
 
-// Generate image
-async function generateImage(prompt: string, style: string, apiKey: string): Promise<{ imageUrl: string; description: string }> {
-  const fullPrompt = style 
+// Get artist/profile context for image generation
+async function getProfileContextForImage(supabase: any, searchTerms: string[]): Promise<string> {
+  try {
+    // Search for matching profiles by name
+    let contextInfo = "";
+    
+    for (const term of searchTerms) {
+      const { data: profiles } = await supabase
+        .from("profile_details")
+        .select(`
+          id,
+          display_name,
+          bio,
+          avatar_url,
+          profile_type,
+          ciudad,
+          pais,
+          genre,
+          venue_type,
+          capacity
+        `)
+        .or(`display_name.ilike.%${term}%,bio.ilike.%${term}%`)
+        .limit(3);
+      
+      if (profiles && profiles.length > 0) {
+        for (const p of profiles) {
+          // Get gallery images for this profile
+          const { data: gallery } = await supabase
+            .from("profile_galleries")
+            .select("url, description")
+            .eq("profile_id", p.id)
+            .limit(5);
+          
+          contextInfo += `\n## Perfil: ${p.display_name}\n`;
+          contextInfo += `- Tipo: ${p.profile_type}\n`;
+          if (p.bio) contextInfo += `- Descripción: ${p.bio}\n`;
+          if (p.ciudad) contextInfo += `- Ubicación: ${p.ciudad}, ${p.pais}\n`;
+          if (p.genre) contextInfo += `- Género: ${p.genre}\n`;
+          if (p.venue_type) contextInfo += `- Tipo de venue: ${p.venue_type}\n`;
+          if (p.capacity) contextInfo += `- Capacidad: ${p.capacity}\n`;
+          if (p.avatar_url) contextInfo += `- Foto principal: ${p.avatar_url}\n`;
+          if (gallery && gallery.length > 0) {
+            contextInfo += `- Galería de fotos: ${gallery.map((g: any) => g.url).join(", ")}\n`;
+          }
+        }
+      }
+    }
+    
+    return contextInfo;
+  } catch (error) {
+    console.error("Error getting profile context:", error);
+    return "";
+  }
+}
+
+// Generate image with context
+async function generateImage(prompt: string, style: string, apiKey: string, artistContext: string = ""): Promise<{ imageUrl: string; description: string }> {
+  let fullPrompt = style 
     ? `${prompt}. Estilo artístico: ${style}. Alta calidad, profesional, para industria musical.`
     : `${prompt}. Diseño profesional para industria musical, moderno, atractivo.`;
+
+  // Add artist context if available
+  if (artistContext) {
+    fullPrompt = `${fullPrompt}\n\nCONTEXTO DE REFERENCIA (usa esta información para hacer la imagen más fiel a la realidad):\n${artistContext}`;
+  }
 
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
@@ -221,7 +281,14 @@ serve(async (req) => {
         break;
 
       case "generate_image":
-        const imageResult = await generateImage(data.prompt, data.style, LOVABLE_API_KEY);
+        // Extract keywords from prompt to search for relevant profiles
+        const promptWords = data.prompt.toLowerCase().split(/\s+/);
+        const searchTerms = promptWords.filter((w: string) => w.length > 3);
+        
+        // Get context for any mentioned artists/venues
+        const artistContext = await getProfileContextForImage(supabase, searchTerms);
+        
+        const imageResult = await generateImage(data.prompt, data.style, LOVABLE_API_KEY, artistContext);
         
         // Save generated image record
         const { data: savedImage } = await supabase.from("ia_generated_images").insert({
@@ -231,7 +298,7 @@ serve(async (req) => {
           image_url: imageResult.imageUrl,
           image_type: data.imageType || "general",
           style: data.style || null,
-          metadata: { description: imageResult.description }
+          metadata: { description: imageResult.description, artistContext: artistContext ? true : false }
         }).select().single();
         
         result = { ...imageResult, id: savedImage?.id };

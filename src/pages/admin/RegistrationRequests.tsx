@@ -78,7 +78,17 @@ export default function AdminRegistrationRequests() {
       });
 
       if (response.error) {
-        throw new Error(response.error.message || 'Error al aprobar la solicitud');
+        const err: any = response.error;
+        let msg = err?.message || 'Error al aprobar la solicitud';
+        try {
+          if (err?.context?.json) {
+            const body = await err.context.json();
+            if (body?.error) msg = body.error;
+          }
+        } catch {
+          // ignore parsing errors
+        }
+        throw new Error(msg);
       }
 
       if (!response.data?.success) {

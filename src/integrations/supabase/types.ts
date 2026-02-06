@@ -2405,6 +2405,7 @@ export type Database = {
           perfil: string[] | null
           provincia: string | null
           que_buscas: string[] | null
+          rejection_reason: string | null
           status: string
           telefono: string | null
           updated_at: string
@@ -2422,6 +2423,7 @@ export type Database = {
           perfil?: string[] | null
           provincia?: string | null
           que_buscas?: string[] | null
+          rejection_reason?: string | null
           status?: string
           telefono?: string | null
           updated_at?: string
@@ -2439,6 +2441,7 @@ export type Database = {
           perfil?: string[] | null
           provincia?: string | null
           que_buscas?: string[] | null
+          rejection_reason?: string | null
           status?: string
           telefono?: string | null
           updated_at?: string

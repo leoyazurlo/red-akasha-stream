@@ -27,12 +27,17 @@ import { supabase } from "@/integrations/supabase/client";
    Pencil,
    MessageSquare,
    DollarSign,
-   Building2
+   Building2,
+   Bell,
+   Users
  } from "lucide-react";
 import { MessagesTab } from "@/components/profile/MessagesTab";
- import { UserBankingForm } from "@/components/profile/UserBankingForm";
- import { UserEarningsDashboard } from "@/components/profile/UserEarningsDashboard";
- import { ForumActivitySection } from "@/components/profile/ForumActivitySection";
+import { NotificationsTab } from "@/components/profile/NotificationsTab";
+import { UserBankingForm } from "@/components/profile/UserBankingForm";
+import { UserEarningsDashboard } from "@/components/profile/UserEarningsDashboard";
+import { ForumActivitySection } from "@/components/profile/ForumActivitySection";
+import { FollowersList } from "@/components/profile/FollowersList";
+import { useFollow } from "@/hooks/useFollow";
 import { validateFile, formatFileSize, FILE_COUNT_LIMITS } from "@/lib/storage-validation";
 import { buildProfileObjectPath, uploadWithRetry } from "@/lib/storage-keys";
 
@@ -97,6 +102,9 @@ const MiPerfil = () => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [audioPlaylist, setAudioPlaylist] = useState<AudioTrack[]>([]);
+  
+  // Follow stats
+  const { followersCount, followingCount } = useFollow(user?.id || null);
   
   // New uploads
   const [newVideoLinks, setNewVideoLinks] = useState<string[]>([]);
@@ -497,7 +505,7 @@ const MiPerfil = () => {
                   <Button 
                     variant="outline" 
                     onClick={() => navigate(`/circuito/perfil/${profile.id}`)}
-                    className="border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/20"
+                    className="border-accent/50 text-accent hover:bg-accent/20"
                   >
                     <Eye className="w-4 h-4 mr-2" />
                     Ver Público
@@ -508,8 +516,16 @@ const MiPerfil = () => {
           </Card>
 
           {/* Content Management */}
-           <Tabs defaultValue="earnings" className="space-y-6">
-             <TabsList className="grid w-full grid-cols-6 h-auto p-2 bg-card/50">
+           <Tabs defaultValue="notifications" className="space-y-6">
+             <TabsList className="grid w-full grid-cols-8 h-auto p-2 bg-card/50">
+               <TabsTrigger value="notifications" className="gap-2 py-4 text-sm md:text-lg font-light tracking-widest uppercase">
+                 <Bell className="w-5 h-5 md:w-7 md:h-7" />
+                 <span className="hidden sm:inline">Avisos</span>
+               </TabsTrigger>
+               <TabsTrigger value="followers" className="gap-2 py-4 text-sm md:text-lg font-light tracking-widest uppercase">
+                 <Users className="w-5 h-5 md:w-7 md:h-7" />
+                 <span className="hidden sm:inline">Seguidores</span>
+               </TabsTrigger>
                <TabsTrigger value="earnings" className="gap-2 py-4 text-sm md:text-lg font-light tracking-widest uppercase">
                  <DollarSign className="w-5 h-5 md:w-7 md:h-7" />
                  <span className="hidden sm:inline">Ganancias</span>
@@ -535,6 +551,36 @@ const MiPerfil = () => {
                  <span className="hidden sm:inline">Inbox</span>
               </TabsTrigger>
             </TabsList>
+
+             {/* Notifications Tab */}
+             <TabsContent value="notifications">
+               <NotificationsTab />
+             </TabsContent>
+
+             {/* Followers Tab */}
+             <TabsContent value="followers">
+               <Card className="bg-card/50 backdrop-blur-sm border-primary/20">
+                 <CardHeader>
+                   <CardTitle className="flex items-center gap-2">
+                     <Users className="w-5 h-5 text-primary" />
+                     Mis Seguidores ({followersCount})
+                   </CardTitle>
+                   <CardDescription>
+                     Personas que siguen tu perfil
+                   </CardDescription>
+                 </CardHeader>
+                 <CardContent>
+                   {user?.id && (
+                     <FollowersList 
+                       userId={user.id} 
+                       followersCount={followersCount} 
+                       isLoggedIn={true}
+                       showAsDialog={false}
+                     />
+                   )}
+                 </CardContent>
+               </Card>
+             </TabsContent>
 
              {/* Earnings Tab */}
              <TabsContent value="earnings">

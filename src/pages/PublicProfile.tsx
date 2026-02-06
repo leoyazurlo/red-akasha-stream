@@ -8,6 +8,7 @@ import { ProfilePaidContent } from "@/components/profile/ProfilePaidContent";
 import { FollowButton } from "@/components/profile/FollowButton";
 import { SendMessageButton } from "@/components/profile/SendMessageButton";
 import { FollowStats } from "@/components/profile/FollowStats";
+import { FollowersList } from "@/components/profile/FollowersList";
 import { useFollow } from "@/hooks/useFollow";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -513,12 +514,13 @@ const PublicProfile = () => {
                     )}
                   </div>
 
-                  {/* Followers Stats */}
+                  {/* Followers Stats - clickable for logged in users */}
                   <div className="flex flex-wrap gap-6 mb-6 justify-center md:justify-start text-sm">
-                    <div className="text-center">
-                      <span className="block text-2xl font-bold text-primary">{followersCount}</span>
-                      <span className="text-muted-foreground">Seguidores</span>
-                    </div>
+                    <FollowersList 
+                      userId={profile.user_id} 
+                      followersCount={followersCount} 
+                      isLoggedIn={!!user} 
+                    />
                     <div className="text-center">
                       <span className="block text-2xl font-bold text-primary">{followingCount}</span>
                       <span className="text-muted-foreground">Siguiendo</span>

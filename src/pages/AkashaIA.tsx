@@ -469,10 +469,10 @@ export default function AkashaIA() {
               </Card>
 
               {/* Chat principal */}
-              <Card className="lg:col-span-3 bg-card/50 border-cyan-500/20 overflow-hidden">
-                <CardContent className="p-4 overflow-hidden">
-                  <ScrollArea className="h-[400px] pr-4">
-                    <div className="space-y-4">
+              <Card className="lg:col-span-3 bg-card/50 border-cyan-500/20">
+                <CardContent className="p-4">
+                  <ScrollArea className="h-[400px]">
+                    <div className="space-y-4 pr-4">
                       {messages.length === 0 && (
                         <div className="text-center py-12">
                           <Bot className="h-12 w-12 mx-auto text-cyan-400/50 mb-4" />
@@ -488,7 +488,7 @@ export default function AkashaIA() {
                       {messages.map((msg, idx) => (
                         <div
                           key={idx}
-                          className={`flex gap-3 ${msg.role === "user" ? "justify-end" : ""}`}
+                          className={`flex min-w-0 gap-3 ${msg.role === "user" ? "justify-end" : ""}`}
                         >
                           {msg.role === "assistant" && (
                             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center">
@@ -496,14 +496,14 @@ export default function AkashaIA() {
                             </div>
                           )}
                           <div
-                            className={`max-w-[90%] sm:max-w-[80%] rounded-lg p-3 ${
+                            className={`min-w-0 max-w-[90%] sm:max-w-[80%] rounded-lg p-3 ${
                               msg.role === "user"
                                 ? "bg-cyan-500/20 text-foreground"
                                 : "bg-muted/50 text-foreground"
                             }`}
                           >
                             {msg.role === "assistant" ? (
-                              <div className="prose prose-sm prose-invert max-w-none break-words overflow-hidden">
+                              <div className="prose prose-sm prose-invert max-w-none break-words min-w-0">
                                 <ReactMarkdown>{msg.content}</ReactMarkdown>
                               </div>
                             ) : (

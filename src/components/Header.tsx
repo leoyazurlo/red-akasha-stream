@@ -34,8 +34,8 @@ export const Header = () => {
   const navItems = [
     { name: t('nav.home'), href: "/" },
     { name: t('nav.onDemand'), href: "/on-demand" },
-    { name: t('nav.artists'), href: "/artistas" },
     { name: t('nav.circuit'), href: "/circuito" },
+    { name: t('nav.artists'), href: "/artistas" },
     { name: t('nav.join'), href: "/asociate" },
     { name: t('nav.upload'), href: "/subir-contenido" },
     { name: t('nav.forum'), href: "/foro" },

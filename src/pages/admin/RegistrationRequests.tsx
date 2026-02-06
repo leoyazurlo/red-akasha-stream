@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Loader2, CheckCircle2, XCircle, Clock, User } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Clock, User, Copy } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -10,10 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuditLog } from "@/hooks/useAuditLog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface RegistrationRequest {
   id: string;
@@ -39,17 +36,8 @@ export default function AdminRegistrationRequests() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<'pending' | 'approved' | 'rejected'>('pending');
   
-  // Approval dialog state
-  const [approvalDialog, setApprovalDialog] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState<RegistrationRequest | null>(null);
-  const [approvalPassword, setApprovalPassword] = useState("");
-  const [approving, setApproving] = useState(false);
-
-  useEffect(() => {
-    if (!authLoading && user && isAdmin) {
-      loadRequests();
-    }
-  }, [authLoading, user, isAdmin, statusFilter]);
+  // Approval state
+  const [approvingId, setApprovingId] = useState<string | null>(null);
 
   const loadRequests = async () => {
     try {
@@ -73,33 +61,19 @@ export default function AdminRegistrationRequests() {
     }
   };
 
-  const openApprovalDialog = (request: RegistrationRequest) => {
-    setSelectedRequest(request);
-    // Generate a random password
-    const randomPassword = generateSecurePassword();
-    setApprovalPassword(randomPassword);
-    setApprovalDialog(true);
-  };
-
-  const generateSecurePassword = () => {
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%';
-    let password = '';
-    for (let i = 0; i < 12; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
+  useEffect(() => {
+    if (!authLoading && user && isAdmin) {
+      loadRequests();
     }
-    return password;
-  };
+  }, [authLoading, user, isAdmin, statusFilter]);
 
-  const handleApprove = async () => {
-    if (!selectedRequest || !approvalPassword) return;
-    
-    setApproving(true);
+  const handleApprove = async (request: RegistrationRequest) => {
+    setApprovingId(request.id);
     try {
       const response = await supabase.functions.invoke('approve-registration', {
         body: {
-          requestId: selectedRequest.id,
-          password: approvalPassword,
-          avatar_url: null, // Could be enhanced to include avatar from request
+          requestId: request.id,
+          avatar_url: null,
         }
       });
 
@@ -115,31 +89,36 @@ export default function AdminRegistrationRequests() {
       await logAction({
         action: 'approve_request',
         targetType: 'registration_request',
-        targetId: selectedRequest.id,
+        targetId: request.id,
         details: {
-          nombre: selectedRequest.nombre,
-          email: selectedRequest.email,
-          pais: selectedRequest.pais,
+          nombre: request.nombre,
+          email: request.email,
+          pais: request.pais,
           status: 'approved',
           user_id: response.data.user_id,
         },
       });
 
+      // Show success with password
+      const tempPassword = response.data.temp_password;
       toast({
         title: "¡Usuario aprobado!",
-        description: `${selectedRequest.nombre} (${selectedRequest.email}) ya puede acceder a la plataforma.`,
+        description: `${request.nombre} ha sido aprobado. Contraseña temporal: ${tempPassword}`,
+        duration: 30000,
+        action: (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => {
+              navigator.clipboard.writeText(tempPassword);
+              toast({ title: "Contraseña copiada" });
+            }}
+          >
+            <Copy className="h-4 w-4" />
+          </Button>
+        ),
       });
 
-      // Show the password to admin (they should communicate it to user)
-      toast({
-        title: "Contraseña temporal",
-        description: `La contraseña para ${selectedRequest.email} es: ${approvalPassword}. Comunícala al usuario.`,
-        duration: 15000,
-      });
-
-      setApprovalDialog(false);
-      setSelectedRequest(null);
-      setApprovalPassword("");
       loadRequests();
     } catch (error: any) {
       toast({
@@ -148,7 +127,7 @@ export default function AdminRegistrationRequests() {
         variant: "destructive",
       });
     } finally {
-      setApproving(false);
+      setApprovingId(null);
     }
   };
 
@@ -341,16 +320,27 @@ export default function AdminRegistrationRequests() {
                   {request.status === 'pending' && (
                     <div className="flex gap-2 pt-4 border-t">
                       <Button
-                        onClick={() => openApprovalDialog(request)}
+                        onClick={() => handleApprove(request)}
+                        disabled={approvingId === request.id}
                         variant="default"
                         size="sm"
                         className="gap-2"
                       >
-                        <CheckCircle2 className="h-4 w-4" />
-                        Aprobar y crear usuario
+                        {approvingId === request.id ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Aprobando...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle2 className="h-4 w-4" />
+                            Aprobar
+                          </>
+                        )}
                       </Button>
                       <Button
                         onClick={() => updateRequestStatus(request.id, 'rejected')}
+                        disabled={approvingId === request.id}
                         variant="destructive"
                         size="sm"
                         className="gap-2"
@@ -377,59 +367,6 @@ export default function AdminRegistrationRequests() {
           </TabsContent>
         </Tabs>
 
-        {/* Approval Dialog */}
-        <Dialog open={approvalDialog} onOpenChange={setApprovalDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Aprobar solicitud de registro</DialogTitle>
-              <DialogDescription>
-                Se creará una cuenta para <strong>{selectedRequest?.nombre}</strong> ({selectedRequest?.email}).
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="temp-password">Contraseña temporal</Label>
-                <Input
-                  id="temp-password"
-                  value={approvalPassword}
-                  onChange={(e) => setApprovalPassword(e.target.value)}
-                  placeholder="Contraseña para el nuevo usuario"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Esta contraseña será usada para crear la cuenta. Deberás comunicarla al usuario.
-                </p>
-              </div>
-
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setApprovalPassword(generateSecurePassword())}
-              >
-                Generar nueva contraseña
-              </Button>
-            </div>
-
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setApprovalDialog(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={handleApprove} disabled={approving || !approvalPassword}>
-                {approving ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Aprobando...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="mr-2 h-4 w-4" />
-                    Aprobar y crear usuario
-                  </>
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
     </AdminLayout>
   );

@@ -677,26 +677,24 @@ const Asociate = () => {
                 </div>
               ) : !currentUser ? (
                 <div className="text-center py-12 animate-fade-in">
-                  <LogIn className="w-16 h-16 text-primary mx-auto mb-6" />
+                  <User className="w-16 h-16 text-primary mx-auto mb-6" />
                   <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                    Iniciar sesión requerido
+                    ¡Únete a Red Akasha!
                   </h3>
-                  <p className="text-muted-foreground mb-6">
-                    Para agregar un nuevo perfil, primero debes iniciar sesión con tu cuenta existente.
+                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                    Para ser parte de nuestra comunidad de artistas y profesionales, completa el formulario de registro.
                   </p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Link to="/auth">
-                      <Button size="lg" className="gap-2">
-                        <LogIn className="w-4 h-4" />
-                        Iniciar sesión
-                      </Button>
-                    </Link>
-                    <Link to="/auth">
-                      <Button variant="outline" size="lg">
-                        Crear cuenta nueva
+                  <div className="flex justify-center">
+                    <Link to="/auth?tab=signup">
+                      <Button size="lg" className="gap-2 bg-primary hover:bg-primary/90">
+                        <User className="w-4 h-4" />
+                        Asociarse ahora
                       </Button>
                     </Link>
                   </div>
+                  <p className="text-sm text-muted-foreground mt-4">
+                    ¿Ya tienes cuenta? <Link to="/auth" className="text-primary hover:underline">Iniciar sesión</Link>
+                  </p>
                 </div>
               ) : submitted ? (
                 <div className="text-center py-12 animate-scale-in">

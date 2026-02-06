@@ -21,6 +21,7 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { MessageBell } from "@/components/notifications/MessageBell";
 import { LanguageSelector } from "@/components/LanguageSelector";
 
 export const Header = () => {
@@ -91,6 +92,7 @@ export const Header = () => {
             {/* Auth Section */}
             {user ? (
               <>
+                <MessageBell />
                 <NotificationBell />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

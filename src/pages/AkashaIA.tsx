@@ -154,7 +154,9 @@ export default function AkashaIA() {
     }
   };
 
-  const startNewConversation = () => {
+  const startNewConversation = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
     setCurrentConversationId(null);
     setMessages([]);
   };
@@ -424,7 +426,12 @@ export default function AkashaIA() {
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm">Historial</CardTitle>
-                    <Button size="sm" variant="ghost" onClick={startNewConversation}>
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      type="button"
+                      onClick={(e) => startNewConversation(e)}
+                    >
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
@@ -540,6 +547,7 @@ export default function AkashaIA() {
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && !e.shiftKey) {
                             e.preventDefault();
+                            e.stopPropagation();
                             sendMessage();
                           }
                         }}

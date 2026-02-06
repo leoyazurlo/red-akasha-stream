@@ -10,6 +10,7 @@ import { LiveStreamProvider } from "@/contexts/LiveStreamContext";
 import { FloatingLivePlayer } from "@/components/FloatingLivePlayer";
 import { GeoRestrictionGuard } from "@/components/GeoRestrictionGuard";
 import { ProfileEditDraftProvider } from "@/contexts/ProfileEditDraftContext";
+import { UnreadMessagesAlert } from "@/components/notifications/UnreadMessagesAlert";
 import Index from "./pages/Index";
 import Forum from "./pages/Forum";
 import Subforo from "./pages/Subforo";
@@ -123,6 +124,7 @@ const App = () => (
                   </Routes>
                   <MiniPlayer />
                   <FloatingLivePlayer />
+                  <UnreadMessagesAlert />
                 </ProfileEditDraftProvider>
               </GeoRestrictionGuard>
             </LiveStreamProvider>

@@ -28,6 +28,9 @@ import {
   Upload,
   TrendingUp,
   Image as ImageIcon,
+  User,
+  Shield,
+  FileText,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { ProposalCard } from "@/components/akasha-ia/ProposalCard";
@@ -35,6 +38,9 @@ import { FileUploadPanel } from "@/components/akasha-ia/FileUploadPanel";
 import { VoiceInput } from "@/components/akasha-ia/VoiceInput";
 import { ImageGenerator } from "@/components/akasha-ia/ImageGenerator";
 import { PredictionsPanel } from "@/components/akasha-ia/PredictionsPanel";
+import ArtistAssistantPanel from "@/components/akasha-ia/ArtistAssistantPanel";
+import ModeratorPanel from "@/components/akasha-ia/ModeratorPanel";
+import ContentGeneratorPanel from "@/components/akasha-ia/ContentGeneratorPanel";
 
 interface Message {
   role: "user" | "assistant";
@@ -368,26 +374,38 @@ export default function AkashaIA() {
         </div>
 
         <Tabs defaultValue="chat" className="space-y-4">
-          <TabsList className="bg-muted/50">
+          <TabsList className="bg-muted/50 flex-wrap h-auto gap-1 p-1">
             <TabsTrigger value="chat" className="gap-2">
               <MessageSquare className="h-4 w-4" />
-              Chat
+              <span className="hidden sm:inline">Chat</span>
+            </TabsTrigger>
+            <TabsTrigger value="artist" className="gap-2">
+              <User className="h-4 w-4" />
+              <span className="hidden sm:inline">Artistas</span>
+            </TabsTrigger>
+            <TabsTrigger value="moderator" className="gap-2">
+              <Shield className="h-4 w-4" />
+              <span className="hidden sm:inline">Moderador</span>
+            </TabsTrigger>
+            <TabsTrigger value="content" className="gap-2">
+              <FileText className="h-4 w-4" />
+              <span className="hidden sm:inline">Contenido</span>
             </TabsTrigger>
             <TabsTrigger value="files" className="gap-2">
               <Upload className="h-4 w-4" />
-              Archivos
+              <span className="hidden sm:inline">Archivos</span>
             </TabsTrigger>
             <TabsTrigger value="generate" className="gap-2">
               <ImageIcon className="h-4 w-4" />
-              Generar
+              <span className="hidden sm:inline">Generar</span>
             </TabsTrigger>
             <TabsTrigger value="predictions" className="gap-2">
               <TrendingUp className="h-4 w-4" />
-              Predicciones
+              <span className="hidden sm:inline">Predicciones</span>
             </TabsTrigger>
             <TabsTrigger value="proposals" className="gap-2">
               <Lightbulb className="h-4 w-4" />
-              Propuestas
+              <span className="hidden sm:inline">Propuestas</span>
             </TabsTrigger>
           </TabsList>
 
@@ -540,6 +558,18 @@ export default function AkashaIA() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="artist">
+            <ArtistAssistantPanel />
+          </TabsContent>
+
+          <TabsContent value="moderator">
+            <ModeratorPanel />
+          </TabsContent>
+
+          <TabsContent value="content">
+            <ContentGeneratorPanel />
           </TabsContent>
 
           <TabsContent value="files">

@@ -11,7 +11,17 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuditLog } from "@/hooks/useAuditLog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Textarea } from "@/components/ui/textarea";
 interface RegistrationRequest {
   id: string;
   nombre: string;
@@ -38,6 +48,12 @@ export default function AdminRegistrationRequests() {
   
   // Approval state
   const [approvingId, setApprovingId] = useState<string | null>(null);
+  
+  // Rejection dialog state
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [requestToReject, setRequestToReject] = useState<RegistrationRequest | null>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
 
   const loadRequests = async () => {
     try {
@@ -141,44 +157,91 @@ export default function AdminRegistrationRequests() {
     }
   };
 
-  const updateRequestStatus = async (id: string, newStatus: 'rejected') => {
+  const openRejectDialog = (request: RegistrationRequest) => {
+    setRequestToReject(request);
+    setRejectionReason("");
+    setRejectDialogOpen(true);
+  };
+
+  const handleReject = async () => {
+    if (!requestToReject || !rejectionReason.trim()) {
+      toast({
+        title: "Error",
+        description: "Debes proporcionar un motivo de rechazo",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setRejectingId(requestToReject.id);
     try {
-      const request = requests.find(r => r.id === id);
-      
+      // Update the request status and store rejection reason
       const { error } = await supabase
         .from('registration_requests')
         .update({ 
-          status: newStatus,
+          status: 'rejected',
+          rejection_reason: rejectionReason.trim(),
           updated_at: new Date().toISOString()
         })
-        .eq('id', id);
+        .eq('id', requestToReject.id);
 
       if (error) throw error;
 
+      // Log the action
       await logAction({
         action: 'reject_request',
         targetType: 'registration_request',
-        targetId: id,
+        targetId: requestToReject.id,
         details: {
-          nombre: request?.nombre,
-          email: request?.email,
-          pais: request?.pais,
-          status: newStatus,
+          nombre: requestToReject.nombre,
+          email: requestToReject.email,
+          pais: requestToReject.pais,
+          status: 'rejected',
+          rejection_reason: rejectionReason.trim(),
         },
       });
 
-      toast({
-        title: "Solicitud rechazada",
-        description: "La solicitud ha sido rechazada",
-      });
+      // Try to send rejection email (will gracefully fail if Resend not configured)
+      try {
+        const emailResponse = await supabase.functions.invoke('send-rejection-email', {
+          body: {
+            email: requestToReject.email,
+            nombre: requestToReject.nombre,
+            motivo: rejectionReason.trim(),
+          }
+        });
+        
+        if (emailResponse.data?.success) {
+          toast({
+            title: "Solicitud rechazada",
+            description: "La solicitud ha sido rechazada y se ha enviado un email al usuario.",
+          });
+        } else {
+          toast({
+            title: "Solicitud rechazada",
+            description: emailResponse.data?.message || "La solicitud ha sido rechazada (email no enviado - servicio no configurado)",
+          });
+        }
+      } catch (emailError) {
+        console.error("Error sending rejection email:", emailError);
+        toast({
+          title: "Solicitud rechazada",
+          description: "La solicitud ha sido rechazada pero no se pudo enviar el email de notificación.",
+        });
+      }
 
+      setRejectDialogOpen(false);
+      setRequestToReject(null);
+      setRejectionReason("");
       loadRequests();
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "No se pudo actualizar el estado",
+        description: error.message || "No se pudo rechazar la solicitud",
         variant: "destructive",
       });
+    } finally {
+      setRejectingId(null);
     }
   };
 
@@ -349,14 +412,23 @@ export default function AdminRegistrationRequests() {
                         )}
                       </Button>
                       <Button
-                        onClick={() => updateRequestStatus(request.id, 'rejected')}
-                        disabled={approvingId === request.id}
+                        onClick={() => openRejectDialog(request)}
+                        disabled={approvingId === request.id || rejectingId === request.id}
                         variant="destructive"
                         size="sm"
                         className="gap-2"
                       >
-                        <XCircle className="h-4 w-4" />
-                        Rechazar
+                        {rejectingId === request.id ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Rechazando...
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="h-4 w-4" />
+                            Rechazar
+                          </>
+                        )}
                       </Button>
                     </div>
                   )}
@@ -378,6 +450,64 @@ export default function AdminRegistrationRequests() {
         </Tabs>
 
       </div>
+
+      {/* Rejection Confirmation Dialog */}
+      <AlertDialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <XCircle className="h-5 w-5 text-destructive" />
+              Confirmar Rechazo
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-left">
+              Estás a punto de rechazar la solicitud de <strong>{requestToReject?.nombre}</strong>.
+              Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          <div className="space-y-2">
+            <label htmlFor="rejection-reason" className="text-sm font-medium">
+              Motivo del rechazo <span className="text-destructive">*</span>
+            </label>
+            <Textarea
+              id="rejection-reason"
+              placeholder="Escribe el motivo por el cual rechazas esta solicitud. Este mensaje será enviado al usuario por email."
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              className="min-h-[120px]"
+            />
+            <p className="text-xs text-muted-foreground">
+              Este motivo se guardará y se enviará por email al solicitante.
+            </p>
+          </div>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              onClick={() => {
+                setRejectDialogOpen(false);
+                setRequestToReject(null);
+                setRejectionReason("");
+              }}
+            >
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleReject}
+              disabled={!rejectionReason.trim() || rejectingId !== null}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {rejectingId ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Rechazando...
+                </>
+              ) : (
+                "Confirmar Rechazo"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 }

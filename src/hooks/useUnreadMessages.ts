@@ -2,19 +2,29 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
+interface UnreadConversation {
+  partnerId: string;
+  partnerName: string;
+  partnerAvatar: string | null;
+  unreadCount: number;
+  lastMessageDate: string;
+}
+
 export const useUnreadMessages = () => {
   const { user } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadConversations, setUnreadConversations] = useState<UnreadConversation[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) {
       setUnreadCount(0);
+      setUnreadConversations([]);
       setLoading(false);
       return;
     }
 
-    fetchUnreadCount();
+    fetchUnreadData();
 
     // Subscribe to new messages
     const channel = supabase
@@ -28,7 +38,7 @@ export const useUnreadMessages = () => {
           filter: `receiver_id=eq.${user.id}`,
         },
         () => {
-          fetchUnreadCount();
+          fetchUnreadData();
         }
       )
       .subscribe();
@@ -38,24 +48,69 @@ export const useUnreadMessages = () => {
     };
   }, [user]);
 
-  const fetchUnreadCount = async () => {
+  const fetchUnreadData = async () => {
     if (!user) return;
 
     try {
-      const { count, error } = await supabase
+      // Get all unread messages
+      const { data: unreadMessages, error } = await supabase
         .from('direct_messages')
-        .select('*', { count: 'exact', head: true })
+        .select('*')
         .eq('receiver_id', user.id)
-        .eq('read', false);
+        .eq('read', false)
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setUnreadCount(count || 0);
+
+      const messages = unreadMessages || [];
+      setUnreadCount(messages.length);
+
+      // Group by sender
+      const senderMap = new Map<string, { count: number; lastDate: string }>();
+      for (const msg of messages) {
+        const existing = senderMap.get(msg.sender_id);
+        if (!existing) {
+          senderMap.set(msg.sender_id, { count: 1, lastDate: msg.created_at });
+        } else {
+          existing.count++;
+        }
+      }
+
+      // Fetch sender profiles
+      const senderIds = Array.from(senderMap.keys());
+      if (senderIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, username, avatar_url, full_name')
+          .in('id', senderIds);
+
+        const conversations: UnreadConversation[] = [];
+        for (const [senderId, data] of senderMap) {
+          const profile = profiles?.find(p => p.id === senderId);
+          conversations.push({
+            partnerId: senderId,
+            partnerName: profile?.full_name || profile?.username || 'Usuario',
+            partnerAvatar: profile?.avatar_url || null,
+            unreadCount: data.count,
+            lastMessageDate: data.lastDate,
+          });
+        }
+
+        // Sort by most recent
+        conversations.sort((a, b) => 
+          new Date(b.lastMessageDate).getTime() - new Date(a.lastMessageDate).getTime()
+        );
+
+        setUnreadConversations(conversations);
+      } else {
+        setUnreadConversations([]);
+      }
     } catch (error) {
-      console.error('Error fetching unread messages count:', error);
+      console.error('Error fetching unread messages:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  return { unreadCount, loading, refetch: fetchUnreadCount };
+  return { unreadCount, unreadConversations, loading, refetch: fetchUnreadData };
 };

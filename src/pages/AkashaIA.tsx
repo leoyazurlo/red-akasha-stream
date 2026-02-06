@@ -25,9 +25,16 @@ import {
   History,
   Wand2,
   GitBranch,
+  Upload,
+  TrendingUp,
+  Image as ImageIcon,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { ProposalCard } from "@/components/akasha-ia/ProposalCard";
+import { FileUploadPanel } from "@/components/akasha-ia/FileUploadPanel";
+import { VoiceInput } from "@/components/akasha-ia/VoiceInput";
+import { ImageGenerator } from "@/components/akasha-ia/ImageGenerator";
+import { PredictionsPanel } from "@/components/akasha-ia/PredictionsPanel";
 
 interface Message {
   role: "user" | "assistant";
@@ -364,15 +371,23 @@ export default function AkashaIA() {
           <TabsList className="bg-muted/50">
             <TabsTrigger value="chat" className="gap-2">
               <MessageSquare className="h-4 w-4" />
-              Chat con IA
+              Chat
+            </TabsTrigger>
+            <TabsTrigger value="files" className="gap-2">
+              <Upload className="h-4 w-4" />
+              Archivos
+            </TabsTrigger>
+            <TabsTrigger value="generate" className="gap-2">
+              <ImageIcon className="h-4 w-4" />
+              Generar
+            </TabsTrigger>
+            <TabsTrigger value="predictions" className="gap-2">
+              <TrendingUp className="h-4 w-4" />
+              Predicciones
             </TabsTrigger>
             <TabsTrigger value="proposals" className="gap-2">
               <Lightbulb className="h-4 w-4" />
-              Mis Propuestas
-            </TabsTrigger>
-            <TabsTrigger value="implement" className="gap-2">
-              <Wand2 className="h-4 w-4" />
-              Implementar
+              Propuestas
             </TabsTrigger>
           </TabsList>
 
@@ -486,11 +501,15 @@ export default function AkashaIA() {
 
                   <div className="mt-4 space-y-2">
                     <div className="flex gap-2">
+                      <VoiceInput 
+                        onTranscription={(text) => setInput(prev => prev + " " + text)}
+                        disabled={isLoading}
+                      />
                       <Textarea
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Describe la funcionalidad que quieres proponer..."
-                        className="min-h-[60px] bg-muted/30 border-cyan-500/20"
+                        className="min-h-[60px] flex-1 bg-muted/30 border-primary/20"
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && !e.shiftKey) {
                             e.preventDefault();
@@ -501,7 +520,7 @@ export default function AkashaIA() {
                       <Button
                         onClick={sendMessage}
                         disabled={isLoading || !input.trim()}
-                        className="bg-cyan-500 hover:bg-cyan-600"
+                        className="bg-primary hover:bg-primary/90"
                       >
                         <Send className="h-4 w-4" />
                       </Button>
@@ -511,7 +530,7 @@ export default function AkashaIA() {
                         variant="outline"
                         size="sm"
                         onClick={createProposal}
-                        className="w-full border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
+                        className="w-full border-primary/30 text-primary hover:bg-primary/10"
                       >
                         <Code className="h-4 w-4 mr-2" />
                         Crear propuesta de esta conversación
@@ -523,11 +542,46 @@ export default function AkashaIA() {
             </div>
           </TabsContent>
 
-          <TabsContent value="proposals">
-            <Card className="bg-card/50 border-cyan-500/20">
+          <TabsContent value="files">
+            <Card className="bg-card/50 border-primary/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Lightbulb className="h-5 w-5 text-cyan-400" />
+                  <Upload className="h-5 w-5 text-primary" />
+                  Subir y Analizar Archivos
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Sube documentos, imágenes, audio o código para que la IA los analice
+                </p>
+              </CardHeader>
+              <CardContent>
+                <FileUploadPanel 
+                  conversationId={currentConversationId}
+                  onFileAnalyzed={(fileId, analysis, fileType) => {
+                    setInput(prev => prev + `\n[Archivo analizado - ${fileType}]: ${analysis.slice(0, 200)}...`);
+                  }}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="generate">
+            <ImageGenerator 
+              conversationId={currentConversationId}
+              onImageGenerated={(url, prompt) => {
+                toast.success("Imagen generada y guardada");
+              }}
+            />
+          </TabsContent>
+
+          <TabsContent value="predictions">
+            <PredictionsPanel />
+          </TabsContent>
+
+          <TabsContent value="proposals">
+            <Card className="bg-card/50 border-primary/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Lightbulb className="h-5 w-5 text-primary" />
                   Mis Propuestas de Funcionalidades
                 </CardTitle>
               </CardHeader>
@@ -547,44 +601,6 @@ export default function AkashaIA() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="implement">
-            <Card className="bg-card/50 border-cyan-500/20">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <GitBranch className="h-5 w-5 text-cyan-400" />
-                  Implementar Cambios en la Plataforma
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Aquí puedes ver tus propuestas aprobadas y generar código para implementarlas automáticamente.
-                </p>
-              </CardHeader>
-              <CardContent>
-                {proposals.filter(p => ["approved", "reviewing", "implementing"].includes(p.status)).length === 0 ? (
-                  <div className="text-center py-12">
-                    <Wand2 className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
-                    <p className="text-muted-foreground mb-2">
-                      No tienes propuestas listas para implementar
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Crea propuestas en el chat y espera la aprobación de un administrador
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {proposals
-                      .filter(p => ["approved", "reviewing", "implementing"].includes(p.status))
-                      .map((proposal) => (
-                        <ProposalCard 
-                          key={proposal.id} 
-                          proposal={proposal} 
-                          showImplementation={true}
-                        />
-                      ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
       </main>
       <Footer />

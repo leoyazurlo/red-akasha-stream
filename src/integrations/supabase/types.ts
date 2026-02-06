@@ -1085,6 +1085,62 @@ export type Database = {
           },
         ]
       }
+      ia_agent_actions: {
+        Row: {
+          action_description: string
+          action_parameters: Json | null
+          action_type: string
+          approved_at: string | null
+          conversation_id: string | null
+          created_at: string
+          error_message: string | null
+          executed_at: string | null
+          id: string
+          requires_approval: boolean | null
+          result: Json | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          action_description: string
+          action_parameters?: Json | null
+          action_type: string
+          approved_at?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          executed_at?: string | null
+          id?: string
+          requires_approval?: boolean | null
+          result?: Json | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          action_description?: string
+          action_parameters?: Json | null
+          action_type?: string
+          approved_at?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          executed_at?: string | null
+          id?: string
+          requires_approval?: boolean | null
+          result?: Json | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ia_agent_actions_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ia_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ia_api_configs: {
         Row: {
           api_key_encrypted: string | null
@@ -1227,30 +1283,75 @@ export type Database = {
           },
         ]
       }
+      ia_collaboration_suggestions: {
+        Row: {
+          collaboration_type: string | null
+          compatibility_score: number | null
+          created_at: string
+          id: string
+          profile_1_id: string
+          profile_2_id: string
+          reasons: Json | null
+          status: string | null
+        }
+        Insert: {
+          collaboration_type?: string | null
+          compatibility_score?: number | null
+          created_at?: string
+          id?: string
+          profile_1_id: string
+          profile_2_id: string
+          reasons?: Json | null
+          status?: string | null
+        }
+        Update: {
+          collaboration_type?: string | null
+          compatibility_score?: number | null
+          created_at?: string
+          id?: string
+          profile_1_id?: string
+          profile_2_id?: string
+          reasons?: Json | null
+          status?: string | null
+        }
+        Relationships: []
+      }
       ia_conversations: {
         Row: {
+          active_agent_actions: number | null
           context: string | null
           created_at: string | null
+          has_files: boolean | null
+          has_voice: boolean | null
           id: string
           messages: Json | null
+          mode: string | null
           title: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          active_agent_actions?: number | null
           context?: string | null
           created_at?: string | null
+          has_files?: boolean | null
+          has_voice?: boolean | null
           id?: string
           messages?: Json | null
+          mode?: string | null
           title?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          active_agent_actions?: number | null
           context?: string | null
           created_at?: string | null
+          has_files?: boolean | null
+          has_voice?: boolean | null
           id?: string
           messages?: Json | null
+          mode?: string | null
           title?: string | null
           updated_at?: string | null
           user_id?: string
@@ -1369,6 +1470,237 @@ export type Database = {
           validation_score?: number | null
         }
         Relationships: []
+      }
+      ia_generated_images: {
+        Row: {
+          conversation_id: string | null
+          created_at: string
+          id: string
+          image_type: string | null
+          image_url: string
+          metadata: Json | null
+          prompt: string
+          style: string | null
+          user_id: string
+        }
+        Insert: {
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          image_type?: string | null
+          image_url: string
+          metadata?: Json | null
+          prompt: string
+          style?: string | null
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          image_type?: string | null
+          image_url?: string
+          metadata?: Json | null
+          prompt?: string
+          style?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ia_generated_images_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ia_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ia_predictions: {
+        Row: {
+          accuracy_result: number | null
+          confidence_score: number | null
+          created_at: string
+          description: string | null
+          expires_at: string | null
+          generated_by: string | null
+          id: string
+          is_active: boolean | null
+          prediction_data: Json
+          prediction_type: string
+          time_horizon: string | null
+          title: string
+        }
+        Insert: {
+          accuracy_result?: number | null
+          confidence_score?: number | null
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          generated_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          prediction_data: Json
+          prediction_type: string
+          time_horizon?: string | null
+          title: string
+        }
+        Update: {
+          accuracy_result?: number | null
+          confidence_score?: number | null
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          generated_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          prediction_data?: Json
+          prediction_type?: string
+          time_horizon?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      ia_uploaded_files: {
+        Row: {
+          analysis_result: Json | null
+          analysis_status: string | null
+          conversation_id: string | null
+          created_at: string
+          extracted_text: string | null
+          file_name: string
+          file_size: number | null
+          file_type: string
+          file_url: string
+          id: string
+          metadata: Json | null
+          mime_type: string | null
+          user_id: string
+        }
+        Insert: {
+          analysis_result?: Json | null
+          analysis_status?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          extracted_text?: string | null
+          file_name: string
+          file_size?: number | null
+          file_type: string
+          file_url: string
+          id?: string
+          metadata?: Json | null
+          mime_type?: string | null
+          user_id: string
+        }
+        Update: {
+          analysis_result?: Json | null
+          analysis_status?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          extracted_text?: string | null
+          file_name?: string
+          file_size?: number | null
+          file_type?: string
+          file_url?: string
+          id?: string
+          metadata?: Json | null
+          mime_type?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ia_uploaded_files_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ia_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ia_user_memory: {
+        Row: {
+          context_summary: string | null
+          created_at: string
+          id: string
+          interaction_patterns: Json | null
+          last_activity_summary: string | null
+          preferences: Json | null
+          topics_of_interest: string[] | null
+          total_conversations: number | null
+          total_messages: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          context_summary?: string | null
+          created_at?: string
+          id?: string
+          interaction_patterns?: Json | null
+          last_activity_summary?: string | null
+          preferences?: Json | null
+          topics_of_interest?: string[] | null
+          total_conversations?: number | null
+          total_messages?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          context_summary?: string | null
+          created_at?: string
+          id?: string
+          interaction_patterns?: Json | null
+          last_activity_summary?: string | null
+          preferences?: Json | null
+          topics_of_interest?: string[] | null
+          total_conversations?: number | null
+          total_messages?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ia_voice_transcriptions: {
+        Row: {
+          audio_url: string | null
+          confidence_score: number | null
+          conversation_id: string | null
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          language: string | null
+          transcription: string
+          user_id: string
+        }
+        Insert: {
+          audio_url?: string | null
+          confidence_score?: number | null
+          conversation_id?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          language?: string | null
+          transcription: string
+          user_id: string
+        }
+        Update: {
+          audio_url?: string | null
+          confidence_score?: number | null
+          conversation_id?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          language?: string | null
+          transcription?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ia_voice_transcriptions_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ia_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {

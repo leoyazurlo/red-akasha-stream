@@ -1,4 +1,4 @@
- import { LayoutDashboard, FolderTree, Users, Flag, ShieldAlert, Award, Radio, Film, Headphones, Calendar, FileText, UserCheck, ScrollText, Share2, Settings, CreditCard, TrendingUp, Mail, Shield, Bot, Cog, Banknote, ChevronDown, BarChart3 } from "lucide-react";
+import { LayoutDashboard, FolderTree, Users, Flag, ShieldAlert, Award, Radio, Film, Headphones, Calendar, FileText, UserCheck, ScrollText, Share2, Settings, CreditCard, TrendingUp, Mail, Shield, Bot, Cog, Banknote, ChevronDown, BarChart3 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -11,20 +11,22 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
- import {
-   Collapsible,
-   CollapsibleContent,
-   CollapsibleTrigger,
- } from "@/components/ui/collapsible";
- import { useState } from "react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
 
 const generalItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
-   { title: "Informes", url: "/admin/reports", icon: BarChart3 },
+  { title: "Informes", url: "/admin/reports", icon: BarChart3 },
   { title: "Usuarios", url: "/admin/users", icon: Users },
   { title: "Administradores", url: "/admin/administrators", icon: Shield },
   { title: "Comunicación", url: "/admin/communications", icon: Mail },
-  { title: "Solicitudes", url: "/admin/requests", icon: UserCheck },
+  { title: "Solicitudes", url: "/admin/requests", icon: UserCheck, showPendingCount: true },
   { title: "Curaduría", url: "/admin/content", icon: FileText },
   { title: "Auditoría", url: "/admin/audit-logs", icon: ScrollText },
   { title: "Akasha IA", url: "/admin/ia-management", icon: Bot },
@@ -55,10 +57,42 @@ const forumItems = [
 
 export function AdminSidebar() {
   const { open } = useSidebar();
-   const location = useLocation();
-   const [paymentOpen, setPaymentOpen] = useState(
-     paymentItems.some(item => location.pathname === item.url)
-   );
+  const location = useLocation();
+  const [paymentOpen, setPaymentOpen] = useState(
+    paymentItems.some(item => location.pathname === item.url)
+  );
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    const fetchPendingCount = async () => {
+      const { count, error } = await supabase
+        .from('registration_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending');
+      
+      if (!error && count !== null) {
+        setPendingCount(count);
+      }
+    };
+
+    fetchPendingCount();
+
+    // Subscribe to changes in registration_requests
+    const channel = supabase
+      .channel('pending-requests-count')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'registration_requests' },
+        () => {
+          fetchPendingCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   return (
     <Sidebar className={!open ? "w-14" : "w-60"} collapsible="icon">
@@ -74,13 +108,24 @@ export function AdminSidebar() {
                       to={item.url}
                       end
                       className={({ isActive }) =>
-                        isActive
+                        `flex items-center justify-between w-full ${isActive
                           ? "bg-cyan-500/10 text-cyan-400 font-medium drop-shadow-[0_0_8px_hsl(180,100%,50%)]"
                           : "text-cyan-300/80 hover:text-cyan-300 hover:bg-cyan-500/10 hover:drop-shadow-[0_0_6px_hsl(180,100%,50%)] transition-all duration-200"
+                        }`
                       }
                     >
-                      <item.icon className="h-4 w-4" />
-                      {open && <span>{item.title}</span>}
+                      <div className="flex items-center gap-2">
+                        <item.icon className="h-4 w-4" />
+                        {open && <span>{item.title}</span>}
+                      </div>
+                      {item.showPendingCount && pendingCount > 0 && (
+                        <Badge 
+                          variant="destructive" 
+                          className="ml-auto h-5 min-w-5 px-1.5 text-xs font-bold animate-pulse"
+                        >
+                          {pendingCount}
+                        </Badge>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

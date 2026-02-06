@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Loader2, CheckCircle2, XCircle, Clock, User, Copy } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Clock, User, Copy, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -54,6 +54,11 @@ export default function AdminRegistrationRequests() {
   const [requestToReject, setRequestToReject] = useState<RegistrationRequest | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [rejectingId, setRejectingId] = useState<string | null>(null);
+  
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [requestToDelete, setRequestToDelete] = useState<RegistrationRequest | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const loadRequests = async () => {
     try {
@@ -245,6 +250,54 @@ export default function AdminRegistrationRequests() {
     }
   };
 
+  const openDeleteDialog = (request: RegistrationRequest) => {
+    setRequestToDelete(request);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!requestToDelete) return;
+
+    setDeletingId(requestToDelete.id);
+    try {
+      const { error } = await supabase
+        .from('registration_requests')
+        .delete()
+        .eq('id', requestToDelete.id);
+
+      if (error) throw error;
+
+      // Log the action
+      await logAction({
+        action: 'delete_request',
+        targetType: 'registration_request',
+        targetId: requestToDelete.id,
+        details: {
+          nombre: requestToDelete.nombre,
+          email: requestToDelete.email,
+          status: requestToDelete.status,
+        },
+      });
+
+      toast({
+        title: "Solicitud eliminada",
+        description: `La solicitud de ${requestToDelete.nombre} ha sido eliminada permanentemente.`,
+      });
+
+      setDeleteDialogOpen(false);
+      setRequestToDelete(null);
+      loadRequests();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo eliminar la solicitud",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { variant: 'default' | 'secondary' | 'destructive', label: string, icon: any }> = {
       pending: { variant: 'secondary', label: 'Pendiente', icon: Clock },
@@ -394,7 +447,7 @@ export default function AdminRegistrationRequests() {
                     <div className="flex gap-2 pt-4 border-t">
                       <Button
                         onClick={() => handleApprove(request)}
-                        disabled={approvingId === request.id}
+                        disabled={approvingId === request.id || deletingId === request.id}
                         variant="default"
                         size="sm"
                         className="gap-2"
@@ -413,7 +466,7 @@ export default function AdminRegistrationRequests() {
                       </Button>
                       <Button
                         onClick={() => openRejectDialog(request)}
-                        disabled={approvingId === request.id || rejectingId === request.id}
+                        disabled={approvingId === request.id || rejectingId === request.id || deletingId === request.id}
                         variant="destructive"
                         size="sm"
                         className="gap-2"
@@ -427,6 +480,25 @@ export default function AdminRegistrationRequests() {
                           <>
                             <XCircle className="h-4 w-4" />
                             Rechazar
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        onClick={() => openDeleteDialog(request)}
+                        disabled={approvingId === request.id || rejectingId === request.id || deletingId === request.id}
+                        variant="outline"
+                        size="sm"
+                        className="gap-2 ml-auto text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        {deletingId === request.id ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Eliminando...
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="h-4 w-4" />
+                            Eliminar
                           </>
                         )}
                       </Button>
@@ -503,6 +575,51 @@ export default function AdminRegistrationRequests() {
                 </>
               ) : (
                 "Confirmar Rechazo"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-destructive" />
+              Eliminar Solicitud
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-left">
+              Estás a punto de eliminar permanentemente la solicitud de <strong>{requestToDelete?.nombre}</strong> ({requestToDelete?.email}).
+              <br /><br />
+              Esta acción no se puede deshacer y no se enviará ninguna notificación al usuario.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              onClick={() => {
+                setDeleteDialogOpen(false);
+                setRequestToDelete(null);
+              }}
+            >
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deletingId !== null}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingId ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Eliminando...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Eliminar Permanentemente
+                </>
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

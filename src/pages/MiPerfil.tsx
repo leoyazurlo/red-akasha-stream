@@ -517,38 +517,38 @@ const MiPerfil = () => {
 
           {/* Content Management */}
            <Tabs defaultValue="notifications" className="space-y-6">
-             <TabsList className="flex w-full h-auto p-2 bg-card/50 overflow-x-auto gap-1">
-               <TabsTrigger value="notifications" className="flex-shrink-0 gap-2 py-3 px-3 text-xs md:text-sm font-light tracking-wide uppercase">
-                 <Bell className="w-4 h-4 md:w-5 md:h-5" />
-                 <span className="hidden lg:inline">Avisos</span>
+             <TabsList className="flex w-full h-auto p-1.5 bg-card/50 overflow-x-auto gap-0.5">
+               <TabsTrigger value="notifications" className="flex-shrink-0 gap-1.5 py-2 px-2 text-[10px] md:text-xs font-medium tracking-wide uppercase text-cyan-400/70 data-[state=active]:text-cyan-400 data-[state=active]:bg-cyan-400/10 data-[state=active]:shadow-[0_0_10px_rgba(34,211,238,0.3)] hover:text-cyan-400 transition-all">
+                 <Bell className="w-3.5 h-3.5" />
+                 Avisos
                </TabsTrigger>
-               <TabsTrigger value="followers" className="flex-shrink-0 gap-2 py-3 px-3 text-xs md:text-sm font-light tracking-wide uppercase">
-                 <Users className="w-4 h-4 md:w-5 md:h-5" />
-                 <span className="hidden lg:inline">Seguidores</span>
+               <TabsTrigger value="followers" className="flex-shrink-0 gap-1.5 py-2 px-2 text-[10px] md:text-xs font-medium tracking-wide uppercase text-cyan-400/70 data-[state=active]:text-cyan-400 data-[state=active]:bg-cyan-400/10 data-[state=active]:shadow-[0_0_10px_rgba(34,211,238,0.3)] hover:text-cyan-400 transition-all">
+                 <Users className="w-3.5 h-3.5" />
+                 Seguidores
                </TabsTrigger>
-               <TabsTrigger value="earnings" className="flex-shrink-0 gap-2 py-3 px-3 text-xs md:text-sm font-light tracking-wide uppercase">
-                 <DollarSign className="w-4 h-4 md:w-5 md:h-5" />
-                 <span className="hidden lg:inline">Ganancias</span>
+               <TabsTrigger value="earnings" className="flex-shrink-0 gap-1.5 py-2 px-2 text-[10px] md:text-xs font-medium tracking-wide uppercase text-cyan-400/70 data-[state=active]:text-cyan-400 data-[state=active]:bg-cyan-400/10 data-[state=active]:shadow-[0_0_10px_rgba(34,211,238,0.3)] hover:text-cyan-400 transition-all">
+                 <DollarSign className="w-3.5 h-3.5" />
+                 Ganancias
                </TabsTrigger>
-               <TabsTrigger value="banking" className="flex-shrink-0 gap-2 py-3 px-3 text-xs md:text-sm font-light tracking-wide uppercase">
-                 <Building2 className="w-4 h-4 md:w-5 md:h-5" />
-                 <span className="hidden lg:inline">Cobros</span>
+               <TabsTrigger value="banking" className="flex-shrink-0 gap-1.5 py-2 px-2 text-[10px] md:text-xs font-medium tracking-wide uppercase text-cyan-400/70 data-[state=active]:text-cyan-400 data-[state=active]:bg-cyan-400/10 data-[state=active]:shadow-[0_0_10px_rgba(34,211,238,0.3)] hover:text-cyan-400 transition-all">
+                 <Building2 className="w-3.5 h-3.5" />
+                 Cobros
                </TabsTrigger>
-              <TabsTrigger value="gallery" className="flex-shrink-0 gap-2 py-3 px-3 text-xs md:text-sm font-light tracking-wide uppercase">
-                <ImageIcon className="w-4 h-4 md:w-5 md:h-5" />
-                 <span className="hidden lg:inline">Fotos</span>
+              <TabsTrigger value="gallery" className="flex-shrink-0 gap-1.5 py-2 px-2 text-[10px] md:text-xs font-medium tracking-wide uppercase text-cyan-400/70 data-[state=active]:text-cyan-400 data-[state=active]:bg-cyan-400/10 data-[state=active]:shadow-[0_0_10px_rgba(34,211,238,0.3)] hover:text-cyan-400 transition-all">
+                <ImageIcon className="w-3.5 h-3.5" />
+                Fotos
               </TabsTrigger>
-              <TabsTrigger value="videos" className="flex-shrink-0 gap-2 py-3 px-3 text-xs md:text-sm font-light tracking-wide uppercase">
-                <Video className="w-4 h-4 md:w-5 md:h-5" />
-                 <span className="hidden lg:inline">Videos</span>
+              <TabsTrigger value="videos" className="flex-shrink-0 gap-1.5 py-2 px-2 text-[10px] md:text-xs font-medium tracking-wide uppercase text-cyan-400/70 data-[state=active]:text-cyan-400 data-[state=active]:bg-cyan-400/10 data-[state=active]:shadow-[0_0_10px_rgba(34,211,238,0.3)] hover:text-cyan-400 transition-all">
+                <Video className="w-3.5 h-3.5" />
+                Videos
               </TabsTrigger>
-              <TabsTrigger value="audio" className="flex-shrink-0 gap-2 py-3 px-3 text-xs md:text-sm font-light tracking-wide uppercase">
-                <Music className="w-4 h-4 md:w-5 md:h-5" />
-                 <span className="hidden lg:inline">Música</span>
+              <TabsTrigger value="audio" className="flex-shrink-0 gap-1.5 py-2 px-2 text-[10px] md:text-xs font-medium tracking-wide uppercase text-cyan-400/70 data-[state=active]:text-cyan-400 data-[state=active]:bg-cyan-400/10 data-[state=active]:shadow-[0_0_10px_rgba(34,211,238,0.3)] hover:text-cyan-400 transition-all">
+                <Music className="w-3.5 h-3.5" />
+                Música
               </TabsTrigger>
-              <TabsTrigger value="mensajes" className="flex-shrink-0 gap-2 py-3 px-3 text-xs md:text-sm font-light tracking-wide uppercase">
-                <MessageSquare className="w-4 h-4 md:w-5 md:h-5" />
-                 <span className="hidden lg:inline">Chats</span>
+              <TabsTrigger value="mensajes" className="flex-shrink-0 gap-1.5 py-2 px-2 text-[10px] md:text-xs font-medium tracking-wide uppercase text-cyan-400/70 data-[state=active]:text-cyan-400 data-[state=active]:bg-cyan-400/10 data-[state=active]:shadow-[0_0_10px_rgba(34,211,238,0.3)] hover:text-cyan-400 transition-all">
+                <MessageSquare className="w-3.5 h-3.5" />
+                Chats
               </TabsTrigger>
             </TabsList>
 

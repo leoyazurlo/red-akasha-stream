@@ -61,7 +61,7 @@ export const Header = () => {
             <img 
               src={logoRedAkasha} 
               alt="Red Akasha" 
-              className="h-8 sm:h-10 md:h-12 w-auto"
+              className="h-10 sm:h-12 md:h-14 w-auto"
             />
             <img 
               src={logoAkasha} 

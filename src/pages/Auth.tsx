@@ -13,10 +13,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { z } from "zod";
+import { passwordSchema } from "@/lib/validations/password";
+import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
 
-const authSchema = z.object({
+// Schema para login (menos restrictivo)
+const loginSchema = z.object({
   email: z.string().email({ message: "Email inválido" }),
-  password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres" }),
+  password: z.string().min(1, { message: "La contraseña es requerida" }),
+});
+
+// Schema para registro (con validación robusta de contraseña)
+const signupSchema = z.object({
+  email: z.string().email({ message: "Email inválido" }),
+  password: passwordSchema,
   username: z.string().min(3, { message: "El nombre de usuario debe tener al menos 3 caracteres" }).optional(),
 });
 
@@ -56,7 +65,7 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const validated = authSchema.parse(loginData);
+      const validated = loginSchema.parse(loginData);
       
       const { error } = await supabase.auth.signInWithPassword({
         email: validated.email,
@@ -102,7 +111,7 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const validated = authSchema.parse(signupData);
+      const validated = signupSchema.parse(signupData);
       
       const { error } = await supabase.auth.signUp({
         email: validated.email,
@@ -183,7 +192,7 @@ const Auth = () => {
                   <TabsTrigger value="login">Iniciar Sesión</TabsTrigger>
                   <TabsTrigger 
                     value="signup" 
-                    className="data-[state=active]:bg-cyan-500 data-[state=active]:text-white data-[state=active]:shadow-[0_0_15px_rgba(34,211,238,0.5)] text-cyan-400 font-semibold"
+                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-[0_0_15px_hsl(var(--primary)/0.5)] text-primary font-semibold"
                   >
                     Asociarse
                   </TabsTrigger>

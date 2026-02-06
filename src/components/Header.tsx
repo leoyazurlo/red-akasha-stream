@@ -63,12 +63,6 @@ export const Header = () => {
               alt="Red Akasha" 
               className="h-10 sm:h-12 md:h-14 w-auto"
             />
-            <img 
-              src={logoAkasha} 
-              alt="Logo Akasha" 
-              className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12"
-              style={{ filter: 'brightness(0) saturate(100%) invert(70%) sepia(100%) saturate(2500%) hue-rotate(160deg) brightness(120%) contrast(110%)' }}
-            />
           </Link>
 
           {/* Desktop Navigation */}

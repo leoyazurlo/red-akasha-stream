@@ -12,6 +12,18 @@ const sanitizeString = (str: string, maxLength: number): string => {
   return str.trim().substring(0, maxLength);
 };
 
+// Generate a secure random password
+const generateSecurePassword = (): string => {
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*';
+  let password = '';
+  const array = new Uint8Array(16);
+  crypto.getRandomValues(array);
+  for (let i = 0; i < 16; i++) {
+    password += chars.charAt(array[i] % chars.length);
+  }
+  return password;
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -55,15 +67,14 @@ serve(async (req) => {
       throw new Error('No tienes permisos de administrador.');
     }
 
-    const { requestId, password, avatar_url } = await req.json();
+    const { requestId, avatar_url } = await req.json();
     
     if (!requestId) {
       throw new Error('ID de solicitud es requerido');
     }
 
-    if (!password) {
-      throw new Error('Contraseña es requerida para crear el usuario');
-    }
+    // Generate password automatically
+    const password = generateSecurePassword();
 
     // Get the registration request
     const { data: request, error: requestError } = await supabaseAdmin
@@ -162,6 +173,7 @@ serve(async (req) => {
         user_id: authData.user.id,
         profile_ids: createdProfiles,
         email: request.email,
+        temp_password: password, // Return password so admin can share it
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

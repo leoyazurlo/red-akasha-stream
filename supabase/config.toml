@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.github-create-pr]
 verify_jwt = false
+
+[functions.validate-code]
+verify_jwt = false

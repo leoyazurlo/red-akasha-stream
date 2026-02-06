@@ -1151,6 +1151,82 @@ export type Database = {
         }
         Relationships: []
       }
+      ia_code_approvals: {
+        Row: {
+          approver_id: string
+          comments: string | null
+          created_at: string | null
+          decision: string
+          id: string
+          proposal_id: string
+        }
+        Insert: {
+          approver_id: string
+          comments?: string | null
+          created_at?: string | null
+          decision: string
+          id?: string
+          proposal_id: string
+        }
+        Update: {
+          approver_id?: string
+          comments?: string | null
+          created_at?: string | null
+          decision?: string
+          id?: string
+          proposal_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ia_code_approvals_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "ia_feature_proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ia_code_validations: {
+        Row: {
+          ai_feedback: string | null
+          completed_at: string | null
+          created_at: string | null
+          details: Json | null
+          id: string
+          proposal_id: string
+          status: string
+          validation_type: string
+        }
+        Insert: {
+          ai_feedback?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          proposal_id: string
+          status?: string
+          validation_type: string
+        }
+        Update: {
+          ai_feedback?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          proposal_id?: string
+          status?: string
+          validation_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ia_code_validations_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "ia_feature_proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ia_conversations: {
         Row: {
           context: string | null
@@ -1181,54 +1257,116 @@ export type Database = {
         }
         Relationships: []
       }
+      ia_deployments: {
+        Row: {
+          deployed_at: string | null
+          deployed_by: string | null
+          deployment_notes: string | null
+          environment: string | null
+          id: string
+          merge_commit: string | null
+          pr_url: string | null
+          proposal_id: string
+          status: string | null
+        }
+        Insert: {
+          deployed_at?: string | null
+          deployed_by?: string | null
+          deployment_notes?: string | null
+          environment?: string | null
+          id?: string
+          merge_commit?: string | null
+          pr_url?: string | null
+          proposal_id: string
+          status?: string | null
+        }
+        Update: {
+          deployed_at?: string | null
+          deployed_by?: string | null
+          deployment_notes?: string | null
+          environment?: string | null
+          id?: string
+          merge_commit?: string | null
+          pr_url?: string | null
+          proposal_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ia_deployments_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "ia_feature_proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ia_feature_proposals: {
         Row: {
           ai_reasoning: string | null
+          approvals_count: number | null
           category: string | null
           created_at: string | null
           description: string
           id: string
+          lifecycle_stage:
+            | Database["public"]["Enums"]["code_lifecycle_stage"]
+            | null
           priority: string | null
           proposed_code: string | null
           requested_by: string | null
+          required_approvals: number | null
           review_notes: string | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: string | null
           title: string
           updated_at: string | null
+          validation_score: number | null
         }
         Insert: {
           ai_reasoning?: string | null
+          approvals_count?: number | null
           category?: string | null
           created_at?: string | null
           description: string
           id?: string
+          lifecycle_stage?:
+            | Database["public"]["Enums"]["code_lifecycle_stage"]
+            | null
           priority?: string | null
           proposed_code?: string | null
           requested_by?: string | null
+          required_approvals?: number | null
           review_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string | null
           title: string
           updated_at?: string | null
+          validation_score?: number | null
         }
         Update: {
           ai_reasoning?: string | null
+          approvals_count?: number | null
           category?: string | null
           created_at?: string | null
           description?: string
           id?: string
+          lifecycle_stage?:
+            | Database["public"]["Enums"]["code_lifecycle_stage"]
+            | null
           priority?: string | null
           proposed_code?: string | null
           requested_by?: string | null
+          required_approvals?: number | null
           review_notes?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string | null
           title?: string
           updated_at?: string | null
+          validation_score?: number | null
         }
         Relationships: []
       }
@@ -3180,6 +3318,15 @@ export type Database = {
         | "danza"
         | "fotografia_digital"
       badge_type: "bronze" | "silver" | "gold" | "special" | "merit"
+      code_lifecycle_stage:
+        | "generating"
+        | "validating"
+        | "validation_failed"
+        | "pending_approval"
+        | "approved"
+        | "merged"
+        | "deployed"
+        | "rejected"
       content_type:
         | "video_musical_vivo"
         | "video_clip"
@@ -3427,6 +3574,16 @@ export const Constants = {
         "fotografia_digital",
       ],
       badge_type: ["bronze", "silver", "gold", "special", "merit"],
+      code_lifecycle_stage: [
+        "generating",
+        "validating",
+        "validation_failed",
+        "pending_approval",
+        "approved",
+        "merged",
+        "deployed",
+        "rejected",
+      ],
       content_type: [
         "video_musical_vivo",
         "video_clip",

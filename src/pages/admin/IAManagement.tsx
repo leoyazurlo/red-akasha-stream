@@ -40,6 +40,8 @@ import { ProposalCodePreview } from "@/components/admin/ProposalCodePreview";
 import { ProposalWorkflow } from "@/components/admin/ProposalWorkflow";
 import { AIProviderManager } from "@/components/admin/AIProviderManager";
 import { LovableInstructionsGenerator } from "@/components/admin/LovableInstructionsGenerator";
+import { CodeLifecyclePanel } from "@/components/akasha-ia/CodeLifecyclePanel";
+import { GovernanceSettings } from "@/components/admin/GovernanceSettings";
 import { 
   Bot, 
   Users, 
@@ -57,7 +59,10 @@ import {
   RefreshCw,
   MessageSquare,
   Code,
-  ArrowRight
+  ArrowRight,
+  Shield,
+  Rocket,
+  GitBranch,
 } from "lucide-react";
 
 interface AuthorizedUser {
@@ -94,6 +99,10 @@ interface FeatureProposal {
   review_notes: string | null;
   created_at: string;
   requested_by: string | null;
+  lifecycle_stage: string | null;
+  validation_score: number | null;
+  approvals_count: number | null;
+  required_approvals: number | null;
   profiles?: {
     username: string | null;
     full_name: string | null;
@@ -337,9 +346,47 @@ export default function IAManagement() {
     return <Badge className={colors[status] || ""}>{labels[status] || status}</Badge>;
   };
 
+  const getLifecycleBadge = (stage: string | null) => {
+    if (!stage) return null;
+    const colors: Record<string, string> = {
+      generating: "bg-blue-500/20 text-blue-400",
+      validating: "bg-yellow-500/20 text-yellow-400",
+      validation_failed: "bg-red-500/20 text-red-400",
+      pending_approval: "bg-orange-500/20 text-orange-400",
+      approved: "bg-green-500/20 text-green-400",
+      merged: "bg-purple-500/20 text-purple-400",
+      deployed: "bg-cyan-500/20 text-cyan-400",
+      rejected: "bg-red-500/20 text-red-400",
+    };
+    const labels: Record<string, string> = {
+      generating: "Generando",
+      validating: "Validando",
+      validation_failed: "Validación Fallida",
+      pending_approval: "Esperando Aprobación",
+      approved: "Aprobado",
+      merged: "Integrado",
+      deployed: "En Producción",
+      rejected: "Rechazado",
+    };
+    const icons: Record<string, React.ReactNode> = {
+      generating: <Code className="h-3 w-3" />,
+      validating: <Shield className="h-3 w-3" />,
+      pending_approval: <Users className="h-3 w-3" />,
+      approved: <Check className="h-3 w-3" />,
+      merged: <GitBranch className="h-3 w-3" />,
+      deployed: <Rocket className="h-3 w-3" />,
+    };
+    return (
+      <Badge className={`${colors[stage] || ""} flex items-center gap-1`}>
+        {icons[stage]}
+        {labels[stage] || stage}
+      </Badge>
+    );
+  };
+
   const getPriorityBadge = (priority: string) => {
     const colors: Record<string, string> = {
-      low: "bg-gray-500/20 text-gray-400",
+      low: "bg-muted text-muted-foreground",
       medium: "bg-blue-500/20 text-blue-400",
       high: "bg-orange-500/20 text-orange-400",
       critical: "bg-red-500/20 text-red-400",
@@ -383,6 +430,10 @@ export default function IAManagement() {
             <TabsTrigger value="proposals" className="gap-2">
               <Lightbulb className="h-4 w-4" />
               Propuestas
+            </TabsTrigger>
+            <TabsTrigger value="governance" className="gap-2">
+              <Shield className="h-4 w-4" />
+              Gobernanza
             </TabsTrigger>
           </TabsList>
 
@@ -574,9 +625,9 @@ export default function IAManagement() {
                     <TableRow>
                       <TableHead>Propuesta</TableHead>
                       <TableHead>Categoría</TableHead>
-                      <TableHead>Solicitante</TableHead>
+                      <TableHead>Ciclo</TableHead>
+                      <TableHead>Aprobaciones</TableHead>
                       <TableHead>Prioridad</TableHead>
-                      <TableHead>Estado</TableHead>
                       <TableHead>Fecha</TableHead>
                       <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
@@ -585,7 +636,12 @@ export default function IAManagement() {
                     {filteredProposals.map((proposal) => (
                       <TableRow key={proposal.id}>
                         <TableCell>
-                          <p className="font-medium line-clamp-1">{proposal.title}</p>
+                          <div>
+                            <p className="font-medium line-clamp-1">{proposal.title}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {proposal.profiles?.full_name || proposal.profiles?.username || "Auto-generada"}
+                            </p>
+                          </div>
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className="text-xs">
@@ -593,15 +649,14 @@ export default function IAManagement() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {proposal.profiles?.full_name || proposal.profiles?.username || (
-                            <span className="flex items-center gap-1 text-muted-foreground">
-                              <Sparkles className="h-3 w-3" />
-                              Auto-generada
-                            </span>
-                          )}
+                          {getLifecycleBadge(proposal.lifecycle_stage)}
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm">
+                            {proposal.approvals_count || 0}/{proposal.required_approvals || 1}
+                          </span>
                         </TableCell>
                         <TableCell>{getPriorityBadge(proposal.priority)}</TableCell>
-                        <TableCell>{getStatusBadge(proposal.status)}</TableCell>
                         <TableCell>
                           {new Date(proposal.created_at).toLocaleDateString()}
                         </TableCell>
@@ -677,40 +732,30 @@ export default function IAManagement() {
                                       </div>
                                     )}
 
-                                    {/* Tabs for Code Preview and Lovable Implementation */}
-                                    <Tabs defaultValue="preview" className="w-full">
-                                      <TabsList className="w-full grid grid-cols-2">
-                                        <TabsTrigger value="preview" className="gap-2">
-                                          <Code className="h-4 w-4" />
-                                          Preview de Código
-                                        </TabsTrigger>
-                                        <TabsTrigger value="implement" className="gap-2">
-                                          <ArrowRight className="h-4 w-4" />
-                                          Implementar en Lovable
-                                        </TabsTrigger>
-                                      </TabsList>
-
-                                      <TabsContent value="preview" className="mt-4">
-                                        <ProposalCodePreview
-                                          proposalId={proposal.id}
-                                          title={proposal.title}
-                                          description={proposal.description}
-                                          proposedCode={proposal.proposed_code}
-                                          onCodeUpdate={loadProposals}
-                                        />
-                                      </TabsContent>
-
-                                      <TabsContent value="implement" className="mt-4">
-                                        <LovableInstructionsGenerator
-                                          proposalId={proposal.id}
-                                          title={proposal.title}
-                                          description={proposal.description}
-                                          frontendCode={proposal.proposed_code?.match(/\/\/ FRONTEND\n([\s\S]*?)(?=\/\/ BACKEND|-- DATABASE|$)/)?.[1]?.trim() || ""}
-                                          backendCode={proposal.proposed_code?.match(/\/\/ BACKEND\n([\s\S]*?)(?=-- DATABASE|$)/)?.[1]?.trim() || ""}
-                                          databaseCode={proposal.proposed_code?.match(/-- DATABASE\n([\s\S]*?)$/)?.[1]?.trim() || ""}
-                                        />
-                                      </TabsContent>
-                                    </Tabs>
+                                    {/* Code Lifecycle Panel - Full Development Cycle */}
+                                    <CodeLifecyclePanel
+                                      proposalId={proposal.id}
+                                      title={proposal.title}
+                                      description={proposal.description}
+                                      lifecycleStage={proposal.lifecycle_stage || "generating"}
+                                      validationScore={proposal.validation_score || 0}
+                                      approvalsCount={proposal.approvals_count || 0}
+                                      requiredApprovals={proposal.required_approvals || 1}
+                                      existingCode={proposal.proposed_code ? (() => {
+                                        try {
+                                          const parsed = JSON.parse(proposal.proposed_code);
+                                          return {
+                                            frontend: parsed.frontend || "",
+                                            backend: parsed.backend || "",
+                                            database: parsed.database || "",
+                                          };
+                                        } catch {
+                                          return null;
+                                        }
+                                      })() : null}
+                                      onCodeGenerated={() => loadProposals()}
+                                      onStageChange={() => loadProposals()}
+                                    />
 
                                     {/* Review Notes */}
                                     <div className="space-y-2">
@@ -766,7 +811,7 @@ export default function IAManagement() {
                     ))}
                     {proposals.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                           No hay propuestas pendientes
                         </TableCell>
                       </TableRow>
@@ -775,6 +820,65 @@ export default function IAManagement() {
                 </Table>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Governance Tab */}
+          <TabsContent value="governance">
+            <div className="grid gap-6 md:grid-cols-2">
+              <GovernanceSettings />
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Rocket className="h-5 w-5 text-purple-400" />
+                    Estadísticas del Ciclo
+                  </CardTitle>
+                  <CardDescription>
+                    Resumen del estado de las propuestas
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                      <p className="text-2xl font-bold text-blue-400">
+                        {proposals.filter(p => p.lifecycle_stage === "generating" || p.lifecycle_stage === "validating").length}
+                      </p>
+                      <p className="text-xs text-muted-foreground">En Generación</p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-orange-500/10 border border-orange-500/20">
+                      <p className="text-2xl font-bold text-orange-400">
+                        {proposals.filter(p => p.lifecycle_stage === "pending_approval").length}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Esperando Aprobación</p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                      <p className="text-2xl font-bold text-green-400">
+                        {proposals.filter(p => p.lifecycle_stage === "approved" || p.lifecycle_stage === "merged").length}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Aprobadas/Integradas</p>
+                    </div>
+                    <div className="p-4 rounded-lg bg-cyan-500/10 border border-cyan-500/20">
+                      <p className="text-2xl font-bold text-cyan-400">
+                        {proposals.filter(p => p.lifecycle_stage === "deployed").length}
+                      </p>
+                      <p className="text-xs text-muted-foreground">En Producción</p>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-lg font-bold text-red-400">
+                          {proposals.filter(p => p.lifecycle_stage === "validation_failed" || p.lifecycle_stage === "rejected").length}
+                        </p>
+                        <p className="text-xs text-muted-foreground">Fallidas/Rechazadas</p>
+                      </div>
+                      <Shield className="h-8 w-8 text-red-400/30" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

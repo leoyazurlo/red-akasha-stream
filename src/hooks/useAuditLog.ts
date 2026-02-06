@@ -6,6 +6,7 @@ export type AuditAction =
   | 'delete_user'
   | 'approve_request'
   | 'reject_request'
+  | 'delete_request'
   | 'update_content'
   | 'delete_content'
   | 'update_user_role';

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -11,14 +11,19 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Mail, Users, Crown, Heart, Send, Loader2 } from "lucide-react";
+import { Mail, Users, Crown, Heart, Send, Loader2, Paperclip, X, FileText, Image, File } from "lucide-react";
+import { formatFileSize } from "@/lib/storage-validation";
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB per file
+const MAX_TOTAL_SIZE = 25 * 1024 * 1024; // 25MB total
 
 export default function Communications() {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
-
+  const [attachments, setAttachments] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   // Fetch all users count
   const { data: usersCount } = useQuery({
     queryKey: ["users-count"],
@@ -78,6 +83,45 @@ export default function Communications() {
     return count;
   };
 
+  const getFileIcon = (file: File) => {
+    if (file.type.startsWith("image/")) return <Image className="h-4 w-4" />;
+    if (file.type.includes("pdf") || file.type.includes("document")) return <FileText className="h-4 w-4" />;
+    return <File className="h-4 w-4" />;
+  };
+
+  const getTotalAttachmentsSize = () => {
+    return attachments.reduce((total, file) => total + file.size, 0);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    
+    for (const file of files) {
+      if (file.size > MAX_FILE_SIZE) {
+        toast.error(`El archivo "${file.name}" excede el límite de 10MB`);
+        continue;
+      }
+      
+      const newTotalSize = getTotalAttachmentsSize() + file.size;
+      if (newTotalSize > MAX_TOTAL_SIZE) {
+        toast.error("El tamaño total de archivos adjuntos excede 25MB");
+        break;
+      }
+      
+      if (!attachments.some(a => a.name === file.name && a.size === file.size)) {
+        setAttachments(prev => [...prev, file]);
+      }
+    }
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSendEmail = async () => {
     if (!subject.trim() || !message.trim()) {
       toast.error("Por favor completa el asunto y el mensaje");
@@ -96,10 +140,11 @@ export default function Communications() {
       // For now, we'll simulate the action
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      toast.success(`Email enviado a ${getRecipientCount()} usuarios`);
+      toast.success(`Email enviado a ${getRecipientCount()} usuarios${attachments.length > 0 ? ` con ${attachments.length} archivo(s) adjunto(s)` : ""}`);
       setSubject("");
       setMessage("");
       setSelectedGroups([]);
+      setAttachments([]);
     } catch (error) {
       toast.error("Error al enviar el email");
     } finally {
@@ -211,6 +256,66 @@ export default function Communications() {
                       />
                     </div>
 
+                    {/* Attachments Section */}
+                    <div className="space-y-2">
+                      <Label>Archivos Adjuntos</Label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleFileSelect}
+                          multiple
+                          className="hidden"
+                          accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.mp3,.wav"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="flex items-center gap-2"
+                        >
+                          <Paperclip className="h-4 w-4" />
+                          Adjuntar Archivo
+                        </Button>
+                        {attachments.length > 0 && (
+                          <span className="text-sm text-muted-foreground">
+                            {attachments.length} archivo(s) - {formatFileSize(getTotalAttachmentsSize())}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Máx. 10MB por archivo, 25MB total. Formatos: PDF, DOC, XLS, imágenes, audio.
+                      </p>
+                      
+                      {attachments.length > 0 && (
+                        <div className="mt-3 space-y-2">
+                          {attachments.map((file, index) => (
+                            <div 
+                              key={`${file.name}-${index}`}
+                              className="flex items-center justify-between p-2 rounded-md bg-muted/50 border border-border"
+                            >
+                              <div className="flex items-center gap-2 truncate">
+                                {getFileIcon(file)}
+                                <span className="text-sm truncate max-w-[200px]">{file.name}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  ({formatFileSize(file.size)})
+                                </span>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeAttachment(index)}
+                                className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
                     <Button
                       onClick={handleSendEmail}
                       disabled={sending || selectedGroups.length === 0}
@@ -225,6 +330,7 @@ export default function Communications() {
                         <>
                           <Send className="mr-2 h-4 w-4" />
                           Enviar Email a {getRecipientCount()} usuarios
+                          {attachments.length > 0 && ` (${attachments.length} adjuntos)`}
                         </>
                       )}
                     </Button>

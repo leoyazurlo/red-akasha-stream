@@ -169,7 +169,7 @@ export const MessagesTab = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-primary" />
-            Mensajes Directos
+            Mis Chats
             {totalUnread > 0 && (
               <Badge variant="destructive" className="ml-2">
                 {totalUnread} nuevo{totalUnread > 1 ? 's' : ''}
@@ -177,7 +177,7 @@ export const MessagesTab = () => {
             )}
           </CardTitle>
           <CardDescription>
-            Tus conversaciones con otros socios. Haz clic para abrir el chat.
+            Tus conversaciones privadas con otros socios. Los mensajes se guardan automáticamente.
           </CardDescription>
         </CardHeader>
         <CardContent>

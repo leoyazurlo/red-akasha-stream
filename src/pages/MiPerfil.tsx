@@ -548,7 +548,7 @@ const MiPerfil = () => {
               </TabsTrigger>
               <TabsTrigger value="mensajes" className="gap-2 py-4 text-sm md:text-lg font-light tracking-widest uppercase">
                 <MessageSquare className="w-5 h-5 md:w-7 md:h-7" />
-                 <span className="hidden sm:inline">Inbox</span>
+                 <span className="hidden sm:inline">Chats</span>
               </TabsTrigger>
             </TabsList>
 

@@ -177,7 +177,20 @@ export function AppBuilderIDE() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Send message to AI
+  // Check if message is a code generation request
+  const isCodeGenerationRequest = (message: string): boolean => {
+    const codeKeywords = [
+      "genera", "generar", "crea", "crear", "implementa", "implementar",
+      "desarrolla", "desarrollar", "construye", "construir", "programa",
+      "codifica", "escribe código", "haz código", "nuevo componente",
+      "nueva función", "nueva feature", "add feature", "create", "build",
+      "generate", "implement", "develop"
+    ];
+    const lowerMessage = message.toLowerCase();
+    return codeKeywords.some(keyword => lowerMessage.includes(keyword));
+  };
+
+  // Send message to AI - supports both chat and code generation
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
@@ -200,11 +213,8 @@ export function AppBuilderIDE() {
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInput("");
-    setUploadedFiles([]); // Clear files after sending
+    setUploadedFiles([]);
     setIsLoading(true);
-    setLifecycleStage("generating");
-
-    let assistantContent = "";
 
     try {
       const { data: sessionData } = await supabase.auth.getSession();
@@ -214,58 +224,143 @@ export function AppBuilderIDE() {
         throw new Error("No hay sesión activa");
       }
 
-      // Generate implementation with file context
-      const { data: implData, error: implError } = await supabase.functions.invoke(
-        "generate-implementation",
-        {
-          body: {
+      // Determine if this is a code generation request or a chat conversation
+      const shouldGenerateCode = isCodeGenerationRequest(input.trim());
+
+      if (shouldGenerateCode) {
+        // Code generation flow
+        setLifecycleStage("generating");
+        
+        const { data: implData, error: implError } = await supabase.functions.invoke(
+          "generate-implementation",
+          {
+            body: {
+              title: input.trim().slice(0, 100),
+              description: messageContent,
+            },
+          }
+        );
+
+        if (implError) throw implError;
+
+        const newCode: GeneratedCode = {
+          frontend: implData.frontend || generatedCode.frontend,
+          backend: implData.backend || generatedCode.backend,
+          database: implData.database || generatedCode.database,
+        };
+
+        setGeneratedCode(newCode);
+        updateFileContent("/src/App.tsx", newCode.frontend);
+        updateFileContent("/supabase/functions/index.ts", newCode.backend);
+        updateFileContent("/supabase/migrations/001_initial.sql", newCode.database);
+
+        const assistantContent = `### ✅ Código Generado
+
+He generado el código para tu solicitud:
+
+**📦 Frontend:** Componente React con TypeScript
+**⚙️ Backend:** Edge Function para la lógica del servidor  
+**🗄️ Database:** Migración SQL con políticas RLS
+
+Puedes ver el código en las pestañas del editor. ¿Quieres que valide el código o realice algún cambio?`;
+
+        setMessages([...newMessages, { role: "assistant", content: assistantContent }]);
+        setLifecycleStage("draft");
+
+        // Create proposal record
+        const { data: { user } } = await supabase.auth.getUser();
+        const { data: proposal } = await supabase
+          .from("ia_feature_proposals")
+          .insert([{
             title: input.trim().slice(0, 100),
-            description: messageContent, // Include file context
-          },
+            description: input.trim(),
+            proposed_code: JSON.stringify(newCode),
+            requested_by: user?.id,
+            lifecycle_stage: "generating" as const,
+            status: "pending",
+          }])
+          .select()
+          .single();
+
+        if (proposal) {
+          setProposalId(proposal.id);
         }
-      );
 
-      if (implError) throw implError;
+        toast.success("Código generado exitosamente");
+      } else {
+        // Chat conversation flow - use akasha-ia-chat for real AI responses
+        const chatMessages = newMessages.map(m => ({ role: m.role, content: m.content }));
+        
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/akasha-ia-chat`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({
+              messages: chatMessages,
+              includePlatformStats: true,
+              includeArtistsContext: true,
+            }),
+          }
+        );
 
-      const newCode: GeneratedCode = {
-        frontend: implData.frontend || generatedCode.frontend,
-        backend: implData.backend || generatedCode.backend,
-        database: implData.database || generatedCode.database,
-      };
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error("Sesión expirada. Por favor recarga la página.");
+          }
+          if (response.status === 429) {
+            throw new Error("Límite de solicitudes excedido. Intenta de nuevo en unos segundos.");
+          }
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || "Error al comunicarse con la IA");
+        }
 
-      setGeneratedCode(newCode);
-      updateFileContent("/src/App.tsx", newCode.frontend);
-      updateFileContent("/supabase/functions/index.ts", newCode.backend);
-      updateFileContent("/supabase/migrations/001_initial.sql", newCode.database);
+        // Stream the response
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error("No se pudo leer la respuesta");
 
-      assistantContent = `He generado el código para tu aplicación:\n\n**Frontend:** Componente React con TypeScript\n**Backend:** Edge Function para la lógica del servidor\n**Database:** Migración SQL con políticas RLS\n\n¿Quieres que valide el código o realice algún cambio?`;
+        const decoder = new TextDecoder();
+        let assistantContent = "";
+        let buffer = "";
 
-      setMessages([...newMessages, { role: "assistant", content: assistantContent }]);
-      setLifecycleStage("draft");
+        // Add placeholder message
+        setMessages([...newMessages, { role: "assistant", content: "..." }]);
 
-      // Create proposal record
-      const { data: { user } } = await supabase.auth.getUser();
-      const { data: proposal } = await supabase
-        .from("ia_feature_proposals")
-        .insert([{
-          title: input.trim().slice(0, 100),
-          description: input.trim(),
-          proposed_code: JSON.stringify(newCode),
-          requested_by: user?.id,
-          lifecycle_stage: "generating" as const,
-          status: "pending",
-        }])
-        .select()
-        .single();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-      if (proposal) {
-        setProposalId(proposal.id);
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            if (line.startsWith("data: ") && !line.includes("[DONE]")) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                const content = data.choices?.[0]?.delta?.content;
+                if (content) {
+                  assistantContent += content;
+                  setMessages([...newMessages, { role: "assistant", content: assistantContent }]);
+                }
+              } catch (e) {
+                // Ignore parsing errors for incomplete chunks
+              }
+            }
+          }
+        }
+
+        // Final update with complete response
+        if (assistantContent) {
+          setMessages([...newMessages, { role: "assistant", content: assistantContent }]);
+        }
       }
-
-      toast.success("Código generado exitosamente");
     } catch (error) {
       console.error("Error:", error);
-      toast.error(error instanceof Error ? error.message : "Error al generar código");
+      toast.error(error instanceof Error ? error.message : "Error al procesar mensaje");
       setLifecycleStage("draft");
     } finally {
       setIsLoading(false);

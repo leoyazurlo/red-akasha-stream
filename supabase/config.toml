@@ -44,3 +44,6 @@ verify_jwt = false
 
 [functions.akasha-ia-content-generator]
 verify_jwt = false
+
+[functions.multi-agent-orchestrator]
+verify_jwt = false

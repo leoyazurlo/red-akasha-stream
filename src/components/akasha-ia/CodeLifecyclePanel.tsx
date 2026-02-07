@@ -31,6 +31,7 @@ import {
   Play,
   RotateCcw,
 } from "lucide-react";
+import { CodePreviewPanel } from "./CodePreviewPanel";
 
 interface GeneratedCode {
   frontend: string;
@@ -666,10 +667,14 @@ export function CodeLifecyclePanel({
           </div>
         )}
 
-        {/* Generated Code Preview */}
+        {/* Generated Code Preview with Visual Preview Tab */}
         {generatedCode && (
-          <Tabs defaultValue="frontend" className="w-full">
-            <TabsList className="bg-muted/50 w-full justify-start">
+          <Tabs defaultValue="preview" className="w-full">
+            <TabsList className="bg-muted/50 w-full justify-start flex-wrap h-auto gap-1 p-1">
+              <TabsTrigger value="preview" className="gap-1.5">
+                <Eye className="h-3.5 w-3.5" />
+                Vista Previa
+              </TabsTrigger>
               <TabsTrigger value="frontend" className="gap-1.5">
                 <FileCode className="h-3.5 w-3.5" />
                 Frontend
@@ -684,8 +689,12 @@ export function CodeLifecyclePanel({
               </TabsTrigger>
             </TabsList>
 
+            <TabsContent value="preview" className="mt-4">
+              <CodePreviewPanel code={generatedCode} title={title} />
+            </TabsContent>
+
             <TabsContent value="frontend">
-              <ScrollArea className="h-[200px] rounded-md border border-cyan-500/20 bg-black/50">
+              <ScrollArea className="h-[300px] rounded-md border border-primary/20 bg-black/50">
                 <pre className="p-4 text-sm text-green-400 font-mono whitespace-pre-wrap">
                   {generatedCode.frontend}
                 </pre>
@@ -693,7 +702,7 @@ export function CodeLifecyclePanel({
             </TabsContent>
 
             <TabsContent value="backend">
-              <ScrollArea className="h-[200px] rounded-md border border-cyan-500/20 bg-black/50">
+              <ScrollArea className="h-[300px] rounded-md border border-primary/20 bg-black/50">
                 <pre className="p-4 text-sm text-blue-400 font-mono whitespace-pre-wrap">
                   {generatedCode.backend}
                 </pre>
@@ -701,7 +710,7 @@ export function CodeLifecyclePanel({
             </TabsContent>
 
             <TabsContent value="database">
-              <ScrollArea className="h-[200px] rounded-md border border-cyan-500/20 bg-black/50">
+              <ScrollArea className="h-[300px] rounded-md border border-primary/20 bg-black/50">
                 <pre className="p-4 text-sm text-yellow-400 font-mono whitespace-pre-wrap">
                   {generatedCode.database}
                 </pre>

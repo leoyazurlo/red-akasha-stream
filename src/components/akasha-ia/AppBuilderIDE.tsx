@@ -39,7 +39,7 @@ import {
   Download,
   ChevronRight,
   ChevronDown,
-  File,
+  File as FileIcon,
   Folder,
   Brain,
   Wand2,
@@ -51,7 +51,7 @@ import { MonacoEditor } from "./MonacoEditor";
 import { SandboxPreview } from "./SandboxPreview";
 import { AIActionsToolbar } from "./AIActionsToolbar";
 import { AIContextPanel } from "./AIContextPanel";
-import { ChatFileUpload, UploadedFile } from "./ChatFileUpload";
+import { ChatFileUpload, UploadedFile, processFileForUpload } from "./ChatFileUpload";
 
 interface GeneratedCode {
   frontend: string;
@@ -447,7 +447,7 @@ export function AppBuilderIDE() {
           ) : (
             <>
               <span className="w-3.5" />
-              <File className="h-4 w-4 text-muted-foreground" />
+              <FileIcon className="h-4 w-4 text-muted-foreground" />
             </>
           )}
           <span className="truncate">{file.name}</span>
@@ -594,10 +594,39 @@ export function AppBuilderIDE() {
                   <Input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder={uploadedFiles.length > 0 ? "Describe qué hacer con los archivos..." : "Describe tu aplicación..."}
+                    placeholder={uploadedFiles.length > 0 ? "Describe qué hacer con los archivos..." : "Describe tu aplicación... (Ctrl+V para pegar imágenes)"}
                     className="text-xs h-8 flex-1"
                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
                     disabled={isLoading}
+                    onPaste={async (e) => {
+                      const clipboardItems = e.clipboardData?.items;
+                      if (!clipboardItems) return;
+                      
+                      for (let i = 0; i < clipboardItems.length; i++) {
+                        const item = clipboardItems[i];
+                        
+                        // Handle images from clipboard
+                        if (item.type.startsWith("image/")) {
+                          e.preventDefault();
+                          const file = item.getAsFile();
+                          if (file) {
+                            const timestamp = Date.now();
+                            const ext = item.type.split("/")[1] || "png";
+                            const namedFile = new File([file], `pasted-image-${timestamp}.${ext}`, { type: file.type });
+                            await processFileForUpload(namedFile, uploadedFiles, setUploadedFiles);
+                          }
+                        }
+                        
+                        // Handle files
+                        if (item.kind === "file" && !item.type.startsWith("image/")) {
+                          e.preventDefault();
+                          const file = item.getAsFile();
+                          if (file) {
+                            await processFileForUpload(file, uploadedFiles, setUploadedFiles);
+                          }
+                        }
+                      }
+                    }}
                   />
                   <Button size="icon" className="h-8 w-8" onClick={sendMessage} disabled={isLoading || (!input.trim() && uploadedFiles.length === 0)}>
                     {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}

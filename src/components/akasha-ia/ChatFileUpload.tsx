@@ -37,12 +37,6 @@ export interface UploadedFile {
   content?: string;
 }
 
-interface ChatFileUploadProps {
-  onFilesChange: (files: UploadedFile[]) => void;
-  files: UploadedFile[];
-  disabled?: boolean;
-}
-
 const FILE_TYPE_MAP: Record<string, "document" | "image" | "audio" | "code"> = {
   "application/pdf": "document",
   "application/msword": "document",
@@ -64,6 +58,110 @@ const FILE_TYPE_MAP: Record<string, "document" | "image" | "audio" | "code"> = {
   "text/css": "code",
   "application/json": "code",
 };
+
+interface ChatFileUploadProps {
+  onFilesChange: (files: UploadedFile[]) => void;
+  files: UploadedFile[];
+  disabled?: boolean;
+}
+
+// Helper function to determine file type
+const getFileType = (file: File): "document" | "image" | "audio" | "code" => {
+  if (FILE_TYPE_MAP[file.type]) return FILE_TYPE_MAP[file.type];
+  const ext = file.name.split('.').pop()?.toLowerCase();
+  if (["ts", "tsx", "js", "jsx", "py", "rb", "go", "rs", "java", "cpp", "c", "h", "json", "yaml", "yml", "toml"].includes(ext || "")) return "code";
+  if (["mp3", "wav", "ogg", "flac", "aac", "m4a"].includes(ext || "")) return "audio";
+  if (["jpg", "jpeg", "png", "gif", "webp", "svg", "bmp"].includes(ext || "")) return "image";
+  return "document";
+};
+
+// Export the upload function for external use (e.g., paste from clipboard)
+export const processFileForUpload = async (
+  file: File,
+  files: UploadedFile[],
+  onFilesChange: (files: UploadedFile[]) => void
+): Promise<void> => {
+  const fileId = crypto.randomUUID();
+  const fileType = getFileType(file);
+  
+  const newFile: UploadedFile = {
+    id: fileId,
+    name: file.name || `pasted-${fileType}-${Date.now()}.${fileType === 'image' ? 'png' : 'txt'}`,
+    type: fileType,
+    status: "uploading",
+    progress: 0,
+  };
+  
+  onFilesChange([...files, newFile]);
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast.error("Debes iniciar sesión para subir archivos");
+      throw new Error("Debes iniciar sesión");
+    }
+
+    // For text/code files, read content directly
+    let fileContent: string | undefined;
+    if (fileType === "code" || (fileType === "document" && file.type.startsWith("text/"))) {
+      fileContent = await file.text();
+    }
+
+    // Upload to storage
+    const sanitizedName = newFile.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+    const filePath = `${session.user.id}/${fileId}-${sanitizedName}`;
+    
+    const { error: uploadError } = await supabase.storage
+      .from("akasha-ia-files")
+      .upload(filePath, file, { cacheControl: "3600", upsert: false });
+
+    if (uploadError) throw uploadError;
+
+    // Get URL
+    const { data: urlData } = supabase.storage
+      .from("akasha-ia-files")
+      .getPublicUrl(filePath);
+
+    // Save to database
+    const { data: fileRecord, error: dbError } = await supabase
+      .from("ia_uploaded_files")
+      .insert({
+        user_id: session.user.id,
+        file_name: newFile.name,
+        file_type: fileType,
+        file_url: urlData.publicUrl,
+        file_size: file.size,
+        mime_type: file.type,
+        extracted_text: fileContent?.slice(0, 100000),
+        analysis_status: "completed",
+      })
+      .select()
+      .single();
+
+    if (dbError) throw dbError;
+
+    // Update file state with completed status
+    const completedFile: UploadedFile = {
+      id: fileRecord.id,
+      name: newFile.name,
+      type: fileType,
+      status: "completed",
+      progress: 100,
+      url: urlData.publicUrl,
+      content: fileContent,
+    };
+
+    onFilesChange([...files.filter(f => f.id !== fileId), completedFile]);
+    toast.success(`${newFile.name} pegado correctamente`);
+  } catch (error) {
+    console.error("Paste upload error:", error);
+    onFilesChange(files.map(f => 
+      f.id === fileId ? { ...f, status: "error" } : f
+    ));
+    toast.error(`Error al procesar archivo pegado`);
+  }
+};
+
 
 const getFileTypeIcon = (type: string) => {
   switch (type) {

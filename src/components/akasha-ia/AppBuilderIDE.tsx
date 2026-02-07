@@ -92,32 +92,38 @@ export function AppBuilderIDE() {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedCode, setGeneratedCode] = useState<GeneratedCode>({
     frontend: `function App() {
+  const [count, setCount] = React.useState(0);
+  
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-8">
-      <Card className="max-w-lg w-full">
-        <CardHeader>
-          <CardTitle className="text-2xl text-center">
-            🚀 Akasha App Builder
-          </CardTitle>
-          <CardDescription className="text-center">
-            Describe tu aplicación en el chat y la construiré para ti
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-            <Badge>1</Badge>
-            <span className="text-sm">Escribe qué quieres crear</span>
+      <div className="max-w-lg w-full rounded-xl border border-border bg-card p-6 shadow-lg">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-foreground mb-2">🚀 Akasha App Builder</h1>
+          <p className="text-muted-foreground text-sm">Describe tu aplicación en el chat y la construiré para ti</p>
+        </div>
+        <div className="space-y-3">
+          <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+            <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+            <span className="text-sm text-foreground">Escribe qué quieres crear</span>
           </div>
-          <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-            <Badge>2</Badge>
-            <span className="text-sm">Revisa el código generado</span>
+          <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+            <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+            <span className="text-sm text-foreground">Revisa el código generado</span>
           </div>
-          <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-            <Badge>3</Badge>
-            <span className="text-sm">Ve el resultado aquí</span>
+          <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+            <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">3</span>
+            <span className="text-sm text-foreground">Ve el resultado aquí</span>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+        <div className="mt-6 pt-4 border-t border-border text-center">
+          <button 
+            onClick={() => setCount(c => c + 1)}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+          >
+            Clicks: {count}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }`,

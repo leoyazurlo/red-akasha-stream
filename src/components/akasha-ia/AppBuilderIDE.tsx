@@ -599,29 +599,40 @@ export function AppBuilderIDE() {
                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
                     disabled={isLoading}
                     onPaste={async (e) => {
+                      console.log("[Akasha IA] Paste event detected");
                       const clipboardItems = e.clipboardData?.items;
-                      if (!clipboardItems) return;
+                      if (!clipboardItems) {
+                        console.log("[Akasha IA] No clipboard items found");
+                        return;
+                      }
+                      
+                      console.log("[Akasha IA] Clipboard items count:", clipboardItems.length);
                       
                       for (let i = 0; i < clipboardItems.length; i++) {
                         const item = clipboardItems[i];
+                        console.log("[Akasha IA] Item type:", item.type, "kind:", item.kind);
                         
                         // Handle images from clipboard
                         if (item.type.startsWith("image/")) {
                           e.preventDefault();
                           const file = item.getAsFile();
                           if (file) {
+                            console.log("[Akasha IA] Processing pasted image:", file.name || "unnamed", file.type);
                             const timestamp = Date.now();
                             const ext = item.type.split("/")[1] || "png";
                             const namedFile = new File([file], `pasted-image-${timestamp}.${ext}`, { type: file.type });
+                            toast.info("Procesando imagen pegada...");
                             await processFileForUpload(namedFile, uploadedFiles, setUploadedFiles);
                           }
                         }
                         
-                        // Handle files
+                        // Handle other files
                         if (item.kind === "file" && !item.type.startsWith("image/")) {
                           e.preventDefault();
                           const file = item.getAsFile();
                           if (file) {
+                            console.log("[Akasha IA] Processing pasted file:", file.name, file.type);
+                            toast.info("Procesando archivo pegado...");
                             await processFileForUpload(file, uploadedFiles, setUploadedFiles);
                           }
                         }

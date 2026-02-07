@@ -1141,6 +1141,105 @@ export type Database = {
           },
         ]
       }
+      ia_agent_collaborations: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          processing_time_ms: number | null
+          request_payload: Json | null
+          request_type: string
+          requesting_agent_id: string | null
+          responding_agent_id: string | null
+          response_payload: Json | null
+          session_id: string
+          status: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          processing_time_ms?: number | null
+          request_payload?: Json | null
+          request_type: string
+          requesting_agent_id?: string | null
+          responding_agent_id?: string | null
+          response_payload?: Json | null
+          session_id: string
+          status?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          processing_time_ms?: number | null
+          request_payload?: Json | null
+          request_type?: string
+          requesting_agent_id?: string | null
+          responding_agent_id?: string | null
+          response_payload?: Json | null
+          session_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ia_agent_collaborations_requesting_agent_id_fkey"
+            columns: ["requesting_agent_id"]
+            isOneToOne: false
+            referencedRelation: "ia_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ia_agent_collaborations_responding_agent_id_fkey"
+            columns: ["responding_agent_id"]
+            isOneToOne: false
+            referencedRelation: "ia_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ia_agents: {
+        Row: {
+          capabilities: Json | null
+          created_at: string | null
+          description: string | null
+          display_name: string
+          id: string
+          is_active: boolean | null
+          name: string
+          priority: number | null
+          role: string
+          system_prompt: string
+          updated_at: string | null
+        }
+        Insert: {
+          capabilities?: Json | null
+          created_at?: string | null
+          description?: string | null
+          display_name: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          priority?: number | null
+          role: string
+          system_prompt: string
+          updated_at?: string | null
+        }
+        Update: {
+          capabilities?: Json | null
+          created_at?: string | null
+          description?: string | null
+          display_name?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          priority?: number | null
+          role?: string
+          system_prompt?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       ia_api_configs: {
         Row: {
           api_key_encrypted: string | null
@@ -1315,6 +1414,91 @@ export type Database = {
           status?: string | null
         }
         Relationships: []
+      }
+      ia_collaborative_sessions: {
+        Row: {
+          agents_involved: string[] | null
+          created_at: string | null
+          current_stage: string | null
+          description: string | null
+          final_output: Json | null
+          id: string
+          proposal_id: string | null
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+          workflow_state: Json | null
+        }
+        Insert: {
+          agents_involved?: string[] | null
+          created_at?: string | null
+          current_stage?: string | null
+          description?: string | null
+          final_output?: Json | null
+          id?: string
+          proposal_id?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          workflow_state?: Json | null
+        }
+        Update: {
+          agents_involved?: string[] | null
+          created_at?: string | null
+          current_stage?: string | null
+          description?: string | null
+          final_output?: Json | null
+          id?: string
+          proposal_id?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          workflow_state?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ia_collaborative_sessions_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "ia_feature_proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ia_community_votes: {
+        Row: {
+          created_at: string | null
+          id: string
+          proposal_id: string
+          reason: string | null
+          user_id: string
+          vote: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          proposal_id: string
+          reason?: string | null
+          user_id: string
+          vote: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          proposal_id?: string
+          reason?: string | null
+          user_id?: string
+          vote?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ia_community_votes_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "ia_feature_proposals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ia_conversations: {
         Row: {
@@ -3507,6 +3691,24 @@ export type Database = {
       }
     }
     Views: {
+      ia_proposal_vote_summary: {
+        Row: {
+          abstain_count: number | null
+          approve_count: number | null
+          proposal_id: string | null
+          reject_count: number | null
+          total_votes: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ia_community_votes_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "ia_feature_proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       public_profiles: {
         Row: {
           additional_profile_types: string[] | null

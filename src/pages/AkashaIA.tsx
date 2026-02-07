@@ -42,6 +42,7 @@ import ArtistAssistantPanel from "@/components/akasha-ia/ArtistAssistantPanel";
 import ModeratorPanel from "@/components/akasha-ia/ModeratorPanel";
 import ContentGeneratorPanel from "@/components/akasha-ia/ContentGeneratorPanel";
 import { DevelopmentCyclePanel } from "@/components/akasha-ia/DevelopmentCyclePanel";
+import { AppBuilderIDE } from "@/components/akasha-ia/AppBuilderIDE";
 
 interface Message {
   role: "user" | "assistant";
@@ -384,9 +385,13 @@ export default function AkashaIA() {
           </p>
         </div>
 
-        <Tabs defaultValue="desarrollo" className="space-y-4">
+        <Tabs defaultValue="ide" className="space-y-4">
           <TabsList className="bg-muted/50 flex-wrap h-auto gap-1 p-1">
-            <TabsTrigger value="desarrollo" className="gap-2 bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger value="ide" className="gap-2 bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Code className="h-4 w-4" />
+              <span className="hidden sm:inline">App Builder</span>
+            </TabsTrigger>
+            <TabsTrigger value="desarrollo" className="gap-2">
               <GitBranch className="h-4 w-4" />
               <span className="hidden sm:inline">Desarrollo</span>
             </TabsTrigger>
@@ -423,6 +428,10 @@ export default function AkashaIA() {
               <span className="hidden sm:inline">Propuestas</span>
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="ide">
+            <AppBuilderIDE />
+          </TabsContent>
 
           <TabsContent value="desarrollo">
             <DevelopmentCyclePanel />

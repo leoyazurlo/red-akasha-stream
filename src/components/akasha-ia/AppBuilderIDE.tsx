@@ -51,6 +51,7 @@ import { MonacoEditor } from "./MonacoEditor";
 import { SandboxPreview } from "./SandboxPreview";
 import { AIActionsToolbar } from "./AIActionsToolbar";
 import { AIContextPanel } from "./AIContextPanel";
+import { ChatFileUpload, UploadedFile } from "./ChatFileUpload";
 
 interface GeneratedCode {
   frontend: string;
@@ -71,6 +72,7 @@ interface ProjectFile {
 interface Message {
   role: "user" | "assistant";
   content: string;
+  files?: UploadedFile[];
 }
 
 const LIFECYCLE_STAGES = [
@@ -100,6 +102,7 @@ export function AppBuilderIDE() {
   const [aiResponse, setAIResponse] = useState<string>("");
   const [isAIProcessing, setIsAIProcessing] = useState(false);
   const [showContextPanel, setShowContextPanel] = useState(true);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [projectFiles, setProjectFiles] = useState<ProjectFile[]>([
     {
       id: "1",
@@ -178,10 +181,26 @@ export function AppBuilderIDE() {
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = { role: "user", content: input.trim() };
+    // Build message with file context
+    let messageContent = input.trim();
+    const completedFiles = uploadedFiles.filter(f => f.status === "completed");
+    
+    if (completedFiles.length > 0) {
+      messageContent += "\n\n[Archivos adjuntos:";
+      completedFiles.forEach(file => {
+        messageContent += `\n- ${file.name} (${file.type})`;
+        if (file.content) {
+          messageContent += `:\n\`\`\`\n${file.content.slice(0, 5000)}\n\`\`\``;
+        }
+      });
+      messageContent += "]";
+    }
+
+    const userMessage: Message = { role: "user", content: input.trim(), files: completedFiles };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
     setInput("");
+    setUploadedFiles([]); // Clear files after sending
     setIsLoading(true);
     setLifecycleStage("generating");
 
@@ -195,13 +214,13 @@ export function AppBuilderIDE() {
         throw new Error("No hay sesión activa");
       }
 
-      // Generate implementation
+      // Generate implementation with file context
       const { data: implData, error: implError } = await supabase.functions.invoke(
         "generate-implementation",
         {
           body: {
             title: input.trim().slice(0, 100),
-            description: input.trim(),
+            description: messageContent, // Include file context
           },
         }
       );
@@ -549,17 +568,22 @@ export function AppBuilderIDE() {
                 </div>
               </ScrollArea>
               <div className="p-2 border-t border-cyan-500/10">
-                <div className="flex gap-1">
+                <div className="flex gap-1 items-center">
+                  <ChatFileUpload
+                    files={uploadedFiles}
+                    onFilesChange={setUploadedFiles}
+                    disabled={isLoading}
+                  />
                   <Input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder="Describe tu aplicación..."
-                    className="text-xs h-8"
+                    placeholder={uploadedFiles.length > 0 ? "Describe qué hacer con los archivos..." : "Describe tu aplicación..."}
+                    className="text-xs h-8 flex-1"
                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
                     disabled={isLoading}
                   />
-                  <Button size="icon" className="h-8 w-8" onClick={sendMessage} disabled={isLoading}>
-                    <Send className="h-3 w-3" />
+                  <Button size="icon" className="h-8 w-8" onClick={sendMessage} disabled={isLoading || (!input.trim() && uploadedFiles.length === 0)}>
+                    {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
                   </Button>
                 </div>
               </div>

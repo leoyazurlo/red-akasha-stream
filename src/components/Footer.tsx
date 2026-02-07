@@ -136,16 +136,6 @@ export const Footer = () => {
       labelKey: "footer.contact",
       href: "/contacto",
     },
-    {
-      icon: UserPlus,
-      labelKey: "footer.joinFree",
-      href: "/asociate",
-    },
-    {
-      icon: Palette,
-      labelKey: "footer.project",
-      href: "/proyecto",
-    },
   ];
 
   // Social media with brand colors
@@ -201,7 +191,7 @@ export const Footer = () => {
     >
       <div className="container mx-auto px-4 py-8 md:py-12">
         {/* Action Buttons - Better mobile layout */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mb-8 md:mb-12">
+        <div className="grid grid-cols-2 gap-2 md:gap-3 mb-8 md:mb-12 max-w-md mx-auto">
           {footerActions.map((action, index) => {
             const Icon = action.icon;
             return (

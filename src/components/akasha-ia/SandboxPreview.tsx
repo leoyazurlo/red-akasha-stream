@@ -59,17 +59,20 @@ export function SandboxPreview({ code, routes = [] }: SandboxPreviewProps) {
     const componentMatch = frontend.match(/(?:export\s+(?:default\s+)?)?(?:function|const)\s+(\w+)/);
     const componentName = componentMatch?.[1] || "App";
 
-    // Transform TSX to JS (simplified - in production use Babel)
+    // Transform TSX to JS - more robust transformation
     let jsCode = frontend
-      // Remove TypeScript types
-      .replace(/:\s*\w+(\[\])?\s*(?=[,\)\=\{])/g, "")
-      .replace(/<\w+>/g, "")
-      .replace(/interface\s+\w+\s*\{[^}]*\}/g, "")
+      // Remove TypeScript type annotations carefully
+      .replace(/:\s*(?:string|number|boolean|any|void|null|undefined|object|React\.\w+|\w+\[\]|\{\s*[^}]+\s*\})\s*(?=[,\)\=\{;])/g, "")
+      // Remove generic type parameters
+      .replace(/<(?:string|number|boolean|any|T|K|V|\w+(?:\s*,\s*\w+)*)>/g, "")
+      // Remove interface declarations
+      .replace(/interface\s+\w+\s*\{[^}]*\}/gs, "")
+      // Remove type declarations
       .replace(/type\s+\w+\s*=\s*[^;]+;/g, "")
-      // Transform imports
+      // Remove import statements
       .replace(/import\s+.*?from\s+['"][^'"]+['"];?\n?/g, "")
-      // Add export if not present
-      .replace(/^(function|const)\s+/, "export $1");
+      // Remove export default at the end if present
+      .replace(/export\s+default\s+\w+;?\s*$/g, "");
 
     const html = `
 <!DOCTYPE html>

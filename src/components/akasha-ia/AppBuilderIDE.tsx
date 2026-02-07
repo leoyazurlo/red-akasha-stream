@@ -207,17 +207,102 @@ export function AppBuilderIDE() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Check if message is a code generation request
+  // Check if message is a code generation / implementation request
   const isCodeGenerationRequest = (message: string): boolean => {
+    const m = message.toLowerCase();
+
+    // Explicit "build/code" intents
     const codeKeywords = [
-      "genera", "generar", "crea", "crear", "implementa", "implementar",
-      "desarrolla", "desarrollar", "construye", "construir", "programa",
-      "codifica", "escribe código", "haz código", "nuevo componente",
-      "nueva función", "nueva feature", "add feature", "create", "build",
-      "generate", "implement", "develop"
+      "genera",
+      "generar",
+      "crea",
+      "crear",
+      "implementa",
+      "implementar",
+      "desarrolla",
+      "desarrollar",
+      "construye",
+      "construir",
+      "programa",
+      "codifica",
+      "escribe código",
+      "haz código",
+      "nuevo componente",
+      "nueva función",
+      "nueva feature",
+      "add feature",
+      "create",
+      "build",
+      "generate",
+      "implement",
+      "develop",
     ];
-    const lowerMessage = message.toLowerCase();
-    return codeKeywords.some(keyword => lowerMessage.includes(keyword));
+
+    // Edit/modify intents (common when users want a change like Lovable)
+    const editKeywords = [
+      "cambia",
+      "cambiar",
+      "modifica",
+      "modificar",
+      "actualiza",
+      "actualizar",
+      "reemplaza",
+      "reemplazar",
+      "saca",
+      "sacar",
+      "quita",
+      "quitar",
+      "pone",
+      "poner",
+      "agrega",
+      "agregar",
+      "añade",
+      "añadir",
+      "ajusta",
+      "ajustar",
+      "arregla",
+      "arreglar",
+      "fix",
+      "corrige",
+      "corregir",
+      "refactoriza",
+      "refactorizar",
+      "optimiza",
+      "optimizar",
+    ];
+
+    // Typical UI targets
+    const uiTargets = [
+      "footer",
+      "header",
+      "navbar",
+      "menú",
+      "menu",
+      "logo",
+      "icono",
+      "ícono",
+      "texto",
+      "botón",
+      "boton",
+      "color",
+      "estilo",
+      "css",
+      "tailwind",
+      "layout",
+      "diseño",
+      "diseno",
+      "responsive",
+      "mobile",
+      "móvil",
+      "movil",
+    ];
+
+    const hasExplicitCodeIntent = codeKeywords.some((k) => m.includes(k));
+    const hasEditIntent = editKeywords.some((k) => m.includes(k));
+    const hasUiTarget = uiTargets.some((k) => m.includes(k));
+
+    // Treat as implementation if explicit, OR it looks like an edit request on UI
+    return hasExplicitCodeIntent || (hasEditIntent && hasUiTarget);
   };
 
   // Send message to AI - supports both chat and code generation
@@ -364,8 +449,9 @@ export function AppBuilderIDE() {
             },
             body: JSON.stringify({
               messages: chatMessages,
-              includePlatformStats: true,
-              includeArtistsContext: true,
+              // Keep chat fast/light by default. Enable only when the user asks for stats/artists.
+              includePlatformStats: false,
+              includeArtistsContext: false,
             }),
           }
         );
@@ -392,26 +478,56 @@ export function AppBuilderIDE() {
         // Add placeholder message
         setMessages([...newMessages, { role: "assistant", content: "..." }]);
 
-        while (true) {
+        let streamDone = false;
+
+        while (!streamDone) {
           const { done, value } = await reader.read();
           if (done) break;
 
           buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop() || "";
 
-          for (const line of lines) {
-            if (line.startsWith("data: ") && !line.includes("[DONE]")) {
-              try {
-                const data = JSON.parse(line.slice(6));
-                const content = data.choices?.[0]?.delta?.content;
-                if (content) {
-                  assistantContent += content;
-                  setMessages([...newMessages, { role: "assistant", content: assistantContent }]);
-                }
-              } catch (e) {
-                // Ignore parsing errors for incomplete chunks
+          let newlineIndex: number;
+          while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+            let line = buffer.slice(0, newlineIndex);
+            buffer = buffer.slice(newlineIndex + 1);
+
+            if (line.endsWith("\r")) line = line.slice(0, -1);
+            const trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith(":")) continue; // keepalive/comments
+            if (!trimmed.startsWith("data: ")) continue;
+
+            const payload = trimmed.slice(6).trim();
+            if (payload === "[DONE]") {
+              streamDone = true;
+              break;
+            }
+
+            try {
+              const data = JSON.parse(payload);
+              const content = data.choices?.[0]?.delta?.content;
+              if (content) {
+                assistantContent += content;
+                setMessages([...newMessages, { role: "assistant", content: assistantContent }]);
               }
+            } catch {
+              // Partial JSON split across chunks: put the line back and wait for more data
+              buffer = line + "\n" + buffer;
+              break;
+            }
+          }
+        }
+
+        // Flush any remaining buffered line (optional best-effort)
+        const leftover = buffer.trim();
+        if (leftover.startsWith("data: ")) {
+          const payload = leftover.slice(6).trim();
+          if (payload !== "[DONE]") {
+            try {
+              const data = JSON.parse(payload);
+              const content = data.choices?.[0]?.delta?.content;
+              if (content) assistantContent += content;
+            } catch {
+              // ignore
             }
           }
         }

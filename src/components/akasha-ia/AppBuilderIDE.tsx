@@ -942,26 +942,26 @@ export function AppBuilderIDE() {
         <ResizablePanel defaultSize={showContextPanel ? 35 : 45} minSize={25}>
           <div className="h-full flex flex-col bg-card/30">
             {/* Editor Tabs */}
-            <div className="flex items-center justify-between border-b border-cyan-500/10 px-2">
+            <div className="flex items-center justify-between border-b border-cyan-500/10 px-2 bg-card/50 relative z-10">
               <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1">
-                <TabsList className="h-9 bg-transparent gap-0.5">
+                <TabsList className="h-9 bg-transparent gap-0.5 border-none">
                   <TabsTrigger
                     value="frontend"
-                    className="text-xs h-7 data-[state=active]:bg-cyan-500/20 rounded-b-none"
+                    className="text-xs h-7 data-[state=active]:bg-cyan-500/20 border-none"
                   >
                     <Code className="h-3 w-3 mr-1" />
                     Frontend
                   </TabsTrigger>
                   <TabsTrigger
                     value="backend"
-                    className="text-xs h-7 data-[state=active]:bg-cyan-500/20 rounded-b-none"
+                    className="text-xs h-7 data-[state=active]:bg-cyan-500/20 border-none"
                   >
                     <Server className="h-3 w-3 mr-1" />
                     Backend
                   </TabsTrigger>
                   <TabsTrigger
                     value="database"
-                    className="text-xs h-7 data-[state=active]:bg-cyan-500/20 rounded-b-none"
+                    className="text-xs h-7 data-[state=active]:bg-cyan-500/20 border-none"
                   >
                     <Database className="h-3 w-3 mr-1" />
                     Database

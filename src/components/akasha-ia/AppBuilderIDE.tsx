@@ -629,12 +629,12 @@ Puedes ver el código en las pestañas del editor. ¿Quieres que valide el códi
             </div>
 
             {/* AI Chat */}
-            <div className="flex-1 flex flex-col">
-              <div className="flex items-center gap-2 p-2 border-b border-cyan-500/10">
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <div className="flex items-center gap-2 p-2 border-b border-cyan-500/10 flex-shrink-0">
                 <Sparkles className="h-4 w-4 text-cyan-400" />
                 <span className="text-xs font-medium">AKASHA IA</span>
               </div>
-              <ScrollArea className="flex-1 p-2">
+              <div className="flex-1 overflow-y-auto p-2 min-h-0">
                 <div className="space-y-3">
                   {messages.length === 0 && (
                     <p className="text-xs text-muted-foreground text-center py-4">
@@ -644,7 +644,7 @@ Puedes ver el código en las pestañas del editor. ¿Quieres que valide el códi
                   {messages.map((msg, i) => (
                     <div
                       key={i}
-                      className={`text-xs p-2 rounded-lg ${
+                      className={`text-xs p-2 rounded-lg break-words ${
                         msg.role === "user"
                           ? "bg-cyan-500/20 text-foreground ml-4"
                           : "bg-muted/50 text-muted-foreground mr-4"
@@ -678,7 +678,7 @@ Puedes ver el código en las pestañas del editor. ¿Quieres que valide el códi
                   )}
                   <div ref={messagesEndRef} />
                 </div>
-              </ScrollArea>
+              </div>
               <div className="p-2 border-t border-cyan-500/10">
                 <div className="flex gap-1 items-center">
                   <ChatFileUpload

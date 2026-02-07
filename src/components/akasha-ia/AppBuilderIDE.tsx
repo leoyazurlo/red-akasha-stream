@@ -41,9 +41,16 @@ import {
   ChevronDown,
   File,
   Folder,
+  Brain,
+  Wand2,
+  Zap,
+  PanelRightClose,
+  PanelRight,
 } from "lucide-react";
 import { MonacoEditor } from "./MonacoEditor";
 import { SandboxPreview } from "./SandboxPreview";
+import { AIActionsToolbar } from "./AIActionsToolbar";
+import { AIContextPanel } from "./AIContextPanel";
 
 interface GeneratedCode {
   frontend: string;
@@ -90,6 +97,9 @@ export function AppBuilderIDE() {
   const [validationScore, setValidationScore] = useState<number | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [isCreatingPR, setIsCreatingPR] = useState(false);
+  const [aiResponse, setAIResponse] = useState<string>("");
+  const [isAIProcessing, setIsAIProcessing] = useState(false);
+  const [showContextPanel, setShowContextPanel] = useState(true);
   const [projectFiles, setProjectFiles] = useState<ProjectFile[]>([
     {
       id: "1",
@@ -560,11 +570,11 @@ export function AppBuilderIDE() {
         <ResizableHandle withHandle />
 
         {/* Center: Code Editor */}
-        <ResizablePanel defaultSize={40} minSize={30}>
+        <ResizablePanel defaultSize={showContextPanel ? 35 : 45} minSize={25}>
           <div className="h-full flex flex-col bg-card/30">
             {/* Editor Tabs */}
             <div className="flex items-center justify-between border-b border-cyan-500/10 px-2">
-              <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
+              <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1">
                 <TabsList className="h-9 bg-transparent gap-0.5">
                   <TabsTrigger
                     value="frontend"
@@ -590,6 +600,23 @@ export function AppBuilderIDE() {
                 </TabsList>
               </Tabs>
               <div className="flex items-center gap-1">
+                {/* AI Actions Toolbar */}
+                <AIActionsToolbar
+                  code={
+                    activeTab === "frontend"
+                      ? generatedCode.frontend
+                      : activeTab === "backend"
+                      ? generatedCode.backend
+                      : generatedCode.database
+                  }
+                  language={activeTab === "database" ? "sql" : "typescript"}
+                  onCodeUpdate={handleCodeChange}
+                  onAIResponse={(response) => {
+                    setAIResponse(response);
+                    setShowContextPanel(true);
+                  }}
+                />
+                <div className="w-px h-4 bg-cyan-500/20 mx-1" />
                 <Button size="icon" variant="ghost" className="h-6 w-6" title="Deshacer">
                   <Undo className="h-3 w-3" />
                 </Button>
@@ -598,6 +625,19 @@ export function AppBuilderIDE() {
                 </Button>
                 <Button size="icon" variant="ghost" className="h-6 w-6" title="Copiar">
                   <Copy className="h-3 w-3" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-6 w-6"
+                  title={showContextPanel ? "Ocultar Panel IA" : "Mostrar Panel IA"}
+                  onClick={() => setShowContextPanel(!showContextPanel)}
+                >
+                  {showContextPanel ? (
+                    <PanelRightClose className="h-3 w-3" />
+                  ) : (
+                    <PanelRight className="h-3 w-3" />
+                  )}
                 </Button>
               </div>
             </div>
@@ -624,11 +664,15 @@ export function AppBuilderIDE() {
                 {validationScore !== null && (
                   <Badge
                     variant={validationScore >= 70 ? "default" : "destructive"}
-                    className={validationScore >= 70 ? "bg-green-500/20 text-green-400" : ""}
+                    className={validationScore >= 70 ? "bg-accent/20 text-accent" : ""}
                   >
                     Score: {validationScore}/100
                   </Badge>
                 )}
+                <Badge variant="outline" className="text-xs gap-1">
+                  <Zap className="h-3 w-3" />
+                  Akasha IA
+                </Badge>
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -670,16 +714,53 @@ export function AppBuilderIDE() {
 
         <ResizableHandle withHandle />
 
-        {/* Right: Live Preview */}
-        <ResizablePanel defaultSize={35} minSize={25}>
+        {/* Right: Preview + AI Context */}
+        <ResizablePanel defaultSize={showContextPanel ? 40 : 35} minSize={25}>
           <div className="h-full flex flex-col bg-card/30">
-            <div className="flex items-center gap-2 p-2 border-b border-cyan-500/10">
-              <Eye className="h-4 w-4 text-cyan-400" />
-              <span className="text-xs font-medium">VISTA PREVIA</span>
-            </div>
-            <div className="flex-1">
-              <SandboxPreview code={generatedCode} />
-            </div>
+            {showContextPanel ? (
+              <ResizablePanelGroup direction="vertical">
+                {/* Live Preview */}
+                <ResizablePanel defaultSize={55} minSize={30}>
+                  <div className="h-full flex flex-col">
+                    <div className="flex items-center gap-2 p-2 border-b border-cyan-500/10">
+                      <Eye className="h-4 w-4 text-cyan-400" />
+                      <span className="text-xs font-medium">VISTA PREVIA</span>
+                    </div>
+                    <div className="flex-1">
+                      <SandboxPreview code={generatedCode} />
+                    </div>
+                  </div>
+                </ResizablePanel>
+
+                <ResizableHandle withHandle />
+
+                {/* AI Context Panel */}
+                <ResizablePanel defaultSize={45} minSize={20}>
+                  <AIContextPanel
+                    aiResponse={aiResponse}
+                    isProcessing={isAIProcessing}
+                    code={
+                      activeTab === "frontend"
+                        ? generatedCode.frontend
+                        : activeTab === "backend"
+                        ? generatedCode.backend
+                        : generatedCode.database
+                    }
+                    language={activeTab === "database" ? "sql" : "typescript"}
+                  />
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            ) : (
+              <div className="h-full flex flex-col">
+                <div className="flex items-center gap-2 p-2 border-b border-cyan-500/10">
+                  <Eye className="h-4 w-4 text-cyan-400" />
+                  <span className="text-xs font-medium">VISTA PREVIA</span>
+                </div>
+                <div className="flex-1">
+                  <SandboxPreview code={generatedCode} />
+                </div>
+              </div>
+            )}
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>

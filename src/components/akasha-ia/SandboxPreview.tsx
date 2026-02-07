@@ -82,10 +82,11 @@ export function SandboxPreview({ code, routes = [] }: SandboxPreviewProps) {
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { 
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
       background: #0A0A0F;
       color: #fff;
       min-height: 100vh;
@@ -98,12 +99,18 @@ export function SandboxPreview({ code, routes = [] }: SandboxPreviewProps) {
       border-radius: 8px;
       margin: 20px;
     }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #4B5563; }
   </style>
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
           colors: {
             background: '#0A0A0F',
             foreground: '#FAFAFA',
@@ -113,6 +120,16 @@ export function SandboxPreview({ code, routes = [] }: SandboxPreviewProps) {
             accent: { DEFAULT: '#22D3EE', foreground: '#0A0A0F' },
             card: { DEFAULT: '#111118', foreground: '#FAFAFA' },
             border: '#27272A',
+            destructive: { DEFAULT: '#EF4444', foreground: '#FAFAFA' },
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-out',
+            'slide-up': 'slideUp 0.3s ease-out',
+            'pulse-slow': 'pulse 3s infinite',
+          },
+          keyframes: {
+            fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } },
+            slideUp: { '0%': { transform: 'translateY(10px)', opacity: 0 }, '100%': { transform: 'translateY(0)', opacity: 1 } },
           }
         }
       }
@@ -122,24 +139,28 @@ export function SandboxPreview({ code, routes = [] }: SandboxPreviewProps) {
 <body class="dark">
   <div id="root"></div>
   <script type="text/babel" data-presets="react,typescript">
-    const { useState, useEffect, useCallback, useMemo, useRef, memo } = React;
+    const { useState, useEffect, useCallback, useMemo, useRef, memo, createContext, useContext } = React;
     
-    // Mock UI components
-    const Button = ({ children, className = "", variant = "default", size = "default", onClick, disabled, ...props }) => {
-      const baseStyles = "inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50";
+    // ===== Extended Mock UI Components =====
+    
+    const Button = ({ children, className = "", variant = "default", size = "default", onClick, disabled, type = "button", ...props }) => {
+      const baseStyles = "inline-flex items-center justify-center rounded-md font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-95";
       const variants = {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg",
+        outline: "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground",
+        ghost: "hover:bg-accent/20 hover:text-accent-foreground",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        link: "text-primary underline-offset-4 hover:underline",
       };
       const sizes = {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
+        default: "h-10 px-4 py-2 text-sm",
+        sm: "h-9 rounded-md px-3 text-xs",
+        lg: "h-11 rounded-md px-8 text-base",
         icon: "h-10 w-10"
       };
       return React.createElement('button', { 
+        type,
         className: baseStyles + " " + (variants[variant] || variants.default) + " " + (sizes[size] || sizes.default) + " " + className,
         onClick,
         disabled,
@@ -148,7 +169,7 @@ export function SandboxPreview({ code, routes = [] }: SandboxPreviewProps) {
     };
     
     const Card = ({ children, className = "", ...props }) => 
-      React.createElement('div', { className: "rounded-lg border bg-card text-card-foreground shadow-sm " + className, ...props }, children);
+      React.createElement('div', { className: "rounded-xl border border-border bg-card text-card-foreground shadow-lg backdrop-blur-sm " + className, ...props }, children);
     
     const CardHeader = ({ children, className = "", ...props }) => 
       React.createElement('div', { className: "flex flex-col space-y-1.5 p-6 " + className, ...props }, children);
@@ -156,36 +177,207 @@ export function SandboxPreview({ code, routes = [] }: SandboxPreviewProps) {
     const CardTitle = ({ children, className = "", ...props }) => 
       React.createElement('h3', { className: "text-2xl font-semibold leading-none tracking-tight " + className, ...props }, children);
     
+    const CardDescription = ({ children, className = "", ...props }) => 
+      React.createElement('p', { className: "text-sm text-muted-foreground " + className, ...props }, children);
+    
     const CardContent = ({ children, className = "", ...props }) => 
       React.createElement('div', { className: "p-6 pt-0 " + className, ...props }, children);
+    
+    const CardFooter = ({ children, className = "", ...props }) => 
+      React.createElement('div', { className: "flex items-center p-6 pt-0 " + className, ...props }, children);
     
     const Input = ({ className = "", type = "text", ...props }) => 
       React.createElement('input', { 
         type,
-        className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 " + className,
+        className: "flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all " + className,
         ...props
       });
     
     const Badge = ({ children, className = "", variant = "default", ...props }) => {
       const variants = {
-        default: "bg-primary text-primary-foreground",
+        default: "bg-primary/20 text-primary border-primary/30",
         secondary: "bg-secondary text-secondary-foreground",
-        outline: "border border-input"
+        outline: "border border-input bg-transparent",
+        destructive: "bg-destructive/20 text-destructive border-destructive/30",
+        success: "bg-green-500/20 text-green-400 border-green-500/30",
       };
       return React.createElement('div', { 
-        className: "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors " + (variants[variant] || variants.default) + " " + className,
+        className: "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors " + (variants[variant] || variants.default) + " " + className,
         ...props
       }, children);
     };
     
-    const Label = ({ children, className = "", ...props }) =>
-      React.createElement('label', { className: "text-sm font-medium leading-none " + className, ...props }, children);
+    const Label = ({ children, className = "", htmlFor, ...props }) =>
+      React.createElement('label', { htmlFor, className: "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 " + className, ...props }, children);
     
     const Textarea = ({ className = "", ...props }) =>
       React.createElement('textarea', {
-        className: "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 " + className,
+        className: "flex min-h-[80px] w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all resize-none " + className,
         ...props
       });
+    
+    const Switch = ({ checked = false, onCheckedChange, className = "", disabled = false }) => {
+      return React.createElement('button', {
+        role: 'switch',
+        'aria-checked': checked,
+        disabled,
+        onClick: () => onCheckedChange && onCheckedChange(!checked),
+        className: "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:opacity-50 " + (checked ? 'bg-primary' : 'bg-muted') + " " + className,
+      }, React.createElement('span', {
+        className: "inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform " + (checked ? 'translate-x-6' : 'translate-x-1')
+      }));
+    };
+    
+    const Checkbox = ({ checked = false, onCheckedChange, className = "", id }) => {
+      return React.createElement('button', {
+        id,
+        role: 'checkbox',
+        'aria-checked': checked,
+        onClick: () => onCheckedChange && onCheckedChange(!checked),
+        className: "h-4 w-4 rounded border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:opacity-50 " + (checked ? 'bg-primary text-primary-foreground' : 'bg-transparent') + " " + className,
+      }, checked && React.createElement('svg', { className: 'h-3 w-3', fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' },
+        React.createElement('path', { strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, d: 'M5 13l4 4L19 7' })
+      ));
+    };
+    
+    const Select = ({ children, value, onValueChange, placeholder = "Seleccionar..." }) => {
+      const [isOpen, setIsOpen] = useState(false);
+      return React.createElement('div', { className: 'relative' },
+        React.createElement('button', {
+          onClick: () => setIsOpen(!isOpen),
+          className: 'flex h-10 w-full items-center justify-between rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-primary/50'
+        }, value || placeholder,
+          React.createElement('svg', { className: 'h-4 w-4 opacity-50', fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' },
+            React.createElement('path', { strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, d: 'M19 9l-7 7-7-7' })
+          )
+        ),
+        isOpen && React.createElement('div', {
+          className: 'absolute z-50 mt-1 w-full rounded-md border border-input bg-card shadow-lg animate-fade-in'
+        }, children)
+      );
+    };
+    
+    const SelectItem = ({ value, children, onSelect }) => 
+      React.createElement('div', {
+        onClick: () => onSelect && onSelect(value),
+        className: 'px-3 py-2 text-sm cursor-pointer hover:bg-muted transition-colors'
+      }, children);
+    
+    const Avatar = ({ src, alt, fallback, className = "" }) => 
+      React.createElement('div', { className: "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full " + className },
+        src ? React.createElement('img', { src, alt, className: 'aspect-square h-full w-full object-cover' })
+          : React.createElement('div', { className: 'flex h-full w-full items-center justify-center rounded-full bg-muted text-sm font-medium' }, fallback)
+      );
+    
+    const Progress = ({ value = 0, className = "" }) =>
+      React.createElement('div', { className: 'relative h-2 w-full overflow-hidden rounded-full bg-muted ' + className },
+        React.createElement('div', { 
+          className: 'h-full bg-primary transition-all duration-300',
+          style: { width: value + '%' }
+        })
+      );
+    
+    const Separator = ({ className = "", orientation = "horizontal" }) =>
+      React.createElement('div', { 
+        className: (orientation === 'horizontal' ? 'h-px w-full' : 'h-full w-px') + ' bg-border ' + className 
+      });
+    
+    const Skeleton = ({ className = "" }) =>
+      React.createElement('div', { className: 'animate-pulse rounded-md bg-muted ' + className });
+    
+    const Alert = ({ children, variant = "default", className = "" }) => {
+      const variants = {
+        default: 'bg-card border-border',
+        destructive: 'bg-destructive/10 border-destructive/30 text-destructive',
+        success: 'bg-green-500/10 border-green-500/30 text-green-400',
+      };
+      return React.createElement('div', { 
+        className: 'relative w-full rounded-lg border p-4 ' + (variants[variant] || variants.default) + ' ' + className 
+      }, children);
+    };
+    
+    const Tabs = ({ children, defaultValue, className = "" }) => {
+      const [active, setActive] = useState(defaultValue);
+      return React.createElement('div', { className }, 
+        React.Children.map(children, child => 
+          child && React.cloneElement(child, { active, setActive })
+        )
+      );
+    };
+    
+    const TabsList = ({ children, active, setActive, className = "" }) =>
+      React.createElement('div', { className: 'inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 ' + className },
+        React.Children.map(children, child => 
+          child && React.cloneElement(child, { active, setActive })
+        )
+      );
+    
+    const TabsTrigger = ({ value, children, active, setActive, className = "" }) =>
+      React.createElement('button', {
+        onClick: () => setActive(value),
+        className: 'inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none ' + (active === value ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground') + ' ' + className
+      }, children);
+    
+    const TabsContent = ({ value, children, active, className = "" }) =>
+      active === value ? React.createElement('div', { className: 'mt-2 animate-fade-in ' + className }, children) : null;
+    
+    const Dialog = ({ open, onOpenChange, children }) => {
+      if (!open) return null;
+      return React.createElement('div', { className: 'fixed inset-0 z-50' },
+        React.createElement('div', { 
+          className: 'fixed inset-0 bg-black/80 animate-fade-in',
+          onClick: () => onOpenChange(false)
+        }),
+        React.createElement('div', { className: 'fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] animate-slide-up' },
+          children
+        )
+      );
+    };
+    
+    const DialogContent = ({ children, className = "" }) =>
+      React.createElement('div', { className: 'w-full max-w-lg rounded-lg border bg-card p-6 shadow-lg ' + className }, children);
+    
+    const DialogHeader = ({ children, className = "" }) =>
+      React.createElement('div', { className: 'flex flex-col space-y-1.5 text-center sm:text-left ' + className }, children);
+    
+    const DialogTitle = ({ children, className = "" }) =>
+      React.createElement('h2', { className: 'text-lg font-semibold leading-none tracking-tight ' + className }, children);
+    
+    const ScrollArea = ({ children, className = "" }) =>
+      React.createElement('div', { className: 'overflow-auto ' + className }, children);
+    
+    const Tooltip = ({ children, content }) => {
+      const [show, setShow] = useState(false);
+      return React.createElement('div', { 
+        className: 'relative inline-block',
+        onMouseEnter: () => setShow(true),
+        onMouseLeave: () => setShow(false)
+      }, children,
+        show && React.createElement('div', { 
+          className: 'absolute z-50 -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs bg-foreground text-background rounded animate-fade-in whitespace-nowrap'
+        }, content)
+      );
+    };
+    
+    // Icons (simple SVG components)
+    const Icons = {
+      Loader: ({ className = "" }) => React.createElement('svg', { className: 'animate-spin ' + className, fill: 'none', viewBox: '0 0 24 24' },
+        React.createElement('circle', { className: 'opacity-25', cx: 12, cy: 12, r: 10, stroke: 'currentColor', strokeWidth: 4 }),
+        React.createElement('path', { className: 'opacity-75', fill: 'currentColor', d: 'M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z' })
+      ),
+      Check: ({ className = "" }) => React.createElement('svg', { className, fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' },
+        React.createElement('path', { strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, d: 'M5 13l4 4L19 7' })
+      ),
+      X: ({ className = "" }) => React.createElement('svg', { className, fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' },
+        React.createElement('path', { strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, d: 'M6 18L18 6M6 6l12 12' })
+      ),
+      Plus: ({ className = "" }) => React.createElement('svg', { className, fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' },
+        React.createElement('path', { strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, d: 'M12 4v16m8-8H4' })
+      ),
+      Search: ({ className = "" }) => React.createElement('svg', { className, fill: 'none', viewBox: '0 0 24 24', stroke: 'currentColor' },
+        React.createElement('path', { strokeLinecap: 'round', strokeLinejoin: 'round', strokeWidth: 2, d: 'M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z' })
+      ),
+    };
 
     // User's code
     ${jsCode}

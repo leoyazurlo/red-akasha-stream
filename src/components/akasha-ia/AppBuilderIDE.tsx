@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import ReactMarkdown from "react-markdown";
 import {
   Code,
   Database,
@@ -667,7 +668,13 @@ Puedes ver el código en las pestañas del editor. ¿Quieres que valide el códi
                           ))}
                         </div>
                       )}
-                      {msg.content}
+                      {msg.role === "assistant" ? (
+                        <div className="prose prose-sm prose-invert max-w-none prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-li:my-0.5 prose-pre:my-2 prose-code:text-cyan-400">
+                          <ReactMarkdown>{msg.content}</ReactMarkdown>
+                        </div>
+                      ) : (
+                        msg.content
+                      )}
                     </div>
                   ))}
                   {isLoading && (

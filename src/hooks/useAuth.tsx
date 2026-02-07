@@ -1,9 +1,40 @@
+/**
+ * @fileoverview Hook de autenticación para Red Akasha.
+ * Maneja el estado de sesión, verificación de roles y redirecciones.
+ */
+
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
 
-export const useAuth = (requireAuth = false) => {
+/** Resultado del hook useAuth */
+interface UseAuthResult {
+  /** Usuario autenticado o null */
+  user: User | null;
+  /** Sesión activa o null */
+  session: Session | null;
+  /** Si está cargando la sesión/rol */
+  loading: boolean;
+  /** Si el usuario es administrador */
+  isAdmin: boolean;
+}
+
+/**
+ * Hook para manejar la autenticación de usuarios.
+ * 
+ * @param requireAuth - Si true, redirige a /auth si no hay sesión
+ * @returns Estado de autenticación del usuario
+ * 
+ * @example
+ * ```tsx
+ * const { user, isAdmin, loading } = useAuth();
+ * 
+ * if (loading) return <Spinner />;
+ * if (!user) return <LoginPrompt />;
+ * ```
+ */
+export const useAuth = (requireAuth = false): UseAuthResult => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);

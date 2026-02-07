@@ -1,8 +1,38 @@
+/**
+ * @fileoverview Hook para manejar seguimiento entre usuarios.
+ * Permite seguir/dejar de seguir y obtener contadores.
+ */
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-export const useFollow = (followingId: string | null) => {
+/** Resultado del hook useFollow */
+interface UseFollowResult {
+  /** Si el usuario actual sigue al perfil */
+  isFollowing: boolean;
+  /** Si hay una operación en progreso */
+  isLoading: boolean;
+  /** Cantidad de seguidores del perfil */
+  followersCount: number;
+  /** Cantidad de perfiles que sigue */
+  followingCount: number;
+  /** Función para alternar el estado de seguimiento */
+  toggleFollow: () => Promise<void>;
+}
+
+/**
+ * Hook para manejar el seguimiento de usuarios.
+ * 
+ * @param followingId - ID del usuario a seguir/consultar
+ * @returns Estado y acciones de seguimiento
+ * 
+ * @example
+ * ```tsx
+ * const { isFollowing, toggleFollow, followersCount } = useFollow(profileId);
+ * ```
+ */
+export const useFollow = (followingId: string | null): UseFollowResult => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);

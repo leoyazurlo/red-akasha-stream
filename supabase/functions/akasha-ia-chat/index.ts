@@ -10,71 +10,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const PLATFORM_CONTEXT = `
-## Arquitectura de Red Akasha
-
-Red Akasha es una plataforma de streaming y comunidad para música electrónica construida con:
-- **Frontend**: React + TypeScript + Vite + Tailwind CSS + shadcn/ui
-- **Backend**: Supabase (PostgreSQL + Edge Functions + Auth + Storage)
-- **Estado**: TanStack Query para cache y sincronización
-
-### Módulos Principales:
-
-1. **Streaming y Contenido**
-   - Video On-Demand (VOD) con reproductor personalizado
-   - Transmisiones en vivo con chat
-   - Sistema de podcasts
-   - Carruseles de contenido destacado
-
-2. **Perfiles de Usuario**
-   - Tipos: Músico, DJ, Productor, Banda, Venue, Record Label, Promotor, etc.
-   - Ficha técnica personalizada por tipo
-   - Sistema de seguidores
-   - Galería multimedia
-
-3. **Sistema de Foro**
-   - Categorías y subforos
-   - Hilos y posts con menciones (@usuario)
-   - Sistema de votación y badges
-   - Moderación y reportes
-
-4. **Monetización**
-   - Contenido de pago (compra/alquiler)
-   - Suscripciones
-   - Múltiples métodos de pago
-
-5. **Panel de Administración**
-   - Gestión de usuarios y roles
-   - Curaduría de contenido
-   - Configuración de streams
-   - Analytics de ventas y shares
-   - Sistema de badges
-   - Auditoría de acciones
-
-### Tablas Principales de la Base de Datos:
-- profiles, profile_details, user_roles
-- content_uploads, content_likes, content_comments, content_shares
-- forum_categories, forum_subforos, forum_threads, forum_posts
-- playlists, playlist_items, playback_history
-- streams, donations, chat_messages
-- notifications, direct_messages
-- ia_authorized_users, ia_api_configs, ia_feature_proposals, ia_conversations
-
-### Patrones de Diseño Usados:
-- Componentes React pequeños y reutilizables
-- Hooks personalizados para lógica de negocio
-- RLS (Row Level Security) en todas las tablas
-- Edge Functions para lógica de servidor
-- Tokens semánticos de diseño en CSS
-
-### Áreas de Mejora Potencial:
-- Rendimiento de carga de imágenes/videos
-- SEO y meta tags dinámicos
-- Sistema de búsqueda avanzada
-- Integración con plataformas externas (Spotify, SoundCloud)
-- PWA y notificaciones push
-- Sistema de mensajería en tiempo real mejorado
-`;
+const PLATFORM_CONTEXT = `Red Akasha: Plataforma de streaming y comunidad de música electrónica.
+Stack: React + TypeScript + Supabase (PostgreSQL + Edge Functions).
+Módulos: VOD, Live Streaming, Perfiles (DJ/Músico/Venue/etc), Foro, Monetización, Admin Panel.`;
 
 const getSystemPrompt = (platformStats: string) => `Eres Akasha IA, asistente de Red Akasha - plataforma de música electrónica.
 

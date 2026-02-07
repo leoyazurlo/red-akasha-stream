@@ -91,7 +91,36 @@ export function AppBuilderIDE() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [generatedCode, setGeneratedCode] = useState<GeneratedCode>({
-    frontend: "// Describe tu aplicación para generar código...",
+    frontend: `function App() {
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-8">
+      <Card className="max-w-lg w-full">
+        <CardHeader>
+          <CardTitle className="text-2xl text-center">
+            🚀 Akasha App Builder
+          </CardTitle>
+          <CardDescription className="text-center">
+            Describe tu aplicación en el chat y la construiré para ti
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+            <Badge>1</Badge>
+            <span className="text-sm">Escribe qué quieres crear</span>
+          </div>
+          <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+            <Badge>2</Badge>
+            <span className="text-sm">Revisa el código generado</span>
+          </div>
+          <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+            <Badge>3</Badge>
+            <span className="text-sm">Ve el resultado aquí</span>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}`,
     backend: "// El código del backend aparecerá aquí...",
     database: "-- Las migraciones SQL aparecerán aquí...",
   });

@@ -555,6 +555,23 @@ export function AppBuilderIDE() {
                           : "bg-muted/50 text-muted-foreground mr-4"
                       }`}
                     >
+                      {/* Show attached files */}
+                      {msg.files && msg.files.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mb-2">
+                          {msg.files.map((file) => (
+                            <Badge
+                              key={file.id}
+                              variant="outline"
+                              className="text-[10px] gap-1 h-5"
+                            >
+                              {file.type === "image" && <Eye className="h-2.5 w-2.5" />}
+                              {file.type === "code" && <Code className="h-2.5 w-2.5" />}
+                              {file.type === "document" && <FileCode className="h-2.5 w-2.5" />}
+                              {file.name.slice(0, 15)}{file.name.length > 15 ? "..." : ""}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
                       {msg.content}
                     </div>
                   ))}

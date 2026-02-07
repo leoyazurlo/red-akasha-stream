@@ -53,6 +53,8 @@ import { SandboxPreview } from "./SandboxPreview";
 import { AIActionsToolbar } from "./AIActionsToolbar";
 import { AIContextPanel } from "./AIContextPanel";
 import { ChatFileUpload, UploadedFile, processFileForUpload } from "./ChatFileUpload";
+import { MultiAgentPanel } from "./MultiAgentPanel";
+import { CommunityVoting } from "./CommunityVoting";
 
 interface GeneratedCode {
   frontend: string;
@@ -1103,18 +1105,40 @@ export function AppBuilderIDE() {
 
                 {/* AI Context Panel */}
                 <ResizablePanel defaultSize={45} minSize={20}>
-                  <AIContextPanel
-                    aiResponse={aiResponse}
-                    isProcessing={isAIProcessing}
-                    code={
-                      activeTab === "frontend"
-                        ? generatedCode.frontend
-                        : activeTab === "backend"
-                        ? generatedCode.backend
-                        : generatedCode.database
-                    }
-                    language={activeTab === "database" ? "sql" : "typescript"}
-                  />
+                  <Tabs defaultValue="context" className="h-full flex flex-col">
+                    <TabsList className="mx-2 mt-2">
+                      <TabsTrigger value="context" className="text-xs">Contexto IA</TabsTrigger>
+                      <TabsTrigger value="agents" className="text-xs">Multi-Agente</TabsTrigger>
+                      <TabsTrigger value="voting" className="text-xs">Gobernanza</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="context" className="flex-1 overflow-hidden">
+                      <AIContextPanel
+                        aiResponse={aiResponse}
+                        isProcessing={isAIProcessing}
+                        code={
+                          activeTab === "frontend"
+                            ? generatedCode.frontend
+                            : activeTab === "backend"
+                            ? generatedCode.backend
+                            : generatedCode.database
+                        }
+                        language={activeTab === "database" ? "sql" : "typescript"}
+                      />
+                    </TabsContent>
+                    <TabsContent value="agents" className="flex-1 overflow-auto p-2">
+                      <MultiAgentPanel 
+                        currentCode={generatedCode}
+                        onCollaborativeResponse={(resp) => {
+                          if (resp.summary) {
+                            setAIResponse(resp.summary);
+                          }
+                        }}
+                      />
+                    </TabsContent>
+                    <TabsContent value="voting" className="flex-1 overflow-auto p-2">
+                      <CommunityVoting />
+                    </TabsContent>
+                  </Tabs>
                 </ResizablePanel>
               </ResizablePanelGroup>
             ) : (

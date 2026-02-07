@@ -229,8 +229,11 @@ export function AppBuilderIDE() {
       const shouldGenerateCode = isCodeGenerationRequest(input.trim());
 
       if (shouldGenerateCode) {
-        // Code generation flow
+        // Code generation flow - Automated pipeline like Lovable
         setLifecycleStage("generating");
+        
+        // Step 1: Generate code
+        setMessages([...newMessages, { role: "assistant", content: "⚡ Generando código..." }]);
         
         const { data: implData, error: implError } = await supabase.functions.invoke(
           "generate-implementation",
@@ -255,20 +258,11 @@ export function AppBuilderIDE() {
         updateFileContent("/supabase/functions/index.ts", newCode.backend);
         updateFileContent("/supabase/migrations/001_initial.sql", newCode.database);
 
-        const assistantContent = `### ✅ Código Generado
+        // Step 2: Auto-validate immediately
+        setMessages([...newMessages, { role: "assistant", content: "✅ Código generado. Validando..." }]);
+        setLifecycleStage("validating");
 
-He generado el código para tu solicitud:
-
-**📦 Frontend:** Componente React con TypeScript
-**⚙️ Backend:** Edge Function para la lógica del servidor  
-**🗄️ Database:** Migración SQL con políticas RLS
-
-Puedes ver el código en las pestañas del editor. ¿Quieres que valide el código o realice algún cambio?`;
-
-        setMessages([...newMessages, { role: "assistant", content: assistantContent }]);
-        setLifecycleStage("draft");
-
-        // Create proposal record
+        // Create proposal for tracking
         const { data: { user } } = await supabase.auth.getUser();
         const { data: proposal } = await supabase
           .from("ia_feature_proposals")
@@ -277,14 +271,53 @@ Puedes ver el código en las pestañas del editor. ¿Quieres que valide el códi
             description: input.trim(),
             proposed_code: JSON.stringify(newCode),
             requested_by: user?.id,
-            lifecycle_stage: "generating" as const,
+            lifecycle_stage: "validating" as const,
             status: "pending",
           }])
           .select()
           .single();
 
-        if (proposal) {
-          setProposalId(proposal.id);
+        const currentProposalId = proposal?.id;
+        if (currentProposalId) {
+          setProposalId(currentProposalId);
+        }
+
+        // Step 3: Run validation automatically
+        try {
+          const { data: valData, error: valError } = await supabase.functions.invoke("validate-code", {
+            body: {
+              proposalId: currentProposalId,
+              code: newCode,
+              title: input.trim().slice(0, 100),
+              description: input.trim(),
+            },
+          });
+
+          if (valError) throw valError;
+
+          setValidationScore(valData.score);
+
+          if (valData.passed) {
+            setLifecycleStage("pending_approval");
+            setMessages([...newMessages, { 
+              role: "assistant", 
+              content: `### ✅ Listo para producción\n\n**Score:** ${valData.score}/100\n\nEl código está en el editor. Usa el botón **"Crear PR"** para integrarlo.`
+            }]);
+          } else {
+            setLifecycleStage("draft");
+            setMessages([...newMessages, { 
+              role: "assistant", 
+              content: `### ⚠️ Necesita ajustes (${valData.score}/100)\n\n${valData.summary || "Revisa el código en el editor"}`
+            }]);
+          }
+        } catch (valErr) {
+          // Validation failed but code is ready
+          console.error("Validation error:", valErr);
+          setLifecycleStage("draft");
+          setMessages([...newMessages, { 
+            role: "assistant", 
+            content: `### ✅ Código generado\n\nNo se pudo validar automáticamente. Revisa el código en el editor.`
+          }]);
         }
 
         toast.success("Código generado exitosamente");

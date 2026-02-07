@@ -1,9 +1,42 @@
+/**
+ * @fileoverview Hook para manejar favoritos de contenido.
+ * Permite agregar/quitar contenido de la lista de favoritos del usuario.
+ */
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
 
-export const useFavorites = () => {
+/** Resultado del hook useFavorites */
+interface UseFavoritesResult {
+  /** Set de IDs de contenido marcado como favorito */
+  favorites: Set<string>;
+  /** Función para alternar el estado de favorito */
+  toggleFavorite: (contentId: string) => Promise<void>;
+  /** Verifica si un contenido es favorito */
+  isFavorite: (contentId: string) => boolean;
+  /** Si hay una operación en progreso */
+  loading: boolean;
+  /** Recarga la lista de favoritos */
+  refetch: () => Promise<void>;
+}
+
+/**
+ * Hook para gestionar los favoritos del usuario.
+ * 
+ * @returns Estado y acciones de favoritos
+ * 
+ * @example
+ * ```tsx
+ * const { isFavorite, toggleFavorite } = useFavorites();
+ * 
+ * <Button onClick={() => toggleFavorite(videoId)}>
+ *   {isFavorite(videoId) ? "Quitar" : "Agregar"}
+ * </Button>
+ * ```
+ */
+export const useFavorites = (): UseFavoritesResult => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [favorites, setFavorites] = useState<Set<string>>(new Set());

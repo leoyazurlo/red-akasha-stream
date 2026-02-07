@@ -1,70 +1,32 @@
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { ImageUpload } from "@/components/ImageUpload";
+/**
+ * @fileoverview Formulario de registro para promotores de eventos.
+ * Captura información específica de promotores y organizadores.
+ */
 
-interface PromoterFormProps {
-  formData: any;
-  onChange: (field: string, value: any) => void;
-}
+import type { ProfileFormProps, PromoterFormData } from "@/lib/types";
+import { AvatarField, SocialLinksFields, FormNote } from "./shared";
 
-export const PromoterForm = ({ formData, onChange }: PromoterFormProps) => {
+/**
+ * Formulario de perfil para promotores
+ */
+export const PromoterForm = ({ formData, onChange }: ProfileFormProps<PromoterFormData>) => {
   return (
     <div className="space-y-4">
-      <ImageUpload
-        label="Foto de perfil (cuadrada)"
+      {/* Avatar */}
+      <AvatarField
         value={formData.avatar_url || ""}
         onChange={(url) => onChange("avatar_url", url)}
-        required
-        description="Sube una imagen cuadrada para tu perfil (formato recomendado: 400x400px)"
-        allowLocalPreview={true}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="instagram">Instagram</Label>
-          <Input
-            id="instagram"
-            value={formData.instagram || ""}
-            onChange={(e) => onChange("instagram", e.target.value)}
-            placeholder="@tuusuario"
-          />
-        </div>
+      {/* Redes sociales */}
+      <SocialLinksFields
+        formData={formData as Record<string, string>}
+        onChange={onChange}
+      />
 
-        <div className="space-y-2">
-          <Label htmlFor="facebook">Facebook</Label>
-          <Input
-            id="facebook"
-            value={formData.facebook || ""}
-            onChange={(e) => onChange("facebook", e.target.value)}
-            placeholder="facebook.com/tuusuario"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="linkedin">LinkedIn</Label>
-          <Input
-            id="linkedin"
-            value={formData.linkedin || ""}
-            onChange={(e) => onChange("linkedin", e.target.value)}
-            placeholder="linkedin.com/in/tuusuario"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            value={formData.email || ""}
-            onChange={(e) => onChange("email", e.target.value)}
-            placeholder="contacto@promotor.com"
-          />
-        </div>
-      </div>
-
-      <p className="text-sm text-muted-foreground">
+      <FormNote>
         * Nota: Las salas donde produce, galerías de fotos y videos se podrán agregar después de completar el registro
-      </p>
+      </FormNote>
     </div>
   );
 };

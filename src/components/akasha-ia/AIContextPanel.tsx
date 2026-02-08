@@ -198,7 +198,7 @@ export function AIContextPanel({
         </div>
       </CardHeader>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 min-h-0 flex flex-col">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 min-h-0 h-full flex flex-col">
         <TabsList className="h-8 bg-transparent border-b border-cyan-500/10 rounded-none px-2 gap-1 shrink-0">
           <TabsTrigger value="response" className="text-xs h-7 data-[state=active]:bg-cyan-500/20">
             <MessageSquare className="h-3 w-3 mr-1" />
@@ -219,8 +219,8 @@ export function AIContextPanel({
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="response" className="flex-1 min-h-0 m-0 p-0">
-          <ScrollArea className="h-full min-h-0">
+        <TabsContent value="response" className="flex-1 min-h-0 m-0 p-0 overflow-hidden flex">
+          <div className="flex-1 min-h-0 overflow-y-scroll pr-1">
             <div className="p-3">
               {aiResponse ? (
                 <div className="prose prose-sm prose-invert max-w-none">
@@ -229,7 +229,7 @@ export function AIContextPanel({
                       code: ({ className, children, ...props }) => {
                         const match = /language-(\w+)/.exec(className || "");
                         const codeString = String(children).replace(/\n$/, "");
-                        
+
                         if (match) {
                           return (
                             <div className="relative group my-2">
@@ -252,7 +252,7 @@ export function AIContextPanel({
                             </div>
                           );
                         }
-                        
+
                         return (
                           <code className="bg-muted/50 px-1 py-0.5 rounded text-xs text-cyan-400" {...props}>
                             {children}
@@ -280,11 +280,11 @@ export function AIContextPanel({
                 </div>
               )}
             </div>
-          </ScrollArea>
+          </div>
         </TabsContent>
 
-        <TabsContent value="suggestions" className="flex-1 min-h-0 m-0 p-0">
-          <ScrollArea className="h-full min-h-0">
+        <TabsContent value="suggestions" className="flex-1 min-h-0 m-0 p-0 overflow-hidden flex">
+          <div className="flex-1 min-h-0 overflow-y-scroll pr-1">
             <div className="p-2 space-y-2">
               {suggestions.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
@@ -333,11 +333,11 @@ export function AIContextPanel({
                 ))
               )}
             </div>
-          </ScrollArea>
+          </div>
         </TabsContent>
 
-        <TabsContent value="history" className="flex-1 min-h-0 m-0 p-0">
-          <ScrollArea className="h-full min-h-0">
+        <TabsContent value="history" className="flex-1 min-h-0 m-0 p-0 overflow-hidden flex">
+          <div className="flex-1 min-h-0 overflow-y-scroll pr-1">
             <div className="p-2 space-y-1">
               {history.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
@@ -368,7 +368,7 @@ export function AIContextPanel({
                 ))
               )}
             </div>
-          </ScrollArea>
+          </div>
         </TabsContent>
       </Tabs>
     </Card>

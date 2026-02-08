@@ -1012,7 +1012,7 @@ export function AppBuilderIDE() {
             </div>
 
             {/* Monaco Editor */}
-            <div className="flex-1">
+            <div className="flex-1 min-h-0 overflow-hidden">
               <MonacoEditor
                 value={
                   activeTab === "frontend"
@@ -1023,7 +1023,7 @@ export function AppBuilderIDE() {
                 }
                 onChange={handleCodeChange}
                 language={activeTab === "database" ? "sql" : "typescript"}
-                height="100%"
+                height="calc(100vh - 380px)"
               />
             </div>
 

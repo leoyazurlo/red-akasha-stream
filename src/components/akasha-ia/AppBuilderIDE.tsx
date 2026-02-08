@@ -350,12 +350,17 @@ export function AppBuilderIDE() {
       // Determine if this is a code generation request or a chat conversation
       const shouldGenerateCode = isCodeGenerationRequest(input.trim());
 
+      // Set processing state for AI Context Panel
+      setIsAIProcessing(true);
+      
       if (shouldGenerateCode) {
         // Code generation flow - Automated pipeline like Lovable
         setLifecycleStage("generating");
         
         // Step 1: Generate code
-        setMessages([...newMessages, { role: "assistant", content: "⚡ Generando código..." }]);
+        const genMessage = "⚡ Generando código...";
+        setMessages([...newMessages, { role: "assistant", content: genMessage }]);
+        setAIResponse(genMessage);
         
         const { data: implData, error: implError } = await supabase.functions.invoke(
           "generate-implementation",
@@ -421,25 +426,22 @@ export function AppBuilderIDE() {
 
           if (valData.passed) {
             setLifecycleStage("pending_approval");
-            setMessages([...newMessages, { 
-              role: "assistant", 
-              content: `### ✅ Listo para producción\n\n**Score:** ${valData.score}/100\n\nEl código está en el editor. Usa el botón **"Crear PR"** para integrarlo.`
-            }]);
+            const successMsg = `### ✅ Listo para producción\n\n**Score:** ${valData.score}/100\n\nEl código está en el editor. Usa el botón **"Crear PR"** para integrarlo.`;
+            setMessages([...newMessages, { role: "assistant", content: successMsg }]);
+            setAIResponse(successMsg);
           } else {
             setLifecycleStage("draft");
-            setMessages([...newMessages, { 
-              role: "assistant", 
-              content: `### ⚠️ Necesita ajustes (${valData.score}/100)\n\n${valData.summary || "Revisa el código en el editor"}`
-            }]);
+            const adjustMsg = `### ⚠️ Necesita ajustes (${valData.score}/100)\n\n${valData.summary || "Revisa el código en el editor"}`;
+            setMessages([...newMessages, { role: "assistant", content: adjustMsg }]);
+            setAIResponse(adjustMsg);
           }
         } catch (valErr) {
           // Validation failed but code is ready
           console.error("Validation error:", valErr);
           setLifecycleStage("draft");
-          setMessages([...newMessages, { 
-            role: "assistant", 
-            content: `### ✅ Código generado\n\nNo se pudo validar automáticamente. Revisa el código en el editor.`
-          }]);
+          const fallbackMsg = `### ✅ Código generado\n\nNo se pudo validar automáticamente. Revisa el código en el editor.`;
+          setMessages([...newMessages, { role: "assistant", content: fallbackMsg }]);
+          setAIResponse(fallbackMsg);
         }
 
         toast.success("Código generado exitosamente");
@@ -543,14 +545,17 @@ export function AppBuilderIDE() {
         // Final update with complete response
         if (assistantContent) {
           setMessages([...newMessages, { role: "assistant", content: assistantContent }]);
+          setAIResponse(assistantContent); // Sync with AI Context Panel
         }
       }
     } catch (error) {
       console.error("Error:", error);
       toast.error(error instanceof Error ? error.message : "Error al procesar mensaje");
+      setAIResponse(""); // Clear on error
       setLifecycleStage("draft");
     } finally {
       setIsLoading(false);
+      setIsAIProcessing(false);
     }
   };
 

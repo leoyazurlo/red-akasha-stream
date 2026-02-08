@@ -182,8 +182,8 @@ export function AIContextPanel({
   };
 
   return (
-    <Card className="h-full bg-card/50 border-cyan-500/20 flex flex-col">
-      <CardHeader className="py-2 px-3 border-b border-cyan-500/10">
+    <Card className="h-full min-h-0 bg-card/50 border-cyan-500/20 flex flex-col">
+      <CardHeader className="py-2 px-3 border-b border-cyan-500/10 shrink-0">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
             <Brain className="h-4 w-4 text-cyan-400" />
@@ -198,8 +198,8 @@ export function AIContextPanel({
         </div>
       </CardHeader>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        <TabsList className="h-8 bg-transparent border-b border-cyan-500/10 rounded-none px-2 gap-1">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 min-h-0 flex flex-col">
+        <TabsList className="h-8 bg-transparent border-b border-cyan-500/10 rounded-none px-2 gap-1 shrink-0">
           <TabsTrigger value="response" className="text-xs h-7 data-[state=active]:bg-cyan-500/20">
             <MessageSquare className="h-3 w-3 mr-1" />
             Respuesta
@@ -219,8 +219,8 @@ export function AIContextPanel({
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="response" className="flex-1 m-0 p-0">
-          <ScrollArea className="h-full">
+        <TabsContent value="response" className="flex-1 min-h-0 m-0 p-0">
+          <ScrollArea className="h-full min-h-0">
             <div className="p-3">
               {aiResponse ? (
                 <div className="prose prose-sm prose-invert max-w-none">
@@ -283,8 +283,8 @@ export function AIContextPanel({
           </ScrollArea>
         </TabsContent>
 
-        <TabsContent value="suggestions" className="flex-1 m-0 p-0">
-          <ScrollArea className="h-full">
+        <TabsContent value="suggestions" className="flex-1 min-h-0 m-0 p-0">
+          <ScrollArea className="h-full min-h-0">
             <div className="p-2 space-y-2">
               {suggestions.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
@@ -336,8 +336,8 @@ export function AIContextPanel({
           </ScrollArea>
         </TabsContent>
 
-        <TabsContent value="history" className="flex-1 m-0 p-0">
-          <ScrollArea className="h-full">
+        <TabsContent value="history" className="flex-1 min-h-0 m-0 p-0">
+          <ScrollArea className="h-full min-h-0">
             <div className="p-2 space-y-1">
               {history.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">

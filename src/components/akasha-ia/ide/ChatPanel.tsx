@@ -97,8 +97,8 @@ export function ChatPanel({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-2 min-h-0">
-        <div className="space-y-3">
+      <div className="flex-1 overflow-y-auto p-2 min-h-0 max-h-[calc(100%-80px)]">
+        <div className="space-y-3 pb-2">
           {messages.length === 0 && (
             <p className="text-xs text-muted-foreground text-center py-4">
               Describe qué quieres crear...

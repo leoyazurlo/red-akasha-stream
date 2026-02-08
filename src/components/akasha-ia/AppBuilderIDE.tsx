@@ -215,7 +215,10 @@ export function AppBuilderIDE() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Check if message is a code generation / implementation request
+  const appendAssistantMessage = (content: string) => {
+    setMessages((prev) => [...prev, { role: "assistant", content }]);
+    setAIResponse(content);
+  };
   const isCodeGenerationRequest = (message: string): boolean => {
     const m = message.toLowerCase();
 
@@ -352,16 +355,15 @@ export function AppBuilderIDE() {
 
       // Set processing state for AI Context Panel
       setIsAIProcessing(true);
-      
+
       if (shouldGenerateCode) {
         // Code generation flow - Automated pipeline like Lovable
         setLifecycleStage("generating");
-        
+
         // Step 1: Generate code
         const genMessage = "⚡ Generando código...";
-        setMessages([...newMessages, { role: "assistant", content: genMessage }]);
-        setAIResponse(genMessage);
-        
+        appendAssistantMessage(genMessage);
+
         const { data: implData, error: implError } = await supabase.functions.invoke(
           "generate-implementation",
           {
@@ -386,7 +388,7 @@ export function AppBuilderIDE() {
         updateFileContent("/supabase/migrations/001_initial.sql", newCode.database);
 
         // Step 2: Auto-validate immediately
-        setMessages([...newMessages, { role: "assistant", content: "✅ Código generado. Validando..." }]);
+        appendAssistantMessage("✅ Código generado. Validando...");
         setLifecycleStage("validating");
 
         // Create proposal for tracking
@@ -427,21 +429,18 @@ export function AppBuilderIDE() {
           if (valData.passed) {
             setLifecycleStage("pending_approval");
             const successMsg = `### ✅ Listo para producción\n\n**Score:** ${valData.score}/100\n\nEl código está en el editor. Usa el botón **"Crear PR"** para integrarlo.`;
-            setMessages([...newMessages, { role: "assistant", content: successMsg }]);
-            setAIResponse(successMsg);
+            appendAssistantMessage(successMsg);
           } else {
             setLifecycleStage("draft");
             const adjustMsg = `### ⚠️ Necesita ajustes (${valData.score}/100)\n\n${valData.summary || "Revisa el código en el editor"}`;
-            setMessages([...newMessages, { role: "assistant", content: adjustMsg }]);
-            setAIResponse(adjustMsg);
+            appendAssistantMessage(adjustMsg);
           }
         } catch (valErr) {
           // Validation failed but code is ready
           console.error("Validation error:", valErr);
           setLifecycleStage("draft");
           const fallbackMsg = `### ✅ Código generado\n\nNo se pudo validar automáticamente. Revisa el código en el editor.`;
-          setMessages([...newMessages, { role: "assistant", content: fallbackMsg }]);
-          setAIResponse(fallbackMsg);
+          appendAssistantMessage(fallbackMsg);
         }
 
         toast.success("Código generado exitosamente");
@@ -486,9 +485,21 @@ export function AppBuilderIDE() {
         let buffer = "";
 
         // Add placeholder message
-        setMessages([...newMessages, { role: "assistant", content: "..." }]);
+        setMessages((prev) => [...prev, { role: "assistant", content: "..." }]);
 
         let streamDone = false;
+
+        const updateStreamingMessage = (content: string) => {
+          setMessages((prev) => {
+            const next = [...prev];
+            const lastIdx = next.length - 1;
+            if (lastIdx >= 0 && next[lastIdx]?.role === "assistant") {
+              next[lastIdx] = { ...next[lastIdx], content };
+              return next;
+            }
+            return [...next, { role: "assistant", content }];
+          });
+        };
 
         while (!streamDone) {
           const { done, value } = await reader.read();
@@ -517,7 +528,7 @@ export function AppBuilderIDE() {
               const content = data.choices?.[0]?.delta?.content;
               if (content) {
                 assistantContent += content;
-                setMessages([...newMessages, { role: "assistant", content: assistantContent }]);
+                updateStreamingMessage(assistantContent);
               }
             } catch {
               // Partial JSON split across chunks: put the line back and wait for more data
@@ -544,7 +555,7 @@ export function AppBuilderIDE() {
 
         // Final update with complete response
         if (assistantContent) {
-          setMessages([...newMessages, { role: "assistant", content: assistantContent }]);
+          updateStreamingMessage(assistantContent);
           setAIResponse(assistantContent); // Sync with AI Context Panel
         }
       }
@@ -800,10 +811,10 @@ export function AppBuilderIDE() {
       </Card>
 
       {/* Main IDE Layout */}
-      <ResizablePanelGroup direction="horizontal" className="flex-1 rounded-lg border border-cyan-500/20">
+      <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0 rounded-lg border border-cyan-500/20">
         {/* Left: File Explorer + Chat */}
-        <ResizablePanel defaultSize={25} minSize={15} maxSize={35}>
-          <div className="h-full flex flex-col bg-card/50">
+        <ResizablePanel defaultSize={25} minSize={15} maxSize={35} className="min-h-0">
+          <div className="h-full min-h-0 flex flex-col bg-card/50">
             {/* File Explorer */}
             <div className="border-b border-cyan-500/10">
               <div className="flex items-center justify-between p-2 border-b border-cyan-500/10">
@@ -944,8 +955,8 @@ export function AppBuilderIDE() {
         <ResizableHandle withHandle />
 
         {/* Center: Code Editor */}
-        <ResizablePanel defaultSize={showContextPanel ? 35 : 45} minSize={25}>
-          <div className="h-full flex flex-col bg-card/30">
+        <ResizablePanel defaultSize={showContextPanel ? 35 : 45} minSize={25} className="min-h-0">
+          <div className="h-full min-h-0 flex flex-col bg-card/30">
             {/* Editor Tabs */}
             <div className="flex items-center justify-between border-b border-cyan-500/10 px-2 bg-card/50 relative z-10">
               <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1">
@@ -1089,18 +1100,18 @@ export function AppBuilderIDE() {
         <ResizableHandle withHandle />
 
         {/* Right: Preview + AI Context */}
-        <ResizablePanel defaultSize={showContextPanel ? 40 : 35} minSize={25}>
-          <div className="h-full flex flex-col bg-card/30">
+        <ResizablePanel defaultSize={showContextPanel ? 40 : 35} minSize={25} className="min-h-0">
+          <div className="h-full min-h-0 flex flex-col bg-card/30 overflow-hidden">
             {showContextPanel ? (
-              <ResizablePanelGroup direction="vertical">
+              <ResizablePanelGroup direction="vertical" className="min-h-0">
                 {/* Live Preview */}
-                <ResizablePanel defaultSize={55} minSize={30}>
-                  <div className="h-full flex flex-col">
-                    <div className="flex items-center gap-2 p-2 border-b border-cyan-500/10">
+                <ResizablePanel defaultSize={55} minSize={30} className="min-h-0">
+                  <div className="h-full min-h-0 flex flex-col">
+                    <div className="flex items-center gap-2 p-2 border-b border-cyan-500/10 shrink-0">
                       <Eye className="h-4 w-4 text-cyan-400" />
                       <span className="text-xs font-medium">VISTA PREVIA</span>
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 min-h-0 overflow-hidden">
                       <SandboxPreview code={generatedCode} />
                     </div>
                   </div>
@@ -1109,26 +1120,28 @@ export function AppBuilderIDE() {
                 <ResizableHandle withHandle />
 
                 {/* AI Context Panel */}
-                <ResizablePanel defaultSize={45} minSize={20}>
+                <ResizablePanel defaultSize={45} minSize={20} className="min-h-0">
                   <Tabs defaultValue="context" className="h-full min-h-0 flex flex-col">
                     <TabsList className="mx-2 mt-2 shrink-0">
                       <TabsTrigger value="context" className="text-xs">Contexto IA</TabsTrigger>
                       <TabsTrigger value="agents" className="text-xs">Multi-Agente</TabsTrigger>
                       <TabsTrigger value="voting" className="text-xs">Gobernanza</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="context" className="flex-1 min-h-0 overflow-hidden">
-                      <AIContextPanel
-                        aiResponse={aiResponse}
-                        isProcessing={isAIProcessing}
-                        code={
-                          activeTab === "frontend"
-                            ? generatedCode.frontend
-                            : activeTab === "backend"
-                            ? generatedCode.backend
-                            : generatedCode.database
-                        }
-                        language={activeTab === "database" ? "sql" : "typescript"}
-                      />
+                    <TabsContent value="context" className="flex-1 min-h-0 overflow-hidden flex">
+                      <div className="flex-1 min-h-0">
+                        <AIContextPanel
+                          aiResponse={aiResponse}
+                          isProcessing={isAIProcessing}
+                          code={
+                            activeTab === "frontend"
+                              ? generatedCode.frontend
+                              : activeTab === "backend"
+                              ? generatedCode.backend
+                              : generatedCode.database
+                          }
+                          language={activeTab === "database" ? "sql" : "typescript"}
+                        />
+                      </div>
                     </TabsContent>
                     <TabsContent value="agents" className="flex-1 min-h-0 overflow-auto p-2">
                       <MultiAgentPanel 
@@ -1147,12 +1160,12 @@ export function AppBuilderIDE() {
                 </ResizablePanel>
               </ResizablePanelGroup>
             ) : (
-              <div className="h-full flex flex-col">
-                <div className="flex items-center gap-2 p-2 border-b border-cyan-500/10">
+              <div className="h-full min-h-0 flex flex-col">
+                <div className="flex items-center gap-2 p-2 border-b border-cyan-500/10 shrink-0">
                   <Eye className="h-4 w-4 text-cyan-400" />
                   <span className="text-xs font-medium">VISTA PREVIA</span>
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-h-0 overflow-hidden">
                   <SandboxPreview code={generatedCode} />
                 </div>
               </div>

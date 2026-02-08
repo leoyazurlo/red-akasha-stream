@@ -1110,13 +1110,13 @@ export function AppBuilderIDE() {
 
                 {/* AI Context Panel */}
                 <ResizablePanel defaultSize={45} minSize={20}>
-                  <Tabs defaultValue="context" className="h-full flex flex-col">
-                    <TabsList className="mx-2 mt-2">
+                  <Tabs defaultValue="context" className="h-full min-h-0 flex flex-col">
+                    <TabsList className="mx-2 mt-2 shrink-0">
                       <TabsTrigger value="context" className="text-xs">Contexto IA</TabsTrigger>
                       <TabsTrigger value="agents" className="text-xs">Multi-Agente</TabsTrigger>
                       <TabsTrigger value="voting" className="text-xs">Gobernanza</TabsTrigger>
                     </TabsList>
-                    <TabsContent value="context" className="flex-1 overflow-hidden">
+                    <TabsContent value="context" className="flex-1 min-h-0 overflow-hidden">
                       <AIContextPanel
                         aiResponse={aiResponse}
                         isProcessing={isAIProcessing}
@@ -1130,7 +1130,7 @@ export function AppBuilderIDE() {
                         language={activeTab === "database" ? "sql" : "typescript"}
                       />
                     </TabsContent>
-                    <TabsContent value="agents" className="flex-1 overflow-auto p-2">
+                    <TabsContent value="agents" className="flex-1 min-h-0 overflow-auto p-2">
                       <MultiAgentPanel 
                         currentCode={generatedCode}
                         onCollaborativeResponse={(resp) => {
@@ -1140,7 +1140,7 @@ export function AppBuilderIDE() {
                         }}
                       />
                     </TabsContent>
-                    <TabsContent value="voting" className="flex-1 overflow-auto p-2">
+                    <TabsContent value="voting" className="flex-1 min-h-0 overflow-auto p-2">
                       <CommunityVoting />
                     </TabsContent>
                   </Tabs>

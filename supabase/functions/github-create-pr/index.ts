@@ -115,6 +115,11 @@ serve(async (req) => {
       throw new Error("Repositorio de GitHub no configurado. Formato: owner/repo");
     }
 
+    // Validate repo format
+    if (!GITHUB_REPO.includes("/")) {
+      throw new Error(`Formato de repositorio inválido: "${GITHUB_REPO}". Debe ser "owner/repo"`);
+    }
+
     const { 
       proposalId, 
       title, 
@@ -128,11 +133,39 @@ serve(async (req) => {
     const branchName = `akasha-ia/${proposalId.slice(0, 8)}-${title.toLowerCase().replace(/\s+/g, "-").slice(0, 30)}`;
     
     console.log(`[github-create-pr] Admin ${auth.userId} creating PR for proposal ${proposalId}`);
-    console.log(`[github-create-pr] Branch: ${branchName}, Target: ${targetBranch}`);
+    console.log(`[github-create-pr] Repo: ${GITHUB_REPO}, Branch: ${branchName}, Target: ${targetBranch}`);
+
+    // Step 0: Verify token has access to the repository
+    const repoCheckResponse = await fetch(
+      `https://api.github.com/repos/${GITHUB_REPO}`,
+      {
+        headers: {
+          Authorization: `Bearer ${GITHUB_TOKEN}`,
+          Accept: "application/vnd.github.v3+json",
+        },
+      }
+    );
+
+    if (!repoCheckResponse.ok) {
+      const repoError = await repoCheckResponse.text();
+      console.error("[github-create-pr] Error accessing repo:", repoError);
+      if (repoCheckResponse.status === 404) {
+        throw new Error(`No se puede acceder al repositorio "${GITHUB_REPO}". Verifica que el token tenga permisos y el repositorio exista.`);
+      } else if (repoCheckResponse.status === 401) {
+        throw new Error("Token de GitHub inválido o expirado. Genera un nuevo token.");
+      }
+      throw new Error(`Error al verificar repositorio: ${repoCheckResponse.status}`);
+    }
+
+    const repoData = await repoCheckResponse.json();
+    const defaultBranch = repoData.default_branch || "main";
+    const actualTargetBranch = targetBranch === "main" ? defaultBranch : targetBranch;
+
+    console.log(`[github-create-pr] Repo verified. Default branch: ${defaultBranch}, Using: ${actualTargetBranch}`);
 
     // Step 1: Get the latest commit SHA from target branch
     const refResponse = await fetch(
-      `https://api.github.com/repos/${GITHUB_REPO}/git/refs/heads/${targetBranch}`,
+      `https://api.github.com/repos/${GITHUB_REPO}/git/refs/heads/${actualTargetBranch}`,
       {
         headers: {
           Authorization: `Bearer ${GITHUB_TOKEN}`,
@@ -144,7 +177,7 @@ serve(async (req) => {
     if (!refResponse.ok) {
       const error = await refResponse.text();
       console.error("[github-create-pr] Error getting ref:", error);
-      throw new Error(`No se pudo obtener la referencia del branch ${targetBranch}`);
+      throw new Error(`No se pudo obtener la referencia del branch "${actualTargetBranch}". ¿Existe este branch en el repositorio?`);
     }
 
     const refData = await refResponse.json();

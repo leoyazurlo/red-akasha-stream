@@ -115,8 +115,16 @@ serve(async (req) => {
       throw new Error("Repositorio de GitHub no configurado. Formato: owner/repo");
     }
 
+    // Parse GitHub URL if it's a full URL
+    let repoPath = GITHUB_REPO;
+    if (GITHUB_REPO.startsWith("https://github.com/")) {
+      repoPath = GITHUB_REPO.replace("https://github.com/", "").replace(".git", "");
+    } else if (GITHUB_REPO.startsWith("git@github.com:")) {
+      repoPath = GITHUB_REPO.replace("git@github.com:", "").replace(".git", "");
+    }
+
     // Validate repo format
-    if (!GITHUB_REPO.includes("/")) {
+    if (!repoPath.includes("/")) {
       throw new Error(`Formato de repositorio inválido: "${GITHUB_REPO}". Debe ser "owner/repo"`);
     }
 
@@ -133,11 +141,11 @@ serve(async (req) => {
     const branchName = `akasha-ia/${proposalId.slice(0, 8)}-${title.toLowerCase().replace(/\s+/g, "-").slice(0, 30)}`;
     
     console.log(`[github-create-pr] Admin ${auth.userId} creating PR for proposal ${proposalId}`);
-    console.log(`[github-create-pr] Repo: ${GITHUB_REPO}, Branch: ${branchName}, Target: ${targetBranch}`);
+    console.log(`[github-create-pr] Repo: ${repoPath}, Branch: ${branchName}, Target: ${targetBranch}`);
 
     // Step 0: Verify token has access to the repository
     const repoCheckResponse = await fetch(
-      `https://api.github.com/repos/${GITHUB_REPO}`,
+      `https://api.github.com/repos/${repoPath}`,
       {
         headers: {
           Authorization: `Bearer ${GITHUB_TOKEN}`,
@@ -150,7 +158,7 @@ serve(async (req) => {
       const repoError = await repoCheckResponse.text();
       console.error("[github-create-pr] Error accessing repo:", repoError);
       if (repoCheckResponse.status === 404) {
-        throw new Error(`No se puede acceder al repositorio "${GITHUB_REPO}". Verifica que el token tenga permisos y el repositorio exista.`);
+        throw new Error(`No se puede acceder al repositorio "${repoPath}". Verifica que el token tenga permisos y el repositorio exista.`);
       } else if (repoCheckResponse.status === 401) {
         throw new Error("Token de GitHub inválido o expirado. Genera un nuevo token.");
       }
@@ -165,7 +173,7 @@ serve(async (req) => {
 
     // Step 1: Get the latest commit SHA from target branch
     const refResponse = await fetch(
-      `https://api.github.com/repos/${GITHUB_REPO}/git/refs/heads/${actualTargetBranch}`,
+      `https://api.github.com/repos/${repoPath}/git/refs/heads/${actualTargetBranch}`,
       {
         headers: {
           Authorization: `Bearer ${GITHUB_TOKEN}`,

@@ -6,48 +6,78 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const IMPLEMENTATION_PROMPT = `Eres un experto arquitecto de software de Red Akasha. Tu tarea es generar código de implementación completo y listo para producción.
+const IMPLEMENTATION_PROMPT = `Eres un experto arquitecto de software de Red Akasha. Tu tarea es generar código de implementación completo y funcional.
 
 ## Arquitectura de Red Akasha
-- **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS + shadcn/ui
+- **Frontend**: React 18 + Tailwind CSS (ejecutado en un Sandbox con UMD React)
 - **Backend**: Supabase (PostgreSQL + Edge Functions + Auth + Storage)
-- **Estado**: TanStack Query para cache y sincronización
 
-## Instrucciones de Generación
+## REGLAS CRÍTICAS PARA EL CÓDIGO FRONTEND (tsx)
 
-Cuando generes código, DEBES estructurar tu respuesta con estos bloques claramente separados:
+El código frontend se ejecuta en un sandbox con React UMD. DEBES seguir estas reglas:
 
-### Para SQL (migraciones de base de datos):
+1. **NO uses import statements** — React, useState, useEffect, useCallback, useMemo, useRef, memo están disponibles globalmente
+2. **NO uses anotaciones TypeScript** — ni interfaces, ni tipos, ni genéricos, ni "as const"
+3. **El componente principal DEBE llamarse \`App\`** y ser una función declarada con \`function App()\`
+4. **Componentes UI disponibles globalmente** (NO importarlos): Button, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, Input, Badge, Label, Textarea, Switch, Checkbox, Select, SelectItem, Avatar, Progress, Separator, Skeleton, Alert, Tabs, TabsList, TabsTrigger, TabsContent, Dialog, DialogContent, DialogHeader, DialogTitle, ScrollArea, Tooltip, Icons (Icons.Loader, Icons.Check, Icons.X, Icons.Plus, Icons.Search)
+5. **Usa clases Tailwind semánticas**: bg-background, text-foreground, bg-card, bg-primary, text-primary-foreground, bg-muted, text-muted-foreground, bg-secondary, border-border, bg-destructive, bg-accent, text-accent
+6. **NO uses export default** ni export nombrado
+
+### Ejemplo correcto de frontend:
+\`\`\`tsx
+function App() {
+  const [items, setItems] = React.useState([]);
+  const [input, setInput] = React.useState("");
+
+  const addItem = () => {
+    if (input.trim()) {
+      setItems(prev => [...prev, { id: Date.now(), text: input }]);
+      setInput("");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background p-8">
+      <Card className="max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle>Mi App</CardTitle>
+          <CardDescription>Descripción aquí</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-2">
+            <Input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Escribe algo..." />
+            <Button onClick={addItem}>Agregar</Button>
+          </div>
+          <div className="mt-4 space-y-2">
+            {items.map(item => (
+              <div key={item.id} className="p-2 bg-muted rounded-md text-sm">{item.text}</div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+\`\`\`
+
+## Para SQL (migraciones de base de datos):
 \`\`\`sql
 -- Descripción de la migración
 CREATE TABLE...
-ALTER TABLE...
 -- Incluir RLS policies
 \`\`\`
 
-### Para Edge Functions (backend):
+## Para Edge Functions (backend):
 \`\`\`typescript
 // supabase/functions/nombre-funcion/index.ts
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 ...
 \`\`\`
 
-### Para Componentes React (frontend):
-\`\`\`tsx
-// src/components/NombreComponente.tsx
-import { useState } from "react";
-...
-\`\`\`
-
-## Reglas Críticas:
+## Reglas generales:
 1. SIEMPRE incluye RLS policies para tablas nuevas
-2. Usa tokens semánticos de Tailwind (bg-background, text-foreground, etc.)
-3. Importa componentes de shadcn/ui cuando sea apropiado
-4. Incluye manejo de errores completo
-5. Añade tipos TypeScript explícitos
-6. Documenta con comentarios claros
-
-Genera código COMPLETO y FUNCIONAL, no fragmentos parciales.`;
+2. Incluye manejo de errores completo
+3. Genera código COMPLETO y FUNCIONAL, no fragmentos parciales`;
 
 interface GenerateRequest {
   proposalId: string;

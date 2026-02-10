@@ -56,23 +56,29 @@ export function SandboxPreview({ code, routes = [] }: SandboxPreviewProps) {
     const { frontend } = code;
     
     // Extract component name from code
-    const componentMatch = frontend.match(/(?:export\s+(?:default\s+)?)?(?:function|const)\s+(\w+)/);
+    const componentMatch = frontend.match(/(?:export\s+(?:default\s+)?)?function\s+(\w+)/);
     const componentName = componentMatch?.[1] || "App";
 
-    // Transform TSX to JS - more robust transformation
+    // Transform TSX to JS - robust transformation
     let jsCode = frontend
-      // Remove TypeScript type annotations carefully
-      .replace(/:\s*(?:string|number|boolean|any|void|null|undefined|object|React\.\w+|\w+\[\]|\{\s*[^}]+\s*\})\s*(?=[,\)\=\{;])/g, "")
-      // Remove generic type parameters
-      .replace(/<(?:string|number|boolean|any|T|K|V|\w+(?:\s*,\s*\w+)*)>/g, "")
-      // Remove interface declarations
-      .replace(/interface\s+\w+\s*\{[^}]*\}/gs, "")
+      // Remove all import statements (single and multi-line)
+      .replace(/import\s+[\s\S]*?from\s+['"][^'"]+['"];?\s*\n?/g, "")
+      .replace(/import\s+['"][^'"]+['"];?\s*\n?/g, "")
+      // Remove export keywords but keep the code
+      .replace(/export\s+default\s+function\s+/g, "function ")
+      .replace(/export\s+function\s+/g, "function ")
+      .replace(/export\s+default\s+\w+;?\s*$/gm, "")
+      .replace(/export\s+(?:const|let|var)\s+/g, "const ")
+      // Remove interface declarations (multi-line)
+      .replace(/interface\s+\w+\s*\{[\s\S]*?\}\s*\n?/g, "")
       // Remove type declarations
-      .replace(/type\s+\w+\s*=\s*[^;]+;/g, "")
-      // Remove import statements
-      .replace(/import\s+.*?from\s+['"][^'"]+['"];?\n?/g, "")
-      // Remove export default at the end if present
-      .replace(/export\s+default\s+\w+;?\s*$/g, "");
+      .replace(/type\s+\w+\s*=\s*[\s\S]*?;\s*\n?/g, "")
+      // Remove TypeScript type annotations: variable: Type
+      .replace(/:\s*(?:string|number|boolean|any|void|null|undefined|never|object|unknown|React\.\w+(?:<[^>]*>)?|\w+(?:\[\])?(?:\s*\|\s*\w+(?:\[\])?)*)\s*(?=[,\)\=\{;\n])/g, "")
+      // Remove generic type parameters on functions/hooks
+      .replace(/<(?:string|number|boolean|any|T|K|V|unknown|\w+)(?:\s*,\s*(?:string|number|boolean|any|T|K|V|unknown|\w+))*>(?=\s*\()/g, "")
+      // Remove 'as Type' casts
+      .replace(/\s+as\s+\w+(?:\[\])?/g, "");
 
     const html = `
 <!DOCTYPE html>

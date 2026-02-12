@@ -34,7 +34,7 @@ export const Header = () => {
   const navItems = [
     { name: t('nav.home'), href: "/" },
     { name: t('nav.onDemand'), href: "/on-demand" },
-    { name: "Mapa", href: "/live" },
+    { name: "Mapa en Vivo", href: "/live" },
     { name: t('nav.circuit'), href: "/circuito" },
     { name: t('nav.artists'), href: "/artistas" },
     { name: t('nav.join'), href: "/asociate" },

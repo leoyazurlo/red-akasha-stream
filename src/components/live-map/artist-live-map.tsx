@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { MapLegend, ARTIST_TYPE_CONFIG } from "./map-legend";
+import { MapSearch } from "./map-search";
+import { MapHeader } from "./map-header";
 
 // Mock coordinates for Latin American cities
 const CITY_COORDS: Record<string, [number, number]> = {
@@ -48,6 +51,7 @@ interface LiveStream {
     pais: string;
     latitude: number | null;
     longitude: number | null;
+    artist_type?: string;
   };
 }
 
@@ -55,6 +59,13 @@ interface SelectedStream {
   stream: LiveStream;
   lng: number;
   lat: number;
+}
+
+function getStreamCoords(profile: LiveStream["profile"]): [number, number] | null {
+  if (!profile) return null;
+  if (profile.longitude && profile.latitude) return [profile.longitude, profile.latitude];
+  const coords = CITY_COORDS[profile.ciudad];
+  return coords || null;
 }
 
 export function ArtistLiveMap() {
@@ -65,8 +76,9 @@ export function ArtistLiveMap() {
   const [selectedStream, setSelectedStream] = useState<SelectedStream | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [token, setToken] = useState<string | null>(null);
-  const [mapEnabled, setMapEnabled] = useState(false);
   const [loadingConfig, setLoadingConfig] = useState(true);
+  const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -83,12 +95,9 @@ export function ArtistLiveMap() {
         if (data?.setting_value) {
           const config = data.setting_value as Record<string, unknown>;
           const dbToken = config.mapbox_token as string;
-          const enabled = config.mapbox_enabled as boolean;
           if (dbToken) setToken(dbToken);
-          setMapEnabled(enabled ?? false);
         }
       } catch {
-        // fallback: try env var
         const envToken = import.meta.env.VITE_MAPBOX_TOKEN;
         if (envToken) setToken(envToken);
       } finally {
@@ -107,7 +116,6 @@ export function ArtistLiveMap() {
 
     if (error || !data) return;
 
-    // Fetch profiles for each streamer
     const streamerIds = [...new Set(data.map((s) => s.streamer_id))];
     const { data: profiles } = await supabase
       .from("profile_details")
@@ -116,10 +124,23 @@ export function ArtistLiveMap() {
 
     const profileMap = new Map(profiles?.map((p) => [p.user_id, p]) || []);
 
-    const streamsWithProfiles: LiveStream[] = data.map((s) => ({
-      ...s,
-      profile: profileMap.get(s.streamer_id) as LiveStream["profile"],
-    }));
+    // Also fetch artist_type from artists table
+    const { data: artists } = await supabase
+      .from("artists")
+      .select("user_id, artist_type")
+      .in("user_id", streamerIds);
+
+    const artistTypeMap = new Map(artists?.map((a) => [a.user_id, a.artist_type]) || []);
+
+    const streamsWithProfiles: LiveStream[] = data.map((s) => {
+      const profile = profileMap.get(s.streamer_id) as LiveStream["profile"];
+      return {
+        ...s,
+        profile: profile
+          ? { ...profile, artist_type: artistTypeMap.get(s.streamer_id) || undefined }
+          : undefined,
+      };
+    });
 
     setLiveStreams(streamsWithProfiles);
   }, []);
@@ -133,7 +154,7 @@ export function ArtistLiveMap() {
     const mapInstance = new mapboxgl.Map({
       container: mapContainer.current,
       style: "mapbox://styles/mapbox/dark-v11",
-      center: [-60, -15], // Latin America center
+      center: [-60, -15],
       zoom: 3,
     });
 
@@ -150,93 +171,117 @@ export function ArtistLiveMap() {
     };
   }, [token]);
 
-  // Fetch initial data
-  useEffect(() => {
-    fetchLiveStreams();
-  }, [fetchLiveStreams]);
+  useEffect(() => { fetchLiveStreams(); }, [fetchLiveStreams]);
 
-  // Subscribe to realtime stream changes
+  // Realtime subscription
   useEffect(() => {
     const channel = supabase
       .channel("live-map-streams")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "streams", filter: "status=eq.live" },
-        () => {
-          fetchLiveStreams();
+      .on("postgres_changes", { event: "*", schema: "public", table: "streams", filter: "status=eq.live" }, () => fetchLiveStreams())
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "streams" }, (payload) => {
+        if (payload.new && (payload.new as any).status !== "live") {
+          setLiveStreams((prev) => prev.filter((s) => s.id !== (payload.new as any).id));
         }
-      )
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "streams" },
-        (payload) => {
-          if (payload.new && (payload.new as any).status !== "live") {
-            // Remove stream that went offline
-            setLiveStreams((prev) => prev.filter((s) => s.id !== (payload.new as any).id));
-          }
-        }
-      )
+      })
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [fetchLiveStreams]);
 
-  // Update markers when streams or map change
+  // Filtered streams
+  const filteredStreams = useMemo(() => {
+    if (activeFilters.size === 0) return liveStreams;
+    return liveStreams.filter((s) => s.profile?.artist_type && activeFilters.has(s.profile.artist_type));
+  }, [liveStreams, activeFilters]);
+
+  // Search results
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const q = searchQuery.toLowerCase();
+    return filteredStreams
+      .filter((s) => s.profile?.display_name?.toLowerCase().includes(q))
+      .map((s) => ({
+        id: s.id,
+        name: s.profile!.display_name,
+        city: `${s.profile!.ciudad}, ${s.profile!.pais}`,
+        avatarUrl: s.profile!.avatar_url,
+      }));
+  }, [filteredStreams, searchQuery]);
+
+  // Stream type counts for legend
+  const streamCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    liveStreams.forEach((s) => {
+      const type = s.profile?.artist_type;
+      if (type) counts[type] = (counts[type] || 0) + 1;
+    });
+    return counts;
+  }, [liveStreams]);
+
+  const handleToggleFilter = useCallback((type: string) => {
+    setActiveFilters((prev) => {
+      const next = new Set(prev);
+      if (next.has(type)) next.delete(type);
+      else next.add(type);
+      return next;
+    });
+  }, []);
+
+  const handleSearchSelect = useCallback((streamId: string) => {
+    const stream = liveStreams.find((s) => s.id === streamId);
+    if (!stream?.profile) return;
+    const coords = getStreamCoords(stream.profile);
+    if (!coords) return;
+    setSelectedStream({ stream, lng: coords[0], lat: coords[1] });
+    map.current?.flyTo({ center: coords, zoom: 10, duration: 1500 });
+    setSearchQuery("");
+  }, [liveStreams]);
+
+  // Update markers
   useEffect(() => {
     if (!mapReady || !map.current) return;
 
-    const currentIds = new Set(liveStreams.map((s) => s.id));
+    const visibleIds = new Set(filteredStreams.map((s) => s.id));
 
     // Remove old markers
     markersRef.current.forEach((marker, id) => {
-      if (!currentIds.has(id)) {
+      if (!visibleIds.has(id)) {
         marker.remove();
         markersRef.current.delete(id);
       }
     });
 
     // Add/update markers
-    liveStreams.forEach((stream) => {
+    filteredStreams.forEach((stream) => {
       if (markersRef.current.has(stream.id)) return;
 
       const profile = stream.profile;
       if (!profile) return;
 
-      let lng = profile.longitude;
-      let lat = profile.latitude;
+      const coords = getStreamCoords(profile);
+      if (!coords) return;
+      const [lng, lat] = coords;
 
-      // Fallback to city coords
-      if (!lng || !lat) {
-        const coords = CITY_COORDS[profile.ciudad];
-        if (coords) {
-          [lng, lat] = coords;
-        } else {
-          return; // No coordinates available
-        }
-      }
+      const typeConfig = ARTIST_TYPE_CONFIG[profile.artist_type || ""] || { color: "hsl(270 70% 55%)" };
 
-      // Create custom marker element
       const el = document.createElement("div");
       el.className = "live-artist-marker";
       el.innerHTML = `
-        <div class="marker-pulse"></div>
-        <div class="marker-avatar">
+        <div class="marker-pulse" style="background: ${typeConfig.color}33;"></div>
+        <div class="marker-avatar" style="border-color: ${typeConfig.color}; box-shadow: 0 0 20px ${typeConfig.color}66;">
           <img src="${profile.avatar_url || "/placeholder.svg"}" alt="${profile.display_name}" />
         </div>
       `;
 
       el.addEventListener("click", (e) => {
         e.stopPropagation();
-        setSelectedStream({ stream, lng: lng!, lat: lat! });
+        setSelectedStream({ stream, lng, lat });
       });
 
       const marker = new mapboxgl.Marker({ element: el })
         .setLngLat([lng, lat])
         .addTo(map.current!);
 
-      // Tooltip on hover
       const popup = new mapboxgl.Popup({
         offset: 25,
         closeButton: false,
@@ -255,7 +300,7 @@ export function ArtistLiveMap() {
 
       markersRef.current.set(stream.id, marker);
     });
-  }, [liveStreams, mapReady]);
+  }, [filteredStreams, mapReady]);
 
   if (loadingConfig) {
     return (
@@ -275,7 +320,7 @@ export function ArtistLiveMap() {
           <Radio className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">Mapa no disponible</h3>
           <p className="text-muted-foreground text-sm">
-            El token de Mapbox debe configurarse desde el panel de administración<br/>
+            El token de Mapbox debe configurarse desde el panel de administración<br />
             (Configuración → Mapa).
           </p>
         </div>
@@ -284,147 +329,156 @@ export function ArtistLiveMap() {
   }
 
   return (
-    <div className="relative w-full h-[calc(100vh-6rem)] rounded-lg overflow-hidden border border-border">
-      {/* Map container */}
-      <div ref={mapContainer} className="w-full h-full" />
+    <>
+      <MapHeader liveCount={liveStreams.length} />
 
-      {/* Live counter */}
-      <div className="absolute top-4 left-4 z-10 bg-card/90 backdrop-blur-md border border-border rounded-lg px-4 py-2 flex items-center gap-2">
-        <span className="relative flex h-3 w-3">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-3 w-3 bg-destructive"></span>
-        </span>
-        <span className="text-sm font-medium">
-          {liveStreams.length} artista{liveStreams.length !== 1 ? "s" : ""} en vivo
-        </span>
-      </div>
+      <div className="relative w-full h-[calc(100vh-10rem)] rounded-lg overflow-hidden border border-border">
+        <div ref={mapContainer} className="w-full h-full" />
 
-      {/* View all streams button */}
-      <div className="absolute top-4 right-16 z-10">
-        <Button
-          variant="outline"
-          size="sm"
-          className="bg-card/90 backdrop-blur-md border-border"
-          onClick={() => navigate("/on-demand")}
-        >
-          Ver todos los streams
-        </Button>
-      </div>
+        {/* Search */}
+        <MapSearch
+          results={searchResults}
+          onSelect={handleSearchSelect}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+        />
 
-      {/* Detail panel */}
-      {selectedStream && (
-        <div
-          className={`absolute z-20 bg-card/95 backdrop-blur-xl border border-border shadow-elegant transition-all duration-300 animate-fade-in ${
-            isMobile
-              ? "bottom-0 left-0 right-0 rounded-t-2xl p-5 max-h-[60vh] overflow-y-auto"
-              : "top-4 right-4 w-80 rounded-lg p-5"
-          }`}
-        >
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-12 w-12 border-2 border-primary">
-                <AvatarImage src={selectedStream.stream.profile?.avatar_url || ""} />
-                <AvatarFallback className="bg-primary/20 text-primary">
-                  {selectedStream.stream.profile?.display_name?.charAt(0) || "?"}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <h3 className="font-semibold text-sm">
-                  {selectedStream.stream.profile?.display_name}
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  {selectedStream.stream.profile?.ciudad},{" "}
-                  {selectedStream.stream.profile?.pais}
-                </p>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7"
-              onClick={() => setSelectedStream(null)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="mb-4">
-            <p className="text-sm font-medium mb-1">{selectedStream.stream.title}</p>
-            <div className="flex items-center gap-3">
-              <Badge variant="destructive" className="text-xs">
-                <Radio className="h-3 w-3 mr-1" /> EN VIVO
-              </Badge>
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <Users className="h-3 w-3" /> {selectedStream.stream.peak_viewers} viewers
-              </span>
-            </div>
-          </div>
-
-          {selectedStream.stream.thumbnail_url && (
-            <div className="mb-4 rounded-md overflow-hidden aspect-video bg-muted">
-              <img
-                src={selectedStream.stream.thumbnail_url}
-                alt={selectedStream.stream.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
-
+        {/* View all streams */}
+        <div className="absolute top-4 right-16 z-10">
           <Button
-            className="w-full"
+            variant="outline"
+            size="sm"
+            className="bg-card/90 backdrop-blur-md border-border"
             onClick={() => navigate("/on-demand")}
           >
-            <ExternalLink className="h-4 w-4 mr-2" /> Ver stream
+            Ver todos los streams
           </Button>
         </div>
-      )}
 
-      {/* Custom marker styles */}
-      <style>{`
-        .live-artist-marker {
-          position: relative;
-          width: 48px;
-          height: 48px;
-          cursor: pointer;
-        }
-        .marker-pulse {
-          position: absolute;
-          inset: -4px;
-          border-radius: 50%;
-          background: hsl(270 70% 55% / 0.3);
-          animation: marker-pulse-anim 2s ease-out infinite;
-        }
-        .marker-avatar {
-          position: relative;
-          width: 48px;
-          height: 48px;
-          border-radius: 50%;
-          border: 3px solid hsl(270 70% 55%);
-          overflow: hidden;
-          background: hsl(240 12% 10%);
-          box-shadow: 0 0 20px hsl(270 70% 55% / 0.4);
-        }
-        .marker-avatar img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-        @keyframes marker-pulse-anim {
-          0% { transform: scale(1); opacity: 0.7; }
-          100% { transform: scale(2.2); opacity: 0; }
-        }
-        .live-map-popup .mapboxgl-popup-content {
-          background: hsl(240 15% 8% / 0.95);
-          backdrop-filter: blur(12px);
-          border: 1px solid hsl(240 10% 18%);
-          border-radius: 0.75rem;
-          padding: 0;
-          box-shadow: 0 8px 32px hsl(240 20% 3% / 0.5);
-        }
-        .live-map-popup .mapboxgl-popup-tip {
-          border-top-color: hsl(240 15% 8% / 0.95);
-        }
-      `}</style>
-    </div>
+        {/* Legend + filters */}
+        <MapLegend
+          activeFilters={activeFilters}
+          onToggleFilter={handleToggleFilter}
+          streamCounts={streamCounts}
+        />
+
+        {/* Detail panel */}
+        {selectedStream && (
+          <div
+            className={`absolute z-20 bg-card/95 backdrop-blur-xl border border-border shadow-elegant transition-all duration-300 animate-fade-in ${
+              isMobile
+                ? "bottom-0 left-0 right-0 rounded-t-2xl p-5 max-h-[60vh] overflow-y-auto"
+                : "top-4 right-4 w-80 rounded-lg p-5"
+            }`}
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-12 w-12 border-2 border-primary">
+                  <AvatarImage src={selectedStream.stream.profile?.avatar_url || ""} />
+                  <AvatarFallback className="bg-primary/20 text-primary">
+                    {selectedStream.stream.profile?.display_name?.charAt(0) || "?"}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="font-semibold text-sm">
+                    {selectedStream.stream.profile?.display_name}
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedStream.stream.profile?.ciudad},{" "}
+                    {selectedStream.stream.profile?.pais}
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => setSelectedStream(null)}
+                aria-label="Cerrar panel"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-sm font-medium mb-1">{selectedStream.stream.title}</p>
+              <div className="flex items-center gap-3 flex-wrap">
+                <Badge variant="destructive" className="text-xs">
+                  <Radio className="h-3 w-3 mr-1" /> EN VIVO
+                </Badge>
+                {selectedStream.stream.profile?.artist_type && (
+                  <Badge variant="secondary" className="text-xs">
+                    {ARTIST_TYPE_CONFIG[selectedStream.stream.profile.artist_type]?.label ||
+                      selectedStream.stream.profile.artist_type}
+                  </Badge>
+                )}
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Users className="h-3 w-3" /> {selectedStream.stream.peak_viewers} viewers
+                </span>
+              </div>
+            </div>
+
+            {selectedStream.stream.thumbnail_url && (
+              <div className="mb-4 rounded-md overflow-hidden aspect-video bg-muted">
+                <img
+                  src={selectedStream.stream.thumbnail_url}
+                  alt={selectedStream.stream.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+
+            <Button className="w-full" onClick={() => navigate("/on-demand")}>
+              <ExternalLink className="h-4 w-4 mr-2" /> Ver stream
+            </Button>
+          </div>
+        )}
+
+        {/* Custom marker styles */}
+        <style>{`
+          .live-artist-marker {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            cursor: pointer;
+          }
+          .marker-pulse {
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            animation: marker-pulse-anim 2s ease-out infinite;
+          }
+          .marker-avatar {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 3px solid;
+            overflow: hidden;
+            background: hsl(240 12% 10%);
+          }
+          .marker-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+          @keyframes marker-pulse-anim {
+            0% { transform: scale(1); opacity: 0.7; }
+            100% { transform: scale(2.2); opacity: 0; }
+          }
+          .live-map-popup .mapboxgl-popup-content {
+            background: hsl(240 15% 8% / 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid hsl(240 10% 18%);
+            border-radius: 0.75rem;
+            padding: 0;
+            box-shadow: 0 8px 32px hsl(240 20% 3% / 0.5);
+          }
+          .live-map-popup .mapboxgl-popup-tip {
+            border-top-color: hsl(240 15% 8% / 0.95);
+          }
+        `}</style>
+      </div>
+    </>
   );
 }

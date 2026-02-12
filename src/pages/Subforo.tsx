@@ -115,9 +115,9 @@ const Subforo = () => {
       <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
         <CosmicBackground />
         <Header />
-        <main className="relative z-10 pt-24">
-          <div className="container mx-auto px-4 py-12 text-center">
-            <h1 className="text-2xl font-bold mb-4">Subforo no encontrado</h1>
+      <main id="main-content" className="relative z-10 pt-24">
+        <div className="container mx-auto px-4 py-12 text-center">
+          <h1 className="text-2xl font-bold mb-4">Subforo no encontrado</h1>
             <Button onClick={() => navigate("/foro")}>Volver al foro</Button>
           </div>
         </main>
@@ -131,7 +131,7 @@ const Subforo = () => {
       <CosmicBackground />
       <Header />
 
-      <main className="relative z-10 pt-24">
+      <main id="main-content" className="relative z-10 pt-24">
         <div className="container mx-auto px-4 py-12 max-w-6xl">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">

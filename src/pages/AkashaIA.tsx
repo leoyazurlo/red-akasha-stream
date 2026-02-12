@@ -352,7 +352,7 @@ export default function AkashaIA() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="container mx-auto px-4 py-16 flex items-center justify-center">
+        <main id="main-content" className="container mx-auto px-4 py-16 flex items-center justify-center">
           <Card className="max-w-md w-full bg-card/50 border-cyan-500/20">
             <CardContent className="pt-8 text-center">
               <Lock className="h-16 w-16 mx-auto text-cyan-400/50 mb-4" />
@@ -374,7 +374,7 @@ export default function AkashaIA() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      <main className="flex-1 container mx-auto px-4 py-6">
+      <main id="main-content" className="flex-1 container mx-auto px-4 py-6">
         <div className="mb-6">
           <div className="flex items-center gap-3 mb-2">
             <Bot className="h-8 w-8 text-cyan-400" />

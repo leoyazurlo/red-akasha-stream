@@ -323,7 +323,7 @@ const Circuito = () => {
         <CosmicBackground />
         <div className="relative z-10">
           <Header />
-          <main className="pt-24 pb-16">
+          <main id="main-content" className="pt-24 pb-16">
             <div className="container mx-auto px-4 flex items-center justify-center min-h-[50vh]">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
@@ -341,7 +341,7 @@ const Circuito = () => {
         <div className="relative z-10">
           <Header />
           
-          <main className="pt-24 pb-16">
+          <main id="main-content" className="pt-24 pb-16">
             <div className="container mx-auto px-4">
               <Card className="max-w-2xl mx-auto border-border bg-card/50 backdrop-blur-sm">
                 <CardHeader>
@@ -376,7 +376,7 @@ const Circuito = () => {
       <div className="relative z-10">
         <Header />
         
-        <main className="pt-24 pb-16">
+        <main id="main-content" className="pt-24 pb-16">
           <div className="container mx-auto px-4">
             {/* Hero Section */}
             <section className="text-center mb-16">

@@ -48,7 +48,7 @@ const MiColeccion = () => {
       <div className="relative z-10">
         <Header />
         
-        <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <main id="main-content" className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           {/* Hero Section */}
           <div className="text-center mb-10">
             <div className="flex items-center justify-center gap-3 mb-4">

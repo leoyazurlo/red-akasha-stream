@@ -444,7 +444,7 @@ const VideoDetail = () => {
         <CosmicBackground />
         <div className="relative z-10">
           <Header />
-          <main className="pt-24 pb-16 px-4 flex items-center justify-center min-h-[60vh]">
+          <main id="main-content" className="pt-24 pb-16 px-4 flex items-center justify-center min-h-[60vh]">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </main>
           <Footer />
@@ -459,7 +459,7 @@ const VideoDetail = () => {
         <CosmicBackground />
         <div className="relative z-10">
           <Header />
-          <main className="pt-24 pb-16 px-4 flex items-center justify-center min-h-[60vh]">
+          <main id="main-content" className="pt-24 pb-16 px-4 flex items-center justify-center min-h-[60vh]">
             <Card className="max-w-md">
               <CardHeader>
                 <CardTitle>Video no encontrado</CardTitle>
@@ -484,7 +484,7 @@ const VideoDetail = () => {
       <div className="relative z-10">
         <Header />
         
-        <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <main id="main-content" className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           {/* Back Button */}
           <Button
             variant="ghost"

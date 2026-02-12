@@ -84,7 +84,7 @@ const Contacto = () => {
       <div className="relative z-10">
         <Header />
 
-        <main className="pt-24 pb-16">
+        <main id="main-content" className="pt-24 pb-16">
           <div className="container mx-auto px-4">
             {/* Hero Section */}
             <section className="text-center mb-12">

@@ -526,7 +526,7 @@ const EditarPerfil = () => {
       <div className="min-h-screen bg-background relative">
         <CosmicBackground />
         <Header />
-        <main className="relative z-10 pt-24 pb-16">
+        <main id="main-content" className="relative z-10 pt-24 pb-16">
           <div className="container mx-auto px-4 flex items-center justify-center min-h-[50vh]">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
@@ -541,7 +541,7 @@ const EditarPerfil = () => {
       <CosmicBackground />
       <Header />
 
-      <main className="relative z-10 pt-24 pb-16">
+      <main id="main-content" className="relative z-10 pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-2xl">
           {/* Back Button */}
           <Button 

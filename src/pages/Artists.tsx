@@ -156,7 +156,7 @@ const Artists = () => {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="pt-24 pb-16">
+        <main id="main-content" className="pt-24 pb-16">
           <div className="container mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
             {Array.from({ length: 8 }).map((_, i) => (
               <StreamThumbnailSkeleton key={i} />
@@ -172,7 +172,7 @@ const Artists = () => {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="pt-24 pb-16">
+        <main id="main-content" className="pt-24 pb-16">
           <div className="container mx-auto px-4">
             <Card className="max-w-2xl mx-auto border-border bg-card/50 backdrop-blur-sm">
               <CardHeader>
@@ -201,7 +201,7 @@ const Artists = () => {
       <ScrollProgressBar />
       <Header />
       
-      <main className="container mx-auto px-4 py-6 pt-20 md:pt-24 pb-12 md:pb-16">
+      <main id="main-content" className="container mx-auto px-4 py-6 pt-20 md:pt-24 pb-12 md:pb-16">
         {/* Hero Section */}
         <section 
           ref={heroRef}

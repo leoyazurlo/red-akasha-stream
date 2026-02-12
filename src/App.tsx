@@ -13,6 +13,7 @@ import { ProfileEditDraftProvider } from "@/contexts/ProfileEditDraftContext";
 import { GlobalChatProvider } from "@/contexts/GlobalChatContext";
 import { UnreadMessagesAlert } from "@/components/notifications/UnreadMessagesAlert";
 import { Loader2 } from "lucide-react";
+import { DevPerformanceBadge } from "@/components/dev/DevPerformanceBadge";
 
 // Eager load: landing page
 import Index from "./pages/Index";
@@ -139,6 +140,7 @@ const App = () => (
                     <MiniPlayer />
                     <FloatingLivePlayer />
                     <UnreadMessagesAlert />
+                    {import.meta.env.DEV && <DevPerformanceBadge />}
                   </GlobalChatProvider>
                 </ProfileEditDraftProvider>
               </GeoRestrictionGuard>

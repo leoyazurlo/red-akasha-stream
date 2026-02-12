@@ -6,10 +6,11 @@ import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Music, Mic, Film, Camera, Radio, Search, Loader2 } from "lucide-react";
+import { Music, Mic, Film, Camera, Radio, Search } from "lucide-react";
 import { useContentByCreatorProfile, useContentCountsByProfile, CreatorProfileType } from "@/hooks/useContentByCreatorProfile";
 import { ContentCard } from "@/components/artists/ContentCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StreamThumbnailSkeleton } from "@/components/skeletons/stream-thumbnail-skeleton";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { ScrollProgressBar } from "@/components/ScrollProgressBar";
 import { supabase } from "@/integrations/supabase/client";
@@ -156,8 +157,10 @@ const Artists = () => {
       <div className="min-h-screen bg-background">
         <Header />
         <main className="pt-24 pb-16">
-          <div className="container mx-auto px-4 flex items-center justify-center min-h-[50vh]">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <div className="container mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <StreamThumbnailSkeleton key={i} />
+            ))}
           </div>
         </main>
         <Footer />
@@ -282,13 +285,7 @@ const Artists = () => {
         >
           {isLoading ? (
             Array.from({ length: 8 }).map((_, i) => (
-              <Card key={i} className="overflow-hidden">
-                <Skeleton className="aspect-video w-full" />
-                <div className="p-4 space-y-2">
-                  <Skeleton className="h-5 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
-                </div>
-              </Card>
+              <StreamThumbnailSkeleton key={i} />
             ))
           ) : filteredContent.length === 0 ? (
             <div className="col-span-full text-center py-12 md:py-16">

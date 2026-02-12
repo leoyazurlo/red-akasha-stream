@@ -31,6 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { AnalyticsEvents } from "@/lib/analytics";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ProfileSkeleton } from "@/components/skeletons/profile-skeleton";
 
 const GENRE_LABELS: Record<string, string> = {
   banda_musical: "Banda Musical",
@@ -195,10 +196,7 @@ export default function ArtistProfile() {
         <CosmicBackground />
         <Header />
         <main className="relative pt-24 pb-16">
-          <div className="container mx-auto px-4 max-w-6xl">
-            <Skeleton className="h-64 w-full mb-8" />
-            <Skeleton className="h-96 w-full" />
-          </div>
+          <ProfileSkeleton />
         </main>
         <Footer />
       </div>

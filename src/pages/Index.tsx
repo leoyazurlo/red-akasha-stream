@@ -9,9 +9,12 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import akashaBg from "@/assets/akasha-bg.png";
 import { HomeVideoPlayer } from "@/components/HomeVideoPlayer";
+import { useSEO } from "@/hooks/use-seo";
+import { platformSEO } from "@/lib/seo";
 
 const Index = () => {
   const { t } = useTranslation();
+  useSEO(platformSEO);
 
   // Cargar videos de YouTube desde la base de datos
   const { data: programasVideos = [] } = useQuery({

@@ -30,6 +30,8 @@ import { useFollowArtist, useIsFollowing, useRateArtist, useUserRating } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { AnalyticsEvents } from "@/lib/analytics";
+import { useSEO } from "@/hooks/use-seo";
+import { generateArtistSEO } from "@/lib/seo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProfileSkeleton } from "@/components/skeletons/profile-skeleton";
 
@@ -48,6 +50,7 @@ export default function ArtistProfile() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [showRating, setShowRating] = useState(false);
+
 
   // Track artist profile view
   useEffect(() => {
@@ -74,7 +77,9 @@ export default function ArtistProfile() {
     enabled: !!id,
   });
 
-  // Fetch multimedia (photos and videos)
+  // SEO
+  useSEO(artist ? generateArtistSEO(artist) : {});
+
   const { data: gallery = [], isLoading: loadingGallery } = useQuery({
     queryKey: ['artist-gallery', artist?.user_id],
     queryFn: async () => {

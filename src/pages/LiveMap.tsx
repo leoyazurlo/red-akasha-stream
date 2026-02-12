@@ -2,8 +2,11 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { ArtistLiveMap } from "@/components/live-map/artist-live-map";
+import { useSEO } from "@/hooks/use-seo";
+import { generateMapSEO } from "@/lib/seo";
 
 const LiveMap = () => {
+  useSEO(generateMapSEO());
   return (
     <div className="min-h-screen bg-background relative">
       <CosmicBackground />

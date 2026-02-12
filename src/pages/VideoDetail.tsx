@@ -5,6 +5,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useMiniPlayer } from "@/contexts/MiniPlayerContext";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { useSEO } from "@/hooks/use-seo";
+import { generateStreamSEO } from "@/lib/seo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -161,6 +163,15 @@ const VideoDetail = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showMoreInfo, setShowMoreInfo] = useState(false);
 
+  // SEO
+  useSEO(
+    video
+      ? generateStreamSEO(
+          { title: video.title, description: video.description, thumbnail_url: video.thumbnail_url, id: video.id },
+          video.band_name || undefined
+        )
+      : {}
+  );
   const handleOpenMiniPlayer = () => {
     if (!video) return;
     
@@ -187,45 +198,6 @@ const VideoDetail = () => {
       checkIfLiked();
     }
   }, [id, user]);
-
-  // Update meta tags for social sharing
-  useEffect(() => {
-    if (video) {
-      const url = `${window.location.origin}/video/${video.id}`;
-      
-      // Update Open Graph tags
-      updateMetaTag('og:title', video.title);
-      updateMetaTag('og:description', video.description || 'Mira este video en Red Akasha');
-      updateMetaTag('og:image', video.thumbnail_url || '');
-      updateMetaTag('og:url', url);
-      updateMetaTag('og:type', 'video.other');
-      
-      // Update Twitter tags
-      updateMetaTag('twitter:title', video.title);
-      updateMetaTag('twitter:description', video.description || 'Mira este video en Red Akasha');
-      updateMetaTag('twitter:image', video.thumbnail_url || '');
-      
-      // Update page title
-      document.title = `${video.title} - Red Akasha`;
-    }
-  }, [video]);
-
-  const updateMetaTag = (property: string, content: string) => {
-    let element = document.querySelector(`meta[property="${property}"]`) as HTMLMetaElement;
-    if (!element) {
-      element = document.querySelector(`meta[name="${property}"]`) as HTMLMetaElement;
-    }
-    if (!element) {
-      element = document.createElement('meta');
-      if (property.startsWith('og:') || property.startsWith('twitter:')) {
-        element.setAttribute('property', property);
-      } else {
-        element.setAttribute('name', property);
-      }
-      document.head.appendChild(element);
-    }
-    element.setAttribute('content', content);
-  };
 
   useEffect(() => {
     if (video) {

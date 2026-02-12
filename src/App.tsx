@@ -15,6 +15,7 @@ import { UnreadMessagesAlert } from "@/components/notifications/UnreadMessagesAl
 import { Loader2 } from "lucide-react";
 import { DevPerformanceBadge } from "@/components/dev/DevPerformanceBadge";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 
 // Eager load: landing page
 import Index from "./pages/Index";
@@ -45,6 +46,7 @@ const AdminIAManagement = lazy(() => import("./pages/admin/IAManagement"));
 const AdminPlatformSettings = lazy(() => import("./pages/admin/PlatformSettings"));
 const AdminUserPayouts = lazy(() => import("./pages/admin/UserPayouts"));
 const AdminReports = lazy(() => import("./pages/admin/Reports"));
+const AdminAnalytics = lazy(() => import("./pages/admin/Analytics"));
 const Asociate = lazy(() => import("./pages/Asociate"));
 const Circuito = lazy(() => import("./pages/Circuito"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile"));
@@ -135,6 +137,7 @@ const App = () => (
                       <Route path="/admin/platform-settings" element={withEB(<AdminPlatformSettings />)} />
                       <Route path="/admin/payouts" element={withEB(<AdminUserPayouts />)} />
                       <Route path="/admin/reports" element={withEB(<AdminReports />)} />
+                      <Route path="/admin/analytics" element={withEB(<AdminAnalytics />)} />
                       <Route path="/akasha-ia" element={withEB(<AkashaIA />, "studio")} />
                       <Route path="/proyecto" element={withEB(<ProyectoRedAkasha />)} />
                       <Route path="/contacto" element={withEB(<Contacto />)} />
@@ -148,6 +151,7 @@ const App = () => (
                       <FloatingLivePlayer />
                     </ErrorBoundary>
                     <UnreadMessagesAlert />
+                    <AnalyticsTracker />
                     {import.meta.env.DEV && <DevPerformanceBadge />}
                   </GlobalChatProvider>
                 </ProfileEditDraftProvider>

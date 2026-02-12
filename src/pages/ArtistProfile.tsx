@@ -28,7 +28,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useFollowArtist, useIsFollowing, useRateArtist, useUserRating } from "@/hooks/useArtists";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { AnalyticsEvents } from "@/lib/analytics";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const GENRE_LABELS: Record<string, string> = {
@@ -47,6 +48,10 @@ export default function ArtistProfile() {
   const { toast } = useToast();
   const [showRating, setShowRating] = useState(false);
 
+  // Track artist profile view
+  useEffect(() => {
+    if (id) AnalyticsEvents.artistProfileViewed(id);
+  }, [id]);
   const { data: isFollowing = false } = useIsFollowing(id!);
   const { data: userRating } = useUserRating(id!);
   const followMutation = useFollowArtist();

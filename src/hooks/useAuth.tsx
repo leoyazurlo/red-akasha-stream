@@ -7,6 +7,7 @@ import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
+import { identify, AnalyticsEvents } from '@/lib/analytics';
 
 /** Resultado del hook useAuth */
 interface UseAuthResult {
@@ -50,6 +51,15 @@ export const useAuth = (requireAuth = false): UseAuthResult => {
         setSession(session);
         setUser(session?.user ?? null);
         
+        // Track auth events
+        if (event === 'SIGNED_IN' && session?.user) {
+          identify(session.user.id);
+          AnalyticsEvents.userLoggedIn();
+        }
+        if (event === 'USER_UPDATED' && session?.user) {
+          identify(session.user.id);
+        }
+
         // Check admin role
         if (session?.user) {
           setTimeout(() => {

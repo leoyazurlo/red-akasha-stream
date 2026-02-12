@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useMiniPlayer } from "@/contexts/MiniPlayerContext";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { useMediaSession } from "@/hooks/use-media-session";
 
 export const MiniPlayer = () => {
   const { 
@@ -36,6 +37,7 @@ export const MiniPlayer = () => {
   
   const [volume, setVolume] = React.useState(1);
   const [isMuted, setIsMuted] = React.useState(false);
+  const { setupMediaSession, updatePlaybackState, updatePositionState } = useMediaSession();
 
   const isVideo = content?.content_type !== 'podcast' && content?.content_type !== 'profile_audio' && content?.video_url;
   const hasPlaylist = content?.playlist && content.playlist.length > 0;
@@ -95,6 +97,39 @@ export const MiniPlayer = () => {
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
+
+  // Media Session: lock-screen / system controls
+  useEffect(() => {
+    if (!isOpen || !content) return;
+    const title = currentTrack?.title || content.title;
+    setupMediaSession(
+      {
+        title,
+        artist: content.profileName || content.band_name,
+        artwork: content.profileAvatar || content.thumbnail_url || undefined,
+      },
+      {
+        onPlay: () => audioRef.current?.play(),
+        onPause: () => audioRef.current?.pause(),
+        onPrevious: playPrevious,
+        onNext: playNext,
+        onSeekBackward: () => {
+          if (audioRef.current) audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - 10);
+        },
+        onSeekForward: () => {
+          if (audioRef.current) audioRef.current.currentTime = Math.min(duration, audioRef.current.currentTime + 10);
+        },
+      },
+    );
+  }, [isOpen, content, currentTrackIndex]);
+
+  useEffect(() => {
+    updatePlaybackState(isPlaying ? "playing" : "paused");
+  }, [isPlaying]);
+
+  useEffect(() => {
+    if (duration > 0) updatePositionState(duration, currentTime);
+  }, [currentTime, duration]);
 
   if (!isOpen || !content) return null;
 

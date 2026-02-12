@@ -19,8 +19,6 @@ import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import { InstallPWABanner } from "@/components/install-pwa-banner";
 import { OfflineBanner } from "@/components/offline-banner";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { CommandPalette } from "@/components/command-palette";
-import { useCommandPalette } from "@/hooks/use-command-palette";
 import { LiveRegionProvider } from "@/components/ui/live-region";
 import { SkipLink } from "@/components/ui/skip-link";
 
@@ -108,8 +106,6 @@ const authRoute = (element: React.ReactNode, context?: string) => (
 );
 
 const AppShell = () => {
-  const commandPalette = useCommandPalette();
-
   return (
     <LiveRegionProvider>
     <LiveStreamProvider>
@@ -178,7 +174,7 @@ const AppShell = () => {
               <MiniPlayer />
               <FloatingLivePlayer />
             </ErrorBoundary>
-            <CommandPalette open={commandPalette.open} onOpenChange={commandPalette.setOpen} />
+            
             <UnreadMessagesAlert />
             <AnalyticsTracker />
             <InstallPWABanner />

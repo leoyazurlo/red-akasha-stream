@@ -27,7 +27,8 @@ import {
   Search,
   Share2,
   Languages,
-  GitBranch
+  GitBranch,
+  MapPin
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -76,6 +77,10 @@ interface PlatformConfig {
   email_notifications: boolean;
   push_notifications: boolean;
   notification_digest: string;
+
+  // Mapbox
+  mapbox_token: string;
+  mapbox_enabled: boolean;
 }
 
 const defaultConfig: PlatformConfig = {
@@ -115,7 +120,10 @@ const defaultConfig: PlatformConfig = {
   
   email_notifications: true,
   push_notifications: false,
-  notification_digest: 'daily'
+  notification_digest: 'daily',
+
+  mapbox_token: '',
+  mapbox_enabled: false,
 };
 
 export default function PlatformSettings() {
@@ -270,7 +278,7 @@ export default function PlatformSettings() {
         </div>
 
         <Tabs defaultValue="email" className="space-y-6">
-          <TabsList className="grid grid-cols-7 w-full max-w-5xl">
+          <TabsList className="grid grid-cols-8 w-full max-w-5xl">
             <TabsTrigger value="email" className="gap-2">
               <Mail className="w-4 h-4" />
               Email/DNS
@@ -290,6 +298,10 @@ export default function PlatformSettings() {
             <TabsTrigger value="notifications" className="gap-2">
               <Bell className="w-4 h-4" />
               Notificaciones
+            </TabsTrigger>
+            <TabsTrigger value="mapbox" className="gap-2">
+              <MapPin className="w-4 h-4" />
+              Mapa
             </TabsTrigger>
             <TabsTrigger value="github" className="gap-2">
               <GitBranch className="w-4 h-4" />
@@ -872,6 +884,75 @@ export default function PlatformSettings() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Mapbox Tab */}
+          <TabsContent value="mapbox" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5" />
+                  Mapa de Artistas en Vivo (Mapbox)
+                </CardTitle>
+                <CardDescription>
+                  Configura el token de Mapbox para el mapa interactivo de artistas en vivo
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label>Habilitar mapa en vivo</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Muestra el mapa interactivo con artistas streamando
+                    </p>
+                  </div>
+                  <Switch
+                    checked={config.mapbox_enabled}
+                    onCheckedChange={(checked) => updateConfig('mapbox_enabled', checked)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Token público de Mapbox</Label>
+                  <Input
+                    value={config.mapbox_token}
+                    onChange={(e) => updateConfig('mapbox_token', e.target.value)}
+                    placeholder="pk.eyJ1Ijoi..."
+                    type="password"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Obtené tu token en{" "}
+                    <a
+                      href="https://account.mapbox.com/access-tokens/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline inline-flex items-center gap-1"
+                    >
+                      mapbox.com <ExternalLink className="w-3 h-3" />
+                    </a>
+                    . Usá un token público (empieza con <code className="bg-muted px-1 rounded">pk.</code>).
+                  </p>
+                </div>
+
+                {config.mapbox_token && (
+                  <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                    <div className="flex items-center gap-2 text-green-500">
+                      <CheckCircle2 className="w-4 h-4" />
+                      <span className="text-sm font-medium">Token configurado</span>
+                    </div>
+                  </div>
+                )}
+
+                {!config.mapbox_token && config.mapbox_enabled && (
+                  <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg">
+                    <div className="flex items-center gap-2 text-warning">
+                      <AlertCircle className="w-4 h-4" />
+                      <span className="text-sm">El mapa está habilitado pero no hay token configurado</span>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* GitHub Tab */}

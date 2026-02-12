@@ -19,6 +19,8 @@ import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import { InstallPWABanner } from "@/components/install-pwa-banner";
 import { OfflineBanner } from "@/components/offline-banner";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { CommandPalette } from "@/components/command-palette";
+import { useCommandPalette } from "@/hooks/use-command-palette";
 
 // Eager load: landing page
 import Index from "./pages/Index";
@@ -100,85 +102,94 @@ const authRoute = (element: React.ReactNode, context?: string) => (
   </ErrorBoundary>
 );
 
+const AppShell = () => {
+  const commandPalette = useCommandPalette();
+
+  return (
+    <LiveStreamProvider>
+      <GeoRestrictionGuard>
+        <ProfileEditDraftProvider>
+          <GlobalChatProvider>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+              <Route path="/" element={withEB(<Index />)} />
+              <Route path="/on-demand" element={withEB(<OnDemand />, "stream")} />
+              <Route path="/mi-coleccion" element={authRoute(<MiColeccion />)} />
+              <Route path="/mi-perfil" element={authRoute(<MiPerfil />)} />
+              <Route path="/editar-perfil" element={authRoute(<EditarPerfil />)} />
+              <Route path="/favoritos" element={authRoute(<Favorites />)} />
+              <Route path="/playlists" element={authRoute(<Playlists />)} />
+              <Route path="/playlist/:id" element={withEB(<PlaylistDetail />)} />
+              <Route path="/video/:id" element={withEB(<VideoDetail />, "stream")} />
+              <Route path="/foro" element={withEB(<Forum />)} />
+              <Route path="/foro/subforo/:id" element={withEB(<Subforo />)} />
+              <Route path="/foro/hilo/:id" element={withEB(<Thread />)} />
+              <Route path="/asociate" element={withEB(<Asociate />)} />
+              <Route path="/circuito" element={withEB(<Circuito />, "map")} />
+              <Route path="/circuito/perfil/:id" element={withEB(<PublicProfile />, "artist")} />
+              <Route path="/auth" element={withEB(<Auth />)} />
+              <Route path="/unauthorized" element={withEB(<Unauthorized />)} />
+              <Route path="/subir-contenido" element={authRoute(<UploadContent />)} />
+              <Route path="/artistas" element={withEB(<Artists />, "artist")} />
+              <Route path="/artistas/:id" element={withEB(<ArtistProfile />, "artist")} />
+              <Route path="/perfil/:id" element={withEB(<UserProfile />)} />
+              <Route path="/admin" element={adminRoute(<Admin />)} />
+              <Route path="/admin/categories" element={adminRoute(<AdminCategories />)} />
+              <Route path="/admin/streams" element={adminRoute(<AdminStreams />, "stream")} />
+              <Route path="/admin/vod" element={adminRoute(<AdminVOD />)} />
+              <Route path="/admin/podcasts" element={adminRoute(<AdminPodcasts />)} />
+              <Route path="/admin/users" element={adminRoute(<AdminUsers />)} />
+              <Route path="/admin/administrators" element={adminRoute(<AdminAdministrators />)} />
+              <Route path="/admin/communications" element={adminRoute(<AdminCommunications />)} />
+              <Route path="/admin/content" element={adminRoute(<AdminContentModeration />)} />
+              <Route path="/admin/requests" element={adminRoute(<AdminRegistrationRequests />)} />
+              <Route path="/admin/audit-logs" element={adminRoute(<AdminAuditLogs />)} />
+              <Route path="/admin/program-schedules" element={adminRoute(<AdminProgramSchedules />)} />
+              <Route path="/admin/badges" element={adminRoute(<AdminBadges />)} />
+              <Route path="/admin/share-analytics" element={adminRoute(<AdminShareAnalytics />)} />
+              <Route path="/admin/youtube-videos" element={adminRoute(<AdminYouTubeVideos />)} />
+              <Route path="/admin/stream-config" element={adminRoute(<AdminStreamConfig />, "stream")} />
+              <Route path="/admin/payments" element={adminRoute(<AdminPaymentSettings />)} />
+              <Route path="/admin/sales" element={adminRoute(<AdminSalesAnalytics />)} />
+              <Route path="/admin/ia-management" element={adminRoute(<AdminIAManagement />)} />
+              <Route path="/admin/platform-settings" element={adminRoute(<AdminPlatformSettings />)} />
+              <Route path="/admin/payouts" element={adminRoute(<AdminUserPayouts />)} />
+              <Route path="/admin/reports" element={adminRoute(<AdminReports />)} />
+              <Route path="/admin/analytics" element={adminRoute(<AdminAnalytics />)} />
+              <Route path="/akasha-ia" element={authRoute(<AkashaIA />, "studio")} />
+              <Route path="/proyecto" element={withEB(<ProyectoRedAkasha />)} />
+              <Route path="/contacto" element={withEB(<Contacto />)} />
+              <Route path="/suscripciones" element={withEB(<Suscripciones />)} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+            <ErrorBoundary context="stream">
+              <MiniPlayer />
+              <FloatingLivePlayer />
+            </ErrorBoundary>
+            <CommandPalette open={commandPalette.open} onOpenChange={commandPalette.setOpen} />
+            <UnreadMessagesAlert />
+            <AnalyticsTracker />
+            <InstallPWABanner />
+            <OfflineBanner />
+            {import.meta.env.DEV && <DevPerformanceBadge />}
+          </GlobalChatProvider>
+        </ProfileEditDraftProvider>
+      </GeoRestrictionGuard>
+    </LiveStreamProvider>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <MiniPlayerProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
-          <BrowserRouter>
-            <LiveStreamProvider>
-              <GeoRestrictionGuard>
-                <ProfileEditDraftProvider>
-                  <GlobalChatProvider>
-                    <Suspense fallback={<PageLoader />}>
-                      <Routes>
-                      <Route path="/" element={withEB(<Index />)} />
-                      <Route path="/on-demand" element={withEB(<OnDemand />, "stream")} />
-                      <Route path="/mi-coleccion" element={authRoute(<MiColeccion />)} />
-                      <Route path="/mi-perfil" element={authRoute(<MiPerfil />)} />
-                      <Route path="/editar-perfil" element={authRoute(<EditarPerfil />)} />
-                      <Route path="/favoritos" element={authRoute(<Favorites />)} />
-                      <Route path="/playlists" element={authRoute(<Playlists />)} />
-                      <Route path="/playlist/:id" element={withEB(<PlaylistDetail />)} />
-                      <Route path="/video/:id" element={withEB(<VideoDetail />, "stream")} />
-                      <Route path="/foro" element={withEB(<Forum />)} />
-                      <Route path="/foro/subforo/:id" element={withEB(<Subforo />)} />
-                      <Route path="/foro/hilo/:id" element={withEB(<Thread />)} />
-                      <Route path="/asociate" element={withEB(<Asociate />)} />
-                      <Route path="/circuito" element={withEB(<Circuito />, "map")} />
-                      <Route path="/circuito/perfil/:id" element={withEB(<PublicProfile />, "artist")} />
-                      <Route path="/auth" element={withEB(<Auth />)} />
-                      <Route path="/unauthorized" element={withEB(<Unauthorized />)} />
-                      <Route path="/subir-contenido" element={authRoute(<UploadContent />)} />
-                      <Route path="/artistas" element={withEB(<Artists />, "artist")} />
-                      <Route path="/artistas/:id" element={withEB(<ArtistProfile />, "artist")} />
-                      <Route path="/perfil/:id" element={withEB(<UserProfile />)} />
-                      <Route path="/admin" element={adminRoute(<Admin />)} />
-                      <Route path="/admin/categories" element={adminRoute(<AdminCategories />)} />
-                      <Route path="/admin/streams" element={adminRoute(<AdminStreams />, "stream")} />
-                      <Route path="/admin/vod" element={adminRoute(<AdminVOD />)} />
-                      <Route path="/admin/podcasts" element={adminRoute(<AdminPodcasts />)} />
-                      <Route path="/admin/users" element={adminRoute(<AdminUsers />)} />
-                      <Route path="/admin/administrators" element={adminRoute(<AdminAdministrators />)} />
-                      <Route path="/admin/communications" element={adminRoute(<AdminCommunications />)} />
-                      <Route path="/admin/content" element={adminRoute(<AdminContentModeration />)} />
-                      <Route path="/admin/requests" element={adminRoute(<AdminRegistrationRequests />)} />
-                      <Route path="/admin/audit-logs" element={adminRoute(<AdminAuditLogs />)} />
-                      <Route path="/admin/program-schedules" element={adminRoute(<AdminProgramSchedules />)} />
-                      <Route path="/admin/badges" element={adminRoute(<AdminBadges />)} />
-                      <Route path="/admin/share-analytics" element={adminRoute(<AdminShareAnalytics />)} />
-                      <Route path="/admin/youtube-videos" element={adminRoute(<AdminYouTubeVideos />)} />
-                      <Route path="/admin/stream-config" element={adminRoute(<AdminStreamConfig />, "stream")} />
-                      <Route path="/admin/payments" element={adminRoute(<AdminPaymentSettings />)} />
-                      <Route path="/admin/sales" element={adminRoute(<AdminSalesAnalytics />)} />
-                      <Route path="/admin/ia-management" element={adminRoute(<AdminIAManagement />)} />
-                      <Route path="/admin/platform-settings" element={adminRoute(<AdminPlatformSettings />)} />
-                      <Route path="/admin/payouts" element={adminRoute(<AdminUserPayouts />)} />
-                      <Route path="/admin/reports" element={adminRoute(<AdminReports />)} />
-                      <Route path="/admin/analytics" element={adminRoute(<AdminAnalytics />)} />
-                      <Route path="/akasha-ia" element={authRoute(<AkashaIA />, "studio")} />
-                      <Route path="/proyecto" element={withEB(<ProyectoRedAkasha />)} />
-                      <Route path="/contacto" element={withEB(<Contacto />)} />
-                      <Route path="/suscripciones" element={withEB(<Suscripciones />)} />
-                      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                      <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </Suspense>
-                    <ErrorBoundary context="stream">
-                      <MiniPlayer />
-                      <FloatingLivePlayer />
-                    </ErrorBoundary>
-                    <UnreadMessagesAlert />
-                    <AnalyticsTracker />
-                    <InstallPWABanner />
-                    <OfflineBanner />
-                    {import.meta.env.DEV && <DevPerformanceBadge />}
-                  </GlobalChatProvider>
-                </ProfileEditDraftProvider>
-              </GeoRestrictionGuard>
-            </LiveStreamProvider>
-          </BrowserRouter>
+        <BrowserRouter>
+          <AppShell />
+        </BrowserRouter>
       </TooltipProvider>
     </MiniPlayerProvider>
   </QueryClientProvider>

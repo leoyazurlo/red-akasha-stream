@@ -1,4 +1,4 @@
-import { LogOut, User, Library, Settings, Menu, X } from "lucide-react";
+import { LogOut, User, Library, Settings, Menu, X, ChevronDown, MapPin } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -34,8 +34,9 @@ export const Header = () => {
   const navItems = [
     { name: t('nav.home'), href: "/" },
     { name: t('nav.onDemand'), href: "/on-demand" },
-    { name: "Mapa", href: "/live" },
-    { name: t('nav.circuit'), href: "/circuito" },
+    { name: t('nav.circuit'), href: "/circuito", children: [
+      { name: "Mapa", href: "/live", icon: MapPin },
+    ]},
     { name: t('nav.artists'), href: "/artistas" },
     { name: t('nav.join'), href: "/asociate" },
     { name: t('nav.upload'), href: "/subir-contenido" },
@@ -72,6 +73,43 @@ export const Header = () => {
           <nav className="hidden md:flex items-center space-x-1">
             {navItems.map((item) => {
               const isActive = location.pathname === item.href;
+
+              if (item.children) {
+                const isChildActive = item.children.some(c => location.pathname === c.href);
+                return (
+                  <DropdownMenu key={item.href}>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className={`px-4 py-2 text-sm font-light transition-colors rounded-lg hover:bg-secondary inline-flex items-center gap-1 ${
+                          isActive || isChildActive ? 'text-primary' : 'text-foreground hover:text-primary'
+                        }`}
+                      >
+                        {item.name}
+                        <ChevronDown className="h-3 w-3" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="z-50 bg-popover">
+                      <DropdownMenuItem asChild className="cursor-pointer hover:!bg-cyan-500/20 hover:!text-cyan-400 focus:!bg-cyan-500/20 focus:!text-cyan-400 transition-all duration-200">
+                        <Link to={item.href} className="flex items-center w-full hover:text-cyan-400">
+                          {item.name}
+                        </Link>
+                      </DropdownMenuItem>
+                      {item.children.map((child) => {
+                        const ChildIcon = child.icon;
+                        return (
+                          <DropdownMenuItem key={child.href} asChild className="cursor-pointer hover:!bg-cyan-500/20 hover:!text-cyan-400 focus:!bg-cyan-500/20 focus:!text-cyan-400 transition-all duration-200">
+                            <Link to={child.href} className="flex items-center w-full hover:text-cyan-400">
+                              {ChildIcon && <ChildIcon className="mr-2 h-4 w-4" />}
+                              {child.name}
+                            </Link>
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                );
+              }
+
               return (
                 <Link
                   key={item.href}
@@ -161,18 +199,34 @@ export const Header = () => {
                     {navItems.map((item) => {
                       const isActive = location.pathname === item.href;
                       return (
-                        <SheetClose asChild key={item.href}>
-                          <Link
-                            to={item.href}
-                            className={`block px-6 py-3 text-base font-light transition-colors border-l-2 ${
-                              isActive 
-                                ? 'text-primary border-primary bg-primary/10' 
-                                : 'text-foreground border-transparent hover:text-primary hover:border-primary/50 hover:bg-secondary'
-                            }`}
-                          >
-                            {item.name}
-                          </Link>
-                        </SheetClose>
+                        <div key={item.href}>
+                          <SheetClose asChild>
+                            <Link
+                              to={item.href}
+                              className={`block px-6 py-3 text-base font-light transition-colors border-l-2 ${
+                                isActive 
+                                  ? 'text-primary border-primary bg-primary/10' 
+                                  : 'text-foreground border-transparent hover:text-primary hover:border-primary/50 hover:bg-secondary'
+                              }`}
+                            >
+                              {item.name}
+                            </Link>
+                          </SheetClose>
+                          {item.children?.map((child) => (
+                            <SheetClose asChild key={child.href}>
+                              <Link
+                                to={child.href}
+                                className={`block pl-10 pr-6 py-2.5 text-sm font-light transition-colors border-l-2 ${
+                                  location.pathname === child.href
+                                    ? 'text-primary border-primary bg-primary/10'
+                                    : 'text-muted-foreground border-transparent hover:text-primary hover:border-primary/50 hover:bg-secondary'
+                                }`}
+                              >
+                                {child.name}
+                              </Link>
+                            </SheetClose>
+                          ))}
+                        </div>
                       );
                     })}
                   </nav>

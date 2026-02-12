@@ -12,7 +12,7 @@ const LiveMap = () => {
       <CosmicBackground />
       <div className="relative z-10">
         <Header />
-        <main id="main-content" className="pt-20 pb-4 px-2 sm:px-4">
+        <main id="main-content" className="pt-20 pb-4 px-3 sm:px-6 max-w-[1600px] mx-auto">
           <ArtistLiveMap />
         </main>
         <Footer />

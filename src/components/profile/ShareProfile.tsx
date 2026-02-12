@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Share2, Twitter, Facebook, Linkedin, MessageCircle, Link2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { notifySuccess, notifyError } from "@/lib/notifications";
 
 interface ShareProfileProps {
   userId: string;
@@ -14,23 +14,16 @@ interface ShareProfileProps {
 }
 
 export const ShareProfile = ({ userId, userName }: ShareProfileProps) => {
-  const { toast } = useToast();
+  
   const profileUrl = `${window.location.origin}/perfil/${userId}`;
   const shareText = `Somos RedAkasha.org te comparte este perfil para que puedas disfrutar del contenido de ${userName}. Si te gusta, podés asociarte a la Red Akasha.`;
 
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(profileUrl);
-      toast({
-        title: "¡Enlace copiado!",
-        description: "El enlace del perfil se ha copiado al portapapeles",
-      });
+      notifySuccess("¡Enlace copiado!", "El enlace del perfil se ha copiado al portapapeles");
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "No se pudo copiar el enlace",
-        variant: "destructive",
-      });
+      notifyError("No se pudo copiar el enlace", error);
     }
   };
 

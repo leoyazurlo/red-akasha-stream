@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Share2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { notifySuccess } from "@/lib/notifications";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -18,7 +18,7 @@ interface ShareButtonsProps {
 }
 
 const ShareButtons = ({ videoId, title, description, thumbnailUrl }: ShareButtonsProps) => {
-  const { toast } = useToast();
+  
   const { user } = useAuth();
   const currentUrl = `${window.location.origin}/video/${videoId}`;
   const shareText = `${title}${description ? ' - ' + description.slice(0, 100) : ''}`;
@@ -47,69 +47,48 @@ const ShareButtons = ({ videoId, title, description, thumbnailUrl }: ShareButton
     trackShare('whatsapp');
     const url = `https://wa.me/?text=${encodeURIComponent(shareText + ' ' + currentUrl)}`;
     window.open(url, '_blank');
-    toast({
-      title: "Compartir en WhatsApp",
-      description: "Se abrió WhatsApp para compartir el video",
-    });
+    notifySuccess("Compartir en WhatsApp", "Se abrió WhatsApp para compartir el video");
   };
 
   const shareOnFacebook = () => {
     trackShare('facebook');
     const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`;
     window.open(url, '_blank', 'width=600,height=400');
-    toast({
-      title: "Compartir en Facebook",
-      description: "Se abrió Facebook para compartir el video",
-    });
+    notifySuccess("Compartir en Facebook", "Se abrió Facebook para compartir el video");
   };
 
   const shareOnTwitter = () => {
     trackShare('twitter');
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(currentUrl)}`;
     window.open(url, '_blank', 'width=600,height=400');
-    toast({
-      title: "Compartir en Twitter",
-      description: "Se abrió Twitter para compartir el video",
-    });
+    notifySuccess("Compartir en Twitter", "Se abrió Twitter para compartir el video");
   };
 
   const shareOnLinkedIn = () => {
     trackShare('linkedin');
     const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}`;
     window.open(url, '_blank', 'width=600,height=400');
-    toast({
-      title: "Compartir en LinkedIn",
-      description: "Se abrió LinkedIn para compartir el video",
-    });
+    notifySuccess("Compartir en LinkedIn", "Se abrió LinkedIn para compartir el video");
   };
 
   const shareOnTelegram = () => {
     trackShare('telegram');
     const url = `https://t.me/share/url?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(shareText)}`;
     window.open(url, '_blank', 'width=600,height=400');
-    toast({
-      title: "Compartir en Telegram",
-      description: "Se abrió Telegram para compartir el video",
-    });
+    notifySuccess("Compartir en Telegram", "Se abrió Telegram para compartir el video");
   };
 
   const shareOnInstagram = () => {
     trackShare('instagram');
     // Instagram no tiene API de compartir directo, copiamos el link
     navigator.clipboard.writeText(currentUrl);
-    toast({
-      title: "Link copiado",
-      description: "Instagram no permite compartir directo. Link copiado para que lo pegues en tu historia o post.",
-    });
+    notifySuccess("Link copiado", "Instagram no permite compartir directo. Link copiado para que lo pegues en tu historia o post.");
   };
 
   const copyLink = () => {
     trackShare('copy_link');
     navigator.clipboard.writeText(currentUrl);
-    toast({
-      title: "Link copiado",
-      description: "El enlace del video se copió al portapapeles",
-    });
+    notifySuccess("Link copiado", "El enlace del video se copió al portapapeles");
   };
 
   return (

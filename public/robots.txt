@@ -12,3 +12,10 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /mi-perfil
+Disallow: /mi-coleccion
+Disallow: /editar-perfil
+
+Sitemap: https://red-akasha-stream.lovable.app/sitemap.xml

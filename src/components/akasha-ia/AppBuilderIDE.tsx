@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -48,7 +48,7 @@ import {
   PanelRightClose,
   PanelRight,
 } from "lucide-react";
-import { MonacoEditor } from "./MonacoEditor";
+const MonacoEditor = lazy(() => import("./MonacoEditor").then(m => ({ default: m.MonacoEditor })));
 import { SandboxPreview } from "./SandboxPreview";
 import { AIActionsToolbar } from "./AIActionsToolbar";
 import { AIContextPanel } from "./AIContextPanel";
@@ -1029,18 +1029,20 @@ export function AppBuilderIDE() {
 
             {/* Monaco Editor */}
             <div className="flex-1 min-h-0 overflow-hidden">
-              <MonacoEditor
-                value={
-                  activeTab === "frontend"
-                    ? generatedCode.frontend
-                    : activeTab === "backend"
-                    ? generatedCode.backend
-                    : generatedCode.database
-                }
-                onChange={handleCodeChange}
-                language={activeTab === "database" ? "sql" : "typescript"}
-                height="calc(100vh - 380px)"
-              />
+              <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+                <MonacoEditor
+                  value={
+                    activeTab === "frontend"
+                      ? generatedCode.frontend
+                      : activeTab === "backend"
+                      ? generatedCode.backend
+                      : generatedCode.database
+                  }
+                  onChange={handleCodeChange}
+                  language={activeTab === "database" ? "sql" : "typescript"}
+                  height="calc(100vh - 380px)"
+                />
+              </Suspense>
             </div>
 
             {/* Action Bar */}

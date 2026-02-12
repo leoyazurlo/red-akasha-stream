@@ -17,6 +17,7 @@ import { DevPerformanceBadge } from "@/components/dev/DevPerformanceBadge";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import { InstallPWABanner } from "@/components/install-pwa-banner";
+import { OfflineBanner } from "@/components/offline-banner";
 
 // Eager load: landing page
 import Index from "./pages/Index";
@@ -154,6 +155,7 @@ const App = () => (
                     <UnreadMessagesAlert />
                     <AnalyticsTracker />
                     <InstallPWABanner />
+                    <OfflineBanner />
                     {import.meta.env.DEV && <DevPerformanceBadge />}
                   </GlobalChatProvider>
                 </ProfileEditDraftProvider>

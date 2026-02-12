@@ -274,12 +274,16 @@ export const Footer = () => {
                 <img 
                   src={logoRedAkasha} 
                   alt="Red Akasha" 
+                  width={202}
+                  height={48}
                   className="h-10 md:h-12 object-contain"
                 />
                 <div className="w-px h-8 bg-zinc-700" />
                 <img 
                   src={logoOpenSource} 
                   alt="Open Source" 
+                  width={160}
+                  height={40}
                   className="h-8 md:h-10 object-contain"
                 />
               </div>

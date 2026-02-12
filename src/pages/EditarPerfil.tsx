@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useAutoSave } from "@/hooks/use-auto-save";
+import { SaveIndicator } from "@/components/ui/save-indicator";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Header } from "@/components/Header";
@@ -157,6 +159,31 @@ const EditarPerfil = () => {
       fetchProfile();
     }
   }, [user, authLoading]);
+
+  // Auto-save draft to Supabase (debounced)
+  const autoSaveFn = useCallback(async (data: typeof formData) => {
+    if (!profileId || !user) return;
+    await supabase
+      .from("profile_details")
+      .update({
+        bio: data.bio.trim() || null,
+        instagram: data.instagram.trim() || null,
+        facebook: data.facebook.trim() || null,
+        linkedin: data.linkedin.trim() || null,
+        whatsapp: data.whatsapp.trim() || null,
+        email: data.email.trim() || null,
+        updated_at: new Date().toISOString()
+      } as any)
+      .eq("user_id", user.id)
+      .then(({ error }) => { if (error) throw error; });
+  }, [profileId, user]);
+
+  const { status: autoSaveStatus, retry: retryAutoSave } = useAutoSave({
+    saveFn: autoSaveFn,
+    data: formData,
+    delay: 2000,
+    enabled: !loading && !!profileId && draftRestoredRef.current,
+  });
 
   // Save draft on formData/newImages changes (after initial load)
   useEffect(() => {
@@ -526,9 +553,12 @@ const EditarPerfil = () => {
             Volver a Mi Perfil
           </Button>
 
-          <h1 className="text-3xl font-bold mb-8 bg-gradient-to-r from-primary-glow to-accent bg-clip-text text-transparent">
-            Editar Perfil
-          </h1>
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary-glow to-accent bg-clip-text text-transparent">
+              Editar Perfil
+            </h1>
+            <SaveIndicator status={autoSaveStatus} onRetry={retryAutoSave} />
+          </div>
 
           <form onSubmit={handleSubmit}>
             <Card className="bg-card/50 backdrop-blur-sm border-primary/20">

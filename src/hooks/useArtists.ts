@@ -77,19 +77,47 @@ export const useFollowArtist = () => {
         if (error) throw error;
       }
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["artists"] });
-      queryClient.invalidateQueries({ queryKey: ["isFollowing", variables.artistId] });
-      toast({
-        title: variables.isFollowing ? "Has dejado de seguir al artista" : "¡Ahora sigues a este artista!",
-        description: variables.isFollowing ? "" : "Recibirás actualizaciones de su contenido",
-      });
+    onMutate: async ({ artistId, isFollowing }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["isFollowing", artistId] });
+      await queryClient.cancelQueries({ queryKey: ["artists"] });
+
+      // Snapshot previous values
+      const previousIsFollowing = queryClient.getQueryData<boolean>(["isFollowing", artistId]);
+      const previousArtists = queryClient.getQueryData<Artist[]>(["artists"]);
+
+      // Optimistically update
+      queryClient.setQueryData(["isFollowing", artistId], !isFollowing);
+      queryClient.setQueriesData<Artist[]>({ queryKey: ["artists"] }, (old) =>
+        old?.map((a) =>
+          a.id === artistId
+            ? { ...a, followers_count: a.followers_count + (isFollowing ? -1 : 1) }
+            : a
+        )
+      );
+
+      return { previousIsFollowing, previousArtists, artistId };
     },
-    onError: (error: Error) => {
+    onError: (error: Error, variables, context) => {
+      // Rollback
+      if (context) {
+        queryClient.setQueryData(["isFollowing", context.artistId], context.previousIsFollowing);
+        queryClient.setQueriesData({ queryKey: ["artists"] }, context.previousArtists);
+      }
       toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
+      });
+    },
+    onSettled: (_, __, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["artists"] });
+      queryClient.invalidateQueries({ queryKey: ["isFollowing", variables.artistId] });
+    },
+    onSuccess: (_, variables) => {
+      toast({
+        title: variables.isFollowing ? "Has dejado de seguir al artista" : "¡Ahora sigues a este artista!",
+        description: variables.isFollowing ? "" : "Recibirás actualizaciones de su contenido",
       });
     },
   });

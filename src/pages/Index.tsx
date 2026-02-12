@@ -32,7 +32,7 @@ const Index = () => {
       return data.map((v) => ({
         id: v.id,
         title: v.title,
-        thumbnail: v.thumbnail || `https://img.youtube.com/vi/${v.youtube_id}/maxresdefault.jpg`,
+        thumbnail: v.thumbnail || `https://img.youtube.com/vi/${v.youtube_id}/mqdefault.jpg`,
         duration: v.duration,
         youtubeId: v.youtube_id,
       }));
@@ -54,7 +54,7 @@ const Index = () => {
       return data.map((v) => ({
         id: v.id,
         title: v.title,
-        thumbnail: v.thumbnail || `https://img.youtube.com/vi/${v.youtube_id}/maxresdefault.jpg`,
+        thumbnail: v.thumbnail || `https://img.youtube.com/vi/${v.youtube_id}/mqdefault.jpg`,
         duration: v.duration,
         youtubeId: v.youtube_id,
       }));
@@ -110,16 +110,7 @@ const Index = () => {
       {/* Cosmic background */}
       <CosmicBackground />
       
-      {/* Background pattern with soft opacity */}
-      <div 
-        className="fixed inset-0 opacity-0 pointer-events-none z-0"
-        style={{
-          backgroundImage: `url(${akashaBg})`,
-          backgroundSize: '800px 800px',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'repeat',
-        }}
-      />
+      {/* Background pattern placeholder - removed for performance */}
       
       <div className="relative z-10">
         <Header />

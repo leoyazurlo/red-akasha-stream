@@ -200,7 +200,7 @@ export default function ArtistProfile() {
       <div className="min-h-screen bg-background">
         <CosmicBackground />
         <Header />
-        <main className="relative pt-24 pb-16">
+        <main id="main-content" className="relative pt-24 pb-16">
           <ProfileSkeleton />
         </main>
         <Footer />
@@ -213,7 +213,7 @@ export default function ArtistProfile() {
       <div className="min-h-screen bg-background">
         <CosmicBackground />
         <Header />
-        <main className="relative pt-24 pb-16">
+        <main id="main-content" className="relative pt-24 pb-16">
           <div className="container mx-auto px-4 max-w-6xl text-center">
             <h1 className="text-3xl font-bold mb-4">Artista no encontrado</h1>
             <Button onClick={() => navigate('/artistas')}>
@@ -232,7 +232,7 @@ export default function ArtistProfile() {
       <CosmicBackground />
       <Header />
       
-      <main className="relative pt-24 pb-16">
+      <main id="main-content" className="relative pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-6xl">
           {/* Back Button */}
           <Button 

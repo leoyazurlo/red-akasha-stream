@@ -650,7 +650,7 @@ const Asociate = () => {
       <CosmicBackground />
       <Header />
       
-      <main className="relative pt-24 pb-16">
+      <main id="main-content" className="relative pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-4xl">
           {/* Hero Section */}
           <div className="text-center mb-12 animate-fade-in">

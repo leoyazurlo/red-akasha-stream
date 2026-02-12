@@ -60,7 +60,7 @@ const Forum = () => {
         <CosmicBackground />
         <div className="relative z-10">
           <Header />
-          <main className="pt-24 pb-16">
+          <main id="main-content" className="pt-24 pb-16">
             <div className="container mx-auto px-4 flex items-center justify-center min-h-[50vh]">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
@@ -78,7 +78,7 @@ const Forum = () => {
         <div className="relative z-10">
           <Header />
           
-          <main className="pt-20 sm:pt-24 pb-12 sm:pb-16">
+          <main id="main-content" className="pt-20 sm:pt-24 pb-12 sm:pb-16">
             <div className="container mx-auto px-4">
               <Card className="max-w-2xl mx-auto border-border bg-card/50 backdrop-blur-sm">
                 <CardHeader className="space-y-2">
@@ -122,7 +122,7 @@ const Forum = () => {
       <CosmicBackground />
       <Header />
       
-      <main className="container mx-auto px-4 py-6 pt-20 md:pt-24 pb-12 md:pb-16">
+      <main id="main-content" className="container mx-auto px-4 py-6 pt-20 md:pt-24 pb-12 md:pb-16">
         {/* Hero Section - Responsive text */}
         <section 
           ref={heroRef}

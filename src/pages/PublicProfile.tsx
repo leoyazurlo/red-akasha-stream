@@ -396,7 +396,7 @@ const PublicProfile = () => {
       <div className="min-h-screen bg-background relative">
         <CosmicBackground />
         <Header />
-        <main className="relative z-10 pt-24 pb-16">
+        <main id="main-content" className="relative z-10 pt-24 pb-16">
           <div className="container mx-auto px-4 flex items-center justify-center min-h-[50vh]">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
@@ -411,7 +411,7 @@ const PublicProfile = () => {
       <div className="min-h-screen bg-background relative">
         <CosmicBackground />
         <Header />
-        <main className="relative z-10 pt-24 pb-16">
+        <main id="main-content" className="relative z-10 pt-24 pb-16">
           <div className="container mx-auto px-4 text-center">
             <h1 className="text-2xl font-bold mb-4">Perfil no encontrado</h1>
             <p className="text-muted-foreground mb-6">Este perfil no existe o ha sido eliminado.</p>
@@ -431,7 +431,7 @@ const PublicProfile = () => {
       <CosmicBackground />
       <Header />
 
-      <main className="relative z-10 pt-24 pb-16">
+      <main id="main-content" className="relative z-10 pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-4xl">
           {/* Back Button */}
           <Button

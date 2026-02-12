@@ -432,7 +432,7 @@ const MiPerfil = () => {
       <div className="min-h-screen bg-background relative">
         <CosmicBackground />
         <Header />
-        <main className="relative z-10 pt-24 pb-16">
+        <main id="main-content" className="relative z-10 pt-24 pb-16">
           <div className="container mx-auto px-4 flex items-center justify-center min-h-[50vh]">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
@@ -447,7 +447,7 @@ const MiPerfil = () => {
       <div className="min-h-screen bg-background relative">
         <CosmicBackground />
         <Header />
-        <main className="relative z-10 pt-24 pb-16">
+        <main id="main-content" className="relative z-10 pt-24 pb-16">
           <div className="container mx-auto px-4 text-center">
             <h1 className="text-2xl font-bold mb-4">No tienes un perfil</h1>
             <p className="text-muted-foreground mb-6">Crea tu perfil para aparecer en el circuito.</p>
@@ -464,7 +464,7 @@ const MiPerfil = () => {
       <CosmicBackground />
       <Header />
 
-      <main className="relative z-10 pt-24 pb-16">
+      <main id="main-content" className="relative z-10 pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-4xl">
           <h1 className="text-3xl font-bold mb-8 bg-gradient-to-r from-primary-glow to-accent bg-clip-text text-transparent">
             Mi Perfil

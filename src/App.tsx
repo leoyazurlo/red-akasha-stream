@@ -75,6 +75,7 @@ const ProyectoRedAkasha = lazy(() => import("./pages/ProyectoRedAkasha"));
 const Contacto = lazy(() => import("./pages/Contacto"));
 const LiveMap = lazy(() => import("./pages/LiveMap"));
 const Suscripciones = lazy(() => import("./pages/Suscripciones"));
+const ArtistAnalytics = lazy(() => import("./pages/artist/ArtistAnalytics"));
 
 const queryClient = new QueryClient();
 
@@ -162,6 +163,7 @@ const AppShell = () => {
               <Route path="/proyecto" element={withEB(<ProyectoRedAkasha />)} />
               <Route path="/contacto" element={withEB(<Contacto />)} />
               <Route path="/suscripciones" element={withEB(<Suscripciones />)} />
+              <Route path="/artist/analytics" element={authRoute(<ArtistAnalytics />, "analytics")} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
               </Routes>

@@ -28,9 +28,10 @@ import { supabase } from "@/integrations/supabase/client";
    MessageSquare,
    DollarSign,
    Building2,
-   Bell,
-   Users
- } from "lucide-react";
+    Bell,
+    Users,
+    TrendingUp
+  } from "lucide-react";
 import { MessagesTab } from "@/components/profile/MessagesTab";
 import { NotificationsTab } from "@/components/profile/NotificationsTab";
 import { UserBankingForm } from "@/components/profile/UserBankingForm";
@@ -493,7 +494,7 @@ const MiPerfil = () => {
                   <h2 className="text-2xl font-bold">{profile.display_name}</h2>
                   <p className="text-muted-foreground">{profile.ciudad}, {profile.pais}</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button 
                     variant="outline" 
                     onClick={() => navigate("/editar-perfil")}
@@ -509,6 +510,14 @@ const MiPerfil = () => {
                   >
                     <Eye className="w-4 h-4 mr-2" />
                     Ver Público
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate("/artist/analytics")}
+                    className="border-cyan-400/50 text-cyan-400 hover:bg-cyan-400/20"
+                  >
+                    <TrendingUp className="w-4 h-4 mr-2" />
+                    Analytics
                   </Button>
                 </div>
               </div>

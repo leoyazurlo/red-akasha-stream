@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { AnalyticsEvents } from "@/lib/analytics";
 import { 
   Bot, 
   Send, 
@@ -78,6 +79,9 @@ export default function AkashaIA() {
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [proposals, setProposals] = useState<FeatureProposal[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Track studio opened
+  useEffect(() => { AnalyticsEvents.studioOpened(); }, []);
 
   useEffect(() => {
     if (!authLoading && !user) {

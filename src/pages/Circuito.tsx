@@ -2,6 +2,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { useState, useEffect, useMemo, useRef } from "react";
+import { AnalyticsEvents } from "@/lib/analytics";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -104,6 +105,8 @@ const Circuito = () => {
   // Ref for ProfileTechnicalSheet to transfer audio to MiniPlayer on minimize
   const profileSheetRef = useRef<ProfileTechnicalSheetRef>(null);
 
+  // Track map opened on mount
+  useEffect(() => { AnalyticsEvents.mapOpened(); }, []);
   // Handle minimize - transfer audio to MiniPlayer and close dialog
   const handleMinimize = () => {
     if (selectedProfile) {

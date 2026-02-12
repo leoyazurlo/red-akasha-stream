@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Share2 } from "lucide-react";
 import { notifySuccess } from "@/lib/notifications";
+import { AnalyticsEvents } from "@/lib/analytics";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -25,6 +26,7 @@ const ShareButtons = ({ videoId, title, description, thumbnailUrl }: ShareButton
 
   // Función para registrar el share en la base de datos
   const trackShare = async (platform: string) => {
+    AnalyticsEvents.contentShared(videoId, platform);
     try {
       const { error } = await supabase
         .from('content_shares')

@@ -44,6 +44,8 @@ export const ResponsiveImage = ({
       srcSet={finalSrcSet}
       sizes={finalSrcSet ? sizes : undefined}
       alt={alt}
+      loading="lazy"
+      decoding="async"
       className={cn('', className)}
       {...props}
     />

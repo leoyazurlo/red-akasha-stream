@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Play, Eye, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { LazyImage } from "@/components/ui/lazy-image";
 import { ContentWithCreator } from "@/hooks/useContentByCreatorProfile";
 
 interface ContentCardProps {
@@ -27,10 +28,14 @@ export const ContentCard = ({ content, categoryLabel, index }: ContentCardProps)
       {/* Thumbnail */}
       <div className="relative aspect-video overflow-hidden">
         {content.thumbnail_url ? (
-          <img
+          <LazyImage
             src={content.thumbnail_url}
             alt={content.title}
+            fallbackIcon="music"
+            width={640}
+            height={360}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            containerClassName="w-full h-full"
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">

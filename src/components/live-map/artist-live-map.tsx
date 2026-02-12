@@ -326,9 +326,9 @@ export function ArtistLiveMap() {
 
             <Button
               className="w-full"
-              onClick={() => navigate(`/perfil/${selectedProfile.profile.user_id}`)}
+              onClick={() => navigate(`/circuito/perfil/${selectedProfile.profile.id}`)}
             >
-              <ExternalLink className="h-4 w-4 mr-2" /> Ver perfil
+              <ExternalLink className="h-4 w-4 mr-2" /> Ver perfil comercial
             </Button>
           </div>
         )}

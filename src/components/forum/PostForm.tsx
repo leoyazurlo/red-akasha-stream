@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { postSchema, PostFormData } from "@/lib/validations/forum";
-import { useToast } from "@/hooks/use-toast";
+import { notifySuccess, notifyError } from "@/lib/notifications";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -29,7 +29,6 @@ export const PostForm = ({
   onSuccess,
   placeholder = "Escribe tu respuesta (1-5,000 caracteres)",
 }: PostFormProps) => {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const form = useForm<PostFormData>({
@@ -66,20 +65,13 @@ export const PostForm = ({
       return post;
     },
     onSuccess: () => {
-      toast({
-        title: "Respuesta publicada",
-        description: "Tu respuesta ha sido publicada exitosamente",
-      });
+      notifySuccess("Respuesta publicada", "Tu respuesta ha sido publicada exitosamente");
       queryClient.invalidateQueries({ queryKey: ["forum-posts", threadId] });
       form.reset();
       onSuccess?.();
     },
     onError: (error) => {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      notifyError("Error al publicar respuesta", error instanceof Error ? error : undefined);
     },
   });
 

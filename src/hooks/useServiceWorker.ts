@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useToast } from './use-toast';
+import { notifySuccess, notifyError } from '@/lib/notifications';
 
 interface ServiceWorkerState {
   isSupported: boolean;
@@ -9,7 +9,6 @@ interface ServiceWorkerState {
 }
 
 export const useServiceWorker = () => {
-  const { toast } = useToast();
   const [state, setState] = useState<ServiceWorkerState>({
     isSupported: 'serviceWorker' in navigator,
     isRegistered: false,
@@ -42,13 +41,10 @@ export const useServiceWorker = () => {
         
         if (newWorker) {
           newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               setState((prev) => ({ ...prev, isUpdateAvailable: true }));
               
-              toast({
-                title: 'Actualización disponible',
-                description: 'Hay una nueva versión disponible. Recarga la página para actualizar.',
-              });
+              notifySuccess('Actualización disponible', 'Hay una nueva versión disponible. Recarga la página para actualizar.');
             }
           });
         }
@@ -81,11 +77,7 @@ export const useServiceWorker = () => {
 
   const clearCache = async (): Promise<boolean> => {
     if (!navigator.serviceWorker.controller) {
-      toast({
-        title: 'Error',
-        description: 'Service Worker no está activo',
-        variant: 'destructive',
-      });
+      notifyError('Service Worker no está activo');
       return false;
     }
 
@@ -94,14 +86,11 @@ export const useServiceWorker = () => {
       
       messageChannel.port1.onmessage = (event) => {
         if (event.data && event.data.success) {
-          setState((prev) => ({ ...prev, cacheSize: 0 }));
-          
-          toast({
-            title: 'Caché limpiado',
-            description: 'Se ha limpiado el caché de thumbnails',
-          });
-          
-          resolve(true);
+           setState((prev) => ({ ...prev, cacheSize: 0 }));
+           
+           notifySuccess('Caché limpiado', 'Se ha limpiado el caché de thumbnails');
+           
+           resolve(true);
         } else {
           resolve(false);
         }

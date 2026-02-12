@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { notifyError } from "@/lib/notifications";
 import { useFavorites } from "@/hooks/useFavorites";
 import { Play, Search, Loader2, TrendingUp, Sparkles, Heart, ListPlus, Video, Music } from "lucide-react";
 import { AddToPlaylistDialog } from "@/components/AddToPlaylistDialog";
@@ -79,7 +79,6 @@ const OnDemand = () => {
   const [filterType, setFilterType] = useState<string>("all");
   const [showAddToPlaylist, setShowAddToPlaylist] = useState(false);
   const [selectedContentId, setSelectedContentId] = useState<string | null>(null);
-  const { toast } = useToast();
   const { toggleFavorite, isFavorite, loading: favLoading } = useFavorites();
 
   useEffect(() => {
@@ -145,11 +144,7 @@ const OnDemand = () => {
       setContents(data || []);
     } catch (error) {
       console.error('Error fetching content:', error);
-      toast({
-        title: t('common.error'),
-        description: t('onDemand.errorLoadingContent'),
-        variant: "destructive",
-      });
+      notifyError('Error al cargar contenido', error instanceof Error ? error : undefined);
     } finally {
       setLoading(false);
     }

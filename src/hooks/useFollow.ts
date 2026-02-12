@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { notifyError, notifySuccess } from '@/lib/notifications';
 
 /** Resultado del hook useFollow */
 interface UseFollowResult {
@@ -37,7 +37,6 @@ export const useFollow = (followingId: string | null): UseFollowResult => {
   const [isLoading, setIsLoading] = useState(false);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
-  const { toast } = useToast();
 
   useEffect(() => {
     if (!followingId) return;
@@ -81,11 +80,7 @@ export const useFollow = (followingId: string | null): UseFollowResult => {
     
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      toast({
-        title: "Error",
-        description: "Debes iniciar sesión para seguir usuarios",
-        variant: "destructive",
-      });
+      notifyError("Debes iniciar sesión para seguir usuarios");
       return;
     }
 
@@ -103,10 +98,7 @@ export const useFollow = (followingId: string | null): UseFollowResult => {
 
         setIsFollowing(false);
         setFollowersCount(prev => Math.max(0, prev - 1));
-        toast({
-          title: "Dejaste de seguir",
-          description: "Ya no seguirás las actualizaciones de este usuario",
-        });
+        notifySuccess("Dejaste de seguir", "Ya no seguirás las actualizaciones de este usuario");
       } else {
         const { error } = await supabase
           .from('user_follows')
@@ -119,18 +111,11 @@ export const useFollow = (followingId: string | null): UseFollowResult => {
 
         setIsFollowing(true);
         setFollowersCount(prev => prev + 1);
-        toast({
-          title: "¡Siguiendo!",
-          description: "Ahora verás las actualizaciones de este usuario",
-        });
+        notifySuccess("¡Siguiendo!", "Ahora verás las actualizaciones de este usuario");
       }
     } catch (error) {
       console.error('Error toggling follow:', error);
-      toast({
-        title: "Error",
-        description: "No se pudo completar la acción",
-        variant: "destructive",
-      });
+      notifyError("No se pudo completar la acción", error instanceof Error ? error : undefined);
     } finally {
       setIsLoading(false);
     }

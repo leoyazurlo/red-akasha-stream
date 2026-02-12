@@ -77,13 +77,23 @@ export const useFavorites = (): UseFavoritesResult => {
       return;
     }
 
+    const wasFavorite = favorites.has(contentId);
+
+    // Optimistic update
+    setFavorites(prev => {
+      const newSet = new Set(prev);
+      if (wasFavorite) {
+        newSet.delete(contentId);
+      } else {
+        newSet.add(contentId);
+      }
+      return newSet;
+    });
+
     setLoading(true);
 
     try {
-      const isFavorite = favorites.has(contentId);
-
-      if (isFavorite) {
-        // Remove from favorites
+      if (wasFavorite) {
         const { error } = await supabase
           .from('user_favorites')
           .delete()
@@ -92,25 +102,17 @@ export const useFavorites = (): UseFavoritesResult => {
 
         if (error) throw error;
 
-        // Decrement likes_count
         try {
           await supabase.rpc('decrement_likes' as any, { content_id: contentId });
         } catch (e) {
           console.error('Error decrementing likes:', e);
         }
 
-        setFavorites(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(contentId);
-          return newSet;
-        });
-
         toast({
           title: "Eliminado de favoritos",
           description: "El video fue eliminado de tu lista",
         });
       } else {
-        // Add to favorites
         const { error } = await supabase
           .from('user_favorites')
           .insert({
@@ -120,14 +122,11 @@ export const useFavorites = (): UseFavoritesResult => {
 
         if (error) throw error;
 
-        // Increment likes_count
         try {
           await supabase.rpc('increment_likes' as any, { content_id: contentId });
         } catch (e) {
           console.error('Error incrementing likes:', e);
         }
-
-        setFavorites(prev => new Set(prev).add(contentId));
 
         toast({
           title: "Agregado a favoritos",
@@ -135,6 +134,16 @@ export const useFavorites = (): UseFavoritesResult => {
         });
       }
     } catch (error) {
+      // Rollback on error
+      setFavorites(prev => {
+        const newSet = new Set(prev);
+        if (wasFavorite) {
+          newSet.add(contentId);
+        } else {
+          newSet.delete(contentId);
+        }
+        return newSet;
+      });
       console.error('Error toggling favorite:', error);
       toast({
         title: "Error",

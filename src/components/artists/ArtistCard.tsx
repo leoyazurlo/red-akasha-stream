@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Heart, Star, Share2 } from "lucide-react";
 import { LazyImage } from "@/components/ui/lazy-image";
 import { Artist, useFollowArtist, useIsFollowing, useRateArtist, useUserRating } from "@/hooks/useArtists";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -22,8 +22,18 @@ export const ArtistCard = ({ artist, genreLabel, index }: ArtistCardProps) => {
   const followMutation = useFollowArtist();
   const rateMutation = useRateArtist();
   const [showRating, setShowRating] = useState(false);
+  const followBtnRef = useRef<HTMLButtonElement>(null);
 
   const handleFollow = () => {
+    // Trigger pop animation
+    followBtnRef.current?.animate(
+      [
+        { transform: "scale(1)" },
+        { transform: "scale(1.3)" },
+        { transform: "scale(1)" },
+      ],
+      { duration: 300, easing: "ease-out" }
+    );
     followMutation.mutate({ artistId: artist.id, isFollowing });
   };
 
@@ -139,9 +149,10 @@ export const ArtistCard = ({ artist, genreLabel, index }: ArtistCardProps) => {
               </Button>
 
               <Button
+                ref={followBtnRef}
                 variant={isFollowing ? "default" : "ghost"}
                 size="sm"
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 transition-transform"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleFollow();

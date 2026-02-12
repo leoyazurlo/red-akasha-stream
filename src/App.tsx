@@ -73,6 +73,7 @@ const AkashaIA = lazy(() => import("./pages/AkashaIA"));
 const VideoDetail = lazy(() => import("./pages/VideoDetail"));
 const ProyectoRedAkasha = lazy(() => import("./pages/ProyectoRedAkasha"));
 const Contacto = lazy(() => import("./pages/Contacto"));
+const LiveMap = lazy(() => import("./pages/LiveMap"));
 const Suscripciones = lazy(() => import("./pages/Suscripciones"));
 
 const queryClient = new QueryClient();
@@ -133,6 +134,7 @@ const AppShell = () => {
               <Route path="/artistas" element={withEB(<Artists />, "artist")} />
               <Route path="/artistas/:id" element={withEB(<ArtistProfile />, "artist")} />
               <Route path="/perfil/:id" element={withEB(<UserProfile />)} />
+              <Route path="/live" element={withEB(<LiveMap />, "map")} />
               <Route path="/admin" element={adminRoute(<Admin />)} />
               <Route path="/admin/categories" element={adminRoute(<AdminCategories />)} />
               <Route path="/admin/streams" element={adminRoute(<AdminStreams />, "stream")} />

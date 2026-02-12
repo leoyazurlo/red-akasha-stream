@@ -455,6 +455,7 @@ export const OnDemandPlayer = ({
                   step={0.1}
                   onValueChange={handleSeek}
                   className="cursor-pointer"
+                  aria-label="Progreso de reproducción"
                 />
                 <div className="flex justify-between text-xs text-white/70 mt-1 font-sans font-light tracking-wide">
                   <span>{formatTime(currentTime)}</span>
@@ -473,6 +474,7 @@ export const OnDemandPlayer = ({
                       onClick={playlistContext.onPrevious}
                       disabled={!playlistContext.onPrevious || playlistContext.currentIndex === 0}
                       className="text-white hover:bg-white/20 disabled:opacity-30"
+                      aria-label="Pista anterior"
                     >
                       <SkipBack className="w-5 h-5" />
                     </Button>
@@ -483,6 +485,7 @@ export const OnDemandPlayer = ({
                     variant="ghost"
                     onClick={togglePlayPause}
                     className="text-white hover:bg-white/20"
+                    aria-label={isPlaying ? "Pausar" : "Reproducir"}
                   >
                     {isPlaying ? (
                       <Pause className="w-6 h-6" />
@@ -499,6 +502,7 @@ export const OnDemandPlayer = ({
                       onClick={playlistContext.onNext}
                       disabled={!playlistContext.onNext || playlistContext.currentIndex === playlistContext.items.length - 1}
                       className="text-white hover:bg-white/20 disabled:opacity-30"
+                      aria-label="Pista siguiente"
                     >
                       <SkipForward className="w-5 h-5" />
                     </Button>
@@ -510,6 +514,7 @@ export const OnDemandPlayer = ({
                       variant="ghost"
                       onClick={toggleMute}
                       className="text-white hover:bg-white/20"
+                      aria-label={isMuted ? "Activar sonido" : "Silenciar"}
                     >
                       {isMuted ? (
                         <VolumeX className="w-5 h-5" />
@@ -524,6 +529,7 @@ export const OnDemandPlayer = ({
                         max={1}
                         step={0.01}
                         onValueChange={handleVolumeChange}
+                        aria-label="Volumen"
                       />
                     </div>
                   </div>

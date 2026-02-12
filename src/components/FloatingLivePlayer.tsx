@@ -53,6 +53,7 @@ export const FloatingLivePlayer = () => {
             variant="ghost"
             onClick={() => setIsMinimized(!isMinimized)}
             className="h-6 w-6"
+            aria-label={isMinimized ? "Expandir reproductor" : "Minimizar reproductor"}
           >
             {isMinimized ? <Maximize2 className="h-3 w-3" /> : <Minimize2 className="h-3 w-3" />}
           </Button>
@@ -61,6 +62,7 @@ export const FloatingLivePlayer = () => {
             variant="ghost"
             onClick={closeLivePlayer}
             className="h-6 w-6 hover:text-destructive"
+            aria-label="Cerrar reproductor en vivo"
           >
             <X className="h-3 w-3" />
           </Button>
@@ -77,6 +79,7 @@ export const FloatingLivePlayer = () => {
               className="absolute inset-0 w-full h-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
+              title={`Stream en vivo: ${liveData.title}`}
             />
           ) : (
             <video
@@ -105,6 +108,7 @@ export const FloatingLivePlayer = () => {
             variant="ghost"
             onClick={() => setIsMuted(!isMuted)}
             className="h-7"
+            aria-label={isMuted ? "Activar sonido" : "Silenciar"}
           >
             {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
           </Button>

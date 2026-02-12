@@ -21,6 +21,8 @@ import { OfflineBanner } from "@/components/offline-banner";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { CommandPalette } from "@/components/command-palette";
 import { useCommandPalette } from "@/hooks/use-command-palette";
+import { LiveRegionProvider } from "@/components/ui/live-region";
+import { SkipLink } from "@/components/ui/skip-link";
 
 // Eager load: landing page
 import Index from "./pages/Index";
@@ -109,10 +111,12 @@ const AppShell = () => {
   const commandPalette = useCommandPalette();
 
   return (
+    <LiveRegionProvider>
     <LiveStreamProvider>
       <GeoRestrictionGuard>
         <ProfileEditDraftProvider>
           <GlobalChatProvider>
+            <SkipLink />
             <Suspense fallback={<PageLoader />}>
               <Routes>
               <Route path="/" element={withEB(<Index />)} />
@@ -184,6 +188,7 @@ const AppShell = () => {
         </ProfileEditDraftProvider>
       </GeoRestrictionGuard>
     </LiveStreamProvider>
+    </LiveRegionProvider>
   );
 };
 

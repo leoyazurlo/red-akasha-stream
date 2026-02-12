@@ -152,12 +152,15 @@ export const VideoPlayer = () => {
                 className="absolute inset-0 w-full h-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
+                title="Stream en vivo de Red Akasha"
               />
               {/* Mute/Unmute overlay button when muted */}
               {isMuted && (
                 <div 
                   className="absolute inset-0 flex items-center justify-center cursor-pointer z-10"
                   onClick={toggleMute}
+                  role="button"
+                  aria-label="Activar sonido"
                 >
                   <div className="flex flex-col items-center gap-2 animate-pulse">
                     <div className="w-16 h-16 sm:w-20 sm:h-20 bg-black/60 rounded-full flex items-center justify-center hover:bg-black/80 transition-all border-2 border-primary/50">
@@ -203,6 +206,7 @@ export const VideoPlayer = () => {
               size="icon"
               onClick={toggleFullscreen}
               className="absolute bottom-4 right-4 text-white hover:bg-white/20 z-20"
+              aria-label="Pantalla completa"
             >
               <Maximize className="w-5 h-5" />
             </Button>

@@ -5,7 +5,7 @@
 
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { notifySuccess, notifyError, notifyWarning } from "@/lib/notifications";
 import { getAccessToken, invokeEdgeFunction } from "@/lib/api";
 import type { GeneratedCode, ChatMessage, ProjectFile, UploadedFile } from "@/lib/types";
 
@@ -193,7 +193,7 @@ export function useAppBuilder() {
           }]);
         }
 
-        toast.success("Código generado exitosamente");
+        notifySuccess("Código generado exitosamente");
       } else {
         // Flujo de chat conversacional
         const response = await fetch(
@@ -262,7 +262,7 @@ export function useAppBuilder() {
       }
     } catch (error) {
       console.error("Error:", error);
-      toast.error(error instanceof Error ? error.message : "Error al procesar mensaje");
+      notifyError("Error al procesar mensaje", error);
       setLifecycleStage("draft");
     } finally {
       setIsLoading(false);
@@ -274,7 +274,7 @@ export function useAppBuilder() {
    */
   const validateCode = useCallback(async () => {
     if (!proposalId) {
-      toast.error("Genera código primero");
+      notifyWarning("Genera código primero");
       return;
     }
 
@@ -298,13 +298,13 @@ export function useAppBuilder() {
 
       if (data.passed) {
         setLifecycleStage("pending_approval");
-        toast.success(`Validación exitosa (${data.score}/100)`);
+        notifySuccess(`Validación exitosa (${data.score}/100)`);
       } else {
         setLifecycleStage("draft");
-        toast.error(`Validación fallida (${data.score}/100)`);
+        notifyError(`Validación fallida (${data.score}/100)`);
       }
     } catch {
-      toast.error("Error en validación");
+      notifyError("Error en validación");
       setLifecycleStage("draft");
     } finally {
       setIsValidating(false);
@@ -316,7 +316,7 @@ export function useAppBuilder() {
    */
   const createPullRequest = useCallback(async () => {
     if (!proposalId) {
-      toast.error("No hay propuesta activa");
+      notifyWarning("No hay propuesta activa");
       return;
     }
 
@@ -338,7 +338,7 @@ export function useAppBuilder() {
       if (data.error) throw new Error(data.error);
 
       setLifecycleStage("merged");
-      toast.success("Pull Request creado");
+      notifySuccess("Pull Request creado");
       setMessages((prev) => [
         ...prev,
         {
@@ -347,7 +347,7 @@ export function useAppBuilder() {
         },
       ]);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Error");
+      notifyError("Error al crear PR", err);
     } finally {
       setIsCreatingPR(false);
     }

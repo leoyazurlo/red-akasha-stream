@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useToast } from "@/hooks/use-toast";
+import { notifySuccess, notifyError } from "@/lib/notifications";
 import { supabase } from "@/integrations/supabase/client";
 import logoRedAkasha from "@/assets/logo-red-akasha-footer.png";
 import logoOpenSource from "@/assets/logo-open-source.png";
@@ -32,7 +32,7 @@ const defaultSocial: SocialConfig = {
 export const Footer = () => {
   const { t } = useTranslation();
   const { elementRef, isVisible } = useScrollAnimation({ threshold: 0.1 });
-  const { toast } = useToast();
+  
   const [copied, setCopied] = useState(false);
   const [socialLinks, setSocialLinks] = useState<SocialConfig>(defaultSocial);
 
@@ -114,17 +114,10 @@ export const Footer = () => {
         try {
           await navigator.clipboard.writeText(currentUrl);
           setCopied(true);
-          toast({
-            title: "Enlace copiado",
-            description: "El enlace ha sido copiado al portapapeles",
-          });
+          notifySuccess("Enlace copiado", "El enlace ha sido copiado al portapapeles");
           setTimeout(() => setCopied(false), 2000);
         } catch (err) {
-          toast({
-            title: "Error",
-            description: "No se pudo copiar el enlace",
-            variant: "destructive",
-          });
+          notifyError("No se pudo copiar el enlace", err);
         }
       }
     },

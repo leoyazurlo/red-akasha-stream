@@ -1,4 +1,3 @@
-import * as XLSX from 'xlsx';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -7,11 +6,12 @@ export interface ExportSheet {
   data: Record<string, unknown>[];
 }
 
-export const exportToExcel = (
+export const exportToExcel = async (
   sheets: ExportSheet[],
   filename: string,
   includeTimestamp = true
 ) => {
+  const XLSX = await import('xlsx');
   const wb = XLSX.utils.book_new();
 
   sheets.forEach(({ name, data }) => {
@@ -25,7 +25,7 @@ export const exportToExcel = (
         ) + 2
       }));
       ws['!cols'] = colWidths;
-      XLSX.utils.book_append_sheet(wb, ws, name.substring(0, 31)); // Max 31 chars for sheet name
+      XLSX.utils.book_append_sheet(wb, ws, name.substring(0, 31));
     }
   });
 
@@ -46,7 +46,6 @@ export const exportToCSV = (
     ...data.map(row =>
       headers.map(header => {
         const value = row[header];
-        // Escapar comillas y envolver en comillas si contiene comas
         const strValue = String(value ?? '');
         if (strValue.includes(',') || strValue.includes('"') || strValue.includes('\n')) {
           return `"${strValue.replace(/"/g, '""')}"`;

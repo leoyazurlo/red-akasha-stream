@@ -7,7 +7,7 @@ import { Loader2, Share2, TrendingUp, Video, Users, Download, Filter, X } from "
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import * as XLSX from 'xlsx';
+// XLSX is loaded dynamically in exportToExcel
 import { Top100Videos } from "@/components/admin/Top100Videos";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -367,6 +367,7 @@ export default function ShareAnalytics() {
       if (error) throw error;
 
       // Crear workbook con múltiples hojas
+      const XLSX = await import('xlsx');
       const wb = XLSX.utils.book_new();
 
       // Hoja 1: Resumen

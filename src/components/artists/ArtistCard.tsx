@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart, Star, Share2 } from "lucide-react";
+import { LazyImage } from "@/components/ui/lazy-image";
 import { Artist, useFollowArtist, useIsFollowing, useRateArtist, useUserRating } from "@/hooks/useArtists";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -61,10 +62,14 @@ export const ArtistCard = ({ artist, genreLabel, index }: ArtistCardProps) => {
       <CardContent className="p-0">
         {/* Artist Image */}
         <div className="relative aspect-square overflow-hidden">
-          <img
+          <LazyImage
             src={artist.avatar_url || "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&h=400&fit=crop"}
             alt={`Foto de perfil de ${artist.name}`}
+            fallbackIcon="avatar"
+            width={400}
+            height={400}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            containerClassName="w-full h-full"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           

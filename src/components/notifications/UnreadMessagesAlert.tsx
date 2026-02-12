@@ -1,14 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { notifyInfo } from '@/lib/notifications';
 import { useGlobalChat } from '@/contexts/GlobalChatContext';
 import { MessageSquare } from 'lucide-react';
 
 export const UnreadMessagesAlert = () => {
   const { user } = useAuth();
   const { unreadMessagesCount, unreadMessages, isLoading } = useNotifications();
-  const { toast } = useToast();
   const { openChat } = useGlobalChat();
   const hasShownAlert = useRef(false);
   const lastUserId = useRef<string | null>(null);
@@ -33,32 +32,22 @@ export const UnreadMessagesAlert = () => {
       // Get the most recent unread conversation
       const mostRecent = unreadMessages[0];
       
-      toast({
-        title: `💬 Tienes ${unreadMessagesCount} mensaje${unreadMessagesCount > 1 ? 's' : ''} sin leer`,
-        description: mostRecent 
+      notifyInfo(
+        `💬 Tienes ${unreadMessagesCount} mensaje${unreadMessagesCount > 1 ? 's' : ''} sin leer`,
+        mostRecent 
           ? `Último mensaje de ${mostRecent.senderName}` 
-          : "Haz clic para ver tus mensajes",
-        duration: 8000,
-        action: (
-          <button
-            onClick={() => {
-              if (mostRecent) {
-                openChat({
-                  id: mostRecent.senderId,
-                  name: mostRecent.senderName,
-                  avatar: mostRecent.senderAvatar,
-                });
-              }
-            }}
-            className="px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-2"
-          >
-            <MessageSquare className="w-4 h-4" />
-            Abrir Chat
-          </button>
-        ),
-      });
+          : "Haz clic para ver tus mensajes"
+      );
+      
+      if (mostRecent) {
+        openChat({
+          id: mostRecent.senderId,
+          name: mostRecent.senderName,
+          avatar: mostRecent.senderAvatar,
+        });
+      }
     }
-  }, [user, unreadMessagesCount, unreadMessages, isLoading, toast, openChat]);
+  }, [user, unreadMessagesCount, unreadMessages, isLoading, openChat]);
 
   return null;
 };

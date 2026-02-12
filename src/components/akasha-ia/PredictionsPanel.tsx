@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { notifySuccess, notifyError, notifyLoading, dismissNotification } from "@/lib/notifications";
 import { 
   TrendingUp, 
   Users, 

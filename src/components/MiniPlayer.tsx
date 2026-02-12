@@ -172,6 +172,7 @@ export const MiniPlayer = () => {
             variant="ghost"
             onClick={() => setIsMinimized(!isMinimized)}
             className="h-7 w-7"
+            aria-label={isMinimized ? "Expandir reproductor" : "Minimizar reproductor"}
           >
             {isMinimized ? <Maximize2 className="h-3.5 w-3.5" /> : <Minimize2 className="h-3.5 w-3.5" />}
           </Button>
@@ -180,6 +181,7 @@ export const MiniPlayer = () => {
             variant="ghost"
             onClick={closeMiniPlayer}
             className="h-7 w-7 hover:text-destructive"
+            aria-label="Cerrar reproductor"
           >
             <X className="h-3.5 w-3.5" />
           </Button>
@@ -216,6 +218,7 @@ export const MiniPlayer = () => {
             step={0.1}
             onValueChange={handleSeek}
             className="cursor-pointer"
+            aria-label="Progreso de reproducción"
           />
           <div className="flex justify-between text-xs text-muted-foreground mt-1">
             <span>{formatTime(currentTime)}</span>
@@ -233,6 +236,7 @@ export const MiniPlayer = () => {
                 onClick={playPrevious}
                 disabled={currentTrackIndex === 0}
                 className="h-8 w-8"
+                aria-label="Pista anterior"
               >
                 <SkipBack className="h-4 w-4" />
               </Button>
@@ -242,6 +246,7 @@ export const MiniPlayer = () => {
               size="icon"
               onClick={togglePlayPause}
               className="h-10 w-10 rounded-full bg-gradient-primary text-primary-foreground hover:shadow-glow"
+              aria-label={isPlaying ? "Pausar" : "Reproducir"}
             >
               {isPlaying ? (
                 <Pause className="h-5 w-5" />
@@ -257,6 +262,7 @@ export const MiniPlayer = () => {
                 onClick={playNext}
                 disabled={currentTrackIndex === content.playlist!.length - 1}
                 className="h-8 w-8"
+                aria-label="Pista siguiente"
               >
                 <SkipForward className="h-4 w-4" />
               </Button>
@@ -269,6 +275,7 @@ export const MiniPlayer = () => {
               variant="ghost"
               onClick={toggleMute}
               className="h-7 w-7"
+              aria-label={isMuted ? "Activar sonido" : "Silenciar"}
             >
               {isMuted ? (
                 <VolumeX className="h-3.5 w-3.5" />
@@ -283,6 +290,7 @@ export const MiniPlayer = () => {
               step={0.01}
               onValueChange={handleVolumeChange}
               className="flex-1"
+              aria-label="Volumen"
             />
           </div>
         </div>

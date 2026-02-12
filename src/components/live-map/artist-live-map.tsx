@@ -64,10 +64,39 @@ export function ArtistLiveMap() {
   const [liveStreams, setLiveStreams] = useState<LiveStream[]>([]);
   const [selectedStream, setSelectedStream] = useState<SelectedStream | null>(null);
   const [mapReady, setMapReady] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+  const [mapEnabled, setMapEnabled] = useState(false);
+  const [loadingConfig, setLoadingConfig] = useState(true);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  const token = import.meta.env.VITE_MAPBOX_TOKEN;
+  // Load mapbox config from platform settings
+  useEffect(() => {
+    const loadMapConfig = async () => {
+      try {
+        const { data } = await supabase
+          .from("platform_payment_settings")
+          .select("setting_value")
+          .eq("setting_key", "platform_config")
+          .single();
+
+        if (data?.setting_value) {
+          const config = data.setting_value as Record<string, unknown>;
+          const dbToken = config.mapbox_token as string;
+          const enabled = config.mapbox_enabled as boolean;
+          if (dbToken) setToken(dbToken);
+          setMapEnabled(enabled ?? false);
+        }
+      } catch {
+        // fallback: try env var
+        const envToken = import.meta.env.VITE_MAPBOX_TOKEN;
+        if (envToken) setToken(envToken);
+      } finally {
+        setLoadingConfig(false);
+      }
+    };
+    loadMapConfig();
+  }, []);
 
   // Fetch live streams with profile data
   const fetchLiveStreams = useCallback(async () => {
@@ -228,6 +257,17 @@ export function ArtistLiveMap() {
     });
   }, [liveStreams, mapReady]);
 
+  if (loadingConfig) {
+    return (
+      <div className="flex items-center justify-center h-[600px] bg-card/50 backdrop-blur-sm rounded-lg border border-border">
+        <div className="text-center p-8">
+          <Radio className="h-12 w-12 text-muted-foreground mx-auto mb-4 animate-pulse" />
+          <p className="text-muted-foreground text-sm">Cargando mapa...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!token) {
     return (
       <div className="flex items-center justify-center h-[600px] bg-card/50 backdrop-blur-sm rounded-lg border border-border">
@@ -235,7 +275,8 @@ export function ArtistLiveMap() {
           <Radio className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">Mapa no disponible</h3>
           <p className="text-muted-foreground text-sm">
-            Se requiere configurar el token de Mapbox (VITE_MAPBOX_TOKEN).
+            El token de Mapbox debe configurarse desde el panel de administración<br/>
+            (Configuración → Mapa).
           </p>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,7 @@ import {
   Building2,
   Info
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MonetizationSectionProps {
   isFree: boolean;
@@ -102,6 +104,24 @@ export const MonetizationSection = ({
   onPaymentMethodsChange,
 }: MonetizationSectionProps) => {
   const { t } = useTranslation();
+  const [authorPct, setAuthorPct] = useState(70);
+  const [platformPct, setPlatformPct] = useState(30);
+
+  useEffect(() => {
+    const fetchRevenueSplit = async () => {
+      const { data } = await supabase
+        .from('platform_payment_settings')
+        .select('setting_value')
+        .eq('setting_key', 'single_content_purchase')
+        .single();
+      if (data?.setting_value) {
+        const val = data.setting_value as Record<string, unknown>;
+        if (val.author_percentage) setAuthorPct(Number(val.author_percentage));
+        if (val.platform_percentage) setPlatformPct(Number(val.platform_percentage));
+      }
+    };
+    fetchRevenueSplit();
+  }, []);
   
   const suggestedPrice = contentType ? suggestedPrices[contentType] : null;
   
@@ -134,8 +154,8 @@ export const MonetizationSection = ({
       <Alert className="border-primary/30 bg-primary/5">
         <Info className="h-4 w-4 text-primary" />
         <AlertDescription className="text-sm">
-          <strong>Reparto de ingresos:</strong> Por cada venta recibirás el <span className="text-primary font-semibold">70%</span> del precio. 
-          El <span className="text-muted-foreground">30%</span> restante corresponde a Red Akasha por gastos de plataforma y transacción.
+          <strong>Reparto de ingresos:</strong> Por cada venta recibirás el <span className="text-primary font-semibold">{authorPct}%</span> del precio. 
+          El <span className="text-muted-foreground">{platformPct}%</span> restante corresponde a Red Akasha por gastos de plataforma y transacción.
         </AlertDescription>
       </Alert>
 

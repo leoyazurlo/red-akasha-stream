@@ -154,8 +154,8 @@ export const MonetizationSection = ({
       <Alert className="border-primary/30 bg-primary/5">
         <Info className="h-4 w-4 text-primary" />
         <AlertDescription className="text-sm">
-          <strong>Reparto de ingresos:</strong> Por cada venta recibirás el <span className="text-primary font-semibold">{authorPct}%</span> del precio. 
-          El <span className="text-muted-foreground">{platformPct}%</span> restante corresponde a Red Akasha por gastos de plataforma y transacción.
+          <strong>Reparto de ingresos:</strong> Por cada venta recibirás el <span className="text-cyan-400 font-semibold">{authorPct}%</span> del precio. 
+          El <span className="text-cyan-400 font-semibold">{platformPct}%</span> restante corresponde a Red Akasha por gastos de plataforma y transacción.
         </AlertDescription>
       </Alert>
 

@@ -90,12 +90,14 @@ export const Header = () => {
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="start" className="z-50 bg-popover">
-                      <DropdownMenuItem asChild className="cursor-pointer hover:!bg-cyan-500/20 hover:!text-cyan-400 focus:!bg-cyan-500/20 focus:!text-cyan-400 transition-all duration-200">
-                        <Link to={item.href} className="flex items-center w-full hover:text-cyan-400">
-                          <Users className="mr-2 h-4 w-4" />
-                          Perfiles
-                        </Link>
-                      </DropdownMenuItem>
+                      {item.href === "/circuito" && (
+                        <DropdownMenuItem asChild className="cursor-pointer hover:!bg-cyan-500/20 hover:!text-cyan-400 focus:!bg-cyan-500/20 focus:!text-cyan-400 transition-all duration-200">
+                          <Link to={item.href} className="flex items-center w-full hover:text-cyan-400">
+                            <Users className="mr-2 h-4 w-4" />
+                            Perfiles
+                          </Link>
+                        </DropdownMenuItem>
+                      )}
                       {item.children.map((child) => {
                         const ChildIcon = child.icon;
                         return (

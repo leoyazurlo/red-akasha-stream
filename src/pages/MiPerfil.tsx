@@ -30,13 +30,15 @@ import { supabase } from "@/integrations/supabase/client";
    Building2,
     Bell,
     Users,
-    TrendingUp
+    TrendingUp,
+    FileText
   } from "lucide-react";
 import { MessagesTab } from "@/components/profile/MessagesTab";
 import { NotificationsTab } from "@/components/profile/NotificationsTab";
 import { UserBankingForm } from "@/components/profile/UserBankingForm";
 import { UserEarningsDashboard } from "@/components/profile/UserEarningsDashboard";
 import { ForumActivitySection } from "@/components/profile/ForumActivitySection";
+import { MyContentTab } from "@/components/profile/MyContentTab";
 import { FollowersList } from "@/components/profile/FollowersList";
 import { useFollow } from "@/hooks/useFollow";
 import { validateFile, formatFileSize, FILE_COUNT_LIMITS } from "@/lib/storage-validation";
@@ -555,6 +557,10 @@ const MiPerfil = () => {
                 <Music className="w-3.5 h-3.5" />
                 Música
               </TabsTrigger>
+              <TabsTrigger value="mi-contenido" className="flex-shrink-0 gap-1.5 py-2 px-2 text-[10px] md:text-xs font-medium tracking-wide uppercase text-cyan-400/70 data-[state=active]:text-cyan-400 data-[state=active]:bg-cyan-400/10 data-[state=active]:shadow-[0_0_10px_rgba(34,211,238,0.3)] hover:text-cyan-400 transition-all">
+                <FileText className="w-3.5 h-3.5" />
+                On Demand
+              </TabsTrigger>
               <TabsTrigger value="mensajes" className="flex-shrink-0 gap-1.5 py-2 px-2 text-[10px] md:text-xs font-medium tracking-wide uppercase text-cyan-400/70 data-[state=active]:text-cyan-400 data-[state=active]:bg-cyan-400/10 data-[state=active]:shadow-[0_0_10px_rgba(34,211,238,0.3)] hover:text-cyan-400 transition-all">
                 <MessageSquare className="w-3.5 h-3.5" />
                 Chats
@@ -700,22 +706,49 @@ const MiPerfil = () => {
                   {/* Existing Videos */}
                   {videos.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {videos.map((video) => (
-                        <div key={video.id} className="relative group">
-                          <video
-                            src={video.url}
-                            className="w-full h-40 object-cover rounded-lg"
-                          />
-                          <Button
-                            size="icon"
-                            variant="destructive"
-                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
-                            onClick={() => deleteGalleryItem(video.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ))}
+                      {videos.map((video) => {
+                        const isYouTube = video.url.includes('youtube.com') || video.url.includes('youtu.be');
+                        const isVimeo = video.url.includes('vimeo.com');
+                        const isDailymotion = video.url.includes('dailymotion.com');
+                        const isEmbed = isYouTube || isVimeo || isDailymotion;
+
+                        let embedUrl = video.url;
+                        if (isYouTube) {
+                          const match = video.url.match(/(?:v=|youtu\.be\/)([^&\s]+)/);
+                          if (match) embedUrl = `https://www.youtube.com/embed/${match[1]}`;
+                        } else if (isVimeo) {
+                          const match = video.url.match(/vimeo\.com\/(\d+)/);
+                          if (match) embedUrl = `https://player.vimeo.com/video/${match[1]}`;
+                        }
+
+                        return (
+                          <div key={video.id} className="relative group">
+                            {isEmbed ? (
+                              <iframe
+                                src={embedUrl}
+                                className="w-full h-40 rounded-lg"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                title={video.title || "Video"}
+                              />
+                            ) : (
+                              <video
+                                src={video.url}
+                                className="w-full h-40 object-cover rounded-lg"
+                                controls
+                              />
+                            )}
+                            <Button
+                              size="icon"
+                              variant="destructive"
+                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
+                              onClick={() => deleteGalleryItem(video.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
 
@@ -847,6 +880,11 @@ const MiPerfil = () => {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* Mi Contenido On Demand Tab */}
+            <TabsContent value="mi-contenido">
+              {user?.id && <MyContentTab userId={user.id} />}
             </TabsContent>
 
             {/* Messages Tab */}

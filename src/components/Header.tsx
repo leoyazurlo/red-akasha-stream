@@ -38,8 +38,9 @@ export const Header = () => {
       { name: "Mapa", href: "/live", icon: MapPin },
     ]},
     { name: t('nav.artists'), href: "/artistas" },
-    { name: t('nav.join'), href: "/asociate" },
-    { name: t('nav.upload'), href: "/subir-contenido" },
+    { name: t('nav.join'), href: "/asociate", children: [
+      { name: t('nav.upload'), href: "/subir-contenido" },
+    ]},
     { name: t('nav.forum'), href: "/foro" },
     { name: "Akasha IA", href: "/akasha-ia" },
     { name: "Suscripción", href: "/suscripciones" },

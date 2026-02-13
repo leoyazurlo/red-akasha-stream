@@ -39,6 +39,7 @@ export const Header = () => {
     ]},
     { name: t('nav.artists'), href: "/artistas" },
     { name: t('nav.join'), href: "/asociate", children: [
+      { name: "Carga de Perfil", href: "/asociate", icon: Users },
       { name: t('nav.upload'), href: "/subir-contenido" },
     ]},
     { name: t('nav.forum'), href: "/foro" },

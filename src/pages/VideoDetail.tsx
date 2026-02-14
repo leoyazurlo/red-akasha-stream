@@ -539,14 +539,14 @@ const VideoDetail = () => {
                 <CardHeader>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <CardTitle className="text-2xl mb-2">{video.title}</CardTitle>
+                      {video.band_name && (
+                        <CardTitle className="text-2xl mb-1">{video.band_name}</CardTitle>
+                      )}
+                      {!video.band_name && (
+                        <CardTitle className="text-2xl mb-1">{video.title}</CardTitle>
+                      )}
+                      <p className="text-muted-foreground text-base mb-2">{video.title}</p>
                       <div className="flex items-center gap-4 text-muted-foreground">
-                        {video.band_name && (
-                          <div className="flex items-center gap-2">
-                            <Music2 className="w-4 h-4" />
-                            <span className="font-medium">{video.band_name}</span>
-                          </div>
-                        )}
                         <div className="flex items-center gap-1" title={video.country || 'País desconocido'}>
                           <span className="text-xl">{getCountryFlag(video.country)}</span>
                           {video.country && <span className="text-sm">{video.country}</span>}

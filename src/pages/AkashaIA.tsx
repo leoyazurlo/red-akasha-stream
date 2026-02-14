@@ -193,7 +193,6 @@ export default function AkashaIA() {
     let assistantContent = "";
 
     try {
-      // Obtener el token de sesión del usuario autenticado
       const { data: sessionData } = await supabase.auth.getSession();
       const accessToken = sessionData?.session?.access_token;
       
@@ -215,53 +214,65 @@ export default function AkashaIA() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "Error al comunicarse con la IA");
+        throw new Error(errorData.error || `Error ${response.status} al comunicarse con la IA`);
       }
 
       const reader = response.body?.getReader();
+      if (!reader) throw new Error("No se pudo leer la respuesta de streaming");
+
       const decoder = new TextDecoder();
       let buffer = "";
 
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          
-          buffer += decoder.decode(value, { stream: true });
-          
-          let newlineIndex: number;
-          while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
-            let line = buffer.slice(0, newlineIndex);
-            buffer = buffer.slice(newlineIndex + 1);
+      // Add placeholder message
+      setMessages([...newMessages, { role: "assistant", content: "..." }]);
 
-            if (line.endsWith("\r")) line = line.slice(0, -1);
-            if (line.startsWith(":") || line.trim() === "") continue;
-            if (!line.startsWith("data: ")) continue;
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        buffer += decoder.decode(value, { stream: true });
+        
+        let newlineIndex: number;
+        while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, newlineIndex);
+          buffer = buffer.slice(newlineIndex + 1);
 
-            const jsonStr = line.slice(6).trim();
-            if (jsonStr === "[DONE]") break;
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          const trimmed = line.trim();
 
-            try {
-              const parsed = JSON.parse(jsonStr);
-              const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-              if (content) {
-                assistantContent += content;
-                setMessages(prev => {
-                  const last = prev[prev.length - 1];
-                  if (last?.role === "assistant") {
-                    return prev.map((m, i) => 
-                      i === prev.length - 1 ? { ...m, content: assistantContent } : m
-                    );
-                  }
-                  return [...prev, { role: "assistant", content: assistantContent }];
-                });
-              }
-            } catch {
-              buffer = line + "\n" + buffer;
-              break;
+          // Skip empty lines, SSE comments (lines starting with :), and non-data lines
+          if (!trimmed || trimmed.startsWith(":") || !trimmed.startsWith("data: ")) continue;
+
+          const jsonStr = trimmed.slice(6).trim();
+          if (jsonStr === "[DONE]") continue;
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              assistantContent += content;
+              const currentContent = assistantContent;
+              setMessages(prev => {
+                const last = prev[prev.length - 1];
+                if (last?.role === "assistant") {
+                  return prev.map((m, i) => 
+                    i === prev.length - 1 ? { ...m, content: currentContent } : m
+                  );
+                }
+                return [...prev, { role: "assistant", content: currentContent }];
+              });
             }
+          } catch {
+            // Skip unparseable lines instead of re-buffering (prevents infinite loops)
+            console.warn("[Akasha IA] Skipping unparseable SSE chunk:", jsonStr.slice(0, 100));
           }
         }
+      }
+
+      // If no content was received, show error
+      if (!assistantContent) {
+        assistantContent = "No se recibió respuesta. Intenta de nuevo.";
+        setMessages([...newMessages, { role: "assistant", content: assistantContent }]);
       }
 
       // Save conversation
@@ -291,8 +302,19 @@ export default function AkashaIA() {
         }
       }
     } catch (error) {
-      console.error("Error:", error);
-      toast.error(error instanceof Error ? error.message : "Error al comunicarse con la IA");
+      console.error("[Akasha IA] Error:", error);
+      const errorMsg = error instanceof Error ? error.message : "Error al comunicarse con la IA";
+      toast.error(errorMsg);
+      // Show error in chat so user sees it
+      setMessages(prev => {
+        const last = prev[prev.length - 1];
+        if (last?.role === "assistant" && (last.content === "..." || !last.content)) {
+          return prev.map((m, i) =>
+            i === prev.length - 1 ? { ...m, content: `❌ ${errorMsg}` } : m
+          );
+        }
+        return [...prev, { role: "assistant", content: `❌ ${errorMsg}` }];
+      });
     } finally {
       setIsLoading(false);
     }

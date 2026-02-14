@@ -237,21 +237,22 @@ export function useAppBuilder() {
             if (line.endsWith("\r")) line = line.slice(0, -1);
 
             const trimmed = line.trim();
-            if (!trimmed || !trimmed.startsWith("data: ")) continue;
+            if (!trimmed || trimmed.startsWith(":") || !trimmed.startsWith("data: ")) continue;
 
             const payload = trimmed.slice(6).trim();
-            if (payload === "[DONE]") break;
+            if (payload === "[DONE]") continue;
 
             try {
               const data = JSON.parse(payload);
               const content = data.choices?.[0]?.delta?.content;
               if (content) {
                 assistantContent += content;
-                setMessages([...newMessages, { role: "assistant", content: assistantContent }]);
+                const currentContent = assistantContent;
+                setMessages([...newMessages, { role: "assistant", content: currentContent }]);
               }
             } catch {
-              buffer = line + "\n" + buffer;
-              break;
+              // Skip unparseable chunks instead of re-buffering
+              console.warn("[AppBuilder] Skipping unparseable SSE chunk");
             }
           }
         }

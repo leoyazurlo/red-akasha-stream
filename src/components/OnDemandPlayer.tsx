@@ -334,7 +334,13 @@ export const OnDemandPlayer = ({
                     </Badge>
                   )}
                 </div>
-                <DialogTitle className="text-white text-xl md:text-2xl font-light tracking-wide font-sans">{content.title}</DialogTitle>
+                {content.band_name && (
+                  <DialogTitle className="text-white text-xl md:text-2xl font-light tracking-wide font-sans">{content.band_name}</DialogTitle>
+                )}
+                {!content.band_name && (
+                  <DialogTitle className="text-white text-xl md:text-2xl font-light tracking-wide font-sans">{content.title}</DialogTitle>
+                )}
+                <p className="text-white/70 mt-1 text-sm font-light tracking-wide font-sans">{content.title}</p>
                 {content.description && (
                   <DialogDescription className="text-white/80 mt-2 font-light tracking-wide font-sans">
                     {content.description}

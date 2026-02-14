@@ -276,12 +276,12 @@ const OnDemand = () => {
 
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <h3 className="font-medium text-sm line-clamp-2 text-foreground group-hover:text-primary transition-colors">
+          {content.band_name && (
+            <p className="text-xs text-muted-foreground">{content.band_name}</p>
+          )}
+          <h3 className="font-medium text-sm line-clamp-2 text-foreground group-hover:text-primary transition-colors mt-1">
             {content.title}
           </h3>
-          {content.band_name && (
-            <p className="text-xs text-muted-foreground mt-1">{content.band_name}</p>
-          )}
           <p className="text-xs text-muted-foreground/70 mt-0.5">
             {content.views_count.toLocaleString()} vistas
           </p>

@@ -13,7 +13,6 @@ import { ProfileEditDraftProvider } from "@/contexts/ProfileEditDraftContext";
 import { GlobalChatProvider } from "@/contexts/GlobalChatContext";
 import { UnreadMessagesAlert } from "@/components/notifications/UnreadMessagesAlert";
 import { Loader2 } from "lucide-react";
-import { DevPerformanceBadge } from "@/components/dev/DevPerformanceBadge";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import { InstallPWABanner } from "@/components/install-pwa-banner";
@@ -179,7 +178,6 @@ const AppShell = () => {
             <AnalyticsTracker />
             <InstallPWABanner />
             <OfflineBanner />
-            {import.meta.env.DEV && <DevPerformanceBadge />}
           </GlobalChatProvider>
         </ProfileEditDraftProvider>
       </GeoRestrictionGuard>

@@ -129,13 +129,8 @@ const OnDemand = () => {
         .from('content_uploads')
         .select('*')
         .in('content_type', ['video_musical_vivo', 'video_clip', 'podcast', 'corto', 'documental', 'pelicula'])
+        .eq('status', 'approved')
         .order('created_at', { ascending: false });
-
-      if (user) {
-        query = query.or(`status.eq.approved,and(status.eq.pending,uploader_id.eq.${user.id})`);
-      } else {
-        query = query.eq('status', 'approved');
-      }
 
       const { data, error } = await query;
 

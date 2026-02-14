@@ -347,8 +347,13 @@ export function useAppBuilder() {
           content: `🎉 **Pull Request creado**\n\n[Ver PR](${data.prUrl})`,
         },
       ]);
-    } catch (err) {
-      notifyError("Error al crear PR", err);
+    } catch (err: any) {
+      const msg = err instanceof Error ? err.message : "Error";
+      if (msg.includes("Token") || msg.includes("token") || msg.includes("Bad credentials") || msg.includes("non-2xx")) {
+        notifyError("Token de GitHub expirado. Actualízalo en Admin → Configuración de Plataforma → GitHub");
+      } else {
+        notifyError("Error al crear PR", err);
+      }
     } finally {
       setIsCreatingPR(false);
     }

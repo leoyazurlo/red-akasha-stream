@@ -149,9 +149,20 @@ export function ImplementationPanel({
         },
       });
 
-      if (fnError) throw fnError;
+      if (fnError) {
+        // Try to extract the JSON error message from the edge function response
+        try {
+          const errBody = typeof fnError.context === 'object' && fnError.context?.body
+            ? JSON.parse(await new Response(fnError.context.body).text())
+            : null;
+          if (errBody?.error) throw new Error(errBody.error);
+        } catch (parseErr) {
+          if (parseErr instanceof Error && parseErr.message !== fnError.message) throw parseErr;
+        }
+        throw new Error(fnError.message || "Error al conectar con GitHub");
+      }
 
-      if (data.error) {
+      if (data?.error) {
         throw new Error(data.error);
       }
 

@@ -674,10 +674,14 @@ export function AppBuilderIDE() {
           content: `🎉 **Pull Request creado exitosamente**\n\n[Ver PR en GitHub](${data.prUrl})\n\nUna vez aprobado y mergeado, el código se desplegará automáticamente.`,
         },
       ]);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       const msg = err instanceof Error ? err.message : "Error";
-      toast.error(msg);
+      if (msg.includes("Token") || msg.includes("token") || msg.includes("Bad credentials") || msg.includes("non-2xx")) {
+        toast.error("Token de GitHub expirado", { description: "Actualízalo en Admin → Configuración de Plataforma → GitHub" });
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setIsCreatingPR(false);
     }

@@ -378,10 +378,12 @@ export function DevelopmentCyclePanel() {
       toast.success("Pull Request creado");
       loadProposalDetails(selectedProposal.id);
       loadProposals();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      const msg = err instanceof Error ? err.message : "Error";
-      if (msg.includes("GitHub no está configurado")) {
+      let msg = err instanceof Error ? err.message : "Error";
+      if (msg.includes("Token") || msg.includes("token") || msg.includes("Bad credentials") || msg.includes("non-2xx")) {
+        toast.error("Token de GitHub expirado", { description: "Actualízalo en Admin → Configuración de Plataforma → GitHub" });
+      } else if (msg.includes("GitHub no está configurado")) {
         toast.error("Configura GitHub en Admin > Plataforma");
       } else {
         toast.error(msg);

@@ -344,13 +344,18 @@ export function CodeLifecyclePanel({
       toast.success("Pull Request creado exitosamente");
       await loadDeployments();
       onStageChange?.();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error creating PR:", err);
-      const message = err instanceof Error ? err.message : "Error al crear el PR";
-      setError(message);
-      if (message.includes("GitHub no está configurado")) {
+      let message = "Error al crear el PR";
+      if (err instanceof Error) message = err.message;
+      if (message.includes("Token") || message.includes("token") || message.includes("Bad credentials") || message.includes("non-2xx")) {
+        setError("Token de GitHub inválido o expirado. Actualízalo en Admin → Configuración → GitHub.");
+        toast.error("Token de GitHub expirado", { description: "Actualízalo en Admin → Configuración de Plataforma → GitHub" });
+      } else if (message.includes("GitHub no está configurado")) {
+        setError(message);
         toast.error("Configura GitHub en Ajustes de Plataforma");
       } else {
+        setError(message);
         toast.error(message);
       }
     } finally {

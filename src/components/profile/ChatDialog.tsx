@@ -135,6 +135,9 @@ export const ChatDialog = ({
           .eq('type', 'direct_message')
           .eq('related_user_id', partnerId)
           .eq('read', false);
+
+        // Notify other components to refresh their notification counts
+        window.dispatchEvent(new Event('notifications-updated'));
       }
     } catch (error) {
       console.error('Error fetching messages:', error);

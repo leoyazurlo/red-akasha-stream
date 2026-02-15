@@ -71,7 +71,7 @@ export const NotificationsTab = () => {
       if (error) throw error;
       
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    } catch (error) {
+      window.dispatchEvent(new Event('notifications-updated'));
       console.error('Error marking notifications as read:', error);
     } finally {
       setMarkingRead(false);
@@ -90,6 +90,7 @@ export const NotificationsTab = () => {
       setNotifications(prev => 
         prev.map(n => n.id === id ? { ...n, read: true } : n)
       );
+      window.dispatchEvent(new Event('notifications-updated'));
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }

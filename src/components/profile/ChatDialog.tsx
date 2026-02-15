@@ -126,6 +126,15 @@ export const ChatDialog = ({
           .from('direct_messages')
           .update({ read: true })
           .in('id', unreadIds);
+
+        // Also mark related notifications as read
+        await supabase
+          .from('notifications')
+          .update({ read: true })
+          .eq('user_id', user.id)
+          .eq('type', 'direct_message')
+          .eq('related_user_id', partnerId)
+          .eq('read', false);
       }
     } catch (error) {
       console.error('Error fetching messages:', error);

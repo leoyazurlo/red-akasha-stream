@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
@@ -97,9 +97,22 @@ const profileTypeLabels: Record<string, string> = {
 
 const MiPerfil = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
   
+  const tabFromUrl = searchParams.get('tab');
+  const validTabs = ['notifications', 'mensajes', 'contenido', 'on-demand', 'seguidores', 'actividad-foro', 'ganancias', 'cobros'];
+  const initialTab = tabFromUrl && validTabs.includes(tabFromUrl) ? tabFromUrl : 'notifications';
+  const [activeTab, setActiveTab] = useState(initialTab);
+  
+  // Sync tab when URL changes
+  useEffect(() => {
+    if (tabFromUrl && validTabs.includes(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [tabFromUrl]);
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<ProfileData | null>(null);
@@ -527,7 +540,7 @@ const MiPerfil = () => {
           </Card>
 
           {/* Content Management */}
-           <Tabs defaultValue="notifications" className="space-y-6">
+           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
              <TabsList className="flex w-full h-auto p-1.5 bg-card/50 overflow-x-auto gap-0.5">
                <TabsTrigger value="notifications" className="flex-shrink-0 gap-1.5 py-2 px-2 text-[10px] md:text-xs font-medium tracking-wide uppercase text-cyan-400/70 data-[state=active]:text-cyan-400 data-[state=active]:bg-cyan-400/10 data-[state=active]:shadow-[0_0_10px_rgba(34,211,238,0.3)] hover:text-cyan-400 transition-all">
                  <Bell className="w-3.5 h-3.5" />

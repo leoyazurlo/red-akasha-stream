@@ -140,6 +140,12 @@ export const useNotifications = () => {
 
     loadNotifications();
 
+    // Listen for manual refetch events (e.g., from NotificationsTab marking all as read)
+    const handleRefetch = () => {
+      loadNotifications();
+    };
+    window.addEventListener('notifications-updated', handleRefetch);
+
     // Setup realtime
     let channel: RealtimeChannel;
     let messagesChannel: RealtimeChannel;
@@ -213,6 +219,7 @@ export const useNotifications = () => {
     setupRealtime();
 
     return () => {
+      window.removeEventListener('notifications-updated', handleRefetch);
       if (channel) {
         supabase.removeChannel(channel);
       }

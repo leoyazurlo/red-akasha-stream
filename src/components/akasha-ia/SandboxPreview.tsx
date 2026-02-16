@@ -571,14 +571,9 @@ export function SandboxPreview({ code, routes = [] }: SandboxPreviewProps) {
       )}
 
       {/* Preview area */}
-      <div className="flex-1 bg-muted/10 flex items-center justify-center p-4 overflow-auto">
+      <div className="flex-1 bg-muted/10 flex items-center justify-center overflow-hidden">
         <div
-          className="bg-background rounded-lg shadow-2xl border border-cyan-500/20 overflow-hidden transition-all duration-300"
-          style={{
-            width: isFullscreen ? "100%" : Math.min(currentViewport.width, window.innerWidth - 48),
-            height: isFullscreen ? "100%" : Math.min(currentViewport.height, 600),
-            maxHeight: isFullscreen ? "100%" : "600px",
-          }}
+          className="bg-background border border-cyan-500/20 overflow-hidden transition-all duration-300 w-full h-full"
         >
           {error ? (
             <div className="p-6 text-center">

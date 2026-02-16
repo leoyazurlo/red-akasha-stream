@@ -542,7 +542,7 @@ export function AppBuilderIDE() {
           <div className="h-full min-h-0 flex flex-col bg-card/30 overflow-hidden">
             {showContextPanel ? (
               <ResizablePanelGroup direction="vertical" className="min-h-0">
-                <ResizablePanel defaultSize={60} minSize={30} className="min-h-0">
+                <ResizablePanel defaultSize={70} minSize={40} className="min-h-0">
                   <div className="h-full min-h-0 flex flex-col">
                     <div className="flex items-center gap-2 p-2 border-b border-cyan-500/10 shrink-0">
                       <Eye className="h-4 w-4 text-cyan-400" />
@@ -554,7 +554,7 @@ export function AppBuilderIDE() {
                   </div>
                 </ResizablePanel>
                 <ResizableHandle withHandle />
-                <ResizablePanel defaultSize={40} minSize={20} className="min-h-0">
+                <ResizablePanel defaultSize={30} minSize={15} className="min-h-0">
                   <AIContextPanel
                     aiResponse={aiResponse}
                     isProcessing={isAIProcessing}

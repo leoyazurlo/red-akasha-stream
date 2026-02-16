@@ -456,9 +456,16 @@ export function SandboxPreview({ code, routes = [] }: SandboxPreviewProps) {
     }
   };
 
-  // Initial load
+  // Regenerate HTML when code changes
+  const sandboxHTML = generateSandboxHTML();
+
+  // Reload iframe when code changes
   useEffect(() => {
-    refreshSandbox();
+    setIsLoading(true);
+    setError(null);
+    if (iframeRef.current) {
+      iframeRef.current.srcdoc = sandboxHTML;
+    }
   }, [code.frontend]);
 
   // Toggle fullscreen
@@ -591,7 +598,7 @@ export function SandboxPreview({ code, routes = [] }: SandboxPreviewProps) {
               title="Sandbox Preview"
               className="w-full h-full border-0"
               sandbox="allow-scripts allow-same-origin"
-              srcDoc={generateSandboxHTML()}
+              srcDoc={sandboxHTML}
             />
           )}
         </div>

@@ -35,24 +35,45 @@ export const FloatingQueuePlayer = () => {
 
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
-  // Move the global <video> element into our container when open
+  const expandedVideoRef = useRef<HTMLDivElement>(null);
+  const collapsedVideoRef = useRef<HTMLDivElement>(null);
+
+  // Move the global <video> element into the correct container
   useEffect(() => {
     const videoEl = videoRef.current;
-    const container = videoContainerRef.current;
-    if (!videoEl || !container || !isOpen) return;
+    if (!videoEl || !isOpen) return;
 
-    // Move video element into our visible container
-    videoEl.classList.remove('sr-only');
+    const showVideoNow = playbackMode === 'video' && !!queue[currentIndex]?.video_url;
+    const targetContainer = isExpanded ? expandedVideoRef.current : collapsedVideoRef.current;
+
+    if (!showVideoNow || !targetContainer) {
+      // Hide video when in audio mode
+      videoEl.style.position = 'absolute';
+      videoEl.style.width = '1px';
+      videoEl.style.height = '1px';
+      videoEl.style.overflow = 'hidden';
+      videoEl.style.clip = 'rect(0,0,0,0)';
+      return;
+    }
+
+    // Move video into the visible container
+    videoEl.style.position = '';
+    videoEl.style.width = '100%';
+    videoEl.style.height = '100%';
+    videoEl.style.overflow = '';
+    videoEl.style.clip = '';
     videoEl.className = 'w-full h-full object-contain bg-black rounded-lg';
-    container.appendChild(videoEl);
+    targetContainer.appendChild(videoEl);
 
     return () => {
-      // Move it back to body and hide
-      videoEl.classList.add('sr-only');
-      videoEl.className = 'sr-only';
-      document.body.appendChild(videoEl);
+      // Reset styles when effect cleans up
+      videoEl.style.position = 'absolute';
+      videoEl.style.width = '1px';
+      videoEl.style.height = '1px';
+      videoEl.style.overflow = 'hidden';
+      videoEl.style.clip = 'rect(0,0,0,0)';
     };
-  }, [isOpen, videoRef]);
+  }, [isOpen, isExpanded, playbackMode, currentIndex, videoRef, queue]);
 
   if (!isOpen || queue.length === 0) return null;
 
@@ -117,8 +138,8 @@ export const FloatingQueuePlayer = () => {
           {/* Video display area */}
           {showVideo && (
             <div className="w-full max-w-3xl mx-auto px-4 pt-4">
-              <div 
-                ref={videoContainerRef}
+            <div 
+                ref={expandedVideoRef}
                 className="aspect-video bg-black rounded-lg overflow-hidden"
               />
             </div>
@@ -271,7 +292,7 @@ export const FloatingQueuePlayer = () => {
           <div className="flex items-center gap-3 px-4 py-2">
             {/* Video mini preview or thumbnail */}
             <div 
-              ref={!isExpanded ? videoContainerRef : undefined}
+              ref={collapsedVideoRef}
               className={cn(
                 "rounded overflow-hidden bg-muted/20 flex-shrink-0",
                 showVideo ? "w-20 h-12" : "w-10 h-10"

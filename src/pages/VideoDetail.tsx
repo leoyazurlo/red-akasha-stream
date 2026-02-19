@@ -3,7 +3,7 @@ import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { useAuth } from "@/hooks/useAuth";
 import { useMiniPlayer } from "@/contexts/MiniPlayerContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useSEO } from "@/hooks/use-seo";
 import { generateStreamSEO } from "@/lib/seo";
@@ -34,8 +34,19 @@ import {
   ListPlus,
   SkipForward,
   ToggleLeft,
-  ToggleRight
+  ToggleRight,
+  Repeat,
+  Repeat1,
+  Shuffle,
+  Timer,
+  Gauge
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { AddToPlaylistDialog } from "@/components/AddToPlaylistDialog";
 import { useQueuePlayer } from "@/contexts/QueuePlayerContext";
 import ShareButtons from "@/components/ShareButtons";
@@ -173,6 +184,46 @@ const VideoDetail = () => {
     return localStorage.getItem('videodetail_autoplay') !== 'false';
   });
   const queuePlayer = useQueuePlayer();
+  
+  // Phase 2 states
+  const videoPlayerRef = useRef<HTMLVideoElement>(null);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const [loopMode, setLoopMode] = useState<'off' | 'one' | 'all'>('off');
+  const [shuffleOn, setShuffleOn] = useState(false);
+  const [sleepTimer, setSleepTimer] = useState<number | null>(null);
+  const [sleepTimeLeft, setSleepTimeLeft] = useState<number | null>(null);
+  const sleepIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Sleep timer effect
+  useEffect(() => {
+    if (sleepTimer === null) {
+      if (sleepIntervalRef.current) clearInterval(sleepIntervalRef.current);
+      setSleepTimeLeft(null);
+      return;
+    }
+    setSleepTimeLeft(sleepTimer * 60);
+    sleepIntervalRef.current = setInterval(() => {
+      setSleepTimeLeft(prev => {
+        if (prev === null || prev <= 1) {
+          // Time's up — pause video
+          if (videoPlayerRef.current) videoPlayerRef.current.pause();
+          setSleepTimer(null);
+          if (sleepIntervalRef.current) clearInterval(sleepIntervalRef.current);
+          toast({ title: "Temporizador", description: "Reproducción pausada por temporizador de sueño" });
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => { if (sleepIntervalRef.current) clearInterval(sleepIntervalRef.current); };
+  }, [sleepTimer]);
+
+  // Apply playback speed when ref is ready or speed changes
+  useEffect(() => {
+    if (videoPlayerRef.current) {
+      videoPlayerRef.current.playbackRate = playbackSpeed;
+    }
+  }, [playbackSpeed, isPlaying]);
 
   // SEO
   useSEO(
@@ -514,13 +565,27 @@ const VideoDetail = () => {
                 <AspectRatio ratio={16 / 9} className="bg-black">
                   {isPlaying && video.video_url ? (
                     <video
+                      ref={videoPlayerRef}
                       src={video.video_url}
                       controls
                       autoPlay
+                      loop={loopMode === 'one'}
                       className="w-full h-full"
                       onEnded={() => {
+                        if (loopMode === 'one') return; // browser handles loop
+                        if (loopMode === 'all') {
+                          // Replay same video
+                          if (videoPlayerRef.current) {
+                            videoPlayerRef.current.currentTime = 0;
+                            videoPlayerRef.current.play();
+                          }
+                          return;
+                        }
                         if (autoplay && moreContent.length > 0) {
-                          navigate(`/video/${moreContent[0].id}`);
+                          const nextId = shuffleOn
+                            ? moreContent[Math.floor(Math.random() * moreContent.length)].id
+                            : moreContent[0].id;
+                          navigate(`/video/${nextId}`);
                         }
                       }}
                     />
@@ -548,6 +613,81 @@ const VideoDetail = () => {
                     </div>
                   )}
                 </AspectRatio>
+
+                {/* Playback Controls Bar */}
+                <div className="flex items-center justify-between gap-2 px-4 py-2 bg-card/80 border-t border-border flex-wrap">
+                  {/* Speed */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="gap-1 text-xs h-8">
+                        <Gauge className="w-3.5 h-3.5" />
+                        {playbackSpeed}x
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start">
+                      {[0.5, 0.75, 1, 1.25, 1.5, 2].map(speed => (
+                        <DropdownMenuItem
+                          key={speed}
+                          onClick={() => setPlaybackSpeed(speed)}
+                          className={cn(playbackSpeed === speed && "bg-primary/10 font-semibold")}
+                        >
+                          {speed}x {speed === 1 && "(Normal)"}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  {/* Loop */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn("gap-1 text-xs h-8", loopMode !== 'off' && "text-primary")}
+                    onClick={() => {
+                      const modes: Array<'off' | 'one' | 'all'> = ['off', 'one', 'all'];
+                      const idx = modes.indexOf(loopMode);
+                      setLoopMode(modes[(idx + 1) % modes.length]);
+                    }}
+                    title={loopMode === 'off' ? 'Repetir: desactivado' : loopMode === 'one' ? 'Repetir: este video' : 'Repetir: todos'}
+                  >
+                    {loopMode === 'one' ? <Repeat1 className="w-3.5 h-3.5" /> : <Repeat className="w-3.5 h-3.5" />}
+                    {loopMode === 'off' ? '' : loopMode === 'one' ? '1' : '∞'}
+                  </Button>
+
+                  {/* Shuffle */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn("gap-1 text-xs h-8", shuffleOn && "text-primary")}
+                    onClick={() => setShuffleOn(prev => !prev)}
+                    title={shuffleOn ? "Aleatorio activado" : "Aleatorio desactivado"}
+                  >
+                    <Shuffle className="w-3.5 h-3.5" />
+                  </Button>
+
+                  {/* Sleep Timer */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className={cn("gap-1 text-xs h-8", sleepTimer !== null && "text-primary")}>
+                        <Timer className="w-3.5 h-3.5" />
+                        {sleepTimeLeft !== null
+                          ? `${Math.floor(sleepTimeLeft / 60)}:${(sleepTimeLeft % 60).toString().padStart(2, '0')}`
+                          : 'Sueño'}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      {sleepTimer !== null && (
+                        <DropdownMenuItem onClick={() => setSleepTimer(null)} className="text-destructive">
+                          Cancelar temporizador
+                        </DropdownMenuItem>
+                      )}
+                      {[5, 10, 15, 30, 45, 60, 90].map(mins => (
+                        <DropdownMenuItem key={mins} onClick={() => setSleepTimer(mins)}>
+                          {mins} minutos
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </Card>
 
               {/* Video Info */}

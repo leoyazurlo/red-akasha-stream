@@ -205,9 +205,15 @@ export const ContentGrid = ({
                 </div>
               </div>
 
-              {/* Title */}
+              {/* Artist/Band + Title */}
               <CardHeader className="p-4 pb-2">
-                <CardTitle className="text-base line-clamp-2">{content.title}</CardTitle>
+                {content.band_name && (
+                  <p className="text-sm font-medium text-foreground mb-1">{content.band_name}</p>
+                )}
+                {content.producer_name && !content.band_name && (
+                  <p className="text-sm font-medium text-foreground mb-1">{content.producer_name}</p>
+                )}
+                <CardTitle className="text-sm text-muted-foreground font-normal line-clamp-2">{content.title}</CardTitle>
               </CardHeader>
 
               {/* Collapsible Content */}

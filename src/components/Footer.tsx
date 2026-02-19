@@ -22,11 +22,11 @@ interface SocialConfig {
 }
 
 const defaultSocial: SocialConfig = {
-  social_youtube: "https://youtube.com/@redakasha",
-  social_spotify: "https://open.spotify.com/user/redakasha",
-  social_instagram: "https://instagram.com/redakasha",
-  social_facebook: "https://facebook.com/redakasha",
-  social_tiktok: "https://tiktok.com/@redakasha",
+  social_youtube: "",
+  social_spotify: "",
+  social_instagram: "",
+  social_facebook: "",
+  social_tiktok: "",
 };
 
 export const Footer = () => {
@@ -48,11 +48,11 @@ export const Footer = () => {
         if (data?.setting_value) {
           const config = data.setting_value as Record<string, string>;
           setSocialLinks({
-            social_youtube: config.social_youtube || defaultSocial.social_youtube,
-            social_spotify: config.social_spotify || defaultSocial.social_spotify,
-            social_instagram: config.social_instagram || defaultSocial.social_instagram,
-            social_facebook: config.social_facebook || defaultSocial.social_facebook,
-            social_tiktok: config.social_tiktok || defaultSocial.social_tiktok,
+            social_youtube: config.social_youtube || "",
+            social_spotify: config.social_spotify || "",
+            social_instagram: config.social_instagram || "",
+            social_facebook: config.social_facebook || "",
+            social_tiktok: config.social_tiktok || "",
           });
         }
       } catch (error) {

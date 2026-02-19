@@ -3,6 +3,12 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import "./i18n";
+import { installGlobalErrorHandlers } from "./lib/error-reporter";
+import { installWebVitalsReporter } from "./lib/performance-reporter";
+
+// Install monitoring
+installGlobalErrorHandlers();
+installWebVitalsReporter();
 
 // PWA service worker is auto-registered by vite-plugin-pwa
 

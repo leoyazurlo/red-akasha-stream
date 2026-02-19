@@ -1,6 +1,7 @@
 /**
- * @fileoverview Dashboard de analytics para administradores.
- * Muestra eventos recientes, features más usadas y usuarios activos.
+ * @fileoverview Dashboard de analytics y monitoreo para administradores.
+ * Muestra eventos recientes, features más usadas, usuarios activos,
+ * errores, Web Vitals y alertas en tiempo real.
  */
 
 import { useState, useEffect } from "react";
@@ -9,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import {
   BarChart,
@@ -27,7 +29,13 @@ import {
   Zap,
   RefreshCw,
   Loader2,
+  AlertCircle,
+  Gauge,
+  Bell,
 } from "lucide-react";
+import { ErrorsPanel } from "@/components/admin/monitoring/ErrorsPanel";
+import { PerformancePanel } from "@/components/admin/monitoring/PerformancePanel";
+import { RealtimeAlerts } from "@/components/admin/monitoring/RealtimeAlerts";
 
 interface EventRow {
   event_name: string;
@@ -131,181 +139,217 @@ export default function Analytics() {
           </Button>
         </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <KPICard
-            icon={<Activity className="h-5 w-5 text-primary" />}
-            label="Eventos totales"
-            value={loading ? null : events.length}
-          />
-          <KPICard
-            icon={<Users className="h-5 w-5 text-cyan-400" />}
-            label="Usuarios activos"
-            value={loading ? null : uniqueUsers}
-          />
-          <KPICard
-            icon={<Zap className="h-5 w-5 text-yellow-400" />}
-            label="Sesiones"
-            value={loading ? null : uniqueSessions}
-          />
-        </div>
+        {/* Tabs: Analytics / Monitoreo */}
+        <Tabs defaultValue="analytics" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="analytics" className="gap-1.5">
+              <Activity className="h-3.5 w-3.5" />
+              Analytics
+            </TabsTrigger>
+            <TabsTrigger value="errors" className="gap-1.5">
+              <AlertCircle className="h-3.5 w-3.5" />
+              Errores
+            </TabsTrigger>
+            <TabsTrigger value="performance" className="gap-1.5">
+              <Gauge className="h-3.5 w-3.5" />
+              Performance
+            </TabsTrigger>
+            <TabsTrigger value="alerts" className="gap-1.5">
+              <Bell className="h-3.5 w-3.5" />
+              Alertas
+            </TabsTrigger>
+          </TabsList>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Top Features */}
-          <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Top Features</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="space-y-3">
-                  {[...Array(5)].map((_, i) => (
-                    <Skeleton key={i} className="h-8 w-full" />
-                  ))}
-                </div>
-              ) : topFeatures.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-8 text-center">
-                  Sin datos de features aún
-                </p>
-              ) : (
-                <div className="h-[240px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={topFeatures}
-                        dataKey="count"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={50}
-                        outerRadius={90}
-                        paddingAngle={4}
-                        label={({ name, count }) => `${name} (${count})`}
-                        labelLine={false}
-                      >
-                        {topFeatures.map((_, i) => (
-                          <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        contentStyle={{
-                          background: "hsl(var(--card))",
-                          border: "1px solid hsl(var(--border))",
-                          borderRadius: "0.5rem",
-                          fontSize: "0.75rem",
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <TabsContent value="analytics" className="space-y-6">
+            {/* KPI Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <KPICard
+                icon={<Activity className="h-5 w-5 text-primary" />}
+                label="Eventos totales"
+                value={loading ? null : events.length}
+              />
+              <KPICard
+                icon={<Users className="h-5 w-5 text-cyan-400" />}
+                label="Usuarios activos"
+                value={loading ? null : uniqueUsers}
+              />
+              <KPICard
+                icon={<Zap className="h-5 w-5 text-yellow-400" />}
+                label="Sesiones"
+                value={loading ? null : uniqueSessions}
+              />
+            </div>
 
-          {/* Hourly Distribution */}
-          <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">Actividad por hora</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <Skeleton className="h-[240px] w-full" />
-              ) : (
-                <div className="h-[240px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={hourlyData}>
-                      <XAxis
-                        dataKey="hour"
-                        tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                        interval={3}
-                      />
-                      <YAxis
-                        tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                        allowDecimals={false}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          background: "hsl(var(--card))",
-                          border: "1px solid hsl(var(--border))",
-                          borderRadius: "0.5rem",
-                          fontSize: "0.75rem",
-                        }}
-                      />
-                      <Bar
-                        dataKey="events"
-                        fill="hsl(270 70% 55%)"
-                        radius={[4, 4, 0, 0]}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Recent Events Table */}
-        <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Eventos recientes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="space-y-2">
-                {[...Array(8)].map((_, i) => (
-                  <Skeleton key={i} className="h-6 w-full" />
-                ))}
-              </div>
-            ) : events.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-8 text-center">
-                Sin eventos en las últimas 24 horas
-              </p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr className="border-b border-border/50 text-muted-foreground">
-                      <th className="text-left py-2 pr-4 font-medium">Evento</th>
-                      <th className="text-left py-2 pr-4 font-medium">Página</th>
-                      <th className="text-left py-2 pr-4 font-medium">Hora</th>
-                      <th className="text-left py-2 font-medium">Sesión</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {events.slice(0, 30).map((e, i) => (
-                      <tr
-                        key={i}
-                        className="border-b border-border/20 hover:bg-muted/20 transition-colors"
-                      >
-                        <td className="py-1.5 pr-4">
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] font-mono"
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Top Features */}
+              <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Top Features</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <div className="space-y-3">
+                      {[...Array(5)].map((_, i) => (
+                        <Skeleton key={i} className="h-8 w-full" />
+                      ))}
+                    </div>
+                  ) : topFeatures.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-8 text-center">
+                      Sin datos de features aún
+                    </p>
+                  ) : (
+                    <div className="h-[240px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={topFeatures}
+                            dataKey="count"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={50}
+                            outerRadius={90}
+                            paddingAngle={4}
+                            label={({ name, count }) => `${name} (${count})`}
+                            labelLine={false}
                           >
-                            {e.event_name}
-                          </Badge>
-                        </td>
-                        <td className="py-1.5 pr-4 text-muted-foreground">
-                          {e.page}
-                        </td>
-                        <td className="py-1.5 pr-4 text-muted-foreground">
-                          {new Date(e.created_at).toLocaleTimeString("es", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            second: "2-digit",
-                          })}
-                        </td>
-                        <td className="py-1.5 text-muted-foreground font-mono">
-                          {e.session_id.slice(0, 8)}…
-                        </td>
-                      </tr>
+                            {topFeatures.map((_, i) => (
+                              <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            contentStyle={{
+                              background: "hsl(var(--card))",
+                              border: "1px solid hsl(var(--border))",
+                              borderRadius: "0.5rem",
+                              fontSize: "0.75rem",
+                            }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Hourly Distribution */}
+              <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">Actividad por hora</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <Skeleton className="h-[240px] w-full" />
+                  ) : (
+                    <div className="h-[240px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={hourlyData}>
+                          <XAxis
+                            dataKey="hour"
+                            tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                            interval={3}
+                          />
+                          <YAxis
+                            tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                            allowDecimals={false}
+                          />
+                          <Tooltip
+                            contentStyle={{
+                              background: "hsl(var(--card))",
+                              border: "1px solid hsl(var(--border))",
+                              borderRadius: "0.5rem",
+                              fontSize: "0.75rem",
+                            }}
+                          />
+                          <Bar
+                            dataKey="events"
+                            fill="hsl(270 70% 55%)"
+                            radius={[4, 4, 0, 0]}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent Events Table */}
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Eventos recientes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="space-y-2">
+                    {[...Array(8)].map((_, i) => (
+                      <Skeleton key={i} className="h-6 w-full" />
                     ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  </div>
+                ) : events.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-8 text-center">
+                    Sin eventos en las últimas 24 horas
+                  </p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="border-b border-border/50 text-muted-foreground">
+                          <th className="text-left py-2 pr-4 font-medium">Evento</th>
+                          <th className="text-left py-2 pr-4 font-medium">Página</th>
+                          <th className="text-left py-2 pr-4 font-medium">Hora</th>
+                          <th className="text-left py-2 font-medium">Sesión</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {events.slice(0, 30).map((e, i) => (
+                          <tr
+                            key={i}
+                            className="border-b border-border/20 hover:bg-muted/20 transition-colors"
+                          >
+                            <td className="py-1.5 pr-4">
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] font-mono"
+                              >
+                                {e.event_name}
+                              </Badge>
+                            </td>
+                            <td className="py-1.5 pr-4 text-muted-foreground">
+                              {e.page}
+                            </td>
+                            <td className="py-1.5 pr-4 text-muted-foreground">
+                              {new Date(e.created_at).toLocaleTimeString("es", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                second: "2-digit",
+                              })}
+                            </td>
+                            <td className="py-1.5 text-muted-foreground font-mono">
+                              {e.session_id.slice(0, 8)}…
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="errors">
+            <ErrorsPanel />
+          </TabsContent>
+
+          <TabsContent value="performance">
+            <PerformancePanel />
+          </TabsContent>
+
+          <TabsContent value="alerts">
+            <RealtimeAlerts />
+          </TabsContent>
+        </Tabs>
       </div>
     </AdminLayout>
   );

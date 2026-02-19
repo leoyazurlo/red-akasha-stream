@@ -3,6 +3,7 @@ import { Play, Radio, Maximize, Volume2, VolumeX } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { Button } from "@/components/ui/button";
 import { useLiveStream } from "@/contexts/LiveStreamContext";
+import { VideoWatermark } from "@/components/VideoWatermark";
 
 export const VideoPlayer = () => {
   const { elementRef, isVisible } = useScrollAnimation({ threshold: 0.2 });
@@ -143,6 +144,8 @@ export const VideoPlayer = () => {
           ref={containerRef}
           className="relative aspect-video bg-card rounded-lg sm:rounded-xl overflow-hidden border-2 border-cyan-400/40 group shadow-[0_0_30px_hsl(180_100%_50%/0.35)] hover:shadow-[0_0_45px_hsl(180_100%_50%/0.5)] transition-shadow duration-300"
         >
+          {/* Watermark */}
+          <VideoWatermark />
           {useYouTubePlayer ? (
             /* YouTube Player - autoplay muted, user can unmute */
             <>

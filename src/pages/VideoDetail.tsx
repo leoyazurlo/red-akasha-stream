@@ -52,6 +52,7 @@ import { useQueuePlayer } from "@/contexts/QueuePlayerContext";
 import { VideoSocialFeatures } from "@/components/video/VideoSocialFeatures";
 import ShareButtons from "@/components/ShareButtons";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { VideoWatermark } from "@/components/VideoWatermark";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
@@ -565,7 +566,8 @@ const VideoDetail = () => {
             <div className="lg:col-span-2 space-y-6">
               {/* Video Player */}
               <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-2 border-cyan-400/40 shadow-[0_0_30px_hsl(180_100%_50%/0.35)]">
-                <AspectRatio ratio={16 / 9} className="bg-black">
+                <AspectRatio ratio={16 / 9} className="bg-black relative">
+                  <VideoWatermark />
                   {isPlaying && video.video_url ? (
                     <video
                       ref={videoPlayerRef}

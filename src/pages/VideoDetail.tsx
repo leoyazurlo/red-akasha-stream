@@ -30,8 +30,14 @@ import {
   ChevronDown,
   Share2,
   PictureInPicture,
-  MapPin
+  MapPin,
+  ListPlus,
+  SkipForward,
+  ToggleLeft,
+  ToggleRight
 } from "lucide-react";
+import { AddToPlaylistDialog } from "@/components/AddToPlaylistDialog";
+import { useQueuePlayer } from "@/contexts/QueuePlayerContext";
 import ShareButtons from "@/components/ShareButtons";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -162,6 +168,11 @@ const VideoDetail = () => {
   const [hasLiked, setHasLiked] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showMoreInfo, setShowMoreInfo] = useState(false);
+  const [showPlaylistDialog, setShowPlaylistDialog] = useState(false);
+  const [autoplay, setAutoplay] = useState(() => {
+    return localStorage.getItem('videodetail_autoplay') !== 'false';
+  });
+  const queuePlayer = useQueuePlayer();
 
   // SEO
   useSEO(
@@ -507,6 +518,11 @@ const VideoDetail = () => {
                       controls
                       autoPlay
                       className="w-full h-full"
+                      onEnded={() => {
+                        if (autoplay && moreContent.length > 0) {
+                          navigate(`/video/${moreContent[0].id}`);
+                        }
+                      }}
                     />
                   ) : (
                     <div 
@@ -596,6 +612,31 @@ const VideoDetail = () => {
                     >
                       <PictureInPicture className="w-4 h-4" />
                       Minireproductor
+                    </Button>
+                    {user && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowPlaylistDialog(true)}
+                        className="flex items-center gap-2"
+                      >
+                        <ListPlus className="w-4 h-4" />
+                        Playlist
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        const next = !autoplay;
+                        setAutoplay(next);
+                        localStorage.setItem('videodetail_autoplay', String(next));
+                      }}
+                      className="flex items-center gap-2 text-xs"
+                      title="Reproducción automática"
+                    >
+                      {autoplay ? <ToggleRight className="w-4 h-4 text-primary" /> : <ToggleLeft className="w-4 h-4" />}
+                      Auto
                     </Button>
                     <ShareButtons
                       videoId={video.id}
@@ -755,9 +796,38 @@ const VideoDetail = () => {
               {/* More Content from same uploader */}
               {moreContent.length > 0 && (
                 <Card className="bg-card/50 backdrop-blur-sm border-border">
-                  <CardHeader>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-lg">Más contenido</CardTitle>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs gap-1"
+                      onClick={() => {
+                        const items = moreContent.map(c => ({
+                          id: c.id,
+                          title: c.title,
+                          video_url: null,
+                          audio_url: null,
+                          thumbnail_url: c.thumbnail_url,
+                          content_type: 'video',
+                          band_name: null,
+                          duration: c.duration,
+                        }));
+                        queuePlayer.setQueue(items, 0);
+                      }}
+                    >
+                      <Play className="w-3 h-3" />
+                      Reproducir todo
+                    </Button>
                   </CardHeader>
+                  {autoplay && (
+                    <div className="px-6 pb-2">
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <SkipForward className="w-3 h-3" />
+                        Autoplay activado — siguiente: <span className="text-foreground font-medium truncate max-w-[150px]">{moreContent[0]?.title}</span>
+                      </p>
+                    </div>
+                  )}
                   <CardContent className="space-y-4">
                     {moreContent.map((content) => (
                       <Link
@@ -859,6 +929,15 @@ const VideoDetail = () => {
 
         <Footer />
       </div>
+
+      {/* Add to Playlist Dialog */}
+      {video && (
+        <AddToPlaylistDialog
+          open={showPlaylistDialog}
+          onOpenChange={setShowPlaylistDialog}
+          contentId={video.id}
+        />
+      )}
     </div>
   );
 };

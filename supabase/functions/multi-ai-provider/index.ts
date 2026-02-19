@@ -175,6 +175,22 @@ serve(async (req) => {
     // Create service client for data operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    // Rate limiting: 30 requests per minute per user
+    const { data: rateLimitOk } = await supabase.rpc("check_rate_limit", {
+      p_user_id: auth.userId,
+      p_endpoint: "multi-ai-provider",
+      p_max_requests: 30,
+      p_window_minutes: 1,
+    });
+
+    if (rateLimitOk === false) {
+      console.log(`[multi-ai-provider] Rate limit exceeded for user: ${auth.userId}`);
+      return new Response(
+        JSON.stringify({ error: "Has excedido el límite de solicitudes (30/min). Espera un momento." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { messages, provider, model, stream = true, generateCode }: ChatRequest = await req.json();
 
     // Get configured providers

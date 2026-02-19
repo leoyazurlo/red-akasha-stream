@@ -1729,6 +1729,57 @@ export type Database = {
           },
         ]
       }
+      ia_job_queue: {
+        Row: {
+          attempts: number
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          job_type: string
+          max_attempts: number
+          payload: Json
+          priority: number
+          result: Json | null
+          scheduled_for: string
+          started_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          job_type: string
+          max_attempts?: number
+          payload?: Json
+          priority?: number
+          result?: Json | null
+          scheduled_for?: string
+          started_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          job_type?: string
+          max_attempts?: number
+          payload?: Json
+          priority?: number
+          result?: Json | null
+          scheduled_for?: string
+          started_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       ia_predictions: {
         Row: {
           accuracy_result: number | null
@@ -1771,6 +1822,33 @@ export type Database = {
           prediction_type?: string
           time_horizon?: string | null
           title?: string
+        }
+        Relationships: []
+      }
+      ia_rate_limits: {
+        Row: {
+          created_at: string
+          endpoint: string
+          id: string
+          request_count: number
+          user_id: string
+          window_start: string
+        }
+        Insert: {
+          created_at?: string
+          endpoint: string
+          id?: string
+          request_count?: number
+          user_id: string
+          window_start?: string
+        }
+        Update: {
+          created_at?: string
+          endpoint?: string
+          id?: string
+          request_count?: number
+          user_id?: string
+          window_start?: string
         }
         Relationships: []
       }
@@ -3848,6 +3926,17 @@ export type Database = {
         Args: { p_content_id: string; p_user_id: string }
         Returns: boolean
       }
+      check_rate_limit: {
+        Args: {
+          p_endpoint: string
+          p_max_requests?: number
+          p_user_id: string
+          p_window_minutes?: number
+        }
+        Returns: boolean
+      }
+      cleanup_old_jobs: { Args: never; Returns: undefined }
+      cleanup_rate_limits: { Args: never; Returns: undefined }
       decrement_likes: { Args: { content_id: string }; Returns: undefined }
       extract_mentions: { Args: { content_text: string }; Returns: string[] }
       generate_rtmp_key: { Args: never; Returns: string }

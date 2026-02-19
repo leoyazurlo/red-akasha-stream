@@ -703,6 +703,57 @@ export type Database = {
           },
         ]
       }
+      error_logs: {
+        Row: {
+          component: string | null
+          created_at: string
+          error_message: string
+          error_stack: string | null
+          error_type: string
+          id: string
+          metadata: Json | null
+          page: string | null
+          resolved: boolean
+          resolved_at: string | null
+          resolved_by: string | null
+          session_id: string | null
+          severity: string
+          user_id: string | null
+        }
+        Insert: {
+          component?: string | null
+          created_at?: string
+          error_message: string
+          error_stack?: string | null
+          error_type?: string
+          id?: string
+          metadata?: Json | null
+          page?: string | null
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          session_id?: string | null
+          severity?: string
+          user_id?: string | null
+        }
+        Update: {
+          component?: string | null
+          created_at?: string
+          error_message?: string
+          error_stack?: string | null
+          error_type?: string
+          id?: string
+          metadata?: Json | null
+          page?: string | null
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          session_id?: string | null
+          severity?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       forum_badges: {
         Row: {
           badge_type: Database["public"]["Enums"]["badge_type"]
@@ -2081,6 +2132,42 @@ export type Database = {
           is_active?: boolean | null
           provider?: string
           supported_currencies?: string[] | null
+        }
+        Relationships: []
+      }
+      performance_metrics: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json | null
+          metric_name: string
+          metric_value: number
+          page: string | null
+          rating: string | null
+          session_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          metric_name: string
+          metric_value: number
+          page?: string | null
+          rating?: string | null
+          session_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          metric_name?: string
+          metric_value?: number
+          page?: string | null
+          rating?: string | null
+          session_id?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -3980,6 +4067,7 @@ export type Database = {
         Returns: boolean
       }
       cleanup_old_jobs: { Args: never; Returns: undefined }
+      cleanup_old_monitoring_logs: { Args: never; Returns: undefined }
       cleanup_rate_limits: { Args: never; Returns: undefined }
       decrement_likes: { Args: { content_id: string }; Returns: undefined }
       extract_mentions: { Args: { content_text: string }; Returns: string[] }

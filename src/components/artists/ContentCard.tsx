@@ -59,23 +59,23 @@ export const ContentCard = ({ content, categoryLabel, index }: ContentCardProps)
       </div>
 
       <CardContent className="p-4">
-        {/* Title */}
-        <h3 className="font-semibold text-foreground line-clamp-2 mb-3 group-hover:text-primary transition-colors">
-          {content.title}
-        </h3>
-
-        {/* Creator info */}
-        <div className="flex items-center gap-2 mb-3">
+        {/* Creator info (artist/band first) */}
+        <div className="flex items-center gap-2 mb-1.5">
           <Avatar className="w-6 h-6">
             <AvatarImage src={content.creator_avatar || undefined} />
             <AvatarFallback className="text-xs bg-primary/10 text-primary">
               {content.creator_name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <span className="text-sm text-muted-foreground truncate">
+          <span className="text-sm font-medium text-foreground truncate">
             {content.creator_name}
           </span>
         </div>
+
+        {/* Title */}
+        <h3 className="text-sm text-muted-foreground line-clamp-2 mb-3 group-hover:text-primary transition-colors">
+          {content.title}
+        </h3>
 
         {/* Stats */}
         <div className="flex items-center gap-4 text-xs text-muted-foreground">

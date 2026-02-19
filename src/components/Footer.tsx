@@ -12,6 +12,7 @@ import { notifySuccess, notifyError } from "@/lib/notifications";
 import { supabase } from "@/integrations/supabase/client";
 import logoRedAkasha from "@/assets/logo-red-akasha-footer.png";
 import logoOpenSource from "@/assets/logo-open-source.png";
+import logoAkashaPlay from "@/assets/logo-akasha-play.png";
 
 interface SocialConfig {
   social_youtube: string;
@@ -286,6 +287,16 @@ export const Footer = () => {
                   height={40}
                   className="h-8 md:h-10 object-contain"
                 />
+                <div className="w-px h-8 bg-zinc-700" />
+                <a href="https://www.akashaplay.com" target="_blank" rel="noopener noreferrer">
+                  <img 
+                    src={logoAkashaPlay} 
+                    alt="Akasha Play" 
+                    width={120}
+                    height={40}
+                    className="h-8 md:h-10 object-contain hover:opacity-80 transition-opacity"
+                  />
+                </a>
               </div>
 
               {/* Social Media Icons with Brand Colors */}

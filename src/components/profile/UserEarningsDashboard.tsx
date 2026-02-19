@@ -42,25 +42,49 @@
     platform_percentage: 40,
    });
  
-   // Fetch platform settings
-   useEffect(() => {
-     const fetchSettings = async () => {
-       const { data } = await supabase
-         .from('platform_payment_settings')
-         .select('setting_key, setting_value')
-         .eq('setting_key', 'single_content_purchase')
-         .maybeSingle();
-       
-       if (data?.setting_value) {
-         const value = data.setting_value as Record<string, any>;
-         setPlatformSettings({
-           author_percentage: value.author_percentage || 70,
-           platform_percentage: value.platform_percentage || 30,
-         });
-       }
-     };
-     fetchSettings();
-   }, []);
+  // Fetch platform settings
+  useEffect(() => {
+    const fetchSettings = async () => {
+      const { data } = await supabase
+        .from('platform_payment_settings')
+        .select('setting_key, setting_value')
+        .eq('setting_key', 'single_content_purchase')
+        .maybeSingle();
+      
+      if (data?.setting_value) {
+        const value = data.setting_value as Record<string, any>;
+        setPlatformSettings({
+          author_percentage: value.author_percentage || 70,
+          platform_percentage: value.platform_percentage || 30,
+        });
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  // Fetch total platform billing (subscriptions + donations + content purchases)
+  const { data: platformBilling } = useQuery({
+    queryKey: ['platform-billing-totals'],
+    queryFn: async () => {
+      const [donationsRes, purchasesRes, subscriptionsRes] = await Promise.all([
+        supabase.from('donations').select('amount').eq('payment_status', 'completed' as any),
+        supabase.from('content_purchases').select('amount').eq('status', 'completed'),
+        supabase.from('user_subscriptions').select('amount').eq('status', 'active'),
+      ]);
+
+      const totalDonations = (donationsRes.data || []).reduce((sum, d) => sum + Number(d.amount), 0);
+      const totalPurchases = (purchasesRes.data || []).reduce((sum, p) => sum + Number(p.amount), 0);
+      const totalSubscriptions = (subscriptionsRes.data || []).reduce((sum, s) => sum + Number(s.amount), 0);
+      const total = totalDonations + totalPurchases + totalSubscriptions;
+
+      return {
+        totalDonations,
+        totalPurchases,
+        totalSubscriptions,
+        total,
+      };
+    },
+  });
  
    // Fetch user earnings
    const { data: earnings, isLoading: earningsLoading } = useQuery({
@@ -163,9 +187,54 @@
      );
    }
  
-   return (
-     <div className="space-y-6">
-       {/* Platform Fee Info */}
+    const totalBilling = platformBilling?.total || 0;
+    const creatorShare = totalBilling * (platformSettings.author_percentage / 100);
+    const platformShare = totalBilling * (platformSettings.platform_percentage / 100);
+
+    return (
+      <div className="space-y-6">
+        {/* Total Platform Billing Summary */}
+        <Card className="bg-card/50 border-cyan-500/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-cyan-400">
+              <DollarSign className="h-5 w-5" />
+              Facturación Total de la Plataforma
+            </CardTitle>
+            <CardDescription>Ingresos globales por suscripciones, donaciones y ventas de contenido</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 md:grid-cols-3 mb-4">
+              <div className="p-3 rounded-lg bg-background/50 border border-border text-center">
+                <p className="text-xs text-muted-foreground">Suscripciones</p>
+                <p className="text-lg font-bold text-cyan-400">${(platformBilling?.totalSubscriptions || 0).toFixed(2)}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-background/50 border border-border text-center">
+                <p className="text-xs text-muted-foreground">Donaciones</p>
+                <p className="text-lg font-bold text-cyan-400">${(platformBilling?.totalDonations || 0).toFixed(2)}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-background/50 border border-border text-center">
+                <p className="text-xs text-muted-foreground">Ventas de Contenido</p>
+                <p className="text-lg font-bold text-cyan-400">${(platformBilling?.totalPurchases || 0).toFixed(2)}</p>
+              </div>
+            </div>
+            <div className="p-4 rounded-lg bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border border-cyan-500/30">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-semibold">Total Facturado</span>
+                <span className="text-2xl font-bold text-cyan-400">${totalBilling.toFixed(2)}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-4 mt-3">
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Creadores ({platformSettings.author_percentage}%)</p>
+                  <p className="text-lg font-bold text-green-400">${creatorShare.toFixed(2)}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xs text-muted-foreground">Red Akasha ({platformSettings.platform_percentage}%)</p>
+                  <p className="text-lg font-bold text-cyan-400">${platformShare.toFixed(2)}</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
        <Card className="bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border-cyan-500/20">
          <CardHeader className="pb-2">
            <CardTitle className="flex items-center gap-2 text-cyan-400">

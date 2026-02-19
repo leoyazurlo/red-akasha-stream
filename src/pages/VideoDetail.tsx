@@ -33,6 +33,8 @@ import {
   MapPin,
   ListPlus,
   SkipForward,
+  SkipBack,
+  Pause,
   ToggleLeft,
   ToggleRight,
   Repeat,
@@ -630,7 +632,53 @@ const VideoDetail = () => {
                 </AspectRatio>
 
                 {/* Playback Controls Bar */}
-                <div className="flex items-center justify-between gap-2 px-4 py-2 bg-card/80 border-t border-border flex-wrap">
+                <div className="flex items-center justify-center gap-2 px-4 py-2 bg-card/80 border-t border-border flex-wrap">
+                  {/* Rewind 10s */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => {
+                      if (videoPlayerRef.current) videoPlayerRef.current.currentTime = Math.max(0, videoPlayerRef.current.currentTime - 10);
+                    }}
+                    title="Retroceder 10s"
+                  >
+                    <SkipBack className="w-4 h-4" />
+                  </Button>
+
+                  {/* Play / Pause */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-9 w-9 p-0"
+                    onClick={() => {
+                      if (!videoPlayerRef.current) return;
+                      if (videoPlayerRef.current.paused) videoPlayerRef.current.play();
+                      else videoPlayerRef.current.pause();
+                    }}
+                    title="Reproducir / Pausar"
+                  >
+                    {videoPlayerRef.current && !videoPlayerRef.current.paused
+                      ? <Pause className="w-5 h-5" />
+                      : <Play className="w-5 h-5 ml-0.5" />
+                    }
+                  </Button>
+
+                  {/* Forward 10s */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => {
+                      if (videoPlayerRef.current) videoPlayerRef.current.currentTime = Math.min(videoPlayerRef.current.duration || 0, videoPlayerRef.current.currentTime + 10);
+                    }}
+                    title="Adelantar 10s"
+                  >
+                    <SkipForward className="w-4 h-4" />
+                  </Button>
+
+                  <div className="w-px h-5 bg-border mx-1" />
+
                   {/* Speed */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

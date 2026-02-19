@@ -311,6 +311,41 @@ export type Database = {
           },
         ]
       }
+      content_chapters: {
+        Row: {
+          content_id: string
+          created_at: string
+          created_by: string
+          id: string
+          timestamp_seconds: number
+          title: string
+        }
+        Insert: {
+          content_id: string
+          created_at?: string
+          created_by: string
+          id?: string
+          timestamp_seconds: number
+          title: string
+        }
+        Update: {
+          content_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          timestamp_seconds?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_chapters_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "content_uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_comments: {
         Row: {
           comment: string
@@ -381,6 +416,41 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "content_likes_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "content_uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      content_lyrics: {
+        Row: {
+          content_id: string
+          created_at: string
+          created_by: string
+          id: string
+          text: string
+          timestamp_seconds: number
+        }
+        Insert: {
+          content_id: string
+          created_at?: string
+          created_by: string
+          id?: string
+          text: string
+          timestamp_seconds: number
+        }
+        Update: {
+          content_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          text?: string
+          timestamp_seconds?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_lyrics_content_id_fkey"
             columns: ["content_id"]
             isOneToOne: false
             referencedRelation: "content_uploads"

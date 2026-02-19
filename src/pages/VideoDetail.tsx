@@ -4,7 +4,7 @@ import { CosmicBackground } from "@/components/CosmicBackground";
 import { useAuth } from "@/hooks/useAuth";
 import { useMiniPlayer } from "@/contexts/MiniPlayerContext";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useSEO } from "@/hooks/use-seo";
 import { generateStreamSEO } from "@/lib/seo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,6 +49,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { AddToPlaylistDialog } from "@/components/AddToPlaylistDialog";
 import { useQueuePlayer } from "@/contexts/QueuePlayerContext";
+import { VideoSocialFeatures } from "@/components/video/VideoSocialFeatures";
 import ShareButtons from "@/components/ShareButtons";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -164,6 +165,7 @@ interface MoreContent {
 
 const VideoDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -193,6 +195,7 @@ const VideoDetail = () => {
   const [sleepTimer, setSleepTimer] = useState<number | null>(null);
   const [sleepTimeLeft, setSleepTimeLeft] = useState<number | null>(null);
   const sleepIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [videoCurrentTime, setVideoCurrentTime] = useState(0);
 
   // Sleep timer effect
   useEffect(() => {
@@ -571,16 +574,26 @@ const VideoDetail = () => {
                       autoPlay
                       loop={loopMode === 'one'}
                       className="w-full h-full"
+                      onTimeUpdate={(e) => setVideoCurrentTime(e.currentTarget.currentTime)}
+                      onLoadedMetadata={() => {
+                        // Seek to timestamp if provided
+                        const tParam = searchParams.get('t') || searchParams.get('start');
+                        if (tParam && videoPlayerRef.current) {
+                          videoPlayerRef.current.currentTime = Number(tParam);
+                        }
+                      }}
                       onEnded={() => {
-                        if (loopMode === 'one') return; // browser handles loop
+                        if (loopMode === 'one') return;
                         if (loopMode === 'all') {
-                          // Replay same video
                           if (videoPlayerRef.current) {
                             videoPlayerRef.current.currentTime = 0;
                             videoPlayerRef.current.play();
                           }
                           return;
                         }
+                        // Check clip end
+                        const endParam = searchParams.get('end');
+                        if (endParam) return; // clip mode, don't autoplay
                         if (autoplay && moreContent.length > 0) {
                           const nextId = shuffleOn
                             ? moreContent[Math.floor(Math.random() * moreContent.length)].id
@@ -844,6 +857,24 @@ const VideoDetail = () => {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Social Features: Timestamp, Clips, Chapters, Lyrics */}
+              <VideoSocialFeatures
+                contentId={video.id}
+                uploaderId={video.uploader_id}
+                currentTime={videoCurrentTime}
+                onSeek={(time) => {
+                  if (videoPlayerRef.current) {
+                    videoPlayerRef.current.currentTime = time;
+                    if (videoPlayerRef.current.paused) {
+                      videoPlayerRef.current.play().catch(() => {});
+                    }
+                  } else {
+                    setIsPlaying(true);
+                    // Will seek after metadata loads via onLoadedMetadata
+                  }
+                }}
+              />
 
               {/* Comments Section */}
               <Card className="bg-card/50 backdrop-blur-sm border-border">

@@ -1,8 +1,9 @@
+import { useEffect, useRef } from "react";
 import { useQueuePlayer, QueueItem } from "@/contexts/QueuePlayerContext";
 import { Button } from "@/components/ui/button";
 import { 
   X, ChevronUp, ChevronDown, Play, Pause, SkipBack, SkipForward, 
-  Video, Music, Film, Mic2, Clapperboard, ListMusic
+  Video, Music, Film, Mic2, Clapperboard, ListMusic, MonitorPlay, Headphones
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -27,10 +28,31 @@ const categoryTabs = [
 export const FloatingQueuePlayer = () => {
   const {
     queue, currentIndex, isOpen, isPlaying, isExpanded,
-    currentTime, totalDuration, activeCategory,
-    setActiveCategory, togglePlay, playNext, playPrev,
-    closePlayer, setExpanded, playItem, seekTo,
+    currentTime, totalDuration, activeCategory, playbackMode,
+    setPlaybackMode, setActiveCategory, togglePlay, playNext, playPrev,
+    closePlayer, setExpanded, playItem, seekTo, videoRef,
   } = useQueuePlayer();
+
+  const videoContainerRef = useRef<HTMLDivElement>(null);
+
+  // Move the global <video> element into our container when open
+  useEffect(() => {
+    const videoEl = videoRef.current;
+    const container = videoContainerRef.current;
+    if (!videoEl || !container || !isOpen) return;
+
+    // Move video element into our visible container
+    videoEl.classList.remove('sr-only');
+    videoEl.className = 'w-full h-full object-contain bg-black rounded-lg';
+    container.appendChild(videoEl);
+
+    return () => {
+      // Move it back to body and hide
+      videoEl.classList.add('sr-only');
+      videoEl.className = 'sr-only';
+      document.body.appendChild(videoEl);
+    };
+  }, [isOpen, videoRef]);
 
   if (!isOpen || queue.length === 0) return null;
 
@@ -38,6 +60,8 @@ export const FloatingQueuePlayer = () => {
   if (!current) return null;
 
   const progress = totalDuration > 0 ? (currentTime / totalDuration) * 100 : 0;
+  const hasVideo = !!current.video_url;
+  const showVideo = playbackMode === 'video' && hasVideo;
 
   const filteredQueue = activeCategory === 'all' 
     ? queue 
@@ -50,59 +74,110 @@ export const FloatingQueuePlayer = () => {
     )}>
       {/* Expanded overlay */}
       {isExpanded && (
-        <div className="absolute inset-0 bg-background/95 backdrop-blur-xl flex flex-col">
-          {/* Expanded header */}
+        <div className="absolute inset-0 bg-background/98 backdrop-blur-xl flex flex-col">
+          {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-border/50">
             <h2 className="text-lg font-semibold text-foreground">Cola de reproducción</h2>
-            <Button size="icon" variant="ghost" onClick={() => setExpanded(false)}>
-              <ChevronDown className="h-5 w-5" />
-            </Button>
+            <div className="flex items-center gap-2">
+              {/* Audio/Video toggle */}
+              {hasVideo && (
+                <div className="flex items-center bg-muted/30 rounded-full p-0.5">
+                  <button
+                    onClick={() => setPlaybackMode('video')}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs transition-all",
+                      playbackMode === 'video' 
+                        ? "bg-primary text-primary-foreground" 
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <MonitorPlay className="w-3 h-3" />
+                    Video
+                  </button>
+                  <button
+                    onClick={() => setPlaybackMode('audio')}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs transition-all",
+                      playbackMode === 'audio' 
+                        ? "bg-primary text-primary-foreground" 
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Headphones className="w-3 h-3" />
+                    Audio
+                  </button>
+                </div>
+              )}
+              <Button size="icon" variant="ghost" onClick={() => setExpanded(false)}>
+                <ChevronDown className="h-5 w-5" />
+              </Button>
+            </div>
           </div>
 
-          {/* Now playing in expanded */}
-          <div className="p-6 flex items-center gap-4 border-b border-border/30">
-            <div className="w-20 h-20 rounded-lg overflow-hidden bg-muted/20 flex-shrink-0">
-              {current.thumbnail_url ? (
-                <img src={current.thumbnail_url} alt={current.title} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Video className="w-8 h-8 text-muted-foreground" />
-                </div>
-              )}
+          {/* Video display area */}
+          {showVideo && (
+            <div className="w-full max-w-3xl mx-auto px-4 pt-4">
+              <div 
+                ref={videoContainerRef}
+                className="aspect-video bg-black rounded-lg overflow-hidden"
+              />
             </div>
-            <div className="flex-1 min-w-0">
-              {current.band_name && (
-                <p className="text-sm font-semibold text-foreground truncate">{current.band_name}</p>
-              )}
-              <p className="text-sm text-muted-foreground truncate">{current.title}</p>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="text-xs text-muted-foreground">{formatTime(currentTime)}</span>
-                <div className="flex-1 h-1 bg-muted/30 rounded-full cursor-pointer" 
-                  onClick={(e) => {
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    const pct = (e.clientX - rect.left) / rect.width;
-                    seekTo(pct * totalDuration);
-                  }}>
-                  <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${progress}%` }} />
-                </div>
-                <span className="text-xs text-muted-foreground">{formatTime(totalDuration)}</span>
+          )}
+
+          {/* Audio-only: show large thumbnail */}
+          {!showVideo && (
+            <div className="flex items-center gap-4 p-6 max-w-3xl mx-auto w-full">
+              <div className="w-24 h-24 rounded-lg overflow-hidden bg-muted/20 flex-shrink-0">
+                {current.thumbnail_url ? (
+                  <img src={current.thumbnail_url} alt={current.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Headphones className="w-10 h-10 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                {current.band_name && (
+                  <p className="text-lg font-semibold text-foreground truncate">{current.band_name}</p>
+                )}
+                <p className="text-sm text-muted-foreground truncate">{current.title}</p>
               </div>
             </div>
-            <div className="flex items-center gap-1">
-              <Button size="icon" variant="ghost" onClick={playPrev} disabled={currentIndex === 0} className="h-9 w-9">
-                <SkipBack className="h-4 w-4" />
+          )}
+
+          {/* Controls */}
+          <div className="px-6 py-3 max-w-3xl mx-auto w-full">
+            {/* Progress */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground w-10 text-right">{formatTime(currentTime)}</span>
+              <div className="flex-1 h-1.5 bg-muted/30 rounded-full cursor-pointer group" 
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const pct = (e.clientX - rect.left) / rect.width;
+                  seekTo(pct * totalDuration);
+                }}>
+                <div className="h-full bg-primary rounded-full transition-all relative" style={{ width: `${progress}%` }}>
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-primary rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              </div>
+              <span className="text-xs text-muted-foreground w-10">{formatTime(totalDuration)}</span>
+            </div>
+            {/* Play controls */}
+            <div className="flex items-center justify-center gap-4 mt-3">
+              <Button size="icon" variant="ghost" onClick={playPrev} disabled={currentIndex === 0} className="h-10 w-10">
+                <SkipBack className="h-5 w-5" />
               </Button>
-              <Button size="icon" onClick={togglePlay} className="h-10 w-10 rounded-full bg-primary hover:bg-primary/90">
-                {isPlaying ? <Pause className="h-5 w-5" fill="currentColor" /> : <Play className="h-5 w-5 ml-0.5" fill="currentColor" />}
+              <Button size="icon" onClick={togglePlay} className="h-12 w-12 rounded-full bg-primary hover:bg-primary/90">
+                {isPlaying ? <Pause className="h-6 w-6" fill="currentColor" /> : <Play className="h-6 w-6 ml-0.5" fill="currentColor" />}
               </Button>
-              <Button size="icon" variant="ghost" onClick={playNext} disabled={currentIndex >= queue.length - 1} className="h-9 w-9">
-                <SkipForward className="h-4 w-4" />
+              <Button size="icon" variant="ghost" onClick={playNext} disabled={currentIndex >= queue.length - 1} className="h-10 w-10">
+                <SkipForward className="h-5 w-5" />
               </Button>
             </div>
           </div>
 
           {/* Category tabs */}
-          <div className="flex gap-1 px-4 pt-3 pb-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+          <div className="flex gap-1 px-4 pt-2 pb-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
             {categoryTabs.map(tab => {
               const Icon = tab.icon;
               const count = tab.value === 'all' ? queue.length : queue.filter(q => q.content_type === tab.value).length;
@@ -129,7 +204,7 @@ export const FloatingQueuePlayer = () => {
           {/* Queue list */}
           <ScrollArea className="flex-1 px-4">
             <div className="space-y-1 py-2">
-              {filteredQueue.map((item, idx) => {
+              {filteredQueue.map((item) => {
                 const globalIdx = queue.findIndex(q => q.id === item.id);
                 const isCurrent = globalIdx === currentIndex;
                 return (
@@ -194,14 +269,22 @@ export const FloatingQueuePlayer = () => {
           </div>
 
           <div className="flex items-center gap-3 px-4 py-2">
-            {/* Thumbnail */}
-            <div className="w-10 h-10 rounded overflow-hidden bg-muted/20 flex-shrink-0">
-              {current.thumbnail_url ? (
-                <img src={current.thumbnail_url} alt={current.title} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Video className="w-4 h-4 text-muted-foreground" />
-                </div>
+            {/* Video mini preview or thumbnail */}
+            <div 
+              ref={!isExpanded ? videoContainerRef : undefined}
+              className={cn(
+                "rounded overflow-hidden bg-muted/20 flex-shrink-0",
+                showVideo ? "w-20 h-12" : "w-10 h-10"
+              )}
+            >
+              {!showVideo && (
+                current.thumbnail_url ? (
+                  <img src={current.thumbnail_url} alt={current.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Music className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                )
               )}
             </div>
 
@@ -214,6 +297,19 @@ export const FloatingQueuePlayer = () => {
                 {current.band_name ? current.title : formatTime(currentTime)}
               </p>
             </div>
+
+            {/* Audio/Video toggle mini */}
+            {hasVideo && (
+              <Button 
+                size="icon" 
+                variant="ghost" 
+                onClick={() => setPlaybackMode(playbackMode === 'video' ? 'audio' : 'video')}
+                className="h-8 w-8"
+                title={playbackMode === 'video' ? 'Solo audio' : 'Ver video'}
+              >
+                {playbackMode === 'video' ? <MonitorPlay className="h-3.5 w-3.5" /> : <Headphones className="h-3.5 w-3.5" />}
+              </Button>
+            )}
 
             {/* Controls */}
             <div className="flex items-center gap-1">

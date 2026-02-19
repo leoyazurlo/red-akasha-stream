@@ -782,22 +782,24 @@ const VideoDetail = () => {
                               {formatDuration(content.duration)}
                             </Badge>
                           )}
-                          <span className={cn(
-                            "absolute top-1 left-1 text-[10px] px-1.5 py-0.5 rounded",
-                            content.is_free 
-                              ? "bg-cyan-500/80 text-white" 
-                              : "bg-amber-500/80 text-white"
-                          )}>
-                            {content.is_free ? "Libre" : "Pago"}
-                          </span>
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
                             {content.title}
                           </p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {content.views_count} vistas
-                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <p className="text-xs text-muted-foreground">
+                              {content.views_count} vistas
+                            </p>
+                            <span className={cn(
+                              "text-[10px] px-1.5 py-0.5 rounded font-medium",
+                              content.is_free 
+                                ? "bg-cyan-500/80 text-white" 
+                                : "bg-amber-500/80 text-white"
+                            )}>
+                              {content.is_free ? "Libre" : "Pago"}
+                            </span>
+                          </div>
                         </div>
                       </Link>
                     ))}

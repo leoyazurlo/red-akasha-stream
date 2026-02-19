@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { MiniPlayerProvider } from "@/contexts/MiniPlayerContext";
 import { MiniPlayer } from "@/components/MiniPlayer";
+import { QueuePlayerProvider } from "@/contexts/QueuePlayerContext";
+import { FloatingQueuePlayer } from "@/components/ondemand/FloatingQueuePlayer";
 import { LiveStreamProvider } from "@/contexts/LiveStreamContext";
 import { FloatingLivePlayer } from "@/components/FloatingLivePlayer";
 import { GeoRestrictionGuard } from "@/components/GeoRestrictionGuard";
@@ -172,6 +174,7 @@ const AppShell = () => {
             <ErrorBoundary context="stream">
               <MiniPlayer />
               <FloatingLivePlayer />
+              <FloatingQueuePlayer />
             </ErrorBoundary>
             
             <UnreadMessagesAlert />
@@ -188,6 +191,7 @@ const AppShell = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <QueuePlayerProvider>
     <MiniPlayerProvider>
       <TooltipProvider>
         <Toaster />
@@ -197,6 +201,7 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </MiniPlayerProvider>
+    </QueuePlayerProvider>
   </QueryClientProvider>
 );
 

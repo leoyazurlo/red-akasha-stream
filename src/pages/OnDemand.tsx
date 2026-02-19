@@ -12,8 +12,9 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { notifyError } from "@/lib/notifications";
 import { useFavorites } from "@/hooks/useFavorites";
-import { Play, Search, Loader2, TrendingUp, Sparkles, Heart, ListPlus, Video, Music } from "lucide-react";
+import { Play, Search, Loader2, TrendingUp, Sparkles, Heart, ListPlus, Video, Music, ListMusic } from "lucide-react";
 import { AddToPlaylistDialog } from "@/components/AddToPlaylistDialog";
+import { useQueuePlayer, QueueItem } from "@/contexts/QueuePlayerContext";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -80,6 +81,7 @@ const OnDemand = () => {
   const [showAddToPlaylist, setShowAddToPlaylist] = useState(false);
   const [selectedContentId, setSelectedContentId] = useState<string | null>(null);
   const { toggleFavorite, isFavorite, loading: favLoading } = useFavorites();
+  const { setQueue, isOpen: queueOpen } = useQueuePlayer();
 
   useEffect(() => {
     checkUserProfile();
@@ -201,6 +203,24 @@ const OnDemand = () => {
 
   const handleContentClick = (content: Content) => {
     navigate(`/video/${content.id}`);
+  };
+
+  const handlePlayQueue = () => {
+    const items: QueueItem[] = filteredContents
+      .filter(c => c.video_url || c.audio_url)
+      .map(c => ({
+        id: c.id,
+        title: c.title,
+        video_url: c.video_url,
+        audio_url: c.audio_url,
+        thumbnail_url: c.thumbnail_url,
+        content_type: c.content_type,
+        band_name: c.band_name,
+        duration: c.duration,
+      }));
+    if (items.length > 0) {
+      setQueue(items, 0);
+    }
   };
 
   const handleContinueWatching = (history: PlaybackHistory) => {
@@ -355,15 +375,26 @@ const OnDemand = () => {
       <div className="relative z-10">
         <Header />
         
-        <main id="main-content" className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <main id="main-content" className={cn("pt-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto", queueOpen ? "pb-32" : "pb-16")}>
           {/* Minimal Header */}
-          <div className="mb-8">
-            <h1 className="text-2xl font-medium text-foreground">
-              On Demand
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Explora contenido exclusivo de la comunidad
-            </p>
+          <div className="mb-8 flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-medium text-foreground">
+                On Demand
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Explora contenido exclusivo de la comunidad
+              </p>
+            </div>
+            {filteredContents.length > 0 && (
+              <Button 
+                onClick={handlePlayQueue}
+                className="gap-2 bg-primary hover:bg-primary/90"
+              >
+                <ListMusic className="w-4 h-4" />
+                Reproducir cola
+              </Button>
+            )}
           </div>
 
           {/* Search */}

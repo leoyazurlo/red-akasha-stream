@@ -3385,6 +3385,13 @@ export type Database = {
             referencedRelation: "content_purchases"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "user_earnings_purchase_id_fkey"
+            columns: ["purchase_id"]
+            isOneToOne: false
+            referencedRelation: "creator_purchase_summary"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_favorites: {
@@ -3799,6 +3806,26 @@ export type Database = {
       }
     }
     Views: {
+      creator_purchase_summary: {
+        Row: {
+          amount: number | null
+          content_id: string | null
+          created_at: string | null
+          currency: string | null
+          id: string | null
+          purchase_type: string | null
+          status: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_purchases_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "content_uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ia_proposal_vote_summary: {
         Row: {
           abstain_count: number | null
@@ -3918,6 +3945,23 @@ export type Database = {
       }
     }
     Functions: {
+      admin_get_banking_info: {
+        Args: { p_target_user_id: string }
+        Returns: {
+          account_holder_name: string
+          account_type: string
+          bank_name: string
+          created_at: string
+          encrypted_account_number: string
+          id: string
+          mercadopago_alias: string
+          paypal_email: string
+          preferred_method: string
+          routing_number: string
+          updated_at: string
+          user_id: string
+        }[]
+      }
       award_badge_if_eligible: {
         Args: { p_badge_name: string; p_user_id: string }
         Returns: undefined

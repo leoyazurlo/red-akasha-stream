@@ -72,6 +72,15 @@
         supabase.from('user_subscriptions').select('amount').eq('status', 'active'),
       ]);
 
+      // Count unique content creators (users with audio/video uploads)
+      const creatorsRes = await supabase
+        .from('content_uploads')
+        .select('uploader_id')
+        .in('content_type', ['video_clip', 'video_musical_vivo', 'podcast', 'documental', 'corto', 'pelicula']);
+
+      const uniqueCreators = new Set((creatorsRes.data || []).map(c => c.uploader_id));
+      const creatorsCount = uniqueCreators.size || 1;
+
       const totalDonations = (donationsRes.data || []).reduce((sum, d) => sum + Number(d.amount), 0);
       const totalPurchases = (purchasesRes.data || []).reduce((sum, p) => sum + Number(p.amount), 0);
       const totalSubscriptions = (subscriptionsRes.data || []).reduce((sum, s) => sum + Number(s.amount), 0);
@@ -82,6 +91,7 @@
         totalPurchases,
         totalSubscriptions,
         total,
+        creatorsCount,
       };
     },
   });
@@ -188,8 +198,9 @@
    }
  
     const totalBilling = platformBilling?.total || 0;
-    const creatorShare = totalBilling * (platformSettings.author_percentage / 100);
-    const platformShare = totalBilling * (platformSettings.platform_percentage / 100);
+     const creatorShare = totalBilling * (platformSettings.author_percentage / 100);
+     const platformShare = totalBilling * (platformSettings.platform_percentage / 100);
+     const perCreatorAmount = (platformBilling?.creatorsCount || 1) > 0 ? creatorShare / (platformBilling?.creatorsCount || 1) : 0;
 
     return (
       <div className="space-y-6">
@@ -226,6 +237,9 @@
                 <div className="text-center">
                   <p className="text-xs text-muted-foreground">Creadores ({platformSettings.author_percentage}%)</p>
                   <p className="text-lg font-bold text-green-400">${creatorShare.toFixed(2)}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {platformBilling?.creatorsCount || 0} creador{(platformBilling?.creatorsCount || 0) !== 1 ? 'es' : ''} • ${perCreatorAmount.toFixed(2)} c/u
+                  </p>
                 </div>
                 <div className="text-center">
                   <p className="text-xs text-muted-foreground">Red Akasha ({platformSettings.platform_percentage}%)</p>

@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.multi-agent-orchestrator]
 verify_jwt = false
+
+[functions.ai-profile-notifier]
+verify_jwt = false

@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Mail, Users, Crown, Heart, Send, Loader2, Paperclip, X, FileText, Image, File } from "lucide-react";
+import { Mail, Users, Crown, Heart, Send, Loader2, Paperclip, X, FileText, Image, File, Bot, Eye, Sparkles } from "lucide-react";
 import { formatFileSize } from "@/lib/storage-validation";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB per file
@@ -24,6 +24,65 @@ export default function Communications() {
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
   const [attachments, setAttachments] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [aiNotifying, setAiNotifying] = useState(false);
+  const [aiPreview, setAiPreview] = useState<any>(null);
+  const [aiResult, setAiResult] = useState<any>(null);
+
+  const handleAiPreview = async () => {
+    setAiNotifying(true);
+    setAiPreview(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { toast.error("Sesión requerida"); return; }
+      
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-profile-notifier`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ dry_run: true, max_users: 100 }),
+      });
+      
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      setAiPreview(data);
+      toast.success(`${data.total_incomplete} perfiles incompletos detectados`);
+    } catch (e) {
+      toast.error("Error al analizar perfiles");
+      console.error(e);
+    } finally {
+      setAiNotifying(false);
+    }
+  };
+
+  const handleAiSend = async () => {
+    setAiNotifying(true);
+    setAiResult(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { toast.error("Sesión requerida"); return; }
+      
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-profile-notifier`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ dry_run: false, max_users: 100 }),
+      });
+      
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+      setAiResult(data);
+      toast.success(`${data.sent} mensajes enviados por Akasha IA`);
+    } catch (e) {
+      toast.error("Error al enviar notificaciones IA");
+      console.error(e);
+    } finally {
+      setAiNotifying(false);
+    }
+  };
   // Fetch all users count
   const { data: usersCount } = useQuery({
     queryKey: ["users-count"],
@@ -220,6 +279,10 @@ export default function Communications() {
         <Tabs defaultValue="compose" className="space-y-4">
           <TabsList className="bg-muted/50">
             <TabsTrigger value="compose">Redactar Email</TabsTrigger>
+            <TabsTrigger value="ai-notifier" className="flex items-center gap-1">
+              <Bot className="h-4 w-4" />
+              Akasha IA
+            </TabsTrigger>
             <TabsTrigger value="history">Historial</TabsTrigger>
           </TabsList>
 
@@ -420,6 +483,91 @@ export default function Communications() {
                 </Card>
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="ai-notifier" className="space-y-4">
+            <Card className="bg-card/50 border-cyan-500/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  Notificador IA de Perfiles Incompletos
+                </CardTitle>
+                <CardDescription>
+                  Akasha IA analiza los perfiles de usuarios y envía mensajes directos personalizados
+                  a quienes tienen datos incompletos, motivándolos a completar su información.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-3">
+                  <Button
+                    onClick={handleAiPreview}
+                    disabled={aiNotifying}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    {aiNotifying ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
+                    Vista Previa
+                  </Button>
+                  <Button
+                    onClick={handleAiSend}
+                    disabled={aiNotifying}
+                    className="flex items-center gap-2"
+                  >
+                    {aiNotifying ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bot className="h-4 w-4" />}
+                    Enviar Mensajes IA
+                  </Button>
+                </div>
+
+                <p className="text-xs text-muted-foreground">
+                  ⏱ Solo se envía 1 mensaje por usuario cada 7 días para evitar spam.
+                  Los mensajes se envían como mensajes directos desde tu cuenta de admin.
+                </p>
+
+                {aiPreview && (
+                  <Card className="bg-muted/30 border-primary/20">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Vista Previa — {aiPreview.total_incomplete} perfiles incompletos</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                        {aiPreview.details?.map((d: any, i: number) => (
+                          <div key={i} className="p-3 rounded-lg bg-background/50 border border-border text-sm">
+                            <p className="font-medium text-foreground">
+                              {d.fullName || d.username || "Sin nombre"}
+                              {d.username && <span className="text-muted-foreground ml-1">@{d.username}</span>}
+                            </p>
+                            <p className="text-muted-foreground mt-1">
+                              Falta: {d.missing.join(", ")}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {aiResult && (
+                  <Card className="bg-green-500/10 border-green-500/30">
+                    <CardContent className="pt-4">
+                      <div className="flex items-center gap-2 text-green-400 font-medium">
+                        <Sparkles className="h-4 w-4" />
+                        {aiResult.sent} mensajes enviados exitosamente
+                      </div>
+                      {aiResult.skipped_recent > 0 && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {aiResult.skipped_recent} usuarios omitidos (ya notificados recientemente)
+                        </p>
+                      )}
+                      {aiResult.errors?.length > 0 && (
+                        <p className="text-xs text-destructive mt-1">
+                          {aiResult.errors.length} errores
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="history">

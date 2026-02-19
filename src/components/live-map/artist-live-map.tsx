@@ -11,6 +11,33 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { MapSearch } from "./map-search";
 import { MapHeader } from "./map-header";
 
+const PROFILE_TYPE_LABELS: Record<string, string> = {
+  musico: "Músico",
+  percusion: "Percusión",
+  agrupacion: "Agrupación",
+  agrupacion_musical: "Agrupación Musical",
+  dj: "DJ",
+  vj: "VJ",
+  danza: "Danza",
+  fotografia_digital: "Fotografía Digital",
+  productor_artistico: "Productor Artístico",
+  productor_audiovisual: "Productor Audiovisual",
+  promotor_artistico: "Promotor Artístico",
+  representante: "Representante",
+  sala_concierto: "Sala de Concierto",
+  estudio_grabacion: "Estudio de Grabación",
+  sello_discografico: "Sello Discográfico",
+  marketing_digital: "Marketing Digital",
+  contenido: "Contenido",
+  management: "Management",
+  melomano: "Melómano",
+  arte_digital: "Arte Digital",
+};
+
+function formatProfileType(type: string): string {
+  return PROFILE_TYPE_LABELS[type] || type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 // Coordinates for Latin American cities
 const CITY_COORDS: Record<string, [number, number]> = {
   "Buenos Aires": [-58.4, -34.6],
@@ -221,7 +248,7 @@ export function ArtistLiveMap() {
         <div style="padding:8px;font-family:inherit;">
           <strong style="color:#e2e8f0;">${profile.display_name}</strong>
           <p style="color:#94a3b8;margin:2px 0;font-size:12px;">${profile.ciudad}, ${profile.pais}</p>
-          ${profile.profile_type ? `<p style="color:#a78bfa;font-size:11px;">${profile.profile_type}</p>` : ""}
+          ${profile.profile_type ? `<p style="color:#a78bfa;font-size:11px;">${formatProfileType(profile.profile_type)}</p>` : ""}
         </div>
       `);
 
@@ -314,7 +341,7 @@ export function ArtistLiveMap() {
             <div className="mb-4">
               {selectedProfile.profile.profile_type && (
                 <Badge variant="secondary" className="text-xs mb-2">
-                  {selectedProfile.profile.profile_type}
+                  {formatProfileType(selectedProfile.profile.profile_type)}
                 </Badge>
               )}
               {selectedProfile.profile.bio && (

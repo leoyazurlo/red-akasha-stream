@@ -435,12 +435,12 @@ const Suscripciones = () => {
               
               <div className="max-w-2xl mx-auto space-y-3 text-muted-foreground leading-relaxed">
                 <p>
-                  <strong className="text-foreground">Red Akasha es un sueño compartido.</strong> Una plataforma creada por artistas, 
-                  para artistas, donde la música y el arte latinoamericano pueden brillar sin fronteras.
+                  <strong className="text-foreground">Red Akasha</strong> es un sueño compartido: una plataforma creada por artistas y para artistas, 
+                  donde la música y el arte latinoamericano pueden brillar sin fronteras.
                 </p>
                 <p>
-                  Mientras que para Latinoamérica este proyecto es de <span className="text-primary font-semibold">libre uso</span>, 
-                  necesitamos el apoyo de quienes están más allá de nuestras fronteras para seguir creciendo.
+                  En Latinoamérica este proyecto está disponible de manera <span className="text-primary font-semibold">libre y abierta</span>, 
+                  pero para seguir creciendo necesitamos el apoyo de quienes se encuentran más allá de nuestras fronteras.
                 </p>
               </div>
             </CardContent>

@@ -11,6 +11,8 @@ export interface QueueItem {
   duration: number | null;
 }
 
+export type PlaybackMode = 'video' | 'audio';
+
 interface QueuePlayerContextType {
   queue: QueueItem[];
   currentIndex: number;
@@ -20,6 +22,8 @@ interface QueuePlayerContextType {
   currentTime: number;
   totalDuration: number;
   activeCategory: string;
+  playbackMode: PlaybackMode;
+  setPlaybackMode: (mode: PlaybackMode) => void;
   setActiveCategory: (cat: string) => void;
   setQueue: (items: QueueItem[], startIndex?: number) => void;
   addToQueue: (item: QueueItem) => void;
@@ -44,6 +48,7 @@ export const QueuePlayerProvider = ({ children }: { children: ReactNode }) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [totalDuration, setTotalDuration] = useState(0);
   const [activeCategory, setActiveCategory] = useState('all');
+  const [playbackMode, setPlaybackMode] = useState<PlaybackMode>('video');
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const currentItem = queue[currentIndex] || null;
@@ -143,6 +148,8 @@ export const QueuePlayerProvider = ({ children }: { children: ReactNode }) => {
       currentTime,
       totalDuration,
       activeCategory,
+      playbackMode,
+      setPlaybackMode,
       setActiveCategory,
       setQueue,
       addToQueue,
@@ -156,10 +163,10 @@ export const QueuePlayerProvider = ({ children }: { children: ReactNode }) => {
       videoRef,
     }}>
       {children}
-      {/* Global video/audio element */}
+      {/* Global video/audio element — positioned by FloatingQueuePlayer via CSS */}
       <video
         ref={videoRef}
-        className="hidden"
+        className="sr-only"
         onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
         onLoadedMetadata={(e) => setTotalDuration(e.currentTarget.duration)}
         onEnded={playNext}

@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Loader2, DollarSign, Percent, Globe, Save, ArrowLeft } from "lucide-react";
+import { Loader2, DollarSign, Percent, Globe, Save, ArrowLeft, Zap, ExternalLink, Shield, Users, AlertTriangle, CheckCircle2, Copy, RefreshCw } from "lucide-react";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -127,6 +127,7 @@ const PaymentSettings = () => {
          <Tabs defaultValue="revenue" className="space-y-6">
            <TabsList className="bg-card/50 border border-cyan-500/20">
              <TabsTrigger value="revenue">Revenue Share</TabsTrigger>
+             <TabsTrigger value="stripe-connect">Stripe Connect</TabsTrigger>
              <TabsTrigger value="platform-accounts">Cuentas Red Akasha</TabsTrigger>
              <TabsTrigger value="regions">Acceso por Región</TabsTrigger>
            </TabsList>
@@ -313,6 +314,325 @@ const PaymentSettings = () => {
                        onChange={(e) => updateSetting('subscription_annual', 'platform_percentage', parseInt(e.target.value))}
                        className="bg-background/50"
                      />
+                   </div>
+                 </div>
+               </CardContent>
+             </Card>
+           </TabsContent>
+
+           {/* Stripe Connect Tab */}
+           <TabsContent value="stripe-connect" className="space-y-6">
+             {/* Info Banner */}
+             <Card className="bg-gradient-to-r from-purple-500/10 to-cyan-500/10 border-purple-500/30">
+               <CardContent className="p-4">
+                 <div className="flex items-start gap-3">
+                   <Zap className="h-6 w-6 text-purple-400 mt-0.5" />
+                   <div>
+                     <h3 className="font-semibold text-purple-400">Stripe Connect — Split Payments</h3>
+                     <p className="text-sm text-muted-foreground mt-1">
+                       Con Stripe Connect, los pagos se dividen <strong>automáticamente</strong> en el momento de la transacción. 
+                       El dinero del creador <strong>nunca pasa por la cuenta de la plataforma</strong>. Stripe envía directamente 
+                       el {settings.single_content_purchase?.author_percentage || 60}% al creador y el {settings.single_content_purchase?.platform_percentage || 40}% a Red Akasha.
+                     </p>
+                   </div>
+                 </div>
+               </CardContent>
+             </Card>
+
+             {/* Connection Status */}
+             <Card className="bg-card/50 border-cyan-500/20">
+               <CardHeader>
+                 <div className="flex items-center justify-between">
+                   <CardTitle className="flex items-center gap-2 text-cyan-400">
+                     <Shield className="h-5 w-5" />
+                     Estado de Conexión
+                   </CardTitle>
+                   <Badge 
+                     variant="outline" 
+                     className={settings.stripe_connect?.enabled 
+                       ? "border-green-500/30 text-green-400" 
+                       : "border-yellow-500/30 text-yellow-400"
+                     }
+                   >
+                     {settings.stripe_connect?.enabled ? '✅ Conectado' : '⏳ No configurado'}
+                   </Badge>
+                 </div>
+                 <CardDescription>
+                   Configura la conexión con Stripe Connect para habilitar split payments
+                 </CardDescription>
+               </CardHeader>
+               <CardContent className="space-y-4">
+                 <div className="flex items-center justify-between">
+                   <div>
+                     <Label>Habilitar Stripe Connect</Label>
+                     <p className="text-sm text-muted-foreground">
+                       Activa la integración con Stripe para pagos divididos automáticos
+                     </p>
+                   </div>
+                   <Switch
+                     checked={settings.stripe_connect?.enabled || false}
+                     onCheckedChange={(checked) => updateSetting('stripe_connect', 'enabled', checked)}
+                   />
+                 </div>
+
+                 <div className="grid gap-4 md:grid-cols-2">
+                   <div className="space-y-2">
+                     <Label>Modo</Label>
+                     <div className="flex gap-2">
+                       <Button 
+                         variant={settings.stripe_connect?.mode === 'test' ? 'default' : 'outline'}
+                         size="sm"
+                         onClick={() => updateSetting('stripe_connect', 'mode', 'test')}
+                         className={settings.stripe_connect?.mode === 'test' ? 'bg-yellow-600 hover:bg-yellow-700' : ''}
+                       >
+                         <AlertTriangle className="h-3 w-3 mr-1" />
+                         Test
+                       </Button>
+                       <Button 
+                         variant={settings.stripe_connect?.mode === 'live' ? 'default' : 'outline'}
+                         size="sm"
+                         onClick={() => updateSetting('stripe_connect', 'mode', 'live')}
+                         className={settings.stripe_connect?.mode === 'live' ? 'bg-green-600 hover:bg-green-700' : ''}
+                       >
+                         <CheckCircle2 className="h-3 w-3 mr-1" />
+                         Live
+                       </Button>
+                     </div>
+                   </div>
+
+                   <div className="space-y-2">
+                     <Label>Tipo de Cuenta Connect</Label>
+                     <div className="flex gap-2">
+                       <Button 
+                         variant={settings.stripe_connect?.connect_type === 'express' ? 'default' : 'outline'}
+                         size="sm"
+                         onClick={() => updateSetting('stripe_connect', 'connect_type', 'express')}
+                       >
+                         Express (recomendado)
+                       </Button>
+                       <Button 
+                         variant={settings.stripe_connect?.connect_type === 'standard' ? 'default' : 'outline'}
+                         size="sm"
+                         onClick={() => updateSetting('stripe_connect', 'connect_type', 'standard')}
+                       >
+                         Standard
+                       </Button>
+                     </div>
+                   </div>
+                 </div>
+               </CardContent>
+             </Card>
+
+             {/* Onboarding de Creadores */}
+             <Card className="bg-card/50 border-cyan-500/20">
+               <CardHeader>
+                 <CardTitle className="flex items-center gap-2 text-cyan-400">
+                   <Users className="h-5 w-5" />
+                   Onboarding de Creadores
+                 </CardTitle>
+                 <CardDescription>
+                   Los creadores deben vincular su cuenta Stripe para recibir pagos directos
+                 </CardDescription>
+               </CardHeader>
+               <CardContent className="space-y-4">
+                 <div className="flex items-center justify-between">
+                   <div>
+                     <Label>Habilitar Onboarding</Label>
+                     <p className="text-sm text-muted-foreground">
+                       Permite a los creadores vincular su cuenta Stripe desde su perfil
+                     </p>
+                   </div>
+                   <Switch
+                     checked={settings.stripe_connect?.onboarding_enabled || false}
+                     onCheckedChange={(checked) => updateSetting('stripe_connect', 'onboarding_enabled', checked)}
+                   />
+                 </div>
+
+                 <div className="p-4 bg-muted/30 rounded-lg border border-border space-y-3">
+                   <h4 className="font-medium text-sm">Flujo del Creador:</h4>
+                   <div className="space-y-2 text-sm text-muted-foreground">
+                     <div className="flex items-start gap-2">
+                       <span className="bg-cyan-400 text-black rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0">1</span>
+                       <span>El creador sube contenido de pago y va a "Mi Perfil → Datos Bancarios"</span>
+                     </div>
+                     <div className="flex items-start gap-2">
+                       <span className="bg-cyan-400 text-black rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0">2</span>
+                       <span>Hace clic en "Vincular con Stripe" y completa el onboarding de Stripe Express</span>
+                     </div>
+                     <div className="flex items-start gap-2">
+                       <span className="bg-cyan-400 text-black rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0">3</span>
+                       <span>Stripe verifica su identidad y datos bancarios automáticamente</span>
+                     </div>
+                     <div className="flex items-start gap-2">
+                       <span className="bg-cyan-400 text-black rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold shrink-0">4</span>
+                       <span>Cuando un usuario compra su contenido, Stripe divide el pago: {settings.single_content_purchase?.author_percentage || 60}% al creador y {settings.single_content_purchase?.platform_percentage || 40}% a Red Akasha</span>
+                     </div>
+                   </div>
+                 </div>
+               </CardContent>
+             </Card>
+
+             {/* Configuración de Payouts */}
+             <Card className="bg-card/50 border-cyan-500/20">
+               <CardHeader>
+                 <CardTitle className="flex items-center gap-2 text-cyan-400">
+                   <DollarSign className="h-5 w-5" />
+                   Configuración de Payouts
+                 </CardTitle>
+                 <CardDescription>
+                   Cómo y cuándo se paga a los creadores
+                 </CardDescription>
+               </CardHeader>
+               <CardContent className="space-y-4">
+                 <div className="flex items-center justify-between">
+                   <div>
+                     <Label>Payouts Automáticos</Label>
+                     <p className="text-sm text-muted-foreground">
+                       Stripe envía automáticamente los fondos a los creadores
+                     </p>
+                   </div>
+                   <Switch
+                     checked={settings.stripe_connect?.auto_payouts || false}
+                     onCheckedChange={(checked) => updateSetting('stripe_connect', 'auto_payouts', checked)}
+                   />
+                 </div>
+
+                 <div className="grid gap-4 md:grid-cols-2">
+                   <div className="space-y-2">
+                     <Label>Frecuencia de Payout</Label>
+                     <div className="flex gap-2 flex-wrap">
+                       {['manual', 'daily', 'weekly', 'monthly'].map(schedule => (
+                         <Button
+                           key={schedule}
+                           variant={settings.stripe_connect?.payout_schedule === schedule ? 'default' : 'outline'}
+                           size="sm"
+                           onClick={() => updateSetting('stripe_connect', 'payout_schedule', schedule)}
+                         >
+                           {schedule === 'manual' ? '🔧 Manual' : 
+                            schedule === 'daily' ? '📅 Diario' :
+                            schedule === 'weekly' ? '📆 Semanal' : '🗓️ Mensual'}
+                         </Button>
+                       ))}
+                     </div>
+                   </div>
+
+                   <div className="space-y-2">
+                     <Label>Monto Mínimo para Payout (USD)</Label>
+                     <Input
+                       type="number"
+                       step="1"
+                       min="1"
+                       value={settings.stripe_connect?.minimum_payout_amount || 10}
+                       onChange={(e) => updateSetting('stripe_connect', 'minimum_payout_amount', parseInt(e.target.value))}
+                       className="bg-background/50"
+                     />
+                     <p className="text-xs text-muted-foreground">
+                       Los creadores no recibirán pagos hasta alcanzar este monto
+                     </p>
+                   </div>
+                 </div>
+               </CardContent>
+             </Card>
+
+             {/* Webhook & Technical */}
+             <Card className="bg-card/50 border-cyan-500/20">
+               <CardHeader>
+                 <CardTitle className="flex items-center gap-2 text-cyan-400">
+                   <RefreshCw className="h-5 w-5" />
+                   Configuración Técnica
+                 </CardTitle>
+                 <CardDescription>
+                   URLs y configuración técnica para webhooks de Stripe
+                 </CardDescription>
+               </CardHeader>
+               <CardContent className="space-y-4">
+                 <div className="space-y-2">
+                   <Label>URL del Webhook</Label>
+                   <div className="flex gap-2">
+                     <Input
+                       value={settings.stripe_connect?.webhook_url || `https://exihucrtuwjfqxvdlmmk.supabase.co/functions/v1/stripe-webhook`}
+                       readOnly
+                       className="bg-background/50 font-mono text-xs"
+                     />
+                     <Button 
+                       variant="outline" 
+                       size="icon"
+                       onClick={() => {
+                         navigator.clipboard.writeText(
+                           settings.stripe_connect?.webhook_url || `https://exihucrtuwjfqxvdlmmk.supabase.co/functions/v1/stripe-webhook`
+                         );
+                         toast.success('URL copiada al portapapeles');
+                       }}
+                     >
+                       <Copy className="h-4 w-4" />
+                     </Button>
+                   </div>
+                   <p className="text-xs text-muted-foreground">
+                     Configura esta URL en el Dashboard de Stripe → Webhooks → Endpoint URL
+                   </p>
+                 </div>
+
+                 <div className="p-4 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                   <h4 className="font-medium text-purple-400 text-sm mb-2">📋 Eventos de Webhook requeridos:</h4>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-1 text-xs text-muted-foreground font-mono">
+                     <span>• payment_intent.succeeded</span>
+                     <span>• payment_intent.payment_failed</span>
+                     <span>• account.updated</span>
+                     <span>• account.application.deauthorized</span>
+                     <span>• transfer.created</span>
+                     <span>• payout.paid</span>
+                     <span>• payout.failed</span>
+                     <span>• checkout.session.completed</span>
+                   </div>
+                 </div>
+
+                 <div className="space-y-2">
+                   <Label>Notas internas</Label>
+                   <Input
+                     value={settings.stripe_connect?.notes || ''}
+                     onChange={(e) => updateSetting('stripe_connect', 'notes', e.target.value)}
+                     placeholder="Notas sobre la configuración..."
+                     className="bg-background/50"
+                   />
+                 </div>
+               </CardContent>
+             </Card>
+
+             {/* How it works diagram */}
+             <Card className="bg-card/50 border-cyan-500/20">
+               <CardHeader>
+                 <CardTitle className="flex items-center gap-2 text-cyan-400">
+                   <Zap className="h-5 w-5" />
+                   ¿Cómo funciona el Split Payment?
+                 </CardTitle>
+               </CardHeader>
+               <CardContent>
+                 <div className="p-4 bg-muted/20 rounded-lg border border-border">
+                   <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-center">
+                     <div className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/20 flex-1">
+                       <p className="text-2xl mb-1">👤</p>
+                       <p className="font-medium text-sm">Usuario Comprador</p>
+                       <p className="text-xs text-muted-foreground">Paga $10 USD</p>
+                     </div>
+                     <div className="text-2xl">→</div>
+                     <div className="p-4 bg-purple-500/10 rounded-lg border border-purple-500/20 flex-1">
+                       <p className="text-2xl mb-1">💳</p>
+                       <p className="font-medium text-sm">Stripe Connect</p>
+                       <p className="text-xs text-muted-foreground">Divide automáticamente</p>
+                     </div>
+                     <div className="text-2xl">→</div>
+                     <div className="space-y-2 flex-1">
+                       <div className="p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+                         <p className="font-medium text-sm text-green-400">🎵 Creador</p>
+                         <p className="text-lg font-bold text-green-400">${((10 * (settings.single_content_purchase?.author_percentage || 60)) / 100).toFixed(2)}</p>
+                         <p className="text-xs text-muted-foreground">{settings.single_content_purchase?.author_percentage || 60}%</p>
+                       </div>
+                       <div className="p-3 bg-cyan-500/10 rounded-lg border border-cyan-500/20">
+                         <p className="font-medium text-sm text-cyan-400">🏢 Red Akasha</p>
+                         <p className="text-lg font-bold text-cyan-400">${((10 * (settings.single_content_purchase?.platform_percentage || 40)) / 100).toFixed(2)}</p>
+                         <p className="text-xs text-muted-foreground">{settings.single_content_purchase?.platform_percentage || 40}%</p>
+                       </div>
+                     </div>
                    </div>
                  </div>
                </CardContent>

@@ -171,7 +171,7 @@
                  Datos para Cobro
                </CardTitle>
                <CardDescription>
-                 Configura tus métodos de pago para recibir el 70% de las ganancias de tu contenido
+                 Configura tus métodos de pago para recibir las ganancias de tu contenido
                </CardDescription>
              </div>
              {bankingInfo.is_verified ? (

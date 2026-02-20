@@ -17,6 +17,7 @@ import {
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useToast } from "@/hooks/use-toast";
 import { exportToExcel, exportToCSV, formatDate, CONTENT_TYPE_LABELS, PROFILE_TYPE_LABELS } from "@/lib/exportUtils";
+import { PlatformActivityStats } from "@/components/admin/PlatformActivityStats";
 
 interface ContentStats {
   pending: number;
@@ -494,6 +495,9 @@ export default function Admin() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Platform Activity Stats - Datos de Movimientos */}
+        <PlatformActivityStats />
       </div>
     </AdminLayout>
   );

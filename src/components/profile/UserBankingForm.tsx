@@ -102,15 +102,25 @@
      }
    };
  
-   const handleSave = async () => {
-     if (!user?.id) return;
-     setSaving(true);
- 
-     try {
-       const dataToSave = {
-         ...bankingInfo,
-         user_id: user.id,
-       };
+    const handleSave = async () => {
+      if (!user?.id) return;
+      setSaving(true);
+
+      try {
+        // Auto-enable methods that have data filled in
+        const autoEnabled = {
+          ...bankingInfo,
+          bank_enabled: bankingInfo.bank_enabled || !!(bankingInfo.cbu_cvu || bankingInfo.account_number_encrypted || bankingInfo.bank_name),
+          mercadopago_enabled: bankingInfo.mercadopago_enabled || !!(bankingInfo.mercadopago_email || bankingInfo.mercadopago_alias),
+          paypal_enabled: bankingInfo.paypal_enabled || !!bankingInfo.paypal_email,
+          crypto_enabled: bankingInfo.crypto_enabled || !!bankingInfo.crypto_wallet_address,
+        };
+        setBankingInfo(autoEnabled);
+
+        const dataToSave = {
+          ...autoEnabled,
+          user_id: user.id,
+        };
  
        if (hasExistingInfo) {
          const { error } = await supabase

@@ -910,8 +910,7 @@ const MiPerfil = () => {
             </TabsContent>
           </Tabs>
 
-         {/* Forum Activity Section - Datos de Movimientos */}
-         {user?.id && <ForumActivitySection userId={user.id} />}
+
 
           {/* Save Button */}
           {(newVideoLinks.length > 0 || newImages.length > 0 || newAudios.length > 0) && (

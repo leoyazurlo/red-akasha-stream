@@ -21,7 +21,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 
 const generalItems = [
-  { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Informes", url: "/admin/reports", icon: BarChart3 },
   { title: "Analytics", url: "/admin/analytics", icon: Activity },
   { title: "Usuarios", url: "/admin/users", icon: Users },

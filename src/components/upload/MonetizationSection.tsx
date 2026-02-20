@@ -259,14 +259,14 @@ export const MonetizationSection = ({
           {/* Payment Methods */}
           <div className="space-y-3">
             <Label className="text-sm font-medium">Métodos de pago aceptados</Label>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
               {paymentMethods.map((method) => {
                 const Icon = method.icon;
                 const isChecked = acceptedPaymentMethods.includes(method.id);
                 return (
                   <div 
                     key={method.id}
-                    className={`flex items-center gap-2 p-3 rounded-lg border transition-all cursor-pointer ${
+                    className={`flex flex-col items-center justify-center gap-2 p-3 rounded-lg border transition-all cursor-pointer text-center min-h-[72px] ${
                       isChecked 
                         ? 'border-cyan-400 bg-cyan-400/10' 
                         : 'border-border hover:border-cyan-400/50'
@@ -276,18 +276,21 @@ export const MonetizationSection = ({
                       handlePaymentMethodToggle(method.id, !isChecked);
                     }}
                   >
-                    <Checkbox
-                      id={`payment-${method.id}`}
-                      checked={isChecked}
-                      onCheckedChange={(checked) => {
-                        handlePaymentMethodToggle(method.id, !!checked);
-                      }}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <Icon className={`w-4 h-4 ${isChecked ? 'text-cyan-400' : 'text-muted-foreground'}`} />
+                    <div className="flex items-center gap-1.5">
+                      <Checkbox
+                        id={`payment-${method.id}`}
+                        checked={isChecked}
+                        onCheckedChange={(checked) => {
+                          handlePaymentMethodToggle(method.id, !!checked);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="shrink-0"
+                      />
+                      <Icon className={`w-4 h-4 shrink-0 ${isChecked ? 'text-cyan-400' : 'text-muted-foreground'}`} />
+                    </div>
                     <Label 
-                      htmlFor={method.id} 
-                      className="text-xs cursor-pointer"
+                      htmlFor={`payment-${method.id}`} 
+                      className="text-[11px] leading-tight cursor-pointer break-words"
                     >
                       {method.label}
                     </Label>

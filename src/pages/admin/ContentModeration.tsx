@@ -1,5 +1,6 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
+import { ForumActivitySection } from "@/components/profile/ForumActivitySection";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Loader2, CheckCircle2, XCircle, Video, Image as ImageIcon, Music, Trash2, Zap, FileVideo } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -1027,6 +1028,9 @@ export default function AdminContentModeration() {
                   )}
                 </TabsContent>
             </Tabs>
+
+          {/* Datos de Movimientos */}
+          {user?.id && <ForumActivitySection userId={user.id} />}
           </div>
         </AdminLayout>
       );

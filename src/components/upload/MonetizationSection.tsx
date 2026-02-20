@@ -271,12 +271,18 @@ export const MonetizationSection = ({
                         ? 'border-cyan-400 bg-cyan-400/10' 
                         : 'border-border hover:border-cyan-400/50'
                     }`}
-                    onClick={() => handlePaymentMethodToggle(method.id, !isChecked)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePaymentMethodToggle(method.id, !isChecked);
+                    }}
                   >
                     <Checkbox
-                      id={method.id}
+                      id={`payment-${method.id}`}
                       checked={isChecked}
-                      onCheckedChange={(checked) => handlePaymentMethodToggle(method.id, !!checked)}
+                      onCheckedChange={(checked) => {
+                        handlePaymentMethodToggle(method.id, !!checked);
+                      }}
+                      onClick={(e) => e.stopPropagation()}
                     />
                     <Icon className={`w-4 h-4 ${isChecked ? 'text-cyan-400' : 'text-muted-foreground'}`} />
                     <Label 

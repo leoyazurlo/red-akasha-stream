@@ -9,6 +9,7 @@ import {
   Volume2, 
   VolumeX, 
   Maximize, 
+  Minimize2,
   X,
   Lock,
   DollarSign,
@@ -292,6 +293,15 @@ export const OnDemandPlayer = ({
     setIsFullscreen(!isFullscreen);
   };
 
+  // Sync fullscreen state with browser events (e.g. pressing Escape)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
   const formatTime = (time: number) => {
     if (!time || isNaN(time)) return "0:00";
     const minutes = Math.floor(time / 60);
@@ -315,6 +325,18 @@ export const OnDemandPlayer = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl p-0 gap-0 overflow-hidden">
         <div ref={containerRef} className="relative bg-black">
+          {/* Exit Fullscreen Button - always visible in fullscreen */}
+          {isFullscreen && (
+            <Button
+              size="icon"
+              variant="ghost"
+              onClick={toggleFullscreen}
+              className="absolute top-4 right-4 z-50 text-white bg-black/60 hover:bg-black/80 rounded-full w-10 h-10"
+              aria-label="Salir de pantalla completa"
+            >
+              <Minimize2 className="w-5 h-5" />
+            </Button>
+          )}
           {/* Header */}
           <DialogHeader className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/80 to-transparent p-6 pb-12">
             <div className="flex items-start justify-between gap-4">

@@ -554,6 +554,10 @@ const MiPerfil = () => {
                  <DollarSign className="w-3.5 h-3.5" />
                  Ganancias
                </TabsTrigger>
+               <TabsTrigger value="banking" className="flex-shrink-0 gap-1.5 py-2 px-2 text-[10px] md:text-xs font-medium tracking-wide uppercase text-cyan-400/70 data-[state=active]:text-cyan-400 data-[state=active]:bg-cyan-400/10 data-[state=active]:shadow-[0_0_10px_rgba(34,211,238,0.3)] hover:text-cyan-400 transition-all">
+                 <Building2 className="w-3.5 h-3.5" />
+                 Cobros
+               </TabsTrigger>
               <TabsTrigger value="gallery" className="flex-shrink-0 gap-1.5 py-2 px-2 text-[10px] md:text-xs font-medium tracking-wide uppercase text-cyan-400/70 data-[state=active]:text-cyan-400 data-[state=active]:bg-cyan-400/10 data-[state=active]:shadow-[0_0_10px_rgba(34,211,238,0.3)] hover:text-cyan-400 transition-all">
                 <ImageIcon className="w-3.5 h-3.5" />
                 Fotos
@@ -615,6 +619,10 @@ const MiPerfil = () => {
                <UserEarningsDashboard />
              </TabsContent>
  
+             {/* Banking Tab */}
+             <TabsContent value="banking">
+               <UserBankingForm />
+             </TabsContent>
  
             {/* Photos Tab */}
             <TabsContent value="gallery">

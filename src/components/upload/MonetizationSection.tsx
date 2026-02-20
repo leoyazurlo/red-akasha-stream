@@ -67,7 +67,6 @@ const currencies = [
 
 const accessTypes = [
   { value: "purchase", label: "Compra permanente", icon: ShoppingCart, description: "El usuario compra y tiene acceso de por vida" },
-  { value: "rental", label: "Alquiler temporal", icon: Clock, description: "Acceso por tiempo limitado a menor precio" },
   { value: "subscription", label: "Solo suscriptores", icon: Crown, description: "Requiere suscripción activa" },
 ];
 
@@ -79,12 +78,6 @@ const paymentMethods = [
   { id: "bank_transfer", label: "Transferencia Bancaria", icon: Building2 },
 ];
 
-const rentalDurations = [
-  { value: 24, label: "24 horas" },
-  { value: 48, label: "48 horas" },
-  { value: 72, label: "72 horas" },
-  { value: 168, label: "7 días" },
-];
 
 export const MonetizationSection = ({
   isFree,
@@ -200,7 +193,7 @@ export const MonetizationSection = ({
           {/* Access Type Selection */}
           <div className="space-y-3">
             <Label className="text-sm font-medium">Tipo de acceso</Label>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {accessTypes.map((type) => {
                 const Icon = type.icon;
                 const isSelected = accessType === type.value;
@@ -228,37 +221,17 @@ export const MonetizationSection = ({
           {/* Pricing Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-lg border border-border bg-card/50">
             {/* Purchase Price */}
-            {(accessType === "purchase" || accessType === "rental") && (
+            {accessType === "purchase" && (
               <div className="space-y-2">
-                <Label htmlFor="price">
-                  {accessType === "purchase" ? "Precio de compra" : "Precio de compra (opcional)"} 
-                  {accessType === "purchase" && " *"}
-                </Label>
+                <Label htmlFor="price">Precio de compra *</Label>
                 <Input
                   id="price"
                   type="number"
                   step="0.01"
                   min="0"
-                  required={accessType === "purchase"}
+                  required
                   value={price}
                   onChange={(e) => onPriceChange(e.target.value)}
-                  placeholder="0.00"
-                />
-              </div>
-            )}
-
-            {/* Rental Price */}
-            {accessType === "rental" && (
-              <div className="space-y-2">
-                <Label htmlFor="rental_price">Precio de alquiler *</Label>
-                <Input
-                  id="rental_price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  required
-                  value={rentalPrice}
-                  onChange={(e) => onRentalPriceChange?.(e.target.value)}
                   placeholder="0.00"
                 />
               </div>
@@ -281,27 +254,6 @@ export const MonetizationSection = ({
               </Select>
             </div>
 
-            {/* Rental Duration */}
-            {accessType === "rental" && (
-              <div className="space-y-2">
-                <Label htmlFor="rental_duration">Duración del alquiler</Label>
-                <Select 
-                  value={rentalDurationHours.toString()} 
-                  onValueChange={(v) => onRentalDurationChange?.(parseInt(v))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {rentalDurations.map((duration) => (
-                      <SelectItem key={duration.value} value={duration.value.toString()}>
-                        {duration.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
           </div>
 
           {/* Payment Methods */}
@@ -343,7 +295,6 @@ export const MonetizationSection = ({
           <div className="flex flex-wrap gap-2 pt-2">
             <Badge variant="secondary" className="text-xs">
               {accessType === "purchase" && `Compra: ${currency} ${price || '0'}`}
-              {accessType === "rental" && `Alquiler: ${currency} ${rentalPrice || '0'} / ${rentalDurationHours}h`}
               {accessType === "subscription" && "Solo suscriptores"}
             </Badge>
             <Badge variant="outline" className="text-xs">

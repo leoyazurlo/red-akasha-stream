@@ -90,15 +90,6 @@ export const HeroCarousel = ({ contents, onContentClick }: HeroCarouselProps) =>
               <Star className="w-3 h-3" />
               Destacado
             </Badge>
-            {currentContent.is_free ? (
-              <Badge variant="secondary" className="bg-cyan-500/20 text-cyan-400 border-cyan-500/50">
-                Gratis
-              </Badge>
-            ) : (
-              <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-none">
-                ${currentContent.price} {currentContent.currency}
-              </Badge>
-            )}
           </div>
 
           {/* Title */}

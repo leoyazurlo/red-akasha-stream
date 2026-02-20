@@ -78,8 +78,6 @@ export const HeroCarousel = ({ contents, onContentClick }: HeroCarouselProps) =>
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-transparent" />
 
-      {/* Animated Glow Effect */}
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-purple-500 to-pink-500 animate-pulse" />
 
       {/* Content */}
       <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 z-10">

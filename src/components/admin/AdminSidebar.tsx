@@ -98,7 +98,6 @@ export function AdminSidebar() {
     <Sidebar className={!open ? "w-14" : "w-60"} collapsible="icon">
       <SidebarContent className="pt-4">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-cyan-400/70 text-xs uppercase tracking-wider">General</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {generalItems.map((item) => (

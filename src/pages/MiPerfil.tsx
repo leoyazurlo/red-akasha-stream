@@ -580,6 +580,10 @@ const MiPerfil = () => {
               </TabsTrigger>
             </TabsList>
 
+             <p className="text-sm text-center text-muted-foreground italic px-4 py-3">
+               Para que estos números se muevan depende de la calidad y la cantidad de contenido que la comunidad aporte, hagamos entre todos el esfuerzo de superarnos
+             </p>
+
              {/* Notifications Tab */}
              <TabsContent value="notifications">
                <NotificationsTab />

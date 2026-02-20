@@ -81,23 +81,27 @@ export const ContentGrid = ({
   return (
     <section className="mb-12">
       <div className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <div className={cn(
-            "h-10 w-1 rounded-full",
-            isFree 
-              ? "bg-gradient-to-b from-cyan-500 to-cyan-600" 
-              : "bg-gradient-to-b from-amber-500 via-yellow-500 to-orange-500"
-          )} />
-          <h2 className={cn(
-            "text-3xl font-bold bg-clip-text text-transparent",
-            isFree 
-              ? "bg-gradient-to-r from-cyan-400 to-cyan-500" 
-              : "bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500"
-          )}>
-            {title}
+        <div className="flex items-center gap-2 mb-2">
+          <h2 className="text-2xl font-bold">
+            <span className={cn(
+              "bg-clip-text text-transparent",
+              isFree 
+                ? "bg-gradient-to-r from-cyan-400 to-cyan-500" 
+                : "bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500"
+            )}>
+              Contenido
+            </span>
+            <span className={cn(
+              "ml-2 text-base font-medium bg-clip-text text-transparent",
+              isFree 
+                ? "bg-gradient-to-r from-cyan-400 to-cyan-500" 
+                : "bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500"
+            )}>
+              {isFree ? "gratuito" : "premium"}
+            </span>
           </h2>
         </div>
-        <p className="text-muted-foreground ml-7">{subtitle}</p>
+        <p className="text-muted-foreground">{subtitle}</p>
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

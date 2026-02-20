@@ -1,10 +1,15 @@
+/**
+ * @fileoverview Dashboard de analytics para artistas.
+ * Muestra métricas reales del contenido, seguidores y rendimiento del creador.
+ */
+
 import { useState, useMemo } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -24,127 +29,28 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  ReferenceDot,
 } from "recharts";
 import {
   Download,
   Users,
   Clock,
   UserPlus,
-  Radio,
   TrendingUp,
   TrendingDown,
   Eye,
   Calendar,
   Play,
+  Heart,
+  Share2,
+  MessageSquare,
+  Film,
 } from "lucide-react";
 import * as XLSX from "xlsx";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
-// ─── Mock Data Generators ────────────────────────────────────────────────────
-
-type Period = "24h" | "7d" | "30d" | "all";
-
-function generateViewersData(period: Period) {
-  const points =
-    period === "24h" ? 24 : period === "7d" ? 7 : period === "30d" ? 30 : 90;
-  const labelFn = (i: number) => {
-    if (period === "24h") return `${String(i).padStart(2, "0")}:00`;
-    const d = new Date();
-    d.setDate(d.getDate() - (points - 1 - i));
-    return d.toLocaleDateString("es-AR", { day: "2-digit", month: "short" });
-  };
-  return Array.from({ length: points }, (_, i) => ({
-    label: labelFn(i),
-    viewers: Math.floor(Math.random() * 800 + 100 + Math.sin(i / 3) * 200),
-  }));
-}
-
-function generateFollowersData(period: Period) {
-  const points =
-    period === "24h" ? 24 : period === "7d" ? 7 : period === "30d" ? 30 : 90;
-  let acc = 1200;
-  const streamDays = new Set(
-    Array.from({ length: 5 }, () => Math.floor(Math.random() * points))
-  );
-  const labelFn = (i: number) => {
-    if (period === "24h") return `${String(i).padStart(2, "0")}:00`;
-    const d = new Date();
-    d.setDate(d.getDate() - (points - 1 - i));
-    return d.toLocaleDateString("es-AR", { day: "2-digit", month: "short" });
-  };
-  return Array.from({ length: points }, (_, i) => {
-    const bump = streamDays.has(i) ? Math.floor(Math.random() * 30 + 15) : Math.floor(Math.random() * 5);
-    acc += bump;
-    return {
-      label: labelFn(i),
-      followers: acc,
-      isStream: streamDays.has(i),
-    };
-  });
-}
-
-const MOCK_TOP_STREAMS = [
-  {
-    id: "1",
-    title: "Deep House Night Session",
-    thumbnail: "/placeholder.svg",
-    date: "2026-02-08",
-    viewers: 1243,
-    duration: "3h 15m",
-    reactions: 342,
-  },
-  {
-    id: "2",
-    title: "Techno Underground Live",
-    thumbnail: "/placeholder.svg",
-    date: "2026-02-05",
-    viewers: 987,
-    duration: "2h 45m",
-    reactions: 278,
-  },
-  {
-    id: "3",
-    title: "Ambient Chill Sunday",
-    thumbnail: "/placeholder.svg",
-    date: "2026-02-02",
-    viewers: 756,
-    duration: "4h 00m",
-    reactions: 201,
-  },
-  {
-    id: "4",
-    title: "Vinyl Only Set — Classic House",
-    thumbnail: "/placeholder.svg",
-    date: "2026-01-28",
-    viewers: 654,
-    duration: "2h 30m",
-    reactions: 189,
-  },
-  {
-    id: "5",
-    title: "B2B con DJ Akasha",
-    thumbnail: "/placeholder.svg",
-    date: "2026-01-20",
-    viewers: 543,
-    duration: "3h 00m",
-    reactions: 156,
-  },
-];
-
-const MOCK_GEO = [
-  { city: "Buenos Aires", viewers: 2340 },
-  { city: "Ciudad de México", viewers: 1890 },
-  { city: "Santiago", viewers: 1250 },
-  { city: "Bogotá", viewers: 980 },
-  { city: "Lima", viewers: 760 },
-];
-
-const METRICS: Record<Period, { viewers: number; hours: number; newFollowers: number; streams: number; viewersDelta: number; followersDelta: number }> = {
-  "24h": { viewers: 423, hours: 4.5, newFollowers: 28, streams: 1, viewersDelta: 12, followersDelta: 8 },
-  "7d": { viewers: 3240, hours: 18, newFollowers: 145, streams: 5, viewersDelta: 7, followersDelta: 15 },
-  "30d": { viewers: 12850, hours: 62, newFollowers: 580, streams: 18, viewersDelta: -3, followersDelta: 22 },
-  "all": { viewers: 89400, hours: 340, newFollowers: 4200, streams: 124, viewersDelta: 45, followersDelta: 120 },
-};
+type Period = "7d" | "30d" | "90d" | "all";
 
 // ─── Custom Tooltip ──────────────────────────────────────────────────────────
 
@@ -170,12 +76,14 @@ function MetricCard({
   delta,
   icon: Icon,
   suffix = "",
+  loading = false,
 }: {
   title: string;
   value: string | number;
   delta?: number;
   icon: React.ElementType;
   suffix?: string;
+  loading?: boolean;
 }) {
   return (
     <Card className="bg-card/80 backdrop-blur-sm border-border hover:border-primary/30 transition-all duration-300">
@@ -183,11 +91,15 @@ function MetricCard({
         <div className="flex items-start justify-between">
           <div>
             <p className="text-sm text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold mt-1">
-              {typeof value === "number" ? value.toLocaleString("es-AR") : value}
-              {suffix && <span className="text-sm font-normal text-muted-foreground ml-1">{suffix}</span>}
-            </p>
-            {delta !== undefined && (
+            {loading ? (
+              <Skeleton className="h-8 w-20 mt-1" />
+            ) : (
+              <p className="text-2xl font-bold mt-1">
+                {typeof value === "number" ? value.toLocaleString("es-AR") : value}
+                {suffix && <span className="text-sm font-normal text-muted-foreground ml-1">{suffix}</span>}
+              </p>
+            )}
+            {delta !== undefined && !loading && (
               <div className={`flex items-center gap-1 mt-1 text-xs ${delta >= 0 ? "text-green-400" : "text-destructive"}`}>
                 {delta >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                 <span>{delta >= 0 ? "+" : ""}{delta}% vs período anterior</span>
@@ -203,48 +115,178 @@ function MetricCard({
   );
 }
 
+// ─── Helper: get date range ──────────────────────────────────────────────────
+
+function getDateRange(period: Period): { since: string; prev: string } {
+  const now = new Date();
+  const days = period === "7d" ? 7 : period === "30d" ? 30 : period === "90d" ? 90 : 365 * 5;
+  const since = new Date(now.getTime() - days * 86400000);
+  const prev = new Date(since.getTime() - days * 86400000);
+  return { since: since.toISOString(), prev: prev.toISOString() };
+}
+
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function ArtistAnalytics() {
-  const [period, setPeriod] = useState<Period>("7d");
+  const [period, setPeriod] = useState<Period>("30d");
+  const { user } = useAuth();
+  const userId = user?.id;
 
-  const viewersData = useMemo(() => generateViewersData(period), [period]);
-  const followersData = useMemo(() => generateFollowersData(period), [period]);
-  const metrics = METRICS[period];
+  const { since, prev } = useMemo(() => getDateRange(period), [period]);
+
+  // ── Fetch content uploads by this user ──
+  const { data: myContent, isLoading: loadingContent } = useQuery({
+    queryKey: ["artist-analytics-content", userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      const { data, error } = await supabase
+        .from("content_uploads")
+        .select("id, title, thumbnail_url, created_at, views_count, likes_count, shares_count, comments_count, video_duration_seconds, content_type")
+        .eq("uploader_id", userId)
+        .eq("status", "approved")
+        .order("views_count", { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!userId,
+  });
+
+  // ── Fetch followers ──
+  const { data: followersData, isLoading: loadingFollowers } = useQuery({
+    queryKey: ["artist-analytics-followers", userId, period],
+    queryFn: async () => {
+      if (!userId) return { total: 0, recent: 0, previous: 0, timeline: [] as { label: string; followers: number }[] };
+      
+      // Total followers
+      const { count: total } = await supabase
+        .from("user_follows")
+        .select("id", { count: "exact", head: true })
+        .eq("following_id", userId);
+
+      // New followers in current period
+      const { count: recent } = await supabase
+        .from("user_follows")
+        .select("id", { count: "exact", head: true })
+        .eq("following_id", userId)
+        .gte("created_at", since);
+
+      // New followers in previous period (for delta)
+      const { count: previous } = await supabase
+        .from("user_follows")
+        .select("id", { count: "exact", head: true })
+        .eq("following_id", userId)
+        .gte("created_at", prev)
+        .lt("created_at", since);
+
+      // Timeline: followers by day
+      const { data: followEntries } = await supabase
+        .from("user_follows")
+        .select("created_at")
+        .eq("following_id", userId)
+        .order("created_at", { ascending: true });
+
+      const dayMap: Record<string, number> = {};
+      let cumulative = 0;
+      (followEntries || []).forEach((f) => {
+        const day = new Date(f.created_at).toLocaleDateString("es-AR", { day: "2-digit", month: "short" });
+        cumulative++;
+        dayMap[day] = cumulative;
+      });
+
+      const timeline = Object.entries(dayMap).map(([label, followers]) => ({ label, followers }));
+
+      return { total: total || 0, recent: recent || 0, previous: previous || 0, timeline };
+    },
+    enabled: !!userId,
+  });
+
+  // ── Fetch streams ──
+  const { data: streamsData, isLoading: loadingStreams } = useQuery({
+    queryKey: ["artist-analytics-streams", userId, period],
+    queryFn: async () => {
+      if (!userId) return { total: 0, recent: 0 };
+      const { count: total } = await supabase
+        .from("streams")
+        .select("id", { count: "exact", head: true })
+        .eq("streamer_id", userId);
+
+      const { count: recent } = await supabase
+        .from("streams")
+        .select("id", { count: "exact", head: true })
+        .eq("streamer_id", userId)
+        .gte("created_at", since);
+
+      return { total: total || 0, recent: recent || 0 };
+    },
+    enabled: !!userId,
+  });
+
+  // ── Derived metrics ──
+  const totalViews = myContent?.reduce((sum, c) => sum + (c.views_count || 0), 0) || 0;
+  const totalLikes = myContent?.reduce((sum, c) => sum + (c.likes_count || 0), 0) || 0;
+  const totalShares = myContent?.reduce((sum, c) => sum + (c.shares_count || 0), 0) || 0;
+  const totalComments = myContent?.reduce((sum, c) => sum + (c.comments_count || 0), 0) || 0;
+  const totalDurationHrs = Math.round((myContent?.reduce((sum, c) => sum + (c.video_duration_seconds || 0), 0) || 0) / 3600 * 10) / 10;
+  const newFollowers = followersData?.recent || 0;
+  const prevFollowers = followersData?.previous || 0;
+  const followersDelta = prevFollowers > 0 ? Math.round(((newFollowers - prevFollowers) / prevFollowers) * 100) : newFollowers > 0 ? 100 : 0;
+
+  // Views timeline (by content creation date)
+  const viewsTimeline = useMemo(() => {
+    if (!myContent?.length) return [];
+    const sorted = [...myContent].sort((a, b) => new Date(a.created_at!).getTime() - new Date(b.created_at!).getTime());
+    return sorted.map((c) => ({
+      label: new Date(c.created_at!).toLocaleDateString("es-AR", { day: "2-digit", month: "short" }),
+      views: c.views_count || 0,
+      title: c.title,
+    }));
+  }, [myContent]);
+
+  const isLoading = loadingContent || loadingFollowers || loadingStreams;
 
   const exportToExcel = () => {
     const wb = XLSX.utils.book_new();
 
     const metricsSheet = XLSX.utils.json_to_sheet([
-      { Métrica: "Total Viewers", Valor: metrics.viewers },
-      { Métrica: "Horas Streameadas", Valor: metrics.hours },
-      { Métrica: "Nuevos Seguidores", Valor: metrics.newFollowers },
-      { Métrica: "Streams Realizados", Valor: metrics.streams },
+      { Métrica: "Total Reproducciones", Valor: totalViews },
+      { Métrica: "Total Likes", Valor: totalLikes },
+      { Métrica: "Total Compartidos", Valor: totalShares },
+      { Métrica: "Total Comentarios", Valor: totalComments },
+      { Métrica: "Horas de Contenido", Valor: totalDurationHrs },
+      { Métrica: "Seguidores Totales", Valor: followersData?.total || 0 },
+      { Métrica: "Nuevos Seguidores (período)", Valor: newFollowers },
     ]);
     XLSX.utils.book_append_sheet(wb, metricsSheet, "Resumen");
 
-    const viewersSheet = XLSX.utils.json_to_sheet(viewersData);
-    XLSX.utils.book_append_sheet(wb, viewersSheet, "Viewers");
-
-    const topSheet = XLSX.utils.json_to_sheet(
-      MOCK_TOP_STREAMS.map(({ id, ...rest }) => rest)
-    );
-    XLSX.utils.book_append_sheet(wb, topSheet, "Top Streams");
-
-    const geoSheet = XLSX.utils.json_to_sheet(MOCK_GEO);
-    XLSX.utils.book_append_sheet(wb, geoSheet, "Geografía");
-
-    const followersSheet = XLSX.utils.json_to_sheet(followersData);
-    XLSX.utils.book_append_sheet(wb, followersSheet, "Seguidores");
+    if (myContent?.length) {
+      const contentSheet = XLSX.utils.json_to_sheet(
+        myContent.map((c) => ({
+          Título: c.title,
+          Tipo: c.content_type,
+          Reproducciones: c.views_count,
+          Likes: c.likes_count,
+          Compartidos: c.shares_count,
+          Comentarios: c.comments_count,
+          Fecha: new Date(c.created_at!).toLocaleDateString("es-AR"),
+        }))
+      );
+      XLSX.utils.book_append_sheet(wb, contentSheet, "Contenido");
+    }
 
     XLSX.writeFile(wb, `akasha-analytics-${period}.xlsx`);
   };
 
   const periodLabels: Record<Period, string> = {
-    "24h": "Últimas 24 horas",
     "7d": "Últimos 7 días",
     "30d": "Últimos 30 días",
+    "90d": "Últimos 90 días",
     all: "Todo el tiempo",
+  };
+
+  const formatDuration = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    return h > 0 ? `${h}h ${m}m` : `${m}m`;
   };
 
   return (
@@ -259,7 +301,7 @@ export default function ArtistAnalytics() {
               <h1 className="text-3xl font-bold">Mis Analytics</h1>
               <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
                 <Calendar className="h-3.5 w-3.5" />
-                Última actualización: {new Date().toLocaleString("es-AR", { dateStyle: "medium", timeStyle: "short" })}
+                Datos reales de tu contenido en Red Akasha
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -268,13 +310,13 @@ export default function ArtistAnalytics() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="24h">Últimas 24h</SelectItem>
                   <SelectItem value="7d">Últimos 7 días</SelectItem>
                   <SelectItem value="30d">Últimos 30 días</SelectItem>
+                  <SelectItem value="90d">Últimos 90 días</SelectItem>
                   <SelectItem value="all">Todo el tiempo</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant="outline" className="gap-2" onClick={exportToExcel}>
+              <Button variant="outline" className="gap-2" onClick={exportToExcel} disabled={isLoading}>
                 <Download className="h-4 w-4" />
                 Exportar
               </Button>
@@ -283,144 +325,162 @@ export default function ArtistAnalytics() {
 
           {/* Metric Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <MetricCard title="Total Viewers" value={metrics.viewers} delta={metrics.viewersDelta} icon={Eye} />
-            <MetricCard title="Horas Streameadas" value={metrics.hours} icon={Clock} suffix="hrs" />
-            <MetricCard title="Nuevos Seguidores" value={metrics.newFollowers} delta={metrics.followersDelta} icon={UserPlus} />
-            <MetricCard title="Streams Realizados" value={metrics.streams} icon={Radio} />
+            <MetricCard title="Total Reproducciones" value={totalViews} icon={Eye} loading={isLoading} />
+            <MetricCard title="Total Likes" value={totalLikes} icon={Heart} loading={isLoading} />
+            <MetricCard title="Seguidores" value={followersData?.total || 0} delta={followersDelta} icon={UserPlus} loading={isLoading} />
+            <MetricCard title="Contenidos Publicados" value={myContent?.length || 0} icon={Film} loading={isLoading} />
           </div>
 
-          {/* Viewers Over Time */}
+          {/* Secondary metrics */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <MetricCard title="Compartidos" value={totalShares} icon={Share2} loading={isLoading} />
+            <MetricCard title="Comentarios" value={totalComments} icon={MessageSquare} loading={isLoading} />
+            <MetricCard title="Horas de Contenido" value={totalDurationHrs} icon={Clock} suffix="hrs" loading={isLoading} />
+          </div>
+
+          {/* Views per Content */}
           <Card className="bg-card/80 backdrop-blur-sm border-border">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
-                <Users className="h-5 w-5 text-primary" />
-                Viewers en el tiempo — {periodLabels[period]}
+                <Eye className="h-5 w-5 text-primary" />
+                Reproducciones por contenido
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-[340px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={viewersData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="viewersGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(270 70% 55%)" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="hsl(270 70% 55%)" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(240 10% 18%)" />
-                    <XAxis
-                      dataKey="label"
-                      tick={{ fill: "hsl(240 5% 55%)", fontSize: 11 }}
-                      axisLine={{ stroke: "hsl(240 10% 18%)" }}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      tick={{ fill: "hsl(240 5% 55%)", fontSize: 11 }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Area
-                      type="monotone"
-                      dataKey="viewers"
-                      name="Viewers"
-                      stroke="hsl(270 70% 55%)"
-                      strokeWidth={2}
-                      fill="url(#viewersGradient)"
-                      animationDuration={1200}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Top Streams */}
-            <Card className="bg-card/80 backdrop-blur-sm border-border">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Play className="h-5 w-5 text-primary" />
-                  Top Streams
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {MOCK_TOP_STREAMS.map((stream, idx) => (
-                    <div
-                      key={stream.id}
-                      className="flex items-center gap-3 p-3 rounded-lg bg-secondary/40 hover:bg-secondary/60 transition-colors cursor-pointer group"
-                    >
-                      <span className="text-sm font-bold text-muted-foreground w-5 text-center">
-                        {idx + 1}
-                      </span>
-                      <div className="w-16 h-10 rounded overflow-hidden bg-muted flex-shrink-0">
-                        <img
-                          src={stream.thumbnail}
-                          alt={stream.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
-                          {stream.title}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(stream.date).toLocaleDateString("es-AR")} · {stream.duration}
-                        </p>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-sm font-semibold">{stream.viewers.toLocaleString("es-AR")}</p>
-                        <p className="text-xs text-muted-foreground">{stream.reactions} ❤️</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Geographic Distribution */}
-            <Card className="bg-card/80 backdrop-blur-sm border-border">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                  Distribución Geográfica
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+              {isLoading ? (
+                <Skeleton className="h-[300px] w-full" />
+              ) : viewsTimeline.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-12 text-center">
+                  Aún no tenés contenido publicado. ¡Subí tu primer video o audio!
+                </p>
+              ) : (
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={MOCK_GEO}
-                      layout="vertical"
-                      margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(240 10% 18%)" horizontal={false} />
+                    <BarChart data={viewsTimeline} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(240 10% 18%)" />
                       <XAxis
-                        type="number"
+                        dataKey="label"
                         tick={{ fill: "hsl(240 5% 55%)", fontSize: 11 }}
-                        axisLine={false}
+                        axisLine={{ stroke: "hsl(240 10% 18%)" }}
                         tickLine={false}
                       />
                       <YAxis
-                        dataKey="city"
-                        type="category"
-                        tick={{ fill: "hsl(240 5% 55%)", fontSize: 12 }}
+                        tick={{ fill: "hsl(240 5% 55%)", fontSize: 11 }}
                         axisLine={false}
                         tickLine={false}
-                        width={120}
+                        allowDecimals={false}
                       />
                       <Tooltip content={<CustomTooltip />} />
                       <Bar
-                        dataKey="viewers"
-                        name="Viewers"
+                        dataKey="views"
+                        name="Reproducciones"
                         fill="hsl(270 70% 55%)"
-                        radius={[0, 6, 6, 0]}
+                        radius={[4, 4, 0, 0]}
                         animationDuration={1000}
                       />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Top Content */}
+            <Card className="bg-card/80 backdrop-blur-sm border-border">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Play className="h-5 w-5 text-primary" />
+                  Top Contenido
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="space-y-3">
+                    {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
+                  </div>
+                ) : !myContent?.length ? (
+                  <p className="text-sm text-muted-foreground py-8 text-center">Sin contenido aún</p>
+                ) : (
+                  <div className="space-y-3">
+                    {myContent.slice(0, 5).map((content, idx) => (
+                      <div
+                        key={content.id}
+                        className="flex items-center gap-3 p-3 rounded-lg bg-secondary/40 hover:bg-secondary/60 transition-colors group"
+                      >
+                        <span className="text-sm font-bold text-muted-foreground w-5 text-center">
+                          {idx + 1}
+                        </span>
+                        <div className="w-16 h-10 rounded overflow-hidden bg-muted flex-shrink-0">
+                          <img
+                            src={content.thumbnail_url || "/placeholder.svg"}
+                            alt={content.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
+                            {content.title}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(content.created_at!).toLocaleDateString("es-AR")}
+                            {content.video_duration_seconds ? ` · ${formatDuration(content.video_duration_seconds)}` : ""}
+                          </p>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-sm font-semibold">{(content.views_count || 0).toLocaleString("es-AR")}</p>
+                          <p className="text-xs text-muted-foreground">{content.likes_count || 0} ❤️</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Engagement breakdown */}
+            <Card className="bg-card/80 backdrop-blur-sm border-border">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  Engagement por Contenido
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <Skeleton className="h-[300px] w-full" />
+                ) : !myContent?.length ? (
+                  <p className="text-sm text-muted-foreground py-8 text-center">Sin datos</p>
+                ) : (
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={myContent.slice(0, 5).map((c) => ({
+                          name: c.title.length > 15 ? c.title.slice(0, 15) + "…" : c.title,
+                          Likes: c.likes_count || 0,
+                          Shares: c.shares_count || 0,
+                          Comentarios: c.comments_count || 0,
+                        }))}
+                        margin={{ top: 5, right: 10, left: 0, bottom: 60 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(240 10% 18%)" />
+                        <XAxis
+                          dataKey="name"
+                          tick={{ fill: "hsl(240 5% 55%)", fontSize: 10 }}
+                          axisLine={false}
+                          tickLine={false}
+                          angle={-30}
+                          textAnchor="end"
+                        />
+                        <YAxis tick={{ fill: "hsl(240 5% 55%)", fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Bar dataKey="Likes" fill="hsl(340 82% 52%)" radius={[2, 2, 0, 0]} />
+                        <Bar dataKey="Shares" fill="hsl(180 100% 50%)" radius={[2, 2, 0, 0]} />
+                        <Bar dataKey="Comentarios" fill="hsl(48 96% 53%)" radius={[2, 2, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -434,55 +494,49 @@ export default function ArtistAnalytics() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={followersData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(240 10% 18%)" />
-                    <XAxis
-                      dataKey="label"
-                      tick={{ fill: "hsl(240 5% 55%)", fontSize: 11 }}
-                      axisLine={{ stroke: "hsl(240 10% 18%)" }}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      tick={{ fill: "hsl(240 5% 55%)", fontSize: 11 }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Line
-                      type="monotone"
-                      dataKey="followers"
-                      name="Seguidores"
-                      stroke="hsl(180 100% 50%)"
-                      strokeWidth={2}
-                      dot={false}
-                      animationDuration={1500}
-                    />
-                    {followersData
-                      .filter((d) => d.isStream)
-                      .map((d, i) => (
-                        <ReferenceDot
-                          key={i}
-                          x={d.label}
-                          y={d.followers}
-                          r={5}
-                          fill="hsl(270 70% 55%)"
-                          stroke="hsl(270 70% 55%)"
-                          strokeWidth={2}
-                        />
-                      ))}
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-[hsl(180,100%,50%)]" /> Seguidores
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded-full bg-primary" /> Stream realizado
-                </span>
-              </div>
+              {isLoading ? (
+                <Skeleton className="h-[300px] w-full" />
+              ) : !followersData?.timeline.length ? (
+                <p className="text-sm text-muted-foreground py-12 text-center">
+                  Aún no tenés seguidores. ¡Compartí tu contenido para crecer!
+                </p>
+              ) : (
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={followersData.timeline} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="followersGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="hsl(180 100% 50%)" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="hsl(180 100% 50%)" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(240 10% 18%)" />
+                      <XAxis
+                        dataKey="label"
+                        tick={{ fill: "hsl(240 5% 55%)", fontSize: 11 }}
+                        axisLine={{ stroke: "hsl(240 10% 18%)" }}
+                        tickLine={false}
+                      />
+                      <YAxis
+                        tick={{ fill: "hsl(240 5% 55%)", fontSize: 11 }}
+                        axisLine={false}
+                        tickLine={false}
+                        allowDecimals={false}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Area
+                        type="monotone"
+                        dataKey="followers"
+                        name="Seguidores"
+                        stroke="hsl(180 100% 50%)"
+                        strokeWidth={2}
+                        fill="url(#followersGradient)"
+                        animationDuration={1200}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </CardContent>
           </Card>
         </main>

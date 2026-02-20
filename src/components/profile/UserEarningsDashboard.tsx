@@ -263,7 +263,7 @@
            <div className="flex items-center gap-4">
              <div className="flex-1">
                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">Tu ganancia</span>
+                  <span className="text-sm text-muted-foreground">Asociados</span>
                  <span className="text-lg font-bold text-green-400">{platformSettings.author_percentage}%</span>
                </div>
                <div className="h-3 bg-muted rounded-full overflow-hidden">
@@ -276,7 +276,7 @@
              <div className="text-2xl text-muted-foreground">/</div>
              <div className="flex-1">
                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">Red Akasha</span>
+                  <span className="text-sm text-muted-foreground">Red Akasha Administración</span>
                  <span className="text-lg font-bold text-cyan-400">{platformSettings.platform_percentage}%</span>
                </div>
                <div className="h-3 bg-muted rounded-full overflow-hidden">

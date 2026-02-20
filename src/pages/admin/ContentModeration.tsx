@@ -1,6 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { ContentDashboardStats } from "@/components/admin/ContentDashboardStats";
 import { Loader2, CheckCircle2, XCircle, Video, Image as ImageIcon, Music, Trash2, Zap, FileVideo } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -482,6 +483,9 @@ export default function AdminContentModeration() {
             Revisa y modera el contenido subido por los usuarios
           </p>
         </div>
+
+        {/* Dashboard de estadísticas de contenido */}
+        <ContentDashboardStats />
 
               {/* Panel de Aprobación Rápida */}
               <Card className="border-primary/20 bg-primary/5">

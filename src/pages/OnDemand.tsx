@@ -311,10 +311,6 @@ const OnDemand = () => {
         <Header />
         
         <main id="main-content" className={cn("pt-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto", queueOpen ? "pb-32" : "pb-16")}>
-          {/* Hero Carousel */}
-          {filterType === "all" && !searchTerm && contents.length > 0 && (
-            <HeroCarousel contents={contents} onContentClick={handleContentClick} />
-          )}
 
           {/* Minimal Header */}
           <div className="mb-8 flex items-center justify-between">

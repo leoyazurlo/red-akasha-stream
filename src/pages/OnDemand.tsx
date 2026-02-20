@@ -6,18 +6,21 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { notifyError } from "@/lib/notifications";
 import { useFavorites } from "@/hooks/useFavorites";
-import { Play, Search, Loader2, TrendingUp, Sparkles, Heart, ListPlus, Video, Music, ListMusic } from "lucide-react";
+import { Play, Search, Loader2, Sparkles, Video, ListMusic } from "lucide-react";
 import { AddToPlaylistDialog } from "@/components/AddToPlaylistDialog";
 import { useQueuePlayer, QueueItem } from "@/contexts/QueuePlayerContext";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { HeroCarousel } from "@/components/ondemand/HeroCarousel";
+import { CategoryFilter } from "@/components/ondemand/CategoryFilter";
+import { ContentGrid } from "@/components/ondemand/ContentGrid";
+import { FloatingQueuePlayer } from "@/components/ondemand/FloatingQueuePlayer";
 
 interface Content {
   id: string;
@@ -58,15 +61,6 @@ const formatDuration = (seconds: number | null) => {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
-const getContentIcon = (type: string) => {
-  switch (type) {
-    case 'podcast':
-      return <Music className="w-5 h-5" />;
-    default:
-      return <Video className="w-5 h-5" />;
-  }
-};
-
 const OnDemand = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -78,6 +72,7 @@ const OnDemand = () => {
   const [hasProfile, setHasProfile] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const [showAddToPlaylist, setShowAddToPlaylist] = useState(false);
   const [selectedContentId, setSelectedContentId] = useState<string | null>(null);
   const { toggleFavorite, isFavorite, loading: favLoading } = useFavorites();
@@ -201,6 +196,20 @@ const OnDemand = () => {
   const freeContents = useMemo(() => filteredContents.filter(c => c.is_free), [filteredContents]);
   const paidContents = useMemo(() => filteredContents.filter(c => !c.is_free), [filteredContents]);
 
+  // Category counts
+  const categoryCounts = useMemo(() => {
+    const base = searchTerm ? filteredContents : contents;
+    return {
+      all: base.length,
+      video_musical_vivo: base.filter(c => c.content_type === 'video_musical_vivo').length,
+      video_clip: base.filter(c => c.content_type === 'video_clip').length,
+      podcast: base.filter(c => c.content_type === 'podcast').length,
+      corto: base.filter(c => c.content_type === 'corto').length,
+      documental: base.filter(c => c.content_type === 'documental').length,
+      pelicula: base.filter(c => c.content_type === 'pelicula').length,
+    };
+  }, [contents, filteredContents, searchTerm]);
+
   const handleContentClick = (content: Content) => {
     navigate(`/video/${content.id}`);
   };
@@ -228,97 +237,23 @@ const OnDemand = () => {
     navigate(`/video/${history.content.id}`);
   };
 
-  // Content Card Component
-  const ContentCard = ({ content, index }: { content: Content; index: number }) => (
-    <div 
-      className="group cursor-pointer animate-fade-in"
-      style={{ animationDelay: `${index * 0.03}s` }}
-      onClick={() => handleContentClick(content)}
-    >
-      <div className="relative overflow-hidden rounded-lg bg-card/30 mb-3">
-        <AspectRatio ratio={16 / 9}>
-          {content.thumbnail_url ? (
-            <img
-              src={content.thumbnail_url}
-              alt={content.title}
-              className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-muted/20">
-              {getContentIcon(content.content_type)}
-            </div>
-          )}
-        </AspectRatio>
+  const handleToggleCard = (cardId: string) => {
+    setExpandedCards(prev => {
+      const next = new Set(prev);
+      if (next.has(cardId)) next.delete(cardId);
+      else next.add(cardId);
+      return next;
+    });
+  };
 
-        {/* Overlay on hover */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-          <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform">
-            <Play className="w-5 h-5 text-background ml-0.5" fill="currentColor" />
-          </div>
-        </div>
+  const handleFavoriteClick = (contentId: string) => {
+    toggleFavorite(contentId);
+  };
 
-        {/* Action buttons */}
-        <div className="absolute top-2 right-2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button
-            size="icon"
-            variant="secondary"
-            className="h-8 w-8 bg-black/50 hover:bg-black/70 border-0"
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleFavorite(content.id);
-            }}
-            disabled={favLoading}
-          >
-            <Heart className={cn("h-4 w-4", isFavorite(content.id) && "fill-red-500 text-red-500")} />
-          </Button>
-          <Button
-            size="icon"
-            variant="secondary"
-            className="h-8 w-8 bg-black/50 hover:bg-black/70 border-0"
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedContentId(content.id);
-              setShowAddToPlaylist(true);
-            }}
-          >
-            <ListPlus className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {/* Duration */}
-        {content.duration && (
-          <span className="absolute bottom-2 right-2 text-xs bg-black/70 text-white px-1.5 py-0.5 rounded">
-            {formatDuration(content.duration)}
-          </span>
-        )}
-
-      </div>
-
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          {content.band_name && (
-            <h3 className="font-medium text-sm line-clamp-2 text-foreground group-hover:text-primary transition-colors">
-              {content.band_name}
-            </h3>
-          )}
-          <p className="text-xs text-muted-foreground mt-1">
-            {content.title}
-          </p>
-          <p className="text-xs text-muted-foreground/70 mt-0.5">
-            {content.views_count.toLocaleString()} vistas
-          </p>
-        </div>
-        <span className={cn(
-          "text-[10px] px-1.5 py-0.5 rounded mt-0.5 flex-shrink-0",
-          content.is_free 
-            ? "bg-cyan-500/20 text-cyan-400" 
-            : "bg-amber-500/20 text-amber-400"
-        )}>
-          {content.is_free ? "Libre" : "Pago"}
-        </span>
-      </div>
-    </div>
-  );
+  const handlePlaylistClick = (contentId: string) => {
+    setSelectedContentId(contentId);
+    setShowAddToPlaylist(true);
+  };
 
   if (checkingProfile) {
     return (
@@ -376,6 +311,11 @@ const OnDemand = () => {
         <Header />
         
         <main id="main-content" className={cn("pt-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto", queueOpen ? "pb-32" : "pb-16")}>
+          {/* Hero Carousel */}
+          {filterType === "all" && !searchTerm && contents.length > 0 && (
+            <HeroCarousel contents={contents} onContentClick={handleContentClick} />
+          )}
+
           {/* Minimal Header */}
           <div className="mb-8 flex items-center justify-between">
             <div>
@@ -408,31 +348,12 @@ const OnDemand = () => {
             />
           </div>
 
-          {/* Category Pills */}
-          <div className="flex gap-2 mb-10 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
-            {[
-              { value: "all", label: "Todo" },
-              { value: "video_musical_vivo", label: "Video Musical en Vivo" },
-              { value: "video_clip", label: "Video Clip" },
-              { value: "podcast", label: "Podcast" },
-              { value: "documental", label: "Documental" },
-              { value: "corto", label: "Cortos" },
-              { value: "pelicula", label: "Películas" },
-            ].map((cat) => (
-              <button
-                key={cat.value}
-                onClick={() => setFilterType(cat.value)}
-                className={cn(
-                  "px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-all",
-                  filterType === cat.value
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card/30 text-muted-foreground hover:text-foreground hover:bg-card/50"
-                )}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
+          {/* Category Filter */}
+          <CategoryFilter
+            selectedType={filterType}
+            onTypeChange={setFilterType}
+            counts={categoryCounts}
+          />
 
           {loading ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -501,27 +422,44 @@ const OnDemand = () => {
                 </section>
               )}
 
-              {/* All Content */}
-              {filteredContents.length > 0 && (
-                <section>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Sparkles className="w-4 h-4 text-primary" />
-                    <h2 className="text-lg font-medium">Contenido</h2>
-                    <span className="text-xs text-muted-foreground ml-2">{filteredContents.length}</span>
-                  </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                    {filteredContents.map((content, index) => (
-                      <ContentCard key={content.id} content={content} index={index} />
-                    ))}
-                  </div>
-                </section>
-              )}
+              {/* Free Content Grid */}
+              <ContentGrid
+                title="Contenido Gratuito"
+                subtitle="Disfruta sin costo"
+                contents={freeContents}
+                variant="free"
+                expandedCards={expandedCards}
+                onToggleCard={handleToggleCard}
+                onContentClick={handleContentClick}
+                onFavoriteClick={handleFavoriteClick}
+                onPlaylistClick={handlePlaylistClick}
+                isFavorite={isFavorite}
+                favLoading={favLoading}
+              />
+
+              {/* Premium Content Grid */}
+              <ContentGrid
+                title="Contenido Premium"
+                subtitle="Contenido exclusivo de artistas"
+                contents={paidContents}
+                variant="premium"
+                expandedCards={expandedCards}
+                onToggleCard={handleToggleCard}
+                onContentClick={handleContentClick}
+                onFavoriteClick={handleFavoriteClick}
+                onPlaylistClick={handlePlaylistClick}
+                isFavorite={isFavorite}
+                favLoading={favLoading}
+              />
             </div>
           )}
         </main>
 
         <Footer />
       </div>
+
+      {/* Floating Queue Player */}
+      <FloatingQueuePlayer />
 
       {selectedContentId && (
         <AddToPlaylistDialog

@@ -430,6 +430,57 @@
          </CardContent>
        </Card>
  
-    </div>
-  );
-};
+       {/* Recent Transactions */}
+       <Card className="bg-card/50 border-cyan-500/20">
+         <CardHeader>
+           <CardTitle className="flex items-center gap-2 text-cyan-400">
+             <Wallet className="h-5 w-5" />
+             Historial de Ganancias
+           </CardTitle>
+         </CardHeader>
+         <CardContent>
+           {!earnings || earnings.length === 0 ? (
+             <div className="text-center py-8 text-muted-foreground">
+               <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
+               <p>Aún no tienes ganancias registradas</p>
+               <p className="text-sm">Sube contenido de pago para empezar a generar ingresos</p>
+             </div>
+           ) : (
+             <div className="space-y-3">
+               {earnings.slice(0, 10).map((earning) => (
+                 <div 
+                   key={earning.id}
+                   className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-border"
+                 >
+                   <div>
+                     <p className="font-medium">Venta de contenido</p>
+                     <p className="text-sm text-muted-foreground">
+                       {format(new Date(earning.created_at), "d 'de' MMMM, yyyy", { locale: es })}
+                     </p>
+                   </div>
+                   <div className="text-right">
+                     <p className="font-bold text-green-400">+${Number(earning.net_amount).toFixed(2)}</p>
+                     <Badge 
+                       variant="outline"
+                       className={
+                         earning.status === 'paid' 
+                           ? 'border-green-500/30 text-green-400'
+                           : earning.status === 'pending'
+                           ? 'border-yellow-500/30 text-yellow-400'
+                           : 'border-muted-foreground/30'
+                       }
+                     >
+                       {earning.status === 'paid' ? 'Pagado' : 
+                        earning.status === 'pending' ? 'Pendiente' : 
+                        earning.status === 'approved' ? 'Aprobado' : 'Cancelado'}
+                     </Badge>
+                   </div>
+                 </div>
+               ))}
+             </div>
+           )}
+         </CardContent>
+       </Card>
+     </div>
+   );
+ };

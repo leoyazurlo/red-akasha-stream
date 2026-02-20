@@ -57,6 +57,8 @@ interface FormData {
   is_free: boolean;
   price: string;
   currency: string;
+  access_type: string;
+  accepted_payment_methods: string[];
   video_width: number;
   video_height: number;
   file_size: number;
@@ -82,6 +84,8 @@ const initialFormData: FormData = {
   is_free: true,
   price: "0",
   currency: "USD",
+  access_type: "purchase",
+  accepted_payment_methods: ["stripe", "mercadopago", "paypal", "bank_transfer"],
   video_width: 0,
   video_height: 0,
   file_size: 0,
@@ -621,9 +625,13 @@ const UploadContent = () => {
                     price={formData.price}
                     currency={formData.currency}
                     contentType={formData.content_type}
+                    accessType={formData.access_type}
+                    acceptedPaymentMethods={formData.accepted_payment_methods}
                     onIsFreeChange={(value) => updateFormData('is_free', value)}
                     onPriceChange={(value) => updateFormData('price', value)}
                     onCurrencyChange={(value) => updateFormData('currency', value)}
+                    onAccessTypeChange={(value) => updateFormData('access_type', value)}
+                    onPaymentMethodsChange={(methods) => updateFormData('accepted_payment_methods', methods)}
                   />
 
                   {/* Technical Sheet - Only for non-video_musical_vivo */}

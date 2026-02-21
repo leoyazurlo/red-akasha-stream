@@ -106,50 +106,59 @@ export const VideoUpload = ({ label, value, onChange, onFileSelect, onMetadataEx
         onChange(objectUrl);
       }
 
-      // Extract metadata from video
-      const videoEl = document.createElement('video');
-      videoEl.preload = 'metadata';
-      videoEl.src = URL.createObjectURL(file);
+      // Extract metadata from video (non-blocking)
+      try {
+        const videoEl = document.createElement('video');
+        videoEl.preload = 'metadata';
+        const metadataUrl = URL.createObjectURL(file);
+        videoEl.src = metadataUrl;
 
-      videoEl.onloadedmetadata = () => {
-        const metadata = {
-          thumbnail: '',
-          width: videoEl.videoWidth,
-          height: videoEl.videoHeight,
-          size: file.size,
-          duration: videoEl.duration
-        };
-
-        // Generate thumbnail from first frame
-        videoEl.currentTime = 1;
-        videoEl.onseeked = () => {
-          const canvas = document.createElement('canvas');
-          canvas.width = videoEl.videoWidth;
-          canvas.height = videoEl.videoHeight;
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            ctx.drawImage(videoEl, 0, 0);
-            metadata.thumbnail = canvas.toDataURL('image/jpeg', 0.8);
-          }
-          
-          if (onMetadataExtracted) {
-            onMetadataExtracted(metadata);
-          }
-          
-          URL.revokeObjectURL(videoEl.src);
+        const metadataTimeout = setTimeout(() => {
+          URL.revokeObjectURL(metadataUrl);
           setLoading(false);
-        };
-      };
+        }, 10000);
 
-      videoEl.onerror = () => {
-        URL.revokeObjectURL(videoEl.src);
+        videoEl.onloadedmetadata = () => {
+          const metadata = {
+            thumbnail: '',
+            width: videoEl.videoWidth,
+            height: videoEl.videoHeight,
+            size: file.size,
+            duration: videoEl.duration
+          };
+
+          videoEl.currentTime = 1;
+          videoEl.onseeked = () => {
+            clearTimeout(metadataTimeout);
+            try {
+              const canvas = document.createElement('canvas');
+              canvas.width = videoEl.videoWidth;
+              canvas.height = videoEl.videoHeight;
+              const ctx = canvas.getContext('2d');
+              if (ctx) {
+                ctx.drawImage(videoEl, 0, 0);
+                metadata.thumbnail = canvas.toDataURL('image/jpeg', 0.8);
+              }
+            } catch (_) { /* thumbnail generation failed, continue */ }
+            
+            if (onMetadataExtracted) {
+              onMetadataExtracted(metadata);
+            }
+            
+            URL.revokeObjectURL(metadataUrl);
+            setLoading(false);
+          };
+        };
+
+        videoEl.onerror = () => {
+          clearTimeout(metadataTimeout);
+          URL.revokeObjectURL(metadataUrl);
+          setLoading(false);
+          // Don't show error - video uploaded fine, just metadata extraction failed
+        };
+      } catch (_) {
         setLoading(false);
-        toast({
-          title: "Error",
-          description: "No se pudo procesar el video",
-          variant: "destructive",
-        });
-      };
+      }
     } catch (error) {
       setLoading(false);
       toast({

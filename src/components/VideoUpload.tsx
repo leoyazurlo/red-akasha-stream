@@ -24,7 +24,9 @@ export const VideoUpload = ({ label, value, onChange, onFileSelect, onMetadataEx
   const { toast } = useToast();
   const [preview, setPreview] = useState<string | null>(value || null);
   const [loading, setLoading] = useState(false);
-   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [videoPlaybackError, setVideoPlaybackError] = useState(false);
+  const [uploadedFileName, setUploadedFileName] = useState<string>("");
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -44,7 +46,8 @@ export const VideoUpload = ({ label, value, onChange, onFileSelect, onMetadataEx
 
     setLoading(true);
     setUploadProgress(0);
-
+    setVideoPlaybackError(false);
+    setUploadedFileName(file.name);
     try {
       if (onFileSelect) {
         onFileSelect(file);
@@ -174,6 +177,8 @@ export const VideoUpload = ({ label, value, onChange, onFileSelect, onMetadataEx
       URL.revokeObjectURL(preview);
     }
     setPreview(null);
+    setVideoPlaybackError(false);
+    setUploadedFileName("");
     onChange("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -197,12 +202,21 @@ export const VideoUpload = ({ label, value, onChange, onFileSelect, onMetadataEx
       <div className="flex flex-col gap-4">
         {preview ? (
           <div className="relative w-full max-w-md rounded-lg overflow-hidden border-2 border-border">
-            <video
-              ref={videoRef}
-              src={preview}
-              controls
-              className="w-full h-auto max-h-64 object-contain bg-black"
-            />
+            {videoPlaybackError ? (
+              <div className="flex flex-col items-center justify-center w-full h-40 bg-muted/30">
+                <Video className="w-10 h-10 text-primary mb-2" />
+                <p className="text-sm text-foreground font-medium">Video subido correctamente</p>
+                <p className="text-xs text-muted-foreground mt-1 px-4 text-center truncate max-w-full">{uploadedFileName}</p>
+              </div>
+            ) : (
+              <video
+                ref={videoRef}
+                src={preview}
+                controls
+                className="w-full h-auto max-h-64 object-contain bg-black"
+                onError={() => setVideoPlaybackError(true)}
+              />
+            )}
             <button
               type="button"
               onClick={handleRemove}

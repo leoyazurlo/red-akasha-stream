@@ -10,7 +10,7 @@ interface GeoRestrictionGuardProps {
 }
 
 // Rutas permitidas para usuarios fuera de Latinoamérica sin suscripción
-const ALLOWED_ROUTES = ["/", "/suscripciones", "/auth"];
+const ALLOWED_ROUTES = ["/", "/suscripciones", "/auth", "/circuito/perfil", "/asociate"];
 
 export const GeoRestrictionGuard = ({ children }: GeoRestrictionGuardProps) => {
   const { country, isLoading: countryLoading } = useCountryDetection();

@@ -910,45 +910,54 @@ export default function AdminContentModeration() {
                           </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                          {/* URLs del contenido */}
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                          {/* Preview del contenido */}
+                          <div className="space-y-3">
                             {item.video_url && (
-                              <div>
-                                <span className="text-muted-foreground">Video:</span>
-                                <a 
-                                  href={item.video_url} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="block text-primary hover:underline truncate"
-                                >
-                                  Ver video
-                                </a>
+                              <div className="rounded-lg overflow-hidden border border-border/50 bg-black">
+                                <AspectRatio ratio={16 / 9}>
+                                  <video
+                                    src={item.video_url}
+                                    controls
+                                    playsInline
+                                    preload="metadata"
+                                    className="w-full h-full object-contain"
+                                    onError={(e) => {
+                                      const target = e.currentTarget;
+                                      target.style.display = 'none';
+                                      const fallback = target.nextElementSibling as HTMLElement;
+                                      if (fallback) fallback.style.display = 'flex';
+                                    }}
+                                  />
+                                  <div className="w-full h-full items-center justify-center bg-muted hidden flex-col gap-2">
+                                    <FileVideo className="h-8 w-8 text-muted-foreground" />
+                                    <p className="text-xs text-muted-foreground">Formato no compatible con el navegador</p>
+                                    <a href={item.video_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">
+                                      Descargar video
+                                    </a>
+                                  </div>
+                                </AspectRatio>
                               </div>
                             )}
                             {item.audio_url && (
-                              <div>
-                                <span className="text-muted-foreground">Audio:</span>
-                                <a 
-                                  href={item.audio_url} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="block text-primary hover:underline truncate"
-                                >
-                                  Escuchar audio
-                                </a>
+                              <div className="rounded-lg border border-border/50 p-3 bg-muted/30">
+                                <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+                                  <Music className="h-3 w-3" /> Audio
+                                </p>
+                                <audio
+                                  src={item.audio_url}
+                                  controls
+                                  preload="metadata"
+                                  className="w-full h-8"
+                                />
                               </div>
                             )}
                             {item.photo_url && (
-                              <div>
-                                <span className="text-muted-foreground">Foto:</span>
-                                <a 
-                                  href={item.photo_url} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="block text-primary hover:underline truncate"
-                                >
-                                  Ver foto
-                                </a>
+                              <div className="rounded-lg overflow-hidden border border-border/50">
+                                <img
+                                  src={item.photo_url}
+                                  alt={item.title}
+                                  className="w-full max-h-80 object-contain bg-black"
+                                />
                               </div>
                             )}
                           </div>

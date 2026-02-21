@@ -587,8 +587,17 @@ const VideoDetail = () => {
                       src={video.video_url}
                       controls={!isPreviewMode}
                       autoPlay
+                      playsInline
                       loop={loopMode === 'one' && !isPreviewMode}
                       className="w-full h-full"
+                      onError={() => {
+                        setIsPlaying(false);
+                        toast({
+                          title: "Error de reproducción",
+                          description: "Este formato de video no es compatible con tu navegador. Intenta con MP4 o WebM.",
+                          variant: "destructive",
+                        });
+                      }}
                       onTimeUpdate={(e) => {
                         const time = e.currentTarget.currentTime;
                         setVideoCurrentTime(time);

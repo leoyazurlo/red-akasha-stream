@@ -382,8 +382,12 @@ export const OnDemandPlayer = ({
                       ref={videoRef}
                       src={mediaUrl || ''}
                       poster={content.thumbnail_url || ''}
+                      playsInline
                       className="w-full h-full object-contain"
                       onClick={togglePlayPause}
+                      onError={() => {
+                        setIsPlaying(false);
+                      }}
                     />
                   </AspectRatio>
                 ) : (

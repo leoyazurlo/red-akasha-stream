@@ -245,7 +245,7 @@
     "descriptionPlaceholder": "描述您的内容...",
     "video": "视频",
     "videoDesc": "分享您的音乐视频、MV、纪录片或视听内容",
-    "videoUploadDesc": "上传MP4、WebM或MOV格式的视频（最大500MB）",
+    "videoUploadDesc": "上传MP4、WebM、MOV或MKV格式的视频（最大1GB）",
     "customThumbnail": "自定义缩略图",
     "customThumbnailDesc": "为您的视频上传封面图片（如YouTube）。如果不上传，将使用视频截图。",
     "videoFrame": "视频截图",

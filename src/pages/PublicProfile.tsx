@@ -915,22 +915,34 @@ const PublicProfile = () => {
 
           {/* Call to Action - Join */}
           {!user && (
-            <Card className="bg-gradient-to-r from-primary/20 to-accent/20 border-primary/30">
-              <CardContent className="p-8 text-center">
-                <UserPlus className="w-12 h-12 mx-auto mb-4 text-primary" />
-                <h3 className="text-2xl font-bold mb-2">¿Te gusta lo que ves?</h3>
-                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                  Únete a Red Akasha para conectar con artistas, valorar perfiles, 
-                  acceder a contenido exclusivo y ser parte de la comunidad musical latinoamericana.
+            <Card className="bg-card/60 backdrop-blur-sm border-primary/30 overflow-hidden relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-cyan-400/10 pointer-events-none" />
+              <CardContent className="relative p-8 text-center">
+                <div className="flex justify-center mb-4">
+                  <img 
+                    src="/favicon.png" 
+                    alt="Red Akasha" 
+                    className="w-16 h-16 drop-shadow-[0_0_12px_rgba(139,92,246,0.5)]"
+                  />
+                </div>
+                <h3 className="text-2xl font-bold mb-2 bg-gradient-to-r from-primary-glow to-accent bg-clip-text text-transparent">
+                  ¿Querés ser parte de nuestra comunidad?
+                </h3>
+                <p className="text-muted-foreground mb-2 max-w-lg mx-auto">
+                  <span className="font-semibold text-foreground">Red Akasha</span> es la red social de la música latinoamericana.
+                </p>
+                <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
+                  Suscribite gratis con un perfil, conectá con artistas, compartí tu contenido 
+                  y formá parte de una comunidad vibrante.
                 </p>
                 <div className="flex flex-wrap gap-4 justify-center">
-                  <Button asChild size="lg" className="bg-primary hover:bg-primary/80">
+                  <Button asChild size="lg" className="bg-primary hover:bg-primary/80 shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.5)] transition-all duration-300">
                     <Link to="/asociate">
                       <UserPlus className="w-4 h-4 mr-2" />
-                      Asociarme ahora
+                      Suscribite gratis
                     </Link>
                   </Button>
-                  <Button asChild variant="outline" size="lg">
+                  <Button asChild variant="outline" size="lg" className="border-primary/30 hover:border-primary/60">
                     <Link to="/auth">
                       Ya tengo cuenta
                     </Link>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -100,6 +101,7 @@ const MiPerfil = () => {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
+  const { unreadCount } = useUnreadMessages();
   
   const tabFromUrl = searchParams.get('tab');
   const validTabs = ['notifications', 'mensajes', 'contenido', 'on-demand', 'seguidores', 'actividad-foro', 'ganancias', 'cobros'];
@@ -574,9 +576,14 @@ const MiPerfil = () => {
                 <FileText className="w-3.5 h-3.5" />
                 On Demand
               </TabsTrigger>
-              <TabsTrigger value="mensajes" className="flex-shrink-0 gap-1.5 py-2 px-2 text-[10px] md:text-xs font-medium tracking-wide uppercase text-cyan-400/70 data-[state=active]:text-cyan-400 data-[state=active]:bg-cyan-400/10 data-[state=active]:shadow-[0_0_10px_rgba(34,211,238,0.3)] hover:text-cyan-400 transition-all">
+              <TabsTrigger value="mensajes" className="relative flex-shrink-0 gap-1.5 py-2 px-2 text-[10px] md:text-xs font-medium tracking-wide uppercase text-cyan-400/70 data-[state=active]:text-cyan-400 data-[state=active]:bg-cyan-400/10 data-[state=active]:shadow-[0_0_10px_rgba(34,211,238,0.3)] hover:text-cyan-400 transition-all">
                 <MessageSquare className="w-3.5 h-3.5" />
                 Chats
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
               </TabsTrigger>
             </TabsList>
 

@@ -152,6 +152,7 @@ export const ThumbnailSelector = ({
 
   const effectiveVideoUrl = videoUrl || videoThumbnail;
   const showVideoScrubber = !!effectiveVideoUrl;
+  const needsCrossOrigin = effectiveVideoUrl && !effectiveVideoUrl.startsWith("blob:") && !effectiveVideoUrl.startsWith("data:");
 
   return (
     <div className="border-t pt-6 space-y-4">
@@ -169,6 +170,7 @@ export const ThumbnailSelector = ({
           <video
             ref={videoRef}
             src={effectiveVideoUrl}
+            crossOrigin={needsCrossOrigin ? "anonymous" : undefined}
             preload="auto"
             muted
             playsInline

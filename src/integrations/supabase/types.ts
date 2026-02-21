@@ -4254,6 +4254,8 @@ export type Database = {
         | "vj"
         | "danza"
         | "percusion"
+        | "tecnico_sonido"
+        | "amante_de_la_musica"
       report_status: "pending" | "reviewing" | "resolved" | "dismissed"
       sala_type:
         | "teatro"
@@ -4514,6 +4516,8 @@ export const Constants = {
         "vj",
         "danza",
         "percusion",
+        "tecnico_sonido",
+        "amante_de_la_musica",
       ],
       report_status: ["pending", "reviewing", "resolved", "dismissed"],
       sala_type: [

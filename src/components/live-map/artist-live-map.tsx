@@ -32,6 +32,8 @@ const PROFILE_TYPE_LABELS: Record<string, string> = {
   management: "Management",
   melomano: "Melómano",
   arte_digital: "Arte Digital",
+  tecnico_sonido: "Técnico en Sonido",
+  amante_de_la_musica: "Amante de la Música",
 };
 
 function formatProfileType(type: string): string {

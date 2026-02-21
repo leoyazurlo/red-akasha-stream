@@ -101,6 +101,9 @@ export const PROFILE_TYPE_LABELS: Record<string, string> = {
   sala_concierto: 'Sala de Concierto',
   sello_discografico: 'Sello Discográfico',
   vj: 'VJ',
+  tecnico_sonido: 'Técnico en Sonido',
+  amante_de_la_musica: 'Amante de la Música',
+  productor_audiovisual: 'Productor Audiovisual',
 };
 
 export const CONTENT_TYPE_LABELS: Record<string, string> = {

@@ -130,7 +130,9 @@ export const VideoUpload = ({ label, value, onChange, onFileSelect, onMetadataEx
             duration: videoEl.duration
           };
 
-          videoEl.currentTime = 1;
+          // Seek to 25% of duration to avoid black intro frames
+          const seekTo = Math.max(1, videoEl.duration * 0.25);
+          videoEl.currentTime = seekTo;
           videoEl.onseeked = () => {
             clearTimeout(metadataTimeout);
             try {

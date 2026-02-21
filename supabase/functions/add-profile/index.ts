@@ -50,12 +50,39 @@ serve(async (req) => {
       throw new Error('Tipo de perfil es requerido');
     }
 
+    // Check if user already has a profile
+    const { data: existingProfile, error: existingError } = await supabaseAdmin
+      .from('profile_details')
+      .select('id, profile_type, additional_profile_types')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (existingError) {
+      console.error('Error checking existing profile:', existingError);
+      throw new Error('Error al verificar perfil existente');
+    }
+
+    if (existingProfile) {
+      throw new Error('Ya tienes un perfil creado. Solo puedes tener un perfil principal. Puedes agregar tipos adicionales desde la edición de perfil.');
+    }
+
     console.log(`Adding new profile for user ${user.id}, type: ${requestData.profile_type}`);
+
+    // Build additional_profile_types from the extra selected profiles
+    const additionalTypes: string[] = [];
+    if (requestData.profile_types && Array.isArray(requestData.profile_types)) {
+      for (const pt of requestData.profile_types) {
+        if (pt !== requestData.profile_type) {
+          additionalTypes.push(pt);
+        }
+      }
+    }
 
     // Prepare profile data with sanitization
     const profileData: any = {
       user_id: user.id,
       profile_type: requestData.profile_type,
+      additional_profile_types: additionalTypes,
       avatar_url: requestData.avatar_url || null,
       display_name: sanitizeString(requestData.display_name || requestData.nombre || '', 200),
       bio: requestData.bio ? sanitizeString(requestData.bio, 1000) : null,
@@ -115,6 +142,9 @@ serve(async (req) => {
 
     if (profileError) {
       console.error('Profile insert error:', profileError);
+      if (profileError.code === '23505') {
+        throw new Error('Ya tienes un perfil creado. Solo se permite un perfil por cuenta.');
+      }
       throw new Error('Error al crear el perfil: ' + profileError.message);
     }
 

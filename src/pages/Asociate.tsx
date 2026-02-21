@@ -715,7 +715,7 @@ const Asociate = () => {
                       Sesión iniciada como: <span className="font-medium text-foreground">{currentUser.email}</span>
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      El nuevo perfil se agregará a tu cuenta existente.
+                      Se creará tu perfil único en la plataforma. Solo se permite un perfil por cuenta.
                     </p>
                   </div>
                   
@@ -728,15 +728,29 @@ const Asociate = () => {
                         ({t('asociate.selectMultiple')})
                       </span>
                     </Label>
+
+                    {/* Main profile notice */}
+                    <div className="p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-sm">
+                      <p className="text-cyan-300 font-medium mb-1">⭐ Perfil principal</p>
+                      <p className="text-cyan-200/70">
+                        El <strong>primer tipo que selecciones</strong> será tu perfil principal en el Circuito. 
+                        Los demás se agregarán como sub-perfiles (badges adicionales). 
+                        Solo puedes tener un perfil por cuenta.
+                      </p>
+                    </div>
+
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {perfilOptions.map((option) => {
                           const isSelected = selectedProfiles.includes(option.value);
+                          const isMainProfile = selectedProfiles[0] === option.value;
                           return (
                             <label
                               key={option.value}
                               htmlFor={`profile-${option.value}`}
                               className={`flex items-center space-x-3 p-3 rounded-lg border transition-all cursor-pointer ${
-                                isSelected
+                                isMainProfile
+                                  ? 'border-cyan-400 bg-cyan-500/15 ring-1 ring-cyan-400/50'
+                                  : isSelected
                                   ? 'border-primary bg-primary/10'
                                   : 'border-border/50 hover:border-primary/50 hover:bg-muted/50'
                               }`}
@@ -749,6 +763,11 @@ const Asociate = () => {
                               <span className="text-sm font-medium flex-1">
                                 {option.label}
                               </span>
+                              {isMainProfile && (
+                                <span className="text-[10px] font-bold text-cyan-400 bg-cyan-500/20 px-2 py-0.5 rounded-full">
+                                  PRINCIPAL
+                                </span>
+                              )}
                             </label>
                           );
                         })}
@@ -756,13 +775,18 @@ const Asociate = () => {
                       {selectedProfiles.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-border/30">
                           <span className="text-sm text-muted-foreground">{t('asociate.selectedProfiles')}:</span>
-                          {selectedProfiles.map(profile => {
+                          {selectedProfiles.map((profile, index) => {
                             const option = perfilOptions.find(o => o.value === profile);
                             return (
                               <span
                                 key={profile}
-                                className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-primary/20 text-primary rounded-full"
+                                className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${
+                                  index === 0 
+                                    ? 'bg-cyan-500/20 text-cyan-400 ring-1 ring-cyan-400/30' 
+                                    : 'bg-primary/20 text-primary'
+                                }`}
                               >
+                                {index === 0 && '⭐ '}
                                 {option?.label}
                                 <X
                                   className="w-3 h-3 cursor-pointer hover:text-destructive"

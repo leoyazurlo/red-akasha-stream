@@ -213,6 +213,7 @@ export const VideoUpload = ({ label, value, onChange, onFileSelect, onMetadataEx
                 ref={videoRef}
                 src={preview}
                 controls
+                playsInline
                 className="w-full h-auto max-h-64 object-contain bg-black"
                 onError={() => setVideoPlaybackError(true)}
               />
@@ -248,7 +249,7 @@ export const VideoUpload = ({ label, value, onChange, onFileSelect, onMetadataEx
         <Input
           ref={fileInputRef}
           type="file"
-          accept="video/mp4,video/webm,video/quicktime,video/x-msvideo,.mp4,.webm,.mov,.avi"
+          accept="video/mp4,video/webm,video/quicktime,video/x-matroska,.mp4,.webm,.mov,.mkv,.avi"
           onChange={handleFileChange}
           className="hidden"
           disabled={loading}

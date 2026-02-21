@@ -203,6 +203,7 @@ const VideoDetail = () => {
   const sleepIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
   const [previewLimitReached, setPreviewLimitReached] = useState(false);
+  const [videoPlaybackError, setVideoPlaybackError] = useState(false);
 
   const PREVIEW_LIMIT_SECONDS = 40;
 
@@ -581,7 +582,28 @@ const VideoDetail = () => {
               <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-2 border-cyan-400/40 shadow-[0_0_30px_hsl(180_100%_50%/0.35)]">
                 <AspectRatio ratio={16 / 9} className="bg-black relative">
                   <VideoWatermark />
-                  {isPlaying && video.video_url && !previewLimitReached ? (
+                  {videoPlaybackError ? (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-black/90 p-10 text-center">
+                      <Play className="w-20 h-20 text-primary mb-4 opacity-50" />
+                      <h3 className="text-xl font-bold text-foreground mb-2">Formato no compatible</h3>
+                      <p className="text-muted-foreground text-sm mb-1">
+                        Este video fue subido en un formato (.mov, .mkv) que tu navegador no puede reproducir directamente.
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        Para mejor compatibilidad, se recomienda subir en formato <strong>MP4</strong> o <strong>WebM</strong>.
+                      </p>
+                      {video.video_url && (
+                        <a
+                          href={video.video_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm hover:bg-primary/90 transition-colors"
+                        >
+                          Descargar video
+                        </a>
+                      )}
+                    </div>
+                  ) : isPlaying && video.video_url && !previewLimitReached ? (
                     <video
                       ref={videoPlayerRef}
                       src={video.video_url}
@@ -592,11 +614,7 @@ const VideoDetail = () => {
                       className="w-full h-full"
                       onError={() => {
                         setIsPlaying(false);
-                        toast({
-                          title: "Error de reproducción",
-                          description: "Este formato de video no es compatible con tu navegador. Intenta con MP4 o WebM.",
-                          variant: "destructive",
-                        });
+                        setVideoPlaybackError(true);
                       }}
                       onTimeUpdate={(e) => {
                         const time = e.currentTarget.currentTime;

@@ -22,7 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useContentAccess } from "@/hooks/useContentAccess";
 
-const PREVIEW_LIMIT_SECONDS = 30;
+const PREVIEW_LIMIT_SECONDS = 40;
 
 interface OnDemandPlayerProps {
   open: boolean;
@@ -426,19 +426,19 @@ export const OnDemandPlayer = ({
 
             {/* Preview Limit Overlay for paid content */}
             {previewLimitReached && isPreviewMode && (
-              <div className="absolute inset-0 flex items-center justify-center z-30 bg-black/80 backdrop-blur-sm">
-                <div className="text-center p-8 max-w-md">
-                  <Lock className="w-16 h-16 text-primary mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold text-white mb-2">Vista previa finalizada</h3>
-                  <p className="text-white/80 mb-2">
+              <div className="absolute inset-0 flex items-center justify-center z-30 bg-black/90 backdrop-blur-sm">
+                <div className="text-center p-10 max-w-lg">
+                  <Lock className="w-24 h-24 text-cyan-400 mx-auto mb-6 drop-shadow-[0_0_20px_hsl(180_100%_50%/0.7)]" />
+                  <h3 className="text-3xl font-bold text-cyan-400 mb-3 drop-shadow-[0_0_15px_hsl(180_100%_50%/0.5)]">Vista previa finalizada</h3>
+                  <p className="text-cyan-200/90 text-lg mb-2">
                     Has visto {PREVIEW_LIMIT_SECONDS} segundos de vista previa.
                   </p>
-                  <p className="text-white/60 text-sm mb-6">
+                  <p className="text-cyan-300/60 text-base mb-8">
                     Compra este contenido para verlo completo.
                   </p>
                   <div className="flex flex-col gap-3">
-                    <Button size="lg" onClick={onPurchase} className="gap-2 w-full">
-                      <DollarSign className="w-4 h-4" />
+                    <Button size="lg" onClick={onPurchase} className="gap-2 w-full bg-cyan-500 hover:bg-cyan-400 text-black font-semibold text-lg px-8 py-3 shadow-[0_0_25px_hsl(180_100%_50%/0.5)]">
+                      <DollarSign className="w-5 h-5" />
                       Comprar por {content.price} {content.currency}
                     </Button>
                   </div>

@@ -204,7 +204,7 @@ const VideoDetail = () => {
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
   const [previewLimitReached, setPreviewLimitReached] = useState(false);
 
-  const PREVIEW_LIMIT_SECONDS = 30;
+  const PREVIEW_LIMIT_SECONDS = 40;
 
   // Content access check for paid content
   const contentAccess = useContentAccess(id);
@@ -623,17 +623,17 @@ const VideoDetail = () => {
                       }}
                     />
                   ) : previewLimitReached ? (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-black p-8 text-center">
-                      <Lock className="w-16 h-16 text-primary mb-4" />
-                      <h3 className="text-2xl font-bold text-white mb-2">Vista previa finalizada</h3>
-                      <p className="text-white/80 mb-2">
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-black/90 p-10 text-center">
+                      <Lock className="w-24 h-24 text-cyan-400 mb-6 drop-shadow-[0_0_20px_hsl(180_100%_50%/0.7)]" />
+                      <h3 className="text-3xl font-bold text-cyan-400 mb-3 drop-shadow-[0_0_15px_hsl(180_100%_50%/0.5)]">Vista previa finalizada</h3>
+                      <p className="text-cyan-200/90 text-lg mb-2">
                         Has visto {PREVIEW_LIMIT_SECONDS} segundos de vista previa.
                       </p>
-                      <p className="text-white/60 text-sm mb-6">
+                      <p className="text-cyan-300/60 text-base mb-8">
                         Compra este contenido para verlo completo.
                       </p>
-                      <Button size="lg" onClick={() => navigate(`/video/${id}`)} className="gap-2">
-                        <DollarSign className="w-4 h-4" />
+                      <Button size="lg" onClick={() => navigate(`/video/${id}`)} className="gap-2 bg-cyan-500 hover:bg-cyan-400 text-black font-semibold text-lg px-8 py-3 shadow-[0_0_25px_hsl(180_100%_50%/0.5)]">
+                        <DollarSign className="w-5 h-5" />
                         Comprar por {video.price} USD
                       </Button>
                     </div>

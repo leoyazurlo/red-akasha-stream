@@ -578,6 +578,7 @@ const UploadContent = () => {
                       videoThumbnail={formData.thumbnail_url}
                       customThumbnail={formData.custom_thumbnail_url}
                       onCustomThumbnailChange={(url) => updateFormData('custom_thumbnail_url', url)}
+                      videoUrl={formData.video_url}
                     />
                   )}
 

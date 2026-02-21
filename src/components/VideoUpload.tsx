@@ -195,7 +195,8 @@ export const VideoUpload = ({ label, value, onChange, onFileSelect, onMetadataEx
       <Alert className="border-primary/20 bg-primary/5">
         <AlertCircle className="h-4 w-4 text-primary" />
         <AlertDescription className="text-xs">
-          <strong>Formatos:</strong> MP4, WebM, MOV, MKV • <strong>Tamaño máx:</strong> 1GB
+          <strong>Formatos aceptados:</strong> MP4, WebM, MOV, MKV (máx. 1GB).{' '}
+          <span className="text-muted-foreground">Para garantizar la reproducción en todos los navegadores y dispositivos, te recomendamos subir tus videos en formato <strong className="text-foreground">MP4</strong> o <strong className="text-foreground">WebM</strong>. Los archivos MOV y MKV se almacenarán correctamente, pero algunos navegadores podrían no reproducirlos de forma nativa.</span>
         </AlertDescription>
       </Alert>
 

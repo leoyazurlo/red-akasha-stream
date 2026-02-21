@@ -141,7 +141,7 @@ export const ThumbnailSelector = ({
   };
 
   const effectiveVideoUrl = videoUrl || videoThumbnail;
-  const showVideoScrubber = !!videoUrl;
+  const showVideoScrubber = !!effectiveVideoUrl;
 
   return (
     <div className="border-t pt-6 space-y-4">
@@ -158,13 +158,13 @@ export const ThumbnailSelector = ({
           <canvas ref={canvasRef} className="hidden" />
           <video
             ref={videoRef}
-            src={videoUrl}
-            preload="metadata"
+            src={effectiveVideoUrl}
+            preload="auto"
             muted
             playsInline
-            crossOrigin="anonymous"
             className="hidden"
             onLoadedData={handleVideoLoaded}
+            onLoadedMetadata={handleVideoLoaded}
           />
         </>
       )}

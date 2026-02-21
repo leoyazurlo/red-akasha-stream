@@ -715,7 +715,7 @@ const Asociate = () => {
                       Sesión iniciada como: <span className="font-medium text-foreground">{currentUser.email}</span>
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Se creará tu perfil único en la plataforma. Solo se permite un perfil por cuenta.
+                      Se creará tu perfil único en la plataforma. Solo se permite un perfil por cuenta. ¡Añadí tus sub-perfiles si los tenés!
                     </p>
                   </div>
                   

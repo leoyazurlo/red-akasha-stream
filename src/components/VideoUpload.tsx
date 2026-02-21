@@ -181,7 +181,7 @@ export const VideoUpload = ({ label, value, onChange, onFileSelect, onMetadataEx
       <Alert className="border-primary/20 bg-primary/5">
         <AlertCircle className="h-4 w-4 text-primary" />
         <AlertDescription className="text-xs">
-          <strong>Formatos:</strong> MP4, WebM, MOV • <strong>Tamaño máx:</strong> 500MB
+          <strong>Formatos:</strong> MP4, WebM, MOV, MKV • <strong>Tamaño máx:</strong> 1GB
         </AlertDescription>
       </Alert>
 
@@ -216,7 +216,7 @@ export const VideoUpload = ({ label, value, onChange, onFileSelect, onMetadataEx
               <>
                 <Video className="w-10 h-10 text-muted-foreground mb-2" />
                 <p className="text-sm text-muted-foreground">Haz clic para seleccionar un video</p>
-                <p className="text-xs text-muted-foreground mt-1">MP4, WebM, MOV (máx. 500MB)</p>
+                <p className="text-xs text-muted-foreground mt-1">MP4, WebM, MOV, MKV (máx. 1GB)</p>
               </>
             )}
           </div>

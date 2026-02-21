@@ -53,6 +53,7 @@ interface UserProfile {
   user_id: string;
   display_name: string;
   profile_type: string;
+  additional_profile_types?: string[] | null;
   email: string;
   ciudad: string;
   pais: string;
@@ -1115,9 +1116,16 @@ export default function AdminUsers() {
                           {userProfile.display_name}
                         </CardTitle>
                       </div>
-                      <Badge variant="outline">
-                        {userProfile.profile_type.replace('_', ' ')}
-                      </Badge>
+                      <div className="flex flex-wrap gap-1.5 items-center">
+                        <Badge variant="outline">
+                          {PROFILE_TYPE_LABELS[userProfile.profile_type] || userProfile.profile_type.replace('_', ' ')}
+                        </Badge>
+                        {userProfile.additional_profile_types?.map((type) => (
+                          <Badge key={type} variant="outline" className="border-primary/30 text-primary/80">
+                            {PROFILE_TYPE_LABELS[type] || type.replace('_', ' ')}
+                          </Badge>
+                        ))}
+                      </div>
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-4">

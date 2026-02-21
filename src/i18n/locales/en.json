@@ -254,7 +254,7 @@
     "descriptionPlaceholder": "Describe your content...",
     "video": "Video",
     "videoDesc": "Share your music video, video clip, documentary or audiovisual content",
-    "videoUploadDesc": "Upload your video in MP4, WebM or MOV format (max. 500MB)",
+    "videoUploadDesc": "Upload your video in MP4, WebM, MOV or MKV format (max. 1GB)",
     "customThumbnail": "Custom Thumbnail",
     "customThumbnailDesc": "Upload a cover image for your video (like YouTube). If you don't upload one, a frame from the video will be used.",
     "videoFrame": "Video frame",

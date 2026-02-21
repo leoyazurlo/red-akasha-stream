@@ -257,7 +257,7 @@
     "descriptionPlaceholder": "Describe tu contenido...",
     "video": "Video",
     "videoDesc": "Comparte tu video musical, video clip, documental o contenido audiovisual",
-    "videoUploadDesc": "Sube tu video en formato MP4, WebM o MOV (máx. 500MB)",
+    "videoUploadDesc": "Sube tu video en formato MP4, WebM, MOV o MKV (máx. 1GB)",
     "customThumbnail": "Miniatura Personalizada",
     "customThumbnailDesc": "Sube una imagen de portada para tu video (como en YouTube). Si no subes una, se usará un fotograma del video.",
     "videoFrame": "Fotograma del video",

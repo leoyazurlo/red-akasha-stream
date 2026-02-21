@@ -186,6 +186,7 @@ const Asociate = () => {
     { value: "representante", label: t('asociate.profiles.representante') },
     { value: "sala_concierto", label: t('asociate.profiles.sala_concierto') },
     { value: "sello_discografico", label: t('asociate.profiles.sello_discografico') },
+    { value: "tecnico_sonido", label: t('asociate.profiles.tecnico_sonido') },
     { value: "vj", label: t('asociate.profiles.vj') }
   ], [t]);
 
@@ -207,7 +208,8 @@ const Asociate = () => {
     "dj": "dj",
     "vj": "vj",
     "percusion": "percusion",
-    "danza": "danza"
+    "danza": "danza",
+    "tecnico_sonido": "tecnico_sonido"
   };
 
   // Preparar opciones de ciudades para autocompletado

@@ -294,13 +294,6 @@ const Auth = () => {
         throw new Error(insertError.message);
       }
       
-      // Store password temporarily for admin approval (encrypted)
-      // Note: In production, use a more secure approach
-      localStorage.setItem(`pending_reg_${signupData.email.toLowerCase()}`, JSON.stringify({
-        password: signupData.password,
-        avatar_url: avatarUrl,
-      }));
-
       setSignupSubmitted(true);
       toast({
         title: "¡Solicitud enviada!",

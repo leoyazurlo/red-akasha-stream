@@ -28,6 +28,37 @@ export const ThumbnailSelector = ({
   const [currentPreview, setCurrentPreview] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
+  const [localBlobUrl, setLocalBlobUrl] = useState<string>("");
+
+  // Convert remote video to local blob URL to bypass CORS canvas restrictions
+  useEffect(() => {
+    const url = videoUrl || videoThumbnail;
+    if (!url) return;
+
+    // Already local - use directly
+    if (url.startsWith("blob:") || url.startsWith("data:")) {
+      setLocalBlobUrl(url);
+      return;
+    }
+
+    // Fetch remote video as blob
+    let cancelled = false;
+    fetch(url)
+      .then(res => res.blob())
+      .then(blob => {
+        if (!cancelled) {
+          const blobUrl = URL.createObjectURL(blob);
+          setLocalBlobUrl(blobUrl);
+        }
+      })
+      .catch(err => {
+        console.error("Failed to fetch video for thumbnail extraction:", err);
+        // Fallback: try using the URL directly
+        if (!cancelled) setLocalBlobUrl(url);
+      });
+
+    return () => { cancelled = true; };
+  }, [videoUrl, videoThumbnail]);
 
   // Auto-generate frames when video is loaded
   const generateAutoFrames = useCallback(async () => {
@@ -150,9 +181,7 @@ export const ThumbnailSelector = ({
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const effectiveVideoUrl = videoUrl || videoThumbnail;
-  const showVideoScrubber = !!effectiveVideoUrl;
-  const needsCrossOrigin = effectiveVideoUrl && !effectiveVideoUrl.startsWith("blob:") && !effectiveVideoUrl.startsWith("data:");
+  const showVideoScrubber = !!localBlobUrl;
 
   return (
     <div className="border-t pt-6 space-y-4">
@@ -169,8 +198,7 @@ export const ThumbnailSelector = ({
           <canvas ref={canvasRef} className="hidden" />
           <video
             ref={videoRef}
-            src={effectiveVideoUrl}
-            crossOrigin={needsCrossOrigin ? "anonymous" : undefined}
+            src={localBlobUrl}
             preload="auto"
             muted
             playsInline

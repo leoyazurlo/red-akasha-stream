@@ -3,6 +3,7 @@ import { Footer } from "@/components/Footer";
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { useAuth } from "@/hooks/useAuth";
 import { useMiniPlayer } from "@/contexts/MiniPlayerContext";
+import { useContentAccess } from "@/hooks/useContentAccess";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useSEO } from "@/hooks/use-seo";
@@ -41,7 +42,9 @@ import {
   Repeat1,
   Shuffle,
   Timer,
-  Gauge
+  Gauge,
+  Lock,
+  DollarSign
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -199,6 +202,14 @@ const VideoDetail = () => {
   const [sleepTimeLeft, setSleepTimeLeft] = useState<number | null>(null);
   const sleepIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
+  const [previewLimitReached, setPreviewLimitReached] = useState(false);
+
+  const PREVIEW_LIMIT_SECONDS = 30;
+
+  // Content access check for paid content
+  const contentAccess = useContentAccess(id);
+  const hasFullAccess = video?.is_free || contentAccess.accessType === 'owner' || contentAccess.accessType === 'purchased' || contentAccess.accessType === 'rented' || contentAccess.accessType === 'subscription';
+  const isPreviewMode = video ? !video.is_free && !hasFullAccess : false;
 
   // Sleep timer effect
   useEffect(() => {
@@ -570,17 +581,23 @@ const VideoDetail = () => {
               <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-2 border-cyan-400/40 shadow-[0_0_30px_hsl(180_100%_50%/0.35)]">
                 <AspectRatio ratio={16 / 9} className="bg-black relative">
                   <VideoWatermark />
-                  {isPlaying && video.video_url ? (
+                  {isPlaying && video.video_url && !previewLimitReached ? (
                     <video
                       ref={videoPlayerRef}
                       src={video.video_url}
-                      controls
+                      controls={!isPreviewMode}
                       autoPlay
-                      loop={loopMode === 'one'}
+                      loop={loopMode === 'one' && !isPreviewMode}
                       className="w-full h-full"
-                      onTimeUpdate={(e) => setVideoCurrentTime(e.currentTarget.currentTime)}
+                      onTimeUpdate={(e) => {
+                        const time = e.currentTarget.currentTime;
+                        setVideoCurrentTime(time);
+                        if (isPreviewMode && time >= PREVIEW_LIMIT_SECONDS) {
+                          e.currentTarget.pause();
+                          setPreviewLimitReached(true);
+                        }
+                      }}
                       onLoadedMetadata={() => {
-                        // Seek to timestamp if provided
                         const tParam = searchParams.get('t') || searchParams.get('start');
                         if (tParam && videoPlayerRef.current) {
                           videoPlayerRef.current.currentTime = Number(tParam);
@@ -595,9 +612,8 @@ const VideoDetail = () => {
                           }
                           return;
                         }
-                        // Check clip end
                         const endParam = searchParams.get('end');
-                        if (endParam) return; // clip mode, don't autoplay
+                        if (endParam) return;
                         if (autoplay && moreContent.length > 0) {
                           const nextId = shuffleOn
                             ? moreContent[Math.floor(Math.random() * moreContent.length)].id
@@ -606,10 +622,25 @@ const VideoDetail = () => {
                         }
                       }}
                     />
+                  ) : previewLimitReached ? (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-black p-8 text-center">
+                      <Lock className="w-16 h-16 text-primary mb-4" />
+                      <h3 className="text-2xl font-bold text-white mb-2">Vista previa finalizada</h3>
+                      <p className="text-white/80 mb-2">
+                        Has visto {PREVIEW_LIMIT_SECONDS} segundos de vista previa.
+                      </p>
+                      <p className="text-white/60 text-sm mb-6">
+                        Compra este contenido para verlo completo.
+                      </p>
+                      <Button size="lg" onClick={() => navigate(`/video/${id}`)} className="gap-2">
+                        <DollarSign className="w-4 h-4" />
+                        Comprar por {video.price} USD
+                      </Button>
+                    </div>
                   ) : (
                     <div 
                       className="relative w-full h-full cursor-pointer group"
-                      onClick={() => setIsPlaying(true)}
+                      onClick={() => { setPreviewLimitReached(false); setIsPlaying(true); }}
                     >
                       {video.thumbnail_url ? (
                         <img
@@ -629,6 +660,16 @@ const VideoDetail = () => {
                       </div>
                     </div>
                   )}
+
+                  {/* Preview Mode Indicator */}
+                  {isPreviewMode && isPlaying && !previewLimitReached && (
+                    <div className="absolute top-4 right-4 z-20">
+                      <Badge variant="outline" className="bg-black/60 border-primary/50 text-primary">
+                        Vista previa: {Math.max(0, PREVIEW_LIMIT_SECONDS - Math.floor(videoCurrentTime))}s restantes
+                      </Badge>
+                    </div>
+                  )}
+
                 </AspectRatio>
 
                 {/* Playback Controls Bar */}

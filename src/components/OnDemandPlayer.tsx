@@ -22,7 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useContentAccess } from "@/hooks/useContentAccess";
 
-const PREVIEW_LIMIT_SECONDS = 20;
+const PREVIEW_LIMIT_SECONDS = 30;
 
 interface OnDemandPlayerProps {
   open: boolean;

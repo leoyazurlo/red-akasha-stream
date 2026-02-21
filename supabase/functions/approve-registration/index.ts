@@ -126,7 +126,9 @@ serve(async (req) => {
 
     console.log(`Approving registration for: ${request.email}`);
 
-    // Step 1: Create auth user
+    // Step 1: Create auth user (or reuse existing one)
+    let authUserId: string;
+
     const { data: authData, error: signUpError } =
       await supabaseAdmin.auth.admin.createUser({
         email: request.email,
@@ -140,52 +142,88 @@ serve(async (req) => {
     if (signUpError) {
       const msg = signUpError.message ? String(signUpError.message).toLowerCase() : "";
       if (msg.includes("registered") || msg.includes("exists")) {
-        return jsonResponse(400, {
-          success: false,
-          error:
-            "Este email ya está registrado. El usuario puede iniciar sesión directamente.",
+        // User already exists in auth - find them and reuse
+        console.log(`User already exists in auth, looking up: ${request.email}`);
+        const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+        if (listError) {
+          console.error("approve-registration: listUsers error", listError);
+          return jsonResponse(500, { success: false, error: "No se pudo verificar el usuario existente" });
+        }
+        const existingUser = listData.users.find(u => u.email === request.email);
+        if (!existingUser) {
+          return jsonResponse(500, { success: false, error: "No se encontró el usuario existente" });
+        }
+        authUserId = existingUser.id;
+
+        // Update the password so admin can share new credentials
+        await supabaseAdmin.auth.admin.updateUserById(authUserId, {
+          password: password,
+          email_confirm: true,
+          user_metadata: { full_name: sanitizeString(request.nombre, 200) },
         });
+
+        // Ensure profile entry in profiles table exists (trigger may have already created it)
+        const { data: existingProfile } = await supabaseAdmin
+          .from("profiles")
+          .select("id")
+          .eq("id", authUserId)
+          .maybeSingle();
+
+        if (!existingProfile) {
+          await supabaseAdmin.from("profiles").insert({
+            id: authUserId,
+            username: request.email.split("@")[0],
+            full_name: sanitizeString(request.nombre, 200),
+          });
+        }
+
+        // Clean up any old profile_details for this user
+        await supabaseAdmin.from("profile_details").delete().eq("user_id", authUserId);
+
+        console.log(`Reusing existing auth user: ${authUserId}`);
+      } else {
+        console.error("approve-registration: createUser error", signUpError);
+        return jsonResponse(500, { success: false, error: "No se pudo crear la cuenta" });
       }
-      console.error("approve-registration: createUser error", signUpError);
+    } else if (!authData.user) {
       return jsonResponse(500, { success: false, error: "No se pudo crear la cuenta" });
+    } else {
+      authUserId = authData.user.id;
     }
 
-    if (!authData.user) {
-      return jsonResponse(500, { success: false, error: "No se pudo crear la cuenta" });
-    }
+    console.log(`Auth user ready: ${authUserId}`);
 
-    console.log(`Auth user created: ${authData.user.id}`);
+    // Step 2: Create single profile with primary type + additional types
+    const profileTypes: string[] = request.perfil || ["amante_de_la_musica"];
+    const primaryType = profileTypes[0];
+    const additionalTypes = profileTypes.slice(1);
 
-    // Step 2: Create profile(s) for each selected profile type
-    const profileTypes = request.perfil || ["amante_de_la_musica"];
+    const profileData = {
+      user_id: authUserId,
+      profile_type: primaryType,
+      additional_profile_types: additionalTypes,
+      avatar_url: avatar_url || null,
+      display_name: sanitizeString(request.nombre, 200),
+      bio: sanitizeString(request.motivacion, 1000),
+      pais: sanitizeString(request.pais || "", 100),
+      provincia: request.provincia ? sanitizeString(request.provincia, 100) : null,
+      ciudad: sanitizeString(request.ciudad || "", 100),
+      email: request.email,
+      telefono: request.telefono ? sanitizeString(request.telefono, 20) : null,
+    };
+
+    const { data: newProfile, error: profileError } = await supabaseAdmin
+      .from("profile_details")
+      .insert(profileData)
+      .select("id")
+      .single();
+
     const createdProfiles: string[] = [];
-
-    for (const profileType of profileTypes) {
-      const profileData = {
-        user_id: authData.user.id,
-        profile_type: profileType,
-        avatar_url: avatar_url || null,
-        display_name: sanitizeString(request.nombre, 200),
-        bio: sanitizeString(request.motivacion, 1000),
-        pais: sanitizeString(request.pais || "", 100),
-        provincia: request.provincia ? sanitizeString(request.provincia, 100) : null,
-        ciudad: sanitizeString(request.ciudad || "", 100),
-        email: request.email,
-        telefono: request.telefono ? sanitizeString(request.telefono, 20) : null,
-      };
-
-      const { data: newProfile, error: profileError } = await supabaseAdmin
-        .from("profile_details")
-        .insert(profileData)
-        .select("id")
-        .single();
-
-      if (profileError) {
-        console.error(`Error creating profile ${profileType}:`, profileError);
-      } else if (newProfile) {
-        createdProfiles.push(newProfile.id);
-        console.log(`Profile created: ${newProfile.id} (${profileType})`);
-      }
+    if (profileError) {
+      console.error(`Error creating profile:`, profileError);
+    } else if (newProfile) {
+      createdProfiles.push(newProfile.id);
+      console.log(`Profile created: ${newProfile.id} (${primaryType}, additional: ${additionalTypes.join(', ')})`);
     }
 
     // Step 3: Update registration request status
@@ -193,7 +231,7 @@ serve(async (req) => {
       .from("registration_requests")
       .update({
         status: "approved",
-        user_id: authData.user.id,
+        user_id: authUserId,
         updated_at: new Date().toISOString(),
       })
       .eq("id", requestId);
@@ -205,7 +243,7 @@ serve(async (req) => {
     return jsonResponse(200, {
       success: true,
       message: "Usuario aprobado y creado exitosamente",
-      user_id: authData.user.id,
+      user_id: authUserId,
       profile_ids: createdProfiles,
       email: request.email,
       temp_password: password,

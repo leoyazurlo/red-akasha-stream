@@ -37,10 +37,9 @@ export const ThumbnailSelector = ({
 
     setIsGenerating(true);
     const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) { setIsGenerating(false); return; }
 
     const totalDuration = video.duration;
-    // Generate 6 evenly spaced frames
     const times = [
       totalDuration * 0.05,
       totalDuration * 0.15,
@@ -64,7 +63,6 @@ export const ThumbnailSelector = ({
     setGeneratedFrames(frames);
     setIsGenerating(false);
 
-    // Auto-select the best frame (middle of video) if no thumbnail exists
     if (frames.length > 0 && !videoThumbnail && !customThumbnail) {
       const middleIdx = Math.floor(frames.length / 2);
       setSelectedFrameIndex(middleIdx);
@@ -79,15 +77,27 @@ export const ThumbnailSelector = ({
     time: number
   ): Promise<string> => {
     return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => reject("timeout"), 5000);
-      video.currentTime = time;
-      video.onseeked = () => {
+      const timeout = setTimeout(() => reject("timeout"), 8000);
+      const onSeeked = () => {
         clearTimeout(timeout);
-        canvas.width = video.videoWidth || 640;
-        canvas.height = video.videoHeight || 360;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL("image/jpeg", 0.85));
+        video.removeEventListener("seeked", onSeeked);
+        try {
+          canvas.width = video.videoWidth || 640;
+          canvas.height = video.videoHeight || 360;
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+          // Check if it's a blank/black frame
+          if (dataUrl.length < 1000) {
+            reject("blank frame");
+          } else {
+            resolve(dataUrl);
+          }
+        } catch {
+          reject("canvas error");
+        }
       };
+      video.addEventListener("seeked", onSeeked, { once: true });
+      video.currentTime = time;
     });
   };
 
@@ -174,7 +184,7 @@ export const ThumbnailSelector = ({
         <div className="space-y-3 p-4 rounded-lg border border-primary/20 bg-card/50">
           <p className="text-sm font-medium flex items-center gap-2">
             <Camera className="h-4 w-4 text-primary" />
-            Seleccionar frame del video
+            Seleccioná el frame del video
           </p>
 
           {/* Live preview of current frame */}
@@ -207,7 +217,7 @@ export const ThumbnailSelector = ({
             <span className="text-xs text-muted-foreground">{formatTime(seekTime)} / {formatTime(duration)}</span>
             <Button type="button" variant="outline" size="sm" onClick={captureCurrentFrame} className="text-xs">
               <Camera className="h-3 w-3 mr-1" />
-              Capturar este frame
+              Capturar este cuadro
             </Button>
           </div>
 

@@ -912,8 +912,8 @@ export default function AdminContentModeration() {
                         <CardContent className="space-y-4">
                           {/* Preview del contenido */}
                           <div className="space-y-3">
-                            {item.video_url && (
-                              <div className="rounded-lg overflow-hidden border border-border/50 bg-black">
+                          {item.video_url && (
+                              <div className="rounded-lg overflow-hidden border border-border/50 bg-black max-w-xs">
                                 <AspectRatio ratio={16 / 9}>
                                   <video
                                     src={item.video_url}

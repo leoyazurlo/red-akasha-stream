@@ -236,6 +236,13 @@ export const MyContentTab = ({ userId }: MyContentTabProps) => {
           {editingItem && (
             <div className="space-y-4">
               <div className="space-y-2">
+                <Label>Artista / Banda</Label>
+                <Input
+                  value={editingItem.band_name || ""}
+                  onChange={e => setEditingItem({ ...editingItem, band_name: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
                 <Label>Título</Label>
                 <Input
                   value={editingItem.title}
@@ -248,13 +255,6 @@ export const MyContentTab = ({ userId }: MyContentTabProps) => {
                   value={editingItem.description || ""}
                   onChange={e => setEditingItem({ ...editingItem, description: e.target.value })}
                   rows={3}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Artista / Banda</Label>
-                <Input
-                  value={editingItem.band_name || ""}
-                  onChange={e => setEditingItem({ ...editingItem, band_name: e.target.value })}
                 />
               </div>
               <div className="space-y-2">

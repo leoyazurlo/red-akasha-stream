@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, Play, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Clock, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -27,6 +27,7 @@ interface VideoItem {
   duration: string;
   youtubeId?: string;
   country?: string | null;
+  is_free?: boolean;
 }
 
 const countryFlags: Record<string, string> = {
@@ -263,6 +264,13 @@ export const VideoCarousel = ({
                     {video.country && countryFlags[video.country] && (
                       <div className="absolute bottom-1.5 right-1.5 md:bottom-2 md:right-2 text-lg md:text-xl drop-shadow-lg" title={video.country}>
                         {countryFlags[video.country]}
+                      </div>
+                    )}
+
+                    {/* Paid content badge */}
+                    {video.is_free === false && (
+                      <div className="absolute top-1.5 right-1.5 md:top-2 md:right-2 bg-primary/90 backdrop-blur-sm rounded-full p-1 md:p-1.5 shadow-[0_0_10px_rgba(34,211,238,0.5)]" title="Contenido de pago">
+                        <DollarSign className="w-3 h-3 md:w-4 md:h-4 text-primary-foreground" />
                       </div>
                     )}
                 </div>

@@ -69,6 +69,7 @@ const Index = () => {
         .from("content_uploads")
         .select("*")
         .eq("status", "approved")
+        .eq("is_free", true)
         .order("likes_count", { ascending: false })
         .limit(10);
       

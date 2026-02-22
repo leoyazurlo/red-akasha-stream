@@ -7,7 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Pencil, Save, X, Video, FileText, Trash2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Pencil, Save, X, FileText, Trash2, DollarSign } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -101,7 +103,8 @@ export const MyContentTab = ({ userId }: MyContentTabProps) => {
           venue_name: editingItem.venue_name,
           promoter_name: editingItem.promoter_name,
           is_free: editingItem.is_free,
-          price: editingItem.price,
+          price: editingItem.is_free ? null : editingItem.price,
+          currency: editingItem.is_free ? null : editingItem.currency,
         })
         .eq("id", editingItem.id);
 
@@ -281,6 +284,58 @@ export const MyContentTab = ({ userId }: MyContentTabProps) => {
                   value={editingItem.promoter_name || ""}
                   onChange={e => setEditingItem({ ...editingItem, promoter_name: e.target.value })}
                 />
+              </div>
+
+              {/* Monetización */}
+              <div className="border-t pt-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-primary" />
+                  <Label className="text-sm font-semibold">Monetización</Label>
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="is-free-toggle" className="text-sm">Contenido gratuito</Label>
+                  <Switch
+                    id="is-free-toggle"
+                    checked={editingItem.is_free}
+                    onCheckedChange={(checked) => setEditingItem({ 
+                      ...editingItem, 
+                      is_free: checked, 
+                      price: checked ? null : (editingItem.price || 4.99),
+                      currency: checked ? editingItem.currency : (editingItem.currency || "USD"),
+                    })}
+                  />
+                </div>
+                {!editingItem.is_free && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">Precio</Label>
+                      <Input
+                        type="number"
+                        min="0.50"
+                        step="0.01"
+                        value={editingItem.price || ""}
+                        onChange={e => setEditingItem({ ...editingItem, price: parseFloat(e.target.value) || null })}
+                        placeholder="4.99"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs">Moneda</Label>
+                      <Select
+                        value={editingItem.currency || "USD"}
+                        onValueChange={(v) => setEditingItem({ ...editingItem, currency: v })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="USD">USD</SelectItem>
+                          <SelectItem value="EUR">EUR</SelectItem>
+                          <SelectItem value="ARS">ARS</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => setEditingItem(null)}>

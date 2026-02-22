@@ -115,8 +115,9 @@ export const VideoRanking = ({ videos: propVideos }: VideoRankingProps) => {
       // First get the content
       const { data: contentData, error: contentError } = await supabase
         .from('content_uploads')
-        .select('id, title, thumbnail_url, band_name, content_type, likes_count, uploader_id')
+        .select('id, title, thumbnail_url, band_name, content_type, likes_count, uploader_id, is_free')
         .eq('status', 'approved')
+        .eq('is_free', true)
         .order('likes_count', { ascending: false })
         .limit(100);
 

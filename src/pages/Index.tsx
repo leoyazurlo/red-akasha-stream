@@ -97,6 +97,7 @@ const Index = () => {
           thumbnail: v.thumbnail_url || v.thumbnail_large || v.thumbnail_medium || v.thumbnail_small || '',
           duration: duration,
           country: profile?.pais || null,
+          is_free: v.is_free,
         };
       });
     },

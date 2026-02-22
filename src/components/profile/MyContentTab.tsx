@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Pencil, Save, X, FileText, Trash2, DollarSign } from "lucide-react";
 import {
   Dialog,
@@ -55,6 +56,49 @@ const statusLabels: Record<string, string> = {
   rejected: "Rechazado",
 };
 
+interface ContentItemRowProps {
+  item: ContentItem;
+  onEdit: (item: ContentItem) => void;
+  onDelete: (id: string) => void;
+}
+
+const ContentItemRow = ({ item, onEdit, onDelete }: ContentItemRowProps) => (
+  <div className="flex items-start gap-4 p-4 bg-background/50 rounded-lg border border-border">
+    {item.thumbnail_url && (
+      <img src={item.thumbnail_url} alt={item.title} className="w-24 h-16 object-cover rounded" />
+    )}
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-2 mb-1">
+        <h4 className="font-medium truncate">{item.band_name || item.title}</h4>
+        <Badge variant="outline" className="text-xs">
+          {contentTypeLabels[item.content_type] || item.content_type}
+        </Badge>
+        <Badge variant={item.status === "approved" ? "default" : "secondary"} className="text-xs">
+          {statusLabels[item.status || "pending"] || item.status}
+        </Badge>
+      </div>
+      {item.band_name && item.title && (
+        <p className="text-sm text-muted-foreground truncate">{item.title}</p>
+      )}
+      {item.description && (
+        <p className="text-sm text-muted-foreground truncate">{item.description}</p>
+      )}
+      <div className="flex gap-4 mt-1 text-xs text-muted-foreground">
+        {item.is_free ? <span>Gratis</span> : <span>{item.currency} {item.price}</span>}
+        <span>{item.views_count || 0} vistas</span>
+      </div>
+    </div>
+    <div className="flex gap-1">
+      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => onEdit({ ...item })}>
+        <Pencil className="w-4 h-4" />
+      </Button>
+      <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => onDelete(item.id)}>
+        <Trash2 className="w-4 h-4" />
+      </Button>
+    </div>
+  </div>
+);
+
 interface MyContentTabProps {
   userId: string;
 }
@@ -65,6 +109,10 @@ export const MyContentTab = ({ userId }: MyContentTabProps) => {
   const [loading, setLoading] = useState(true);
   const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const freeContent = useMemo(() => content.filter(c => c.is_free), [content]);
+  const paidContent = useMemo(() => content.filter(c => !c.is_free), [content]);
+  const hasPaid = paidContent.length > 0;
 
   useEffect(() => {
     fetchContent();
@@ -164,69 +212,23 @@ export const MyContentTab = ({ userId }: MyContentTabProps) => {
           <p className="text-muted-foreground text-center py-8">
             Aún no subiste contenido. Usá "Subir Contenido" desde el menú.
           </p>
+        ) : hasPaid ? (
+          <Tabs defaultValue="gratis" className="w-full">
+            <TabsList className="w-full">
+              <TabsTrigger value="gratis" className="flex-1">Gratis ({freeContent.length})</TabsTrigger>
+              <TabsTrigger value="pagos" className="flex-1">Pagos ({paidContent.length})</TabsTrigger>
+            </TabsList>
+            <TabsContent value="gratis" className="space-y-4 mt-4">
+              {freeContent.length === 0 ? (
+                <p className="text-muted-foreground text-center py-4">No tenés contenido gratuito.</p>
+              ) : freeContent.map(item => <ContentItemRow key={item.id} item={item} onEdit={setEditingItem} onDelete={handleDelete} />)}
+            </TabsContent>
+            <TabsContent value="pagos" className="space-y-4 mt-4">
+              {paidContent.map(item => <ContentItemRow key={item.id} item={item} onEdit={setEditingItem} onDelete={handleDelete} />)}
+            </TabsContent>
+          </Tabs>
         ) : (
-          content.map(item => (
-            <div
-              key={item.id}
-              className="flex items-start gap-4 p-4 bg-background/50 rounded-lg border border-border"
-            >
-              {/* Thumbnail */}
-              {item.thumbnail_url && (
-                <img
-                  src={item.thumbnail_url}
-                  alt={item.title}
-                  className="w-24 h-16 object-cover rounded"
-                />
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-medium truncate">{item.band_name || item.title}</h4>
-                  <Badge variant="outline" className="text-xs">
-                    {contentTypeLabels[item.content_type] || item.content_type}
-                  </Badge>
-                  <Badge
-                    variant={item.status === "approved" ? "default" : "secondary"}
-                    className="text-xs"
-                  >
-                    {statusLabels[item.status || "pending"] || item.status}
-                  </Badge>
-                </div>
-                {item.band_name && item.title && (
-                  <p className="text-sm text-muted-foreground truncate">{item.title}</p>
-                )}
-                {item.description && (
-                  <p className="text-sm text-muted-foreground truncate">{item.description}</p>
-                )}
-                <div className="flex gap-4 mt-1 text-xs text-muted-foreground">
-                  {!item.band_name && item.band_name && <span>Artista: {item.band_name}</span>}
-                  {item.is_free ? (
-                    <span>Gratis</span>
-                  ) : (
-                    <span>{item.currency} {item.price}</span>
-                  )}
-                  <span>{item.views_count || 0} vistas</span>
-                </div>
-              </div>
-              <div className="flex gap-1">
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-8 w-8"
-                  onClick={() => setEditingItem({ ...item })}
-                >
-                  <Pencil className="w-4 h-4" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-8 w-8 text-destructive hover:text-destructive"
-                  onClick={() => handleDelete(item.id)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          ))
+          content.map(item => <ContentItemRow key={item.id} item={item} onEdit={setEditingItem} onDelete={handleDelete} />)
         )}
       </CardContent>
 

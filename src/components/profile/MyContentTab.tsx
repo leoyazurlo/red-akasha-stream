@@ -180,7 +180,7 @@ export const MyContentTab = ({ userId }: MyContentTabProps) => {
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-medium truncate">{item.title}</h4>
+                  <h4 className="font-medium truncate">{item.band_name || item.title}</h4>
                   <Badge variant="outline" className="text-xs">
                     {contentTypeLabels[item.content_type] || item.content_type}
                   </Badge>
@@ -191,11 +191,14 @@ export const MyContentTab = ({ userId }: MyContentTabProps) => {
                     {statusLabels[item.status || "pending"] || item.status}
                   </Badge>
                 </div>
+                {item.band_name && item.title && (
+                  <p className="text-sm text-muted-foreground truncate">{item.title}</p>
+                )}
                 {item.description && (
                   <p className="text-sm text-muted-foreground truncate">{item.description}</p>
                 )}
                 <div className="flex gap-4 mt-1 text-xs text-muted-foreground">
-                  {item.band_name && <span>Artista: {item.band_name}</span>}
+                  {!item.band_name && item.band_name && <span>Artista: {item.band_name}</span>}
                   {item.is_free ? (
                     <span>Gratis</span>
                   ) : (

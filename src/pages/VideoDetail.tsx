@@ -44,7 +44,9 @@ import {
   Timer,
   Gauge,
   Lock,
-  DollarSign
+  DollarSign,
+  Volume2,
+  VolumeX
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -794,6 +796,40 @@ const VideoDetail = () => {
                   >
                     <Shuffle className="w-3.5 h-3.5" />
                   </Button>
+
+                  {/* Volume */}
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => {
+                        if (!videoPlayerRef.current) return;
+                        videoPlayerRef.current.muted = !videoPlayerRef.current.muted;
+                      }}
+                      title="Silenciar / Activar sonido"
+                    >
+                      {videoPlayerRef.current?.muted || videoPlayerRef.current?.volume === 0
+                        ? <VolumeX className="w-4 h-4" />
+                        : <Volume2 className="w-4 h-4" />
+                      }
+                    </Button>
+                    <input
+                      type="range"
+                      min={0}
+                      max={1}
+                      step={0.01}
+                      defaultValue={1}
+                      className="w-16 h-1 accent-primary cursor-pointer"
+                      onChange={(e) => {
+                        if (!videoPlayerRef.current) return;
+                        const val = parseFloat(e.target.value);
+                        videoPlayerRef.current.volume = val;
+                        videoPlayerRef.current.muted = val === 0;
+                      }}
+                      title="Volumen"
+                    />
+                  </div>
 
                   {/* Sleep Timer */}
                   <DropdownMenu>

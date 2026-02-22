@@ -94,6 +94,7 @@ const Index = () => {
         return {
           id: v.id,
           title: v.title,
+          band_name: v.band_name || null,
           thumbnail: v.thumbnail_url || v.thumbnail_large || v.thumbnail_medium || v.thumbnail_small || '',
           duration: duration,
           country: profile?.pais || null,

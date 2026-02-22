@@ -28,6 +28,7 @@ interface VideoItem {
   youtubeId?: string;
   country?: string | null;
   is_free?: boolean;
+  band_name?: string | null;
 }
 
 const countryFlags: Record<string, string> = {
@@ -276,10 +277,15 @@ export const VideoCarousel = ({
                 </div>
                   </div>
 
-                  {/* Title - Centered below video */}
-                  <h3 className="mt-2 md:mt-3 text-xs sm:text-sm font-light text-foreground text-center line-clamp-2 group-hover:text-primary transition-colors">
-                    {video.title}
+                  {/* Artist/Band name + Title - Centered below video */}
+                  <h3 className="mt-2 md:mt-3 text-xs sm:text-sm font-medium text-foreground text-center line-clamp-1 group-hover:text-primary transition-colors">
+                    {video.band_name || video.title}
                   </h3>
+                  {video.band_name && (
+                    <p className="text-[10px] sm:text-xs font-light text-muted-foreground text-center line-clamp-1">
+                      {video.title}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>

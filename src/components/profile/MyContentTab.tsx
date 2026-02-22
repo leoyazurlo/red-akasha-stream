@@ -229,7 +229,7 @@ export const MyContentTab = ({ userId }: MyContentTabProps) => {
 
       {/* Edit Dialog */}
       <Dialog open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
-        <DialogContent className="max-w-lg bg-background">
+        <DialogContent className="max-w-lg bg-background max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Contenido</DialogTitle>
           </DialogHeader>

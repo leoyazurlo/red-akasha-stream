@@ -165,6 +165,7 @@ interface RelatedVideo {
 interface MoreContent {
   id: string;
   title: string;
+  band_name: string | null;
   thumbnail_url: string | null;
   views_count: number;
   duration: number | null;
@@ -388,7 +389,7 @@ const VideoDetail = () => {
     try {
       const { data, error } = await supabase
         .from('content_uploads')
-        .select('id, title, thumbnail_url, views_count, duration, is_free')
+        .select('id, title, band_name, thumbnail_url, views_count, duration, is_free')
         .eq('status', 'approved')
         .eq('uploader_id', video.uploader_id)
         .neq('id', video.id)
@@ -862,13 +863,10 @@ const VideoDetail = () => {
                 <CardHeader>
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
+                      <CardTitle className="text-2xl mb-1">{video.band_name || video.title}</CardTitle>
                       {video.band_name && (
-                        <CardTitle className="text-2xl mb-1">{video.band_name}</CardTitle>
+                        <p className="text-muted-foreground text-base mb-2">{video.title}</p>
                       )}
-                      {!video.band_name && (
-                        <CardTitle className="text-2xl mb-1">{video.title}</CardTitle>
-                      )}
-                      <p className="text-muted-foreground text-base mb-2">{video.title}</p>
                       <div className="flex items-center gap-4 text-muted-foreground">
                         <div className="flex items-center gap-1" title={video.country || 'País desconocido'}>
                           <span className="text-xl">{getCountryFlag(video.country)}</span>
@@ -1135,7 +1133,7 @@ const VideoDetail = () => {
                           audio_url: null,
                           thumbnail_url: c.thumbnail_url,
                           content_type: 'video',
-                          band_name: null,
+                          band_name: c.band_name,
                           duration: c.duration,
                         }));
                         queuePlayer.setQueue(items, 0);
@@ -1149,7 +1147,7 @@ const VideoDetail = () => {
                     <div className="px-6 pb-2">
                       <p className="text-xs text-muted-foreground flex items-center gap-1">
                         <SkipForward className="w-3 h-3" />
-                        Autoplay activado — siguiente: <span className="text-foreground font-medium truncate max-w-[150px]">{moreContent[0]?.title}</span>
+                        Autoplay activado — siguiente: <span className="text-foreground font-medium truncate max-w-[150px]">{moreContent[0]?.band_name || moreContent[0]?.title}</span>
                       </p>
                     </div>
                   )}
@@ -1179,9 +1177,12 @@ const VideoDetail = () => {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm line-clamp-2 group-hover:text-primary transition-colors">
-                            {content.title}
+                          <p className="font-medium text-sm line-clamp-1 group-hover:text-primary transition-colors">
+                            {content.band_name || content.title}
                           </p>
+                          {content.band_name && (
+                            <p className="text-xs text-muted-foreground line-clamp-1">{content.title}</p>
+                          )}
                           <div className="flex items-center gap-2 mt-1">
                             <p className="text-xs text-muted-foreground">
                               {content.views_count} vistas

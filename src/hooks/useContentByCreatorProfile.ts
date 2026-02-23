@@ -21,6 +21,7 @@ export interface ContentWithCreator {
   likes_count: number;
   created_at: string;
   uploader_id: string;
+  band_name: string | null;
   creator_name: string;
   creator_avatar: string | null;
   creator_profile_type: string;
@@ -62,6 +63,7 @@ export const useContentByCreatorProfile = (profileType?: CreatorProfileType) => 
         return {
           id: item.id,
           title: item.title,
+          band_name: item.band_name,
           description: item.description,
           thumbnail_url: item.thumbnail_url,
           video_url: item.video_url,

@@ -217,15 +217,15 @@ export const ContentCarouselSection = ({
 
             {/* Content */}
             <CardContent className="p-4">
-              <h3 className="font-semibold text-sm line-clamp-2 mb-1 group-hover/card:text-primary transition-colors">
-                {content.title}
-              </h3>
               {content.band_name && (
-                <p className="text-xs text-muted-foreground line-clamp-1">
+                <p className="text-xs text-foreground/90 line-clamp-1 mb-1">
                   {content.band_name}
                 </p>
               )}
-              <p className="text-xs text-muted-foreground mt-1">
+              <h3 className="font-semibold text-sm line-clamp-2 group-hover/card:text-primary transition-colors">
+                {content.title}
+              </h3>
+              <p className="text-xs text-muted-foreground mt-2">
                 {content.views_count.toLocaleString()} reproducciones
               </p>
             </CardContent>

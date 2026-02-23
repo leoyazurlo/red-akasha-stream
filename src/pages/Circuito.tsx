@@ -193,7 +193,7 @@ const Circuito = () => {
 
     return Object.entries(typeCounts)
       .map(([type, count]) => {
-        const label = t(`circuit.profileTypes.${type}`, { defaultValue: type });
+        const label = t(`circuit.profileTypes.${type}`, { defaultValue: formatProfileType(type) });
         return `${count} ${label}${count !== 1 ? 's' : ''}`;
       })
       .join(', ');

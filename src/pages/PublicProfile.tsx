@@ -113,7 +113,7 @@ const PublicProfile = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profile_details")
-        .select("*")
+        .select("id, user_id, profile_type, display_name, bio, pais, ciudad, instagram, facebook, linkedin, avatar_url, additional_profile_types, technical_specs, map_location, venue_type, capacity, genre, formation_date, members, producer_instagram, recorded_at, produced_artists, venues_produced, created_at, updated_at, latitude, longitude")
         .eq("id", id)
         .single();
 

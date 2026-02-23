@@ -64,11 +64,12 @@ const Index = () => {
   const { data: destacadosVideos = [] } = useQuery({
     queryKey: ["content-destacados"],
     queryFn: async () => {
-      // Obtener contenido aprobado (incluye pagos con preview de 40s)
+      // Obtener solo contenido gratuito aprobado para el ranking de destacados
       const { data: content, error } = await supabase
         .from("content_uploads")
         .select("*")
         .eq("status", "approved")
+        .eq("is_free", true)
         .order("likes_count", { ascending: false })
         .limit(10);
       

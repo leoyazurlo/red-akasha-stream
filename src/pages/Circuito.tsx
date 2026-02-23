@@ -24,6 +24,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { formatProfileType } from "@/lib/utils";
 import { useCountryDetection } from "@/hooks/useCountryDetection";
 import { latinAmericanCountries } from "@/components/CountrySelector";
 
@@ -570,11 +571,11 @@ const Circuito = () => {
                                   <CardTitle className="text-lg mb-1 group-active:text-cyan-400 group-active:drop-shadow-[0_0_10px_hsl(180_100%_50%)] transition-all duration-150">{profile.display_name}</CardTitle>
                                   <div className="flex flex-wrap gap-1">
                                     <Badge variant="outline" className="border-primary text-primary">
-                                      {t(`circuit.profileTypes.${profile.profile_type}`, { defaultValue: profile.profile_type })}
+                                      {t(`circuit.profileTypes.${profile.profile_type}`, { defaultValue: formatProfileType(profile.profile_type) })}
                                     </Badge>
                                     {profile.additional_profile_types?.slice(0, 2).map((type) => (
                                       <Badge key={type} variant="outline" className="border-primary/50 text-primary/70 text-xs">
-                                        {t(`circuit.profileTypes.${type}`, { defaultValue: type })}
+                                        {t(`circuit.profileTypes.${type}`, { defaultValue: formatProfileType(type) })}
                                       </Badge>
                                     ))}
                                     {profile.additional_profile_types && profile.additional_profile_types.length > 2 && (

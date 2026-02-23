@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { formatProfileType } from "@/lib/utils";
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -159,7 +160,7 @@ export const FollowersList = ({ userId, followersCount, isLoggedIn, showAsDialog
                   {follower.profile && (
                     <>
                       <Badge variant="outline" className="text-xs border-primary/30 text-primary/80">
-                        {profileTypeLabels[follower.profile.profile_type] || follower.profile.profile_type}
+                        {profileTypeLabels[follower.profile.profile_type] || formatProfileType(follower.profile.profile_type)}
                       </Badge>
                       <p className="text-xs text-muted-foreground mt-1">
                         {follower.profile.ciudad}, {follower.profile.pais}

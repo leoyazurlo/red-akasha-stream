@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { formatProfileType } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -348,7 +349,7 @@ export function PredictionsPanel() {
                       </div>
                       <div>
                         <p className="font-medium text-sm">{collab.profile1?.display_name || "Perfil"}</p>
-                        <p className="text-xs text-muted-foreground">{collab.profile1?.profile_type}</p>
+                        <p className="text-xs text-muted-foreground">{formatProfileType(collab.profile1?.profile_type || '')}</p>
                       </div>
                     </div>
 
@@ -366,7 +367,7 @@ export function PredictionsPanel() {
                     <div className="flex items-center gap-2 flex-1 justify-end">
                       <div className="text-right">
                         <p className="font-medium text-sm">{collab.profile2?.display_name || "Perfil"}</p>
-                        <p className="text-xs text-muted-foreground">{collab.profile2?.profile_type}</p>
+                        <p className="text-xs text-muted-foreground">{formatProfileType(collab.profile2?.profile_type || '')}</p>
                       </div>
                       <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
                         {collab.profile2?.avatar_url ? (

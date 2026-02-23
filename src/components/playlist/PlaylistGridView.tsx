@@ -137,13 +137,13 @@ export const PlaylistGridView = ({ item, onRemove, onClick, formatDuration, edit
 
       {/* Content Info */}
       <CardContent className="p-4">
-        <h3 className="font-semibold text-sm line-clamp-2 mb-2 min-h-[2.5rem]">
-          {item.content.title}
+        <h3 className="font-semibold text-sm line-clamp-2 mb-1 min-h-[2.5rem]">
+          {item.content.band_name || item.content.title}
         </h3>
         
         {item.content.band_name && (
           <p className="text-sm text-muted-foreground line-clamp-1">
-            {item.content.band_name}
+            {item.content.title}
           </p>
         )}
       </CardContent>

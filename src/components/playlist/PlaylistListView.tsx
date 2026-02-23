@@ -119,12 +119,12 @@ export const PlaylistListView = ({ item, onRemove, onClick, formatDuration, inde
         {/* Content Info */}
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-base line-clamp-1 mb-1">
-            {item.content.title}
+            {item.content.band_name || item.content.title}
           </h3>
           
           {item.content.band_name && (
             <p className="text-sm text-muted-foreground line-clamp-1 mb-2">
-              {item.content.band_name}
+              {item.content.title}
             </p>
           )}
 

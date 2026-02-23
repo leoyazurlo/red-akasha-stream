@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { formatProfileType } from "@/lib/utils";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Header } from "@/components/Header";
@@ -500,11 +501,11 @@ const MiPerfil = () => {
                 <div className="flex-1">
                   <div className="flex flex-wrap gap-2 mb-2">
                     <Badge className="bg-primary/20 text-primary border-primary/30">
-                      {profileTypeLabels[profile.profile_type] || profile.profile_type}
+                      {profileTypeLabels[profile.profile_type] || formatProfileType(profile.profile_type)}
                     </Badge>
                     {profile.additional_profile_types?.map(type => (
                       <Badge key={type} variant="outline" className="border-primary/30 text-primary/80">
-                        {profileTypeLabels[type] || type}
+                        {profileTypeLabels[type] || formatProfileType(type)}
                       </Badge>
                     ))}
                   </div>

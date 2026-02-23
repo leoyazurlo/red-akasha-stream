@@ -1,3 +1,4 @@
+import { formatProfileType } from "@/lib/utils";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -298,7 +299,7 @@ const PublicProfile = () => {
     }
   };
 
-  const profileTypeLabel = profileTypeLabels[profile?.profile_type || ''] || profile?.profile_type || '';
+  const profileTypeLabel = profileTypeLabels[profile?.profile_type || ''] || formatProfileType(profile?.profile_type || '');
   const shareText = `Mirá el perfil de ${profileTypeLabel} de ${profile?.display_name} en Red Akasha. ${profile?.ciudad}, ${profile?.pais}. ¡Descubrí su contenido!`;
 
   const shareToWhatsApp = () => {
@@ -460,7 +461,7 @@ const PublicProfile = () => {
                   {/* Profile types - Principal + Secondary */}
                   <div className="flex flex-wrap gap-2 mb-3 justify-center md:justify-start">
                     <Badge className="px-3 py-1 bg-primary/20 text-primary border-primary/30">
-                      {profileTypeLabels[profile.profile_type] || profile.profile_type}
+                      {profileTypeLabels[profile.profile_type] || formatProfileType(profile.profile_type)}
                     </Badge>
                     {profile.additional_profile_types?.map((type: string) => (
                       <Badge 
@@ -468,7 +469,7 @@ const PublicProfile = () => {
                         variant="outline" 
                         className="px-3 py-1 border-primary/30 text-primary/80"
                       >
-                        {profileTypeLabels[type] || type}
+                        {profileTypeLabels[type] || formatProfileType(type)}
                       </Badge>
                     ))}
                   </div>

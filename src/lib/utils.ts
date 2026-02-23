@@ -101,3 +101,16 @@ export function sleep(ms: number): Promise<void> {
 export function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
+
+/**
+ * Formatea un tipo de perfil para mostrar:
+ * - Reemplaza guiones bajos por espacios
+ * - Capitaliza la primera letra de cada palabra
+ * @param type - Tipo de perfil raw (ej: "arte_digital")
+ * @returns String formateado (ej: "Arte Digital")
+ */
+export function formatProfileType(type: string): string {
+  return type
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}

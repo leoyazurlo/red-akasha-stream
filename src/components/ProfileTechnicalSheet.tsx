@@ -1,3 +1,4 @@
+import { formatProfileType } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -755,7 +756,7 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
                 <div className="inline-flex items-center gap-2">
                   <div className="h-px w-8 bg-gradient-to-r from-transparent to-primary/30" />
                   <span className="text-foreground/70 text-base sm:text-lg font-light tracking-[0.4em] uppercase">
-                    {profileTypeLabels[profileType] || profileType}
+                    {profileTypeLabels[profileType] || formatProfileType(profileType).toUpperCase()}
                   </span>
                   <div className="h-px w-8 bg-gradient-to-l from-transparent to-primary/30" />
                 </div>
@@ -768,7 +769,7 @@ export const ProfileTechnicalSheet = forwardRef<ProfileTechnicalSheetRef, Profil
                         variant="outline" 
                         className="text-xs border-primary/30 text-primary/80 bg-primary/5 uppercase tracking-wider"
                       >
-                        {profileTypeLabels[type] || type}
+                        {profileTypeLabels[type] || formatProfileType(type).toUpperCase()}
                       </Badge>
                     ))}
                   </div>

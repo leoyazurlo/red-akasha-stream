@@ -1,3 +1,4 @@
+import { formatProfileType } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
@@ -1118,11 +1119,11 @@ export default function AdminUsers() {
                       </div>
                       <div className="flex flex-wrap gap-1.5 items-center">
                         <Badge variant="outline">
-                          {PROFILE_TYPE_LABELS[userProfile.profile_type] || userProfile.profile_type.replace('_', ' ')}
+                          {PROFILE_TYPE_LABELS[userProfile.profile_type] || formatProfileType(userProfile.profile_type)}
                         </Badge>
                         {userProfile.additional_profile_types?.map((type) => (
                           <Badge key={type} variant="outline" className="border-primary/30 text-primary/80">
-                            {PROFILE_TYPE_LABELS[type] || type.replace('_', ' ')}
+                            {PROFILE_TYPE_LABELS[type] || formatProfileType(type)}
                           </Badge>
                         ))}
                       </div>

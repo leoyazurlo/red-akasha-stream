@@ -140,6 +140,7 @@ const Index = () => {
             title={t('home.featured')}
             videos={destacadosVideos}
             sectionId="destacados"
+            hideSubtitle={true}
           />
 
           <VideoRanking />

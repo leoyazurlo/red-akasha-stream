@@ -68,6 +68,7 @@ interface VideoCarouselProps {
   showSchedule?: boolean;
   loadSchedulesFromDB?: boolean;
   isVertical?: boolean;
+  hideSubtitle?: boolean;
 }
 
 export const VideoCarousel = ({ 
@@ -76,7 +77,8 @@ export const VideoCarousel = ({
   sectionId, 
   showSchedule = false,
   loadSchedulesFromDB = false,
-  isVertical = false
+  isVertical = false,
+  hideSubtitle = false
 }: VideoCarouselProps) => {
   const { t } = useTranslation();
   const [scrollPosition, setScrollPosition] = useState(0);
@@ -281,7 +283,7 @@ export const VideoCarousel = ({
                   <h3 className="mt-2 md:mt-3 text-xs sm:text-sm font-medium text-foreground text-center line-clamp-1 group-hover:text-primary transition-colors">
                     {video.band_name || video.title}
                   </h3>
-                  {video.band_name && (
+                  {!hideSubtitle && video.band_name && (
                     <p className="text-[10px] sm:text-xs font-light text-muted-foreground text-center line-clamp-1">
                       {video.title}
                     </p>

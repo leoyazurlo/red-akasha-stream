@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { Loader2, CheckCircle2, XCircle, Clock, User, Copy, Trash2 } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Clock, User, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -130,24 +130,9 @@ export default function AdminRegistrationRequests() {
         },
       });
 
-      // Show success with password
-      const tempPassword = response.data.temp_password;
       toast({
         title: "¡Usuario aprobado!",
-        description: `${request.nombre} ha sido aprobado. Contraseña temporal: ${tempPassword}`,
-        duration: 30000,
-        action: (
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => {
-              navigator.clipboard.writeText(tempPassword);
-              toast({ title: "Contraseña copiada" });
-            }}
-          >
-            <Copy className="h-4 w-4" />
-          </Button>
-        ),
+        description: `${request.nombre} ha sido aprobado exitosamente. Podrá iniciar sesión con su email y la contraseña que eligió al registrarse.`,
       });
 
       loadRequests();
@@ -361,7 +346,7 @@ export default function AdminRegistrationRequests() {
 
         <div className="p-4 rounded-lg bg-primary/10 border border-primary/30">
           <p className="text-sm text-muted-foreground">
-            <strong className="text-foreground">Nota:</strong> Al aprobar una solicitud, se creará automáticamente el usuario con una contraseña temporal que deberás comunicar al solicitante.
+            <strong className="text-foreground">Nota:</strong> Al aprobar una solicitud, el usuario podrá iniciar sesión con la contraseña que eligió durante su registro.
           </p>
         </div>
 

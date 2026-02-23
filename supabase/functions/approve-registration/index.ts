@@ -19,17 +19,6 @@ const jsonResponse = (status: number, body: Record<string, unknown>) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
-// Generate a secure random password
-const generateSecurePassword = (): string => {
-  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*";
-  let password = "";
-  const array = new Uint8Array(16);
-  crypto.getRandomValues(array);
-  for (let i = 0; i < 16; i++) {
-    password += chars.charAt(array[i] % chars.length);
-  }
-  return password;
-};
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -104,8 +93,6 @@ serve(async (req) => {
       });
     }
 
-    const password = generateSecurePassword();
-
     // Get the registration request
     const { data: request, error: requestError } = await supabaseAdmin
       .from("registration_requests")
@@ -122,6 +109,12 @@ serve(async (req) => {
         success: false,
         error: "Esta solicitud ya fue procesada",
       });
+    }
+
+    // Use the password the user chose during registration
+    const password = request.encrypted_password;
+    if (!password) {
+      return jsonResponse(400, { success: false, error: "La solicitud no tiene contraseña asociada. El usuario debe registrarse nuevamente." });
     }
 
     console.log(`Approving registration for: ${request.email}`);
@@ -240,13 +233,18 @@ serve(async (req) => {
       console.error("Error updating request status:", updateError);
     }
 
+    // Clear stored password after use
+    await supabaseAdmin
+      .from("registration_requests")
+      .update({ encrypted_password: null })
+      .eq("id", requestId);
+
     return jsonResponse(200, {
       success: true,
       message: "Usuario aprobado y creado exitosamente",
       user_id: authUserId,
       profile_ids: createdProfiles,
       email: request.email,
-      temp_password: password,
     });
   } catch (error) {
     console.error("Approve registration error:", error);

@@ -288,6 +288,7 @@ const Auth = () => {
           motivacion: signupData.motivacion,
           perfil: signupData.perfil,
           status: 'pending',
+          encrypted_password: signupData.password,
         });
 
       if (insertError) {

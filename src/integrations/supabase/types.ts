@@ -2847,6 +2847,7 @@ export type Database = {
           ciudad: string
           created_at: string
           email: string
+          encrypted_password: string | null
           id: string
           motivacion: string
           nombre: string
@@ -2865,6 +2866,7 @@ export type Database = {
           ciudad: string
           created_at?: string
           email: string
+          encrypted_password?: string | null
           id?: string
           motivacion: string
           nombre: string
@@ -2883,6 +2885,7 @@ export type Database = {
           ciudad?: string
           created_at?: string
           email?: string
+          encrypted_password?: string | null
           id?: string
           motivacion?: string
           nombre?: string

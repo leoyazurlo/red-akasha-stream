@@ -62,7 +62,7 @@ const Index = () => {
   });
 
   const { data: destacadosVideos = [] } = useQuery({
-    queryKey: ["content-destacados"],
+    queryKey: ["content-destacados-free"],
     queryFn: async () => {
       // Obtener contenido aprobado
       const { data: content, error } = await supabase

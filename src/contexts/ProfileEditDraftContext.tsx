@@ -2,6 +2,8 @@ import React, { createContext, useCallback, useContext, useMemo, useState } from
 
 export type EditarPerfilFormData = {
   display_name: string;
+  first_name: string;
+  last_name: string;
   bio: string;
   avatar_url: string;
   pais: string;

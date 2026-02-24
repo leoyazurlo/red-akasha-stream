@@ -137,6 +137,8 @@ const EditarPerfil = () => {
   const draftRestoredRef = useRef(false);
   const [formData, setFormData] = useState({
     display_name: "",
+    first_name: "",
+    last_name: "",
     bio: "",
     avatar_url: "",
     pais: "",
@@ -215,6 +217,8 @@ const EditarPerfil = () => {
         // Restore draft data
         setFormData({
           ...existingDraft.formData,
+          first_name: (existingDraft.formData as any).first_name || (profileData as any).first_name || "",
+          last_name: (existingDraft.formData as any).last_name || (profileData as any).last_name || "",
           // Keep main profile_type from DB (cannot change)
           profile_type: profileData.profile_type || ""
         });
@@ -222,6 +226,8 @@ const EditarPerfil = () => {
       } else {
         setFormData({
           display_name: profileData.display_name || "",
+          first_name: (profileData as any).first_name || "",
+          last_name: (profileData as any).last_name || "",
           bio: profileData.bio || "",
           avatar_url: profileData.avatar_url || "",
           pais: profileData.pais || "",
@@ -480,6 +486,8 @@ const EditarPerfil = () => {
         .from("profile_details")
         .update({
           display_name: formData.display_name.trim(),
+          first_name: formData.first_name.trim() || null,
+          last_name: formData.last_name.trim() || null,
           bio: formData.bio.trim() || null,
           avatar_url: formData.avatar_url || null,
           pais: formData.pais,
@@ -761,9 +769,39 @@ const EditarPerfil = () => {
                   )}
                 </div>
 
+                {/* First Name & Last Name */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="first_name">Nombre *</Label>
+                    <Input
+                      id="first_name"
+                      value={formData.first_name}
+                      onChange={(e) => handleChange("first_name", e.target.value)}
+                      placeholder="Tu nombre"
+                      className="bg-background/50"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Mejora tu visibilidad en las búsquedas
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="last_name">Apellido *</Label>
+                    <Input
+                      id="last_name"
+                      value={formData.last_name}
+                      onChange={(e) => handleChange("last_name", e.target.value)}
+                      placeholder="Tu apellido"
+                      className="bg-background/50"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Tu nombre completo ayuda a otros a encontrarte
+                    </p>
+                  </div>
+                </div>
+
                 {/* Display Name */}
                 <div className="space-y-2">
-                  <Label htmlFor="display_name">Nombre / Nombre Artístico *</Label>
+                  <Label htmlFor="display_name">Nombre Artístico / Display *</Label>
                   <Input
                     id="display_name"
                     value={formData.display_name}

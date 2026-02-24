@@ -2515,10 +2515,12 @@ export type Database = {
           display_name: string
           email: string | null
           facebook: string | null
+          first_name: string | null
           formation_date: string | null
           genre: Database["public"]["Enums"]["music_genre"] | null
           id: string
           instagram: string | null
+          last_name: string | null
           latitude: number | null
           linkedin: string | null
           longitude: number | null
@@ -2548,10 +2550,12 @@ export type Database = {
           display_name: string
           email?: string | null
           facebook?: string | null
+          first_name?: string | null
           formation_date?: string | null
           genre?: Database["public"]["Enums"]["music_genre"] | null
           id?: string
           instagram?: string | null
+          last_name?: string | null
           latitude?: number | null
           linkedin?: string | null
           longitude?: number | null
@@ -2581,10 +2585,12 @@ export type Database = {
           display_name?: string
           email?: string | null
           facebook?: string | null
+          first_name?: string | null
           formation_date?: string | null
           genre?: Database["public"]["Enums"]["music_genre"] | null
           id?: string
           instagram?: string | null
+          last_name?: string | null
           latitude?: number | null
           linkedin?: string | null
           longitude?: number | null

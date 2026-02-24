@@ -85,6 +85,8 @@ serve(async (req) => {
       additional_profile_types: additionalTypes,
       avatar_url: requestData.avatar_url || null,
       display_name: sanitizeString(requestData.display_name || requestData.nombre || '', 200),
+      first_name: requestData.first_name ? sanitizeString(requestData.first_name, 100) : null,
+      last_name: requestData.last_name ? sanitizeString(requestData.last_name, 100) : null,
       bio: requestData.bio ? sanitizeString(requestData.bio, 1000) : null,
       pais: sanitizeString(requestData.pais || '', 100),
       provincia: requestData.provincia ? sanitizeString(requestData.provincia, 100) : null,

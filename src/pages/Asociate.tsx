@@ -130,6 +130,8 @@ const Asociate = () => {
 
   const [formData, setFormData] = useState({
     nombre: "",
+    first_name: "",
+    last_name: "",
     email: "",
     telefono: "",
     pais: "",
@@ -439,8 +441,10 @@ const Asociate = () => {
       const profileData = {
         profile_type: profileTypeMap[selectedProfiles[0]],
         profile_types: selectedProfiles.map(p => profileTypeMap[p]),
-        nombre: formData.nombre || currentUser.email.split('@')[0],
-        display_name: formData.display_name,
+        nombre: formData.nombre || `${formData.first_name} ${formData.last_name}`.trim() || currentUser.email.split('@')[0],
+        display_name: formData.display_name || `${formData.first_name} ${formData.last_name}`.trim(),
+        first_name: formData.first_name,
+        last_name: formData.last_name,
         bio: formData.bio,
         pais: formData.pais,
         provincia: formData.provincia,
@@ -853,17 +857,33 @@ const Asociate = () => {
                           />
                         </div>
 
-                        <div className="space-y-2 md:col-span-2">
-                          <Label htmlFor="nombre" className="text-sm font-medium">{t('asociate.fullName')} *</Label>
+                        <div className="space-y-2">
+                          <Label htmlFor="first_name" className="text-sm font-medium">Nombre *</Label>
                           <Input
-                            id="nombre"
-                            name="nombre"
+                            id="first_name"
+                            name="first_name"
                             required
-                            value={formData.nombre}
+                            value={formData.first_name}
                             onChange={handleChange}
-                            placeholder={t('asociate.fullNamePlaceholder')}
+                            placeholder="Tu nombre"
                             className="h-11 hover:border-primary/50 focus:border-primary transition-colors"
                           />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="last_name" className="text-sm font-medium">Apellido *</Label>
+                          <Input
+                            id="last_name"
+                            name="last_name"
+                            required
+                            value={formData.last_name}
+                            onChange={handleChange}
+                            placeholder="Tu apellido"
+                            className="h-11 hover:border-primary/50 focus:border-primary transition-colors"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Tu nombre completo mejora la búsqueda entre perfiles
+                          </p>
                         </div>
 
                         <div className="space-y-2">
@@ -880,16 +900,16 @@ const Asociate = () => {
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="nombre" className="text-sm font-medium">{t('asociate.fullName')}</Label>
+                          <Label htmlFor="display_name" className="text-sm font-medium">Nombre Artístico / Display</Label>
                           <Input
-                            id="nombre"
-                            name="nombre"
-                            value={formData.nombre}
+                            id="display_name"
+                            name="display_name"
+                            value={formData.display_name}
                             onChange={handleChange}
-                            placeholder={t('asociate.fullNamePlaceholder')}
+                            placeholder="Nombre artístico o de fantasía (opcional)"
                             className="h-11 hover:border-primary/50 focus:border-primary transition-colors"
                           />
-                          <p className="text-xs text-muted-foreground">Nombre para este perfil (opcional)</p>
+                          <p className="text-xs text-muted-foreground">Si no lo completás, se usará tu nombre completo</p>
                         </div>
 
                         <div className="space-y-2 md:col-span-2">

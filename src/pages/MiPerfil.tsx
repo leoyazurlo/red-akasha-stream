@@ -42,6 +42,7 @@ import { UserEarningsDashboard } from "@/components/profile/UserEarningsDashboar
 import { ForumActivitySection } from "@/components/profile/ForumActivitySection";
 import { MyContentTab } from "@/components/profile/MyContentTab";
 import { FollowersList } from "@/components/profile/FollowersList";
+import { ProfileCompletionBar } from "@/components/profile/ProfileCompletionBar";
 import { useFollow } from "@/hooks/useFollow";
 import { validateFile, formatFileSize, FILE_COUNT_LIMITS } from "@/lib/storage-validation";
 import { buildProfileObjectPath, uploadWithRetry } from "@/lib/storage-keys";
@@ -49,6 +50,8 @@ import { buildProfileObjectPath, uploadWithRetry } from "@/lib/storage-keys";
 interface ProfileData {
   id: string;
   display_name: string;
+  first_name: string | null;
+  last_name: string | null;
   profile_type: string;
   additional_profile_types?: string[];
   bio: string | null;
@@ -121,6 +124,7 @@ const MiPerfil = () => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [audioPlaylist, setAudioPlaylist] = useState<AudioTrack[]>([]);
+  const [contentCount, setContentCount] = useState(0);
   
   // Follow stats
   const { followersCount, followingCount } = useFollow(user?.id || null);
@@ -176,6 +180,14 @@ const MiPerfil = () => {
         .order("order_index");
 
       setAudioPlaylist(audioData || []);
+
+      // Fetch content count for completion bar
+      const { count } = await supabase
+        .from("content_uploads")
+        .select("id", { count: "exact", head: true })
+        .eq("uploader_id", user?.id || "");
+      
+      setContentCount(count || 0);
     } catch (error) {
       console.error("Error fetching profile:", error);
       toast({
@@ -487,6 +499,11 @@ const MiPerfil = () => {
           <h1 className="text-3xl font-bold mb-8 bg-gradient-to-r from-primary-glow to-accent bg-clip-text text-transparent">
             Mi Perfil
           </h1>
+
+          {/* Profile Completion Bar */}
+          <ProfileCompletionBar profile={profile} contentCount={contentCount} />
+
+          <div className="mt-6" />
 
           {/* Profile Summary */}
           <Card className="mb-8 bg-card/50 backdrop-blur-sm border-primary/20">

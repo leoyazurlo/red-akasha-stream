@@ -95,3 +95,4 @@
     "vite": "^5.4.19"
   }
 }
+ "fix: add .env to gitignore"

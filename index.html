@@ -33,30 +33,6 @@
 
   <body>
     <div id="root"></div>
-    <script>
-      // Force unregister any rogue service workers on first load
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          var hadOldSW = false;
-          registrations.forEach(function(reg) {
-            // Only unregister non-vite-plugin-pwa workers (scope check)
-            if (reg.active && reg.active.scriptURL && !reg.active.scriptURL.includes('sw.js?v=')) {
-              // Unregister old manual SW
-              reg.unregister();
-              hadOldSW = true;
-            }
-          });
-          if (hadOldSW) {
-            // Clear all caches from the old SW
-            caches.keys().then(function(names) {
-              names.forEach(function(name) { caches.delete(name); });
-            });
-            // Reload to get fresh content
-            location.reload();
-          }
-        });
-      }
-    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

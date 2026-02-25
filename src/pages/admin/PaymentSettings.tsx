@@ -550,7 +550,7 @@ const PaymentSettings = () => {
                    <Label>URL del Webhook</Label>
                    <div className="flex gap-2">
                      <Input
-                       value={settings.stripe_connect?.webhook_url || `https://exihucrtuwjfqxvdlmmk.supabase.co/functions/v1/stripe-webhook`}
+                       value={settings.stripe_connect?.webhook_url || `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-webhook`}
                        readOnly
                        className="bg-background/50 font-mono text-xs"
                      />
@@ -559,7 +559,7 @@ const PaymentSettings = () => {
                        size="icon"
                        onClick={() => {
                          navigator.clipboard.writeText(
-                           settings.stripe_connect?.webhook_url || `https://exihucrtuwjfqxvdlmmk.supabase.co/functions/v1/stripe-webhook`
+                           settings.stripe_connect?.webhook_url || `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-webhook`
                          );
                          toast.success('URL copiada al portapapeles');
                        }}

@@ -41,6 +41,15 @@ export default defineConfig(({ mode }) => ({
             options: { cacheName: "google-fonts", expiration: { maxEntries: 10 } },
           },
           {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/storage\/v1\/object\/public\/content-(?:videos|audios|photos)\/.*thumbnails.*\.(?:jpg|jpeg|png|webp)$/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "supabase-thumbnails",
+              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
             urlPattern: /^https:\/\/.*\.supabase\.co\/storage/,
             handler: "NetworkFirst",
             options: { cacheName: "supabase-storage" },

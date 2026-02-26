@@ -15,7 +15,7 @@ export { useContentAccess } from "./useContentAccess";
 export { useContentByCreatorProfile } from "./useContentByCreatorProfile";
 export { useCountryDetection } from "./useCountryDetection";
 export { useFollowedProfiles } from "./useFollowedProfiles";
-export { useServiceWorker } from "./useServiceWorker";
+// useServiceWorker removed - vite-plugin-pwa handles SW automatically
 export { useUnreadMessages } from "./useUnreadMessages";
 export { useUserBadges } from "./useUserBadges";
 export { useUserSearch } from "./useUserSearch";

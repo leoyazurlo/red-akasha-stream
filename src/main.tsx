@@ -10,7 +10,24 @@ import { installWebVitalsReporter } from "./lib/performance-reporter";
 installGlobalErrorHandlers();
 installWebVitalsReporter();
 
-// PWA service worker is auto-registered by vite-plugin-pwa
+// Purge legacy manual service worker (public/sw.js) to prevent black screen
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    for (const registration of registrations) {
+      if (registration.active?.scriptURL?.endsWith('/sw.js')) {
+        registration.unregister().then(() => {
+          caches.keys().then((names) => {
+            names.forEach((name) => {
+              if (name.startsWith('akasha-')) caches.delete(name);
+            });
+          });
+          console.log('[App] Legacy SW purged, reloading...');
+          window.location.reload();
+        });
+      }
+    }
+  });
+}
 
 // Web Vitals reporting (dev only)
 if (import.meta.env.DEV) {

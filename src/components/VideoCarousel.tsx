@@ -84,6 +84,8 @@ export const VideoCarousel = ({
   const [scrollPosition, setScrollPosition] = useState(0);
   const [selectedVideo, setSelectedVideo] = useState<VideoItem | null>(null);
   const { elementRef, isVisible } = useScrollAnimation({ threshold: 0.15 });
+  // First carousel should be visible immediately for LCP
+  const effectiveVisible = sectionId === 'programas' ? true : isVisible;
   const navigate = useNavigate();
 
   // Fetch schedules from database if enabled
@@ -130,8 +132,8 @@ export const VideoCarousel = ({
     <section 
       ref={elementRef}
       className={`py-4 md:py-8 transition-all duration-700 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-      }`} 
+        effectiveVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}
       id={sectionId}
     >
       <div className="container mx-auto px-2 sm:px-4">
@@ -232,10 +234,10 @@ export const VideoCarousel = ({
                     }
                   }}
                   className={`flex-none ${isVertical ? 'w-32 sm:w-36 md:w-40' : 'w-44 sm:w-52 md:w-56'} group cursor-pointer transition-all duration-500 ${
-                    isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
+                    effectiveVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
                   }`}
                   style={{ 
-                    transitionDelay: isVisible ? `${index * 75}ms` : '0ms'
+                    transitionDelay: effectiveVisible ? `${index * 75}ms` : '0ms'
                   }}
                 >
                 <div className="p-1">

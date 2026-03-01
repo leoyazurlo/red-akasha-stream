@@ -68,6 +68,7 @@ export const Header = () => {
               width={236}
               height={56}
               className="h-10 sm:h-12 md:h-14 w-auto"
+              fetchPriority="high"
             />
           </Link>
 

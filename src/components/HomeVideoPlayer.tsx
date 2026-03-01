@@ -1,12 +1,13 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
-import { Radio, VolumeX, Maximize } from "lucide-react";
+import { Radio, VolumeX, Volume2, Maximize, Play } from "lucide-react";
 import { useLiveStream } from "@/contexts/LiveStreamContext";
 
 export const HomeVideoPlayer = () => {
   const { liveData, isPlaying, setIsPlaying } = useLiveStream();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMuted, setIsMuted] = useState(true);
+  const [iframeLoaded, setIframeLoaded] = useState(false);
 
   const hasLiveStream = !!liveData?.playbackUrl;
 
@@ -16,11 +17,13 @@ export const HomeVideoPlayer = () => {
       setIsPlaying(true);
     }
   }, [hasLiveStream, isPlaying, setIsPlaying]);
+
+  // Defer iframe load: after 3s idle or user click
   useEffect(() => {
-    if (hasLiveStream && !isPlaying) {
-      setIsPlaying(true);
-    }
-  }, [hasLiveStream, isPlaying, setIsPlaying]);
+    if (!hasLiveStream) return;
+    const timer = setTimeout(() => setIframeLoaded(true), 3000);
+    return () => clearTimeout(timer);
+  }, [hasLiveStream]);
 
   const playbackUrl = liveData?.playbackUrl || '';
   
@@ -114,7 +117,29 @@ export const HomeVideoPlayer = () => {
           ref={containerRef}
           className="relative aspect-video bg-card rounded-lg sm:rounded-xl overflow-hidden border-2 border-cyan-400/40 group shadow-[0_0_30px_hsl(180_100%_50%/0.35)] hover:shadow-[0_0_45px_hsl(180_100%_50%/0.5)] transition-shadow duration-300"
         >
-          {useYouTubePlayer ? (
+          {!iframeLoaded && hasLiveStream ? (
+            /* Static placeholder until iframe loads */
+            <div 
+              className="absolute inset-0 flex items-center justify-center bg-black/90 cursor-pointer"
+              onClick={() => setIframeLoaded(true)}
+            >
+              {useYouTubePlayer && (
+                <img 
+                  src={`https://img.youtube.com/vi/${youtubeVideoId}/hqdefault.jpg`}
+                  alt="Video thumbnail"
+                  className="absolute inset-0 w-full h-full object-cover opacity-60"
+                />
+              )}
+              <div className="flex flex-col items-center gap-2 z-10">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-primary/80 rounded-full flex items-center justify-center hover:bg-primary transition-all border-2 border-primary/50">
+                  <Play className="w-8 h-8 sm:w-10 sm:h-10 text-primary-foreground fill-primary-foreground ml-1" />
+                </div>
+                <span className="text-white text-sm font-medium bg-black/70 px-4 py-2 rounded-full">
+                  ▶ Clic para reproducir
+                </span>
+              </div>
+            </div>
+          ) : useYouTubePlayer && iframeLoaded ? (
             <>
               <iframe
                 src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&mute=${isMuted ? 1 : 0}&rel=0&enablejsapi=1&playsinline=1`}
@@ -138,27 +163,27 @@ export const HomeVideoPlayer = () => {
                 </div>
               )}
             </>
-          ) : useRestreamPlayer ? (
+          ) : useRestreamPlayer && iframeLoaded ? (
             <iframe
               src={restreamEmbedUrl}
               className="absolute inset-0 w-full h-full"
               allow="autoplay; fullscreen"
               allowFullScreen
             />
-          ) : useTwitchPlayer ? (
+          ) : useTwitchPlayer && iframeLoaded ? (
             <iframe
               src={twitchEmbedUrl}
               className="absolute inset-0 w-full h-full"
               allowFullScreen
             />
-          ) : (
+          ) : !hasLiveStream ? (
             <div className="absolute inset-0 flex items-center justify-center bg-black/80">
               <div className="text-center">
                 <Radio className="w-12 h-12 text-primary mx-auto mb-4" />
                 <p className="text-white/70">Configura un stream en el panel de administración</p>
               </div>
             </div>
-          )}
+          ) : null}
           
           {/* Fullscreen button */}
           <Button

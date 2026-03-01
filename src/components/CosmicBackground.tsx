@@ -1,6 +1,6 @@
 export const CosmicBackground = () => {
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" style={{ willChange: 'transform' }}>
       {/* Nebulosa dorada de fondo */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background to-background">
         <div className="absolute bottom-0 left-0 right-0 h-[60vh] bg-gradient-to-t from-amber-950/20 via-amber-900/10 to-transparent opacity-60" />
@@ -8,9 +8,9 @@ export const CosmicBackground = () => {
         <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-yellow-600/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: '6s', animationDelay: '1s' }} />
       </div>
       
-      {/* Estrellas */}
+      {/* Estrellas - reducidas para mejor LCP */}
       <div className="stars-container absolute inset-0">
-        {[...Array(100)].map((_, i) => (
+        {[...Array(30)].map((_, i) => (
           <div
             key={i}
             className="star absolute rounded-full bg-amber-200/80"
@@ -26,9 +26,9 @@ export const CosmicBackground = () => {
         ))}
       </div>
 
-      {/* Estrellas grandes brillantes */}
+      {/* Estrellas grandes brillantes - reducidas */}
       <div className="stars-bright absolute inset-0">
-        {[...Array(20)].map((_, i) => (
+        {[...Array(8)].map((_, i) => (
           <div
             key={i}
             className="star-bright absolute"

@@ -7,7 +7,6 @@ import { CosmicBackground } from "@/components/CosmicBackground";
 import { ScrollProgressBar } from "@/components/ScrollProgressBar";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import akashaBg from "@/assets/akasha-bg.png";
 import { HomeVideoPlayer } from "@/components/HomeVideoPlayer";
 import { useSEO } from "@/hooks/use-seo";
 import { platformSEO } from "@/lib/seo";

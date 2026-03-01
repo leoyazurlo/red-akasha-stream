@@ -1,65 +1,53 @@
 
+Objetivo: dejar el build “auto-recuperable” para que puedas publicar con seguridad y evitar que navegadores con caché vieja vuelvan a caer en pantalla negra.
 
-## Diagnostico de la Pantalla Negra en Produccion
+1) Resultado de la revisión (rápido)
+- `vite.config.ts` no define headers de seguridad (CSP, X-Frame-Options, HSTS, etc.), así que no hay nada ahí que esté bloqueando scripts.
+- En código no hay `<link rel="canonical">` estático en `index.html` (bien para estabilidad de build).
+- El problema más probable sigue siendo estado local de caché/Service Worker en algunos navegadores.
+- Además, la purga actual en `src/main.tsx` usa `endsWith('/sw.js')`, que puede desregistrar también el SW válido de PWA (no solo el legacy), y eso conviene endurecerlo.
 
-### Hallazgo critico
+2) Plan de implementación (lo que voy a cambiar)
+- Archivo: `src/main.tsx`
+  - Reemplazar la purga actual por una purga “segura y de una sola vez”:
+    - Ejecutar una sola vez por navegador (flag en `localStorage`).
+    - Desregistrar solo si detecta señales reales de caché legacy (por ejemplo, caches antiguas `akasha-*`), no por nombre de script únicamente.
+    - Limpiar solo caches legacy relevantes.
+    - Hacer `reload` controlado una sola vez para evitar bucles.
+- Archivo: `vite.config.ts`
+  - Endurecer Workbox para converger más rápido a la versión nueva:
+    - `cleanupOutdatedCaches: true`
+    - `clientsClaim: true`
+    - `skipWaiting: true`
+  - Mantener el resto del runtime caching actual.
+- Archivo: `src/hooks/useServiceWorker.ts`
+  - Mantenerlo como no-op (sin registro manual), pero revisar que no haya rutas muertas/estado engañoso.
+  - Si no se usa en ninguna parte, dejar explícito que es compatibilidad temporal o preparar retiro limpio en un paso posterior.
 
-Verifique ambas URLs publicadas (`red-akasha-stream.lovable.app` y `www.redakasha.org`). Ambas muestran pantalla negra. El HTML servido esta incompleto:
-
+3) Detalles técnicos (sección técnica)
 ```text
-Servido en produccion:
-  <html lang="es">        <-- version vieja (source tiene lang="en")
-    <div id="root"></div>  <-- sin <head>, sin <script>
-  </html>
+Antes:
+  main.tsx -> si scriptURL termina en /sw.js => unregister + reload
+  Riesgo: también borra SW válido de vite-plugin-pwa
 
-Esperado (source):
-  <html lang="en">
-    <head>... meta tags, fonts ...</head>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </html>
+Después:
+  main.tsx -> detectar "legacy cache footprint" + ejecutar una sola vez
+            -> purgar legacy
+            -> no tocar SW válido en cada carga
+  vite.config.ts -> Workbox con skipWaiting + clientsClaim + cleanupOutdatedCaches
 ```
 
-El HTML servido no tiene etiquetas `<script>`, por lo que React nunca se monta. Esto explica la pantalla negra para todos los visitantes, incluso los nuevos.
-
-### Causa raiz encontrada: `useServiceWorker.ts` sigue registrando `/sw.js`
-
-Aunque eliminamos `public/sw.js` y agregamos la purga en `main.tsx`, el archivo `src/hooks/useServiceWorker.ts` (linea 30) todavia intenta registrar `/sw.js`:
-
-```typescript
-const registration = await navigator.serviceWorker.register('/sw.js', {
-  scope: '/',
-});
-```
-
-Este hook esta exportado desde `src/hooks/index.ts`. Si algun componente lo importa (directa o indirectamente), re-registraria el SW fantasma. Aunque no encontre uso activo, el hook es codigo muerto peligroso.
-
-### Problema principal: el deploy actual no tomo efecto
-
-El HTML servido es de una version anterior (tiene `lang="es"`, sin scripts). Esto indica que el ultimo publish no se completo correctamente, o el Service Worker viejo en los navegadores de los usuarios sigue sirviendo el HTML cacheado sin scripts.
-
-### Plan de correccion (2 pasos)
-
-**Paso 1: Eliminar el hook `useServiceWorker.ts` y su export**
-
-- Reescribir `src/hooks/useServiceWorker.ts` para que sea un no-op (no registre `/sw.js`), ya que `vite-plugin-pwa` maneja todo automaticamente.
-- Remover la referencia de `src/hooks/index.ts`.
-
-**Paso 2: Republish forzado**
-
-Despues de los cambios, el usuario debe:
-1. Hacer click en **Publish** > **Update** para forzar un nuevo deploy.
-2. Abrir `www.redakasha.org` en una ventana de incognito para verificar.
-3. Si persiste, abrir DevTools (F12) > Application > Service Workers > Unregister todo, luego recargar.
-
-### Detalle tecnico
-
-```text
-Archivo                          Accion
------------------------------------------
-src/hooks/useServiceWorker.ts    Reescribir como no-op (delegar a vite-plugin-pwa)
-src/hooks/index.ts               Remover export de useServiceWorker
-```
-
-El hook se reemplaza con una version que solo expone estado del SW de Workbox (sin registrar `/sw.js`), manteniendo la API publica por si algun componente futuro lo usa.
-
+4) Verificación después de publicar
+- Publicar (Update).
+- Probar en:
+  1) ventana incógnito,
+  2) navegador donde fallaba.
+- Confirmar en DevTools:
+  - no errores de SW en consola,
+  - SW activo corresponde al actual,
+  - sin recargas en bucle.
+- Si un navegador puntual sigue negro:
+  - Application → Service Workers → Unregister,
+  - Clear site data,
+  - recargar.
+- Si solo falla `www` y no el dominio publicado, revisar estado del dominio en Settings → Domains (root + www activos y apuntando correctamente).

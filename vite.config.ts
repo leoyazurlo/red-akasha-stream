@@ -31,10 +31,13 @@ export default defineConfig(({ mode }) => ({
           { src: "/favicon.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
         ],
       },
-      workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
-        navigateFallbackDenylist: [/^\/~oauth/],
-        runtimeCaching: [
+    workbox: {
+      cleanupOutdatedCaches: true,
+      clientsClaim: true,
+      skipWaiting: true,
+      globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
+      navigateFallbackDenylist: [/^\/~oauth/],
+      runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com/,
             handler: "CacheFirst",

@@ -10,8 +10,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, CheckCircle2, Upload, X, Video, Image as ImageIcon, Music, Check, User, LogIn } from "lucide-react";
+import { Loader2, CheckCircle2, Upload, X, Video, Image as ImageIcon, Music, Check, User, LogIn, Plus, Link as LinkIcon } from "lucide-react";
 import { ImageUpload } from "@/components/ImageUpload";
+import { RegistrationCompletionBar } from "@/components/RegistrationCompletionBar";
+import { calculateProfileCompleteness } from "@/lib/profile-completeness";
 import {
   Select,
   SelectContent,
@@ -102,6 +104,8 @@ const Asociate = () => {
   const [uploadedVideos, setUploadedVideos] = useState<File[]>([]);
   const [uploadedImages, setUploadedImages] = useState<File[]>([]);
   const [uploadedAudios, setUploadedAudios] = useState<File[]>([]);
+  const [videoLinks, setVideoLinks] = useState<string[]>(["", ""]);
+  const [galleryImages, setGalleryImages] = useState<File[]>([]);
   const [currentUser, setCurrentUser] = useState<{ id: string; email: string } | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
@@ -239,7 +243,7 @@ const Asociate = () => {
       password: passwordSchema,
       confirmPassword: z.string(),
       avatar_url: z.string().min(1, "La foto de perfil es obligatoria. Por favor sube una imagen."),
-      bio: z.string().trim().min(10, "La biografía debe tener al menos 10 caracteres para dar una buena descripción").max(1000, "La biografía no puede exceder 1000 caracteres"),
+      bio: z.string().trim().min(200, "La biografía debe tener al menos 200 caracteres (aprox. 4 párrafos cortos)").max(1000, "La biografía no puede exceder 1000 caracteres"),
       instagram: z.string().max(100, "El usuario de Instagram es muy largo").optional().or(z.literal("")),
       facebook: z.string().max(100, "El enlace de Facebook es muy largo").optional().or(z.literal("")),
       linkedin: z.string().max(100, "El enlace de LinkedIn es muy largo").optional().or(z.literal("")),
@@ -386,10 +390,30 @@ const Asociate = () => {
       return;
     }
 
-    if (!formData.bio || formData.bio.trim().length < 10) {
+    if (!formData.bio || formData.bio.trim().length < 200) {
       toast({
         title: "Error de validación",
-        description: "La biografía debe tener al menos 10 caracteres.",
+        description: "La biografía debe tener al menos 200 caracteres para una buena descripción.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check profile completeness (60% minimum)
+    const completeness = calculateProfileCompleteness(
+      selectedProfiles[0] || "",
+      {
+        ...formData,
+        profile_type: selectedProfiles[0],
+        video_links: videoLinks,
+        gallery_images: galleryImages,
+      }
+    );
+
+    if (!completeness.meetsMinimum) {
+      toast({
+        title: "Perfil incompleto",
+        description: `Tu perfil tiene ${completeness.percentage}% de completitud. Necesitás al menos 60% para enviar la solicitud. Revisá los items pendientes.`,
         variant: "destructive",
       });
       return;
@@ -474,6 +498,7 @@ const Asociate = () => {
         label_genres: formData.label_genres,
         website: formData.website,
         services: formData.services,
+        video_links: videoLinks.filter(l => l.trim()),
       };
 
       const response = await supabase.functions.invoke('add-profile', {
@@ -496,35 +521,22 @@ const Asociate = () => {
       // Step 3: Upload multimedia files if any
       if (profileId) {
         try {
-          // Upload videos
-          for (let i = 0; i < uploadedVideos.length; i++) {
-            const file = uploadedVideos[i];
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${userId}/videos/${Date.now()}-${i}.${fileExt}`;
-
-            const { data: videoData, error: videoUploadError } = await supabase.storage
-              .from('profile-avatars')
-              .upload(fileName, file);
-
-            if (!videoUploadError && videoData) {
-              const { data: { publicUrl } } = supabase.storage
-                .from('profile-avatars')
-                .getPublicUrl(videoData.path);
-
-              await supabase.from('profile_galleries').insert({
-                profile_id: profileId,
-                url: publicUrl,
-                media_type: 'video',
-                order_index: i
-              });
-            }
+          // Save video links to profile_galleries as 'video_link' type
+          const validVideoLinks = videoLinks.filter(l => l.trim());
+          for (let i = 0; i < validVideoLinks.length; i++) {
+            await supabase.from('profile_galleries').insert({
+              profile_id: profileId,
+              url: validVideoLinks[i].trim(),
+              media_type: 'video_link',
+              order_index: i
+            });
           }
 
-          // Upload images
-          for (let i = 0; i < uploadedImages.length; i++) {
-            const file = uploadedImages[i];
+          // Upload gallery images
+          for (let i = 0; i < galleryImages.length; i++) {
+            const file = galleryImages[i];
             const fileExt = file.name.split('.').pop();
-            const fileName = `${userId}/images/${Date.now()}-${i}.${fileExt}`;
+            const fileName = `${userId}/gallery/${Date.now()}-${i}.${fileExt}`;
 
             const { data: imageData, error: imageUploadError } = await supabase.storage
               .from('profile-avatars')
@@ -823,6 +835,19 @@ const Asociate = () => {
                       </div>
                     </div>
 
+                    {/* Completion Bar */}
+                    {selectedProfiles.length > 0 && (
+                      <RegistrationCompletionBar
+                        profileType={selectedProfiles[0]}
+                        formData={{
+                          ...formData,
+                          profile_type: selectedProfiles[0],
+                          video_links: videoLinks,
+                          gallery_images: galleryImages,
+                        }}
+                      />
+                    )}
+
                     {selectedProfiles.length > 0 && (
                       <div className="border-t border-border/50 pt-8 animate-fade-in">
                         <div className="flex items-center gap-3 mb-6">
@@ -984,74 +1009,62 @@ const Asociate = () => {
                           {t('asociate.uploadMediaDesc')}
                         </p>
                         
-                        {/* Upload Videos */}
+                        {/* YouTube Video Links */}
                         <div className="space-y-3 mb-6 p-4 rounded-xl bg-muted/20 border border-border/50">
                           <Label className="flex items-center gap-2 text-base font-medium">
-                            <Video className="w-5 h-5 text-primary" />
-                            {t('asociate.videos')}
+                            <LinkIcon className="w-5 h-5 text-primary" />
+                            Links de video (YouTube, Vimeo) — mínimo 2
                           </Label>
-                          <Input
-                            type="file"
-                            accept="video/*"
-                            multiple
-                            onChange={(e) => {
-                              const files = Array.from(e.target.files || []);
-                              const validFiles: File[] = [];
-                              
-                              // Verificar límite de videos
-                              const totalVideos = uploadedVideos.length + files.length;
-                              if (totalVideos > FILE_COUNT_LIMITS.VIDEOS) {
-                                toast({
-                                  title: "Límite de videos alcanzado",
-                                  description: `Solo puedes subir máximo ${FILE_COUNT_LIMITS.VIDEOS} videos. Actualmente tienes ${uploadedVideos.length}.`,
-                                  variant: "destructive",
-                                });
-                                return;
-                              }
-                              
-                              for (const file of files) {
-                                const validation = validateFile(file, 'video');
-                                if (!validation.valid) {
-                                  toast({
-                                    title: t('common.error'),
-                                    description: `${file.name}: ${validation.error}`,
-                                    variant: "destructive",
-                                  });
-                                } else {
-                                  validFiles.push(file);
-                                }
-                              }
-                              
-                              if (validFiles.length > 0) {
-                                setUploadedVideos(prev => [...prev, ...validFiles]);
-                              }
-                            }}
-                            className="hover:border-primary/50 transition-colors"
-                          />
-                          {uploadedVideos.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mt-3">
-                              {uploadedVideos.map((file, idx) => (
-                                <div key={idx} className="flex items-center gap-2 bg-secondary/50 border border-border/50 px-3 py-2 rounded-lg hover:border-primary/30 transition-colors">
-                                  <span className="text-sm">{file.name}</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => setUploadedVideos(prev => prev.filter((_, i) => i !== idx))}
-                                    className="text-destructive hover:scale-110 transition-transform"
-                                  >
-                                    <X className="w-4 h-4" />
-                                  </button>
-                                </div>
-                              ))}
+                          <p className="text-xs text-muted-foreground">
+                            Pegá los links de tus videos en YouTube, Vimeo o Dailymotion.
+                          </p>
+                          {videoLinks.map((link, idx) => (
+                            <div key={idx} className="flex items-center gap-2">
+                              <Input
+                                type="url"
+                                value={link}
+                                onChange={(e) => {
+                                  const updated = [...videoLinks];
+                                  updated[idx] = e.target.value;
+                                  setVideoLinks(updated);
+                                }}
+                                placeholder={`https://youtube.com/watch?v=... (video ${idx + 1})`}
+                                className="h-11 hover:border-primary/50 focus:border-primary transition-colors"
+                              />
+                              {videoLinks.length > 2 && (
+                                <button
+                                  type="button"
+                                  onClick={() => setVideoLinks(prev => prev.filter((_, i) => i !== idx))}
+                                  className="text-destructive hover:scale-110 transition-transform shrink-0"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              )}
                             </div>
+                          ))}
+                          {videoLinks.length < 6 && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setVideoLinks(prev => [...prev, ""])}
+                              className="gap-1"
+                            >
+                              <Plus className="w-4 h-4" />
+                              Agregar otro link
+                            </Button>
                           )}
                         </div>
 
-                        {/* Upload Images */}
+                        {/* Gallery Images */}
                         <div className="space-y-3 mb-6 p-4 rounded-xl bg-muted/20 border border-border/50">
                           <Label className="flex items-center gap-2 text-base font-medium">
                             <ImageIcon className="w-5 h-5 text-primary" />
-                            {t('asociate.images')}
+                            Galería de fotos — mínimo 4
                           </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Subí fotos que muestren tu trabajo, shows, estudio, etc. Mínimo 4, máximo 10.
+                          </p>
                           <Input
                             type="file"
                             accept="image/*"
@@ -1060,12 +1073,11 @@ const Asociate = () => {
                               const files = Array.from(e.target.files || []);
                               const validFiles: File[] = [];
                               
-                              // Verificar límite de fotos
-                              const totalPhotos = uploadedImages.length + files.length;
-                              if (totalPhotos > FILE_COUNT_LIMITS.PHOTOS) {
+                              const totalPhotos = galleryImages.length + files.length;
+                              if (totalPhotos > 10) {
                                 toast({
                                   title: "Límite de fotos alcanzado",
-                                  description: `Solo puedes subir máximo ${FILE_COUNT_LIMITS.PHOTOS} fotos. Actualmente tienes ${uploadedImages.length}.`,
+                                  description: `Máximo 10 fotos. Actualmente tenés ${galleryImages.length}.`,
                                   variant: "destructive",
                                 });
                                 return;
@@ -1085,19 +1097,19 @@ const Asociate = () => {
                               }
                               
                               if (validFiles.length > 0) {
-                                setUploadedImages(prev => [...prev, ...validFiles]);
+                                setGalleryImages(prev => [...prev, ...validFiles]);
                               }
                             }}
                             className="hover:border-primary/50 transition-colors"
                           />
-                          {uploadedImages.length > 0 && (
+                          {galleryImages.length > 0 && (
                             <div className="flex flex-wrap gap-2 mt-3">
-                              {uploadedImages.map((file, idx) => (
+                              {galleryImages.map((file, idx) => (
                                 <div key={idx} className="flex items-center gap-2 bg-secondary/50 border border-border/50 px-3 py-2 rounded-lg hover:border-primary/30 transition-colors">
                                   <span className="text-sm">{file.name}</span>
                                   <button
                                     type="button"
-                                    onClick={() => setUploadedImages(prev => prev.filter((_, i) => i !== idx))}
+                                    onClick={() => setGalleryImages(prev => prev.filter((_, i) => i !== idx))}
                                     className="text-destructive hover:scale-110 transition-transform"
                                   >
                                     <X className="w-4 h-4" />
@@ -1106,6 +1118,9 @@ const Asociate = () => {
                               ))}
                             </div>
                           )}
+                          <p className="text-xs text-muted-foreground">
+                            {galleryImages.length}/10 fotos — {galleryImages.length < 4 ? `faltan ${4 - galleryImages.length} más` : "✅ mínimo alcanzado"}
+                          </p>
                         </div>
 
                         {/* Upload Audio */}

@@ -181,7 +181,12 @@ export function ArtistLiveMap() {
     if (!searchQuery.trim()) return [];
     const q = searchQuery.toLowerCase();
     return profiles
-      .filter((p) => p.display_name?.toLowerCase().includes(q))
+      .filter((p) =>
+        p.display_name?.toLowerCase().includes(q) ||
+        p.ciudad?.toLowerCase().includes(q) ||
+        p.pais?.toLowerCase().includes(q) ||
+        (p.profile_type && formatProfileType(p.profile_type).toLowerCase().includes(q))
+      )
       .slice(0, 8)
       .map((p) => ({
         id: p.user_id,

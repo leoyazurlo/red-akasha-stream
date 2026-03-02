@@ -4,57 +4,41 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, X } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { ImageUpload } from "@/components/ImageUpload";
 import { Autocomplete } from "@/components/ui/autocomplete";
+import { MUSIC_GENRES } from "@/lib/constants/music";
+import { Badge } from "@/components/ui/badge";
 
 interface BandFormProps {
   formData: any;
   onChange: (field: string, value: any) => void;
 }
 
-const musicGenres = [
-  { value: "rock", label: "Rock" },
-  { value: "pop", label: "Pop" },
-  { value: "jazz", label: "Jazz" },
-  { value: "blues", label: "Blues" },
-  { value: "reggae", label: "Reggae" },
-  { value: "hip_hop", label: "Hip Hop" },
-  { value: "rap", label: "Rap" },
-  { value: "electronica", label: "Electrónica" },
-  { value: "house", label: "House" },
-  { value: "techno", label: "Techno" },
-  { value: "trance", label: "Trance" },
-  { value: "country", label: "Country" },
-  { value: "folk", label: "Folk" },
-  { value: "soul", label: "Soul" },
-  { value: "funk", label: "Funk" },
-  { value: "rnb", label: "R&B" },
-  { value: "metal", label: "Metal" },
-  { value: "punk", label: "Punk" },
-  { value: "ska", label: "Ska" },
-  { value: "clasica", label: "Clásica" },
-  { value: "opera", label: "Ópera" },
-  { value: "flamenco", label: "Flamenco" },
-  { value: "tango", label: "Tango" },
-  { value: "salsa", label: "Salsa" },
-  { value: "merengue", label: "Merengue" },
-  { value: "cumbia", label: "Cumbia" },
-  { value: "bachata", label: "Bachata" },
-  { value: "reggaeton", label: "Reggaeton" },
-  { value: "kpop", label: "K-Pop" },
-  { value: "jpop", label: "J-Pop" },
-  { value: "andina", label: "Andina" },
-  { value: "celta", label: "Celta" },
-  { value: "gospel", label: "Gospel" },
-  { value: "arabe", label: "Árabe" },
-  { value: "africana", label: "Africana" },
-  { value: "india", label: "India" },
-];
-
 export const BandForm = ({ formData, onChange }: BandFormProps) => {
+  const selectedGenres: string[] = formData.genres || (formData.genre ? [formData.genre] : []);
+
+  const handleAddGenre = (value: string) => {
+    if (value && !selectedGenres.includes(value)) {
+      const updated = [...selectedGenres, value];
+      onChange("genres", updated);
+      onChange("genre", updated[0]); // keep primary genre in sync
+    }
+  };
+
+  const handleRemoveGenre = (value: string) => {
+    const updated = selectedGenres.filter((g) => g !== value);
+    onChange("genres", updated);
+    onChange("genre", updated[0] || "");
+  };
+
+  const genreLabel = (value: string) =>
+    MUSIC_GENRES.find((g) => g.value === value)?.label || value;
+
+  const availableGenres = MUSIC_GENRES.filter((g) => !selectedGenres.includes(g.value));
+
   return (
     <div className="space-y-4">
       <ImageUpload
@@ -67,15 +51,32 @@ export const BandForm = ({ formData, onChange }: BandFormProps) => {
       />
 
       <div className="space-y-2">
-        <Label htmlFor="genre">Estilo musical *</Label>
+        <Label htmlFor="genre">Estilos musicales *</Label>
+        {selectedGenres.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {selectedGenres.map((g) => (
+              <Badge key={g} variant="secondary" className="gap-1 pr-1">
+                {genreLabel(g)}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveGenre(g)}
+                  className="ml-0.5 rounded-full hover:bg-muted p-0.5"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+            ))}
+          </div>
+        )}
         <Autocomplete
-          options={musicGenres}
-          value={formData.genre || ""}
-          onValueChange={(value) => onChange("genre", value)}
-          placeholder="Selecciona el género musical"
+          options={availableGenres.map((g) => ({ value: g.value, label: g.label }))}
+          value=""
+          onValueChange={handleAddGenre}
+          placeholder="Agregar estilo musical..."
           searchPlaceholder="Buscar género..."
           emptyMessage="No se encontró ese género"
         />
+        <p className="text-xs text-muted-foreground">Podés seleccionar varios estilos musicales</p>
       </div>
 
       <div className="space-y-2">

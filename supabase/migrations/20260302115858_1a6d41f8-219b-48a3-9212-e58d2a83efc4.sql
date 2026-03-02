@@ -1,0 +1,1 @@
+ALTER TABLE public.profile_details ADD COLUMN genres text[] DEFAULT '{}'::text[];

@@ -156,6 +156,7 @@ const Asociate = () => {
     venue_type: "",
     capacity: "",
     genre: "",
+    genres: [] as string[],
     formation_date: "",
     producer_instagram: "",
     recorded_at: "",
@@ -256,7 +257,8 @@ const Asociate = () => {
     switch (profileType) {
       case "agrupacion_musical":
         profileSpecificSchema = {
-          genre: z.string().min(1, "Debes seleccionar el género musical de la banda"),
+          genre: z.string().optional().or(z.literal("")),
+          genres: z.array(z.string()).min(1, "Debes seleccionar al menos un estilo musical"),
           formation_date: z.string().optional().or(z.literal("")),
           producer_instagram: z.string().max(100).optional().or(z.literal("")),
           recorded_at: z.string().max(200, "El nombre del estudio/productor es muy largo").optional().or(z.literal("")),
@@ -485,6 +487,7 @@ const Asociate = () => {
         venue_type: formData.venue_type,
         capacity: formData.capacity,
         genre: formData.genre,
+        genres: formData.genres,
         formation_date: formData.formation_date,
         producer_instagram: formData.producer_instagram,
         recorded_at: formData.recorded_at,

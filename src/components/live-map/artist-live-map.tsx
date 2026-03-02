@@ -78,6 +78,7 @@ interface ProfileOnMap {
   display_name: string;
   avatar_url: string | null;
   ciudad: string;
+  provincia: string | null;
   pais: string;
   latitude: number | null;
   longitude: number | null;
@@ -139,7 +140,7 @@ export function ArtistLiveMap() {
   const fetchProfiles = useCallback(async () => {
     const { data, error } = await supabase
       .from("profile_details")
-      .select("id, user_id, display_name, avatar_url, ciudad, pais, latitude, longitude, profile_type, bio")
+      .select("id, user_id, display_name, avatar_url, ciudad, provincia, pais, latitude, longitude, profile_type, bio")
       .not("ciudad", "is", null)
       .not("display_name", "is", null);
 
@@ -184,6 +185,7 @@ export function ArtistLiveMap() {
       .filter((p) =>
         p.display_name?.toLowerCase().includes(q) ||
         p.ciudad?.toLowerCase().includes(q) ||
+        p.provincia?.toLowerCase().includes(q) ||
         p.pais?.toLowerCase().includes(q) ||
         (p.profile_type && formatProfileType(p.profile_type).toLowerCase().includes(q))
       )
@@ -191,7 +193,7 @@ export function ArtistLiveMap() {
       .map((p) => ({
         id: p.user_id,
         name: p.display_name,
-        city: `${p.ciudad}, ${p.pais}`,
+        city: [p.ciudad, p.provincia, p.pais].filter(Boolean).join(", "),
         avatarUrl: p.avatar_url,
       }));
   }, [profiles, searchQuery]);
@@ -254,7 +256,7 @@ export function ArtistLiveMap() {
       }).setHTML(`
         <div style="padding:8px;font-family:inherit;">
           <strong style="color:#e2e8f0;">${profile.display_name}</strong>
-          <p style="color:#94a3b8;margin:2px 0;font-size:12px;">${profile.ciudad}, ${profile.pais}</p>
+          <p style="color:#94a3b8;margin:2px 0;font-size:12px;">${[profile.ciudad, profile.provincia, profile.pais].filter(Boolean).join(", ")}</p>
           ${profile.profile_type ? `<p style="color:#a78bfa;font-size:11px;">${formatProfileType(profile.profile_type)}</p>` : ""}
         </div>
       `);
@@ -329,8 +331,7 @@ export function ArtistLiveMap() {
                     {selectedProfile.profile.display_name}
                   </h3>
                   <p className="text-xs text-muted-foreground">
-                    {selectedProfile.profile.ciudad},{" "}
-                    {selectedProfile.profile.pais}
+                    {[selectedProfile.profile.ciudad, selectedProfile.profile.provincia, selectedProfile.profile.pais].filter(Boolean).join(", ")}
                   </p>
                 </div>
               </div>

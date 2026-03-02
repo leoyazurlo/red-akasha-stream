@@ -35,7 +35,7 @@ export function MapSearch({ results, onSelect, searchQuery, onSearchChange }: Ma
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <Input
-          placeholder="Buscar artista, ciudad o país..."
+          placeholder="Buscar artista, ciudad, provincia o país..."
           value={searchQuery}
           onChange={(e) => {
             onSearchChange(e.target.value);

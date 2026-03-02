@@ -10,7 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, AlertCircle, Eye, FileText, ChevronDown } from "lucide-react";
+import { Loader2, AlertCircle, Eye, FileText, ChevronDown, Tv, Users } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Collapsible,
@@ -40,6 +41,7 @@ interface ProfileOption {
 }
 
 interface FormData {
+  destination: string;
   content_type: string;
   title: string;
   description: string;
@@ -67,6 +69,7 @@ interface FormData {
 }
 
 const initialFormData: FormData = {
+  destination: "on_demand",
   content_type: "",
   title: "",
   description: "",
@@ -333,6 +336,7 @@ const UploadContent = () => {
          audio_url: formData.audio_url || null,
          photo_url: formData.photo_url || null,
          thumbnail_url: thumbnailUrl,
+        destination: formData.destination,
         status: 'pending',
         is_free: formData.is_free,
         price: formData.is_free ? 0 : parseFloat(formData.price) || 0,
@@ -467,6 +471,47 @@ const UploadContent = () => {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Destination Selector */}
+                  <div className="space-y-3">
+                    <Label className="text-base font-semibold">¿Dónde publicar este contenido? *</Label>
+                    <RadioGroup
+                      value={formData.destination}
+                      onValueChange={(value) => updateFormData('destination', value)}
+                      className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+                    >
+                      <Label
+                        htmlFor="dest-ondemand"
+                        className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                          formData.destination === 'on_demand'
+                            ? 'border-primary bg-primary/10 shadow-[0_0_15px_hsl(var(--primary)/0.3)]'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <RadioGroupItem value="on_demand" id="dest-ondemand" />
+                        <Tv className="h-5 w-5 text-primary" />
+                        <div>
+                          <p className="font-medium">On Demand</p>
+                          <p className="text-xs text-muted-foreground">Catálogo de contenido bajo demanda</p>
+                        </div>
+                      </Label>
+                      <Label
+                        htmlFor="dest-artists"
+                        className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                          formData.destination === 'artists'
+                            ? 'border-primary bg-primary/10 shadow-[0_0_15px_hsl(var(--primary)/0.3)]'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <RadioGroupItem value="artists" id="dest-artists" />
+                        <Users className="h-5 w-5 text-primary" />
+                        <div>
+                          <p className="font-medium">Artistas</p>
+                          <p className="text-xs text-muted-foreground">Sección de artistas y creadores</p>
+                        </div>
+                      </Label>
+                    </RadioGroup>
+                  </div>
+
                   {/* Content Type */}
                   <div className="space-y-2">
                     <Label htmlFor="content_type">{t('upload.contentType')} *</Label>

@@ -207,7 +207,6 @@ const VideoDetail = () => {
   const [videoCurrentTime, setVideoCurrentTime] = useState(0);
   const [previewLimitReached, setPreviewLimitReached] = useState(false);
   const [videoPlaybackError, setVideoPlaybackError] = useState(false);
-  const [audioIncompatible, setAudioIncompatible] = useState(false);
 
   const PREVIEW_LIMIT_SECONDS = 40;
 
@@ -608,22 +607,6 @@ const VideoDetail = () => {
                       )}
                     </div>
                   ) : isPlaying && video.video_url && !previewLimitReached ? (
-                    <>
-                    {audioIncompatible && (
-                      <div className="absolute top-2 left-2 right-2 z-30 bg-yellow-500/90 text-black text-xs px-3 py-2 rounded-md flex items-center gap-2">
-                        <VolumeX className="w-4 h-4 flex-shrink-0" />
-                        <span>
-                          Este archivo (.mov/.mkv) puede reproducirse sin audio en tu navegador. 
-                          Para mejor experiencia, descargá el video o pedí al creador que suba en formato <strong>MP4</strong> o <strong>WebM</strong>.
-                        </span>
-                        {video.video_url && (
-                          <a href={video.video_url} target="_blank" rel="noopener noreferrer"
-                            className="ml-auto flex-shrink-0 underline font-semibold">
-                            Descargar
-                          </a>
-                        )}
-                      </div>
-                    )}
                     <video
                       ref={videoPlayerRef}
                       src={video.video_url}
@@ -645,35 +628,13 @@ const VideoDetail = () => {
                       }}
                       onLoadedMetadata={() => {
                         if (videoPlayerRef.current) {
-                          const vid = videoPlayerRef.current;
-                          vid.volume = 1;
-                          vid.muted = false;
+                          videoPlayerRef.current.volume = 1;
+                          videoPlayerRef.current.muted = false;
                           const tParam = searchParams.get('t') || searchParams.get('start');
                           if (tParam) {
-                            vid.currentTime = Number(tParam);
+                            videoPlayerRef.current.currentTime = Number(tParam);
                           }
-                          vid.play().then(() => {
-                            // Audio incompatibility watchdog: detect video playing but no audio track decoded
-                            setTimeout(() => {
-                              if (vid && !vid.paused && vid.currentTime > 0) {
-                                // Check if the video has audio tracks
-                                const mediaEl = vid as HTMLVideoElement & { audioTracks?: { length: number } };
-                                if (mediaEl.audioTracks && mediaEl.audioTracks.length === 0) {
-                                  setAudioIncompatible(true);
-                                }
-                                // Also check via video_url extension for known problematic formats
-                                const url = video?.video_url || '';
-                                const ext = url.split('.').pop()?.toLowerCase()?.split('?')[0] || '';
-                                if (['mov', 'mkv'].includes(ext)) {
-                                  setAudioIncompatible(true);
-                                }
-                              }
-                            }, 1500);
-                          }).catch((err) => {
-                            console.error('Playback failed:', err);
-                            // If autoplay blocked by policy, show a click-to-play fallback
-                            setIsPlaying(false);
-                          });
+                          videoPlayerRef.current.play().catch(console.error);
                         }
                       }}
                       onEnded={() => {
@@ -695,7 +656,6 @@ const VideoDetail = () => {
                         }
                       }}
                     />
-                    </>
                   ) : previewLimitReached ? (
                     <div className="w-full h-full flex flex-col items-center justify-center bg-black/90 p-10 text-center">
                       <Lock className="w-24 h-24 text-cyan-400 mb-6 drop-shadow-[0_0_20px_hsl(180_100%_50%/0.7)]" />

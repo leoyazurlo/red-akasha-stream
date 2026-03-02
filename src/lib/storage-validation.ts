@@ -17,13 +17,13 @@ export const FILE_COUNT_LIMITS = {
 
 export const ALLOWED_FILE_TYPES = {
   IMAGE: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'],
-  VIDEO: ['video/mp4', 'video/webm', 'video/ogg'],
+  VIDEO: ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime', 'video/x-matroska'],
   AUDIO: ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/aac', 'audio/x-m4a', 'audio/m4a', 'audio/flac', 'audio/x-flac', 'audio/webm', 'audio/x-wav'],
 } as const;
 
 export const FILE_EXTENSIONS = {
   IMAGE: ['JPG', 'JPEG', 'PNG', 'WEBP', 'GIF'],
-  VIDEO: ['MP4', 'WEBM', 'OGG'],
+  VIDEO: ['MP4', 'WEBM', 'OGG', 'MOV', 'MKV'],
   AUDIO: ['MP3', 'WAV', 'OGG', 'AAC', 'M4A', 'FLAC'],
 } as const;
 

@@ -197,8 +197,8 @@ export const VideoUpload = ({ label, value, onChange, onFileSelect, onMetadataEx
       <Alert className="border-primary/20 bg-primary/5">
         <AlertCircle className="h-4 w-4 text-primary" />
         <AlertDescription className="text-xs">
-          <strong>Formatos aceptados:</strong> MP4, WebM (máx. 1GB).{' '}
-          <span className="text-muted-foreground">Solo se aceptan archivos <strong className="text-foreground">MP4</strong> y <strong className="text-foreground">WebM</strong> para garantizar la reproducción con audio en todos los navegadores y dispositivos. Los formatos MOV y MKV ya no están soportados.</span>
+          <strong>Formatos aceptados:</strong> MP4, WebM, MOV, MKV (máx. 1GB).{' '}
+          <span className="text-muted-foreground">Para garantizar la reproducción en todos los navegadores y dispositivos, te recomendamos subir tus videos en formato <strong className="text-foreground">MP4</strong> o <strong className="text-foreground">WebM</strong>. Los archivos MOV y MKV se almacenarán correctamente, pero algunos navegadores podrían no reproducirlos de forma nativa.</span>
         </AlertDescription>
       </Alert>
 
@@ -243,7 +243,7 @@ export const VideoUpload = ({ label, value, onChange, onFileSelect, onMetadataEx
               <>
                 <Video className="w-10 h-10 text-muted-foreground mb-2" />
                 <p className="text-sm text-muted-foreground">Haz clic para seleccionar un video</p>
-                <p className="text-xs text-muted-foreground mt-1">MP4, WebM (máx. 1GB)</p>
+                <p className="text-xs text-muted-foreground mt-1">MP4, WebM, MOV, MKV (máx. 1GB)</p>
               </>
             )}
           </div>
@@ -252,7 +252,7 @@ export const VideoUpload = ({ label, value, onChange, onFileSelect, onMetadataEx
         <Input
           ref={fileInputRef}
           type="file"
-          accept="video/mp4,video/webm,.mp4,.webm"
+          accept="video/mp4,video/webm,video/quicktime,video/x-matroska,.mp4,.webm,.mov,.mkv,.avi"
           onChange={handleFileChange}
           className="hidden"
           disabled={loading}

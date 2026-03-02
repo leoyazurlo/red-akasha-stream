@@ -75,6 +75,7 @@ export const OnDemandPlayer = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [previewLimitReached, setPreviewLimitReached] = useState(false);
+  const [audioIncompatible, setAudioIncompatible] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -388,7 +389,25 @@ export const OnDemandPlayer = ({
                       onError={() => {
                         setIsPlaying(false);
                       }}
+                      onLoadedMetadata={() => {
+                        if (videoRef.current) {
+                          videoRef.current.volume = 1;
+                          videoRef.current.muted = false;
+                          // Detect problematic formats
+                          const url = mediaUrl || '';
+                          const ext = url.split('.').pop()?.toLowerCase()?.split('?')[0] || '';
+                          if (['mov', 'mkv'].includes(ext)) {
+                            setAudioIncompatible(true);
+                          }
+                        }
+                      }}
                     />
+                    {audioIncompatible && (
+                      <div className="absolute bottom-20 left-2 right-2 z-30 bg-yellow-500/90 text-black text-xs px-3 py-2 rounded-md flex items-center gap-2">
+                        <VolumeX className="w-4 h-4 flex-shrink-0" />
+                        <span>Este archivo puede reproducirse sin audio en tu navegador. Formato recomendado: <strong>MP4</strong> o <strong>WebM</strong>.</span>
+                      </div>
+                    )}
                   </AspectRatio>
                 ) : (
                   <div className="relative">

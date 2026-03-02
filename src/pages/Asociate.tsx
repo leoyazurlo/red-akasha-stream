@@ -399,7 +399,7 @@ const Asociate = () => {
       return;
     }
 
-    // Check profile completeness (60% minimum)
+    // Check profile completeness (70% minimum)
     const completeness = calculateProfileCompleteness(
       selectedProfiles[0] || "",
       {
@@ -413,7 +413,7 @@ const Asociate = () => {
     if (!completeness.meetsMinimum) {
       toast({
         title: "Perfil incompleto",
-        description: `Tu perfil tiene ${completeness.percentage}% de completitud. Necesitás al menos 60% para enviar la solicitud. Revisá los items pendientes.`,
+        description: `Tu perfil tiene ${completeness.percentage}% de completitud. Necesitás al menos 70% para enviar la solicitud. Revisá los items pendientes.`,
         variant: "destructive",
       });
       return;

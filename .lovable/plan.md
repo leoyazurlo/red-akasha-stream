@@ -1,20 +1,10 @@
 
 
-## Plan: Agregar búsqueda por provincia en el mapa
+## Situación
 
-### Cambio
+El código ya está implementado correctamente en `src/pages/UploadContent.tsx`. El selector de destino (On Demand / Artistas) y los formatos específicos para artistas ya están en el archivo.
 
-Agregar el campo `provincia` al flujo de datos y búsqueda del mapa. Actualmente se busca por `display_name`, `ciudad`, `pais` y `profile_type`, pero no por `provincia` aunque el campo existe en la base de datos.
+Estás actualmente en la página de inicio (`/`). Para ver el cambio, necesitás navegar a la página de **Subir Contenido** (`/subir-contenido`).
 
-### Archivos a modificar
-
-**`src/components/live-map/artist-live-map.tsx`**:
-1. Agregar `provincia` al tipo `ProfileOnMap`
-2. Incluir `provincia` en la consulta `select` de Supabase
-3. Agregar `p.provincia?.toLowerCase().includes(q)` al filtro de búsqueda
-4. Mostrar la provincia en los resultados de búsqueda (ciudad, provincia, país) en lugar de solo ciudad y país
-5. Actualizar el popup del marcador para incluir provincia cuando exista
-
-**`src/components/live-map/map-search.tsx`**:
-- Actualizar el placeholder a `"Buscar artista, ciudad, provincia o país..."`
+No se requieren cambios de código -- la funcionalidad ya está implementada. Solo hace falta probarla navegando a la ruta correcta.
 

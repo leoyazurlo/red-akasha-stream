@@ -1,24 +1,20 @@
 
 
-## Plan: Corregir buscador del mapa para buscar por ciudad, país y tipo de perfil
+## Plan: Agregar búsqueda por provincia en el mapa
 
-### Problema
+### Cambio
 
-El buscador del mapa solo busca por nombre del artista (`display_name`). Si escribís "MORON" o "ARGENTINA", no encuentra nada porque no busca en los campos `ciudad`, `pais` ni `profile_type`.
-
-### Solución
-
-Modificar el filtro de búsqueda en `src/components/live-map/artist-live-map.tsx` para que busque en múltiples campos:
-
-- **display_name** (nombre del artista)
-- **ciudad** (ciudad)
-- **pais** (país)
-- **profile_type** (tipo de perfil, usando la etiqueta legible)
-
-También actualizar el placeholder del input en `src/components/live-map/map-search.tsx` para indicar que se puede buscar por ciudad o país: "Buscar artista, ciudad o país..."
+Agregar el campo `provincia` al flujo de datos y búsqueda del mapa. Actualmente se busca por `display_name`, `ciudad`, `pais` y `profile_type`, pero no por `provincia` aunque el campo existe en la base de datos.
 
 ### Archivos a modificar
 
-- `src/components/live-map/artist-live-map.tsx` — Expandir el filtro `searchResults` para incluir ciudad, país y tipo
-- `src/components/live-map/map-search.tsx` — Actualizar placeholder del input
+**`src/components/live-map/artist-live-map.tsx`**:
+1. Agregar `provincia` al tipo `ProfileOnMap`
+2. Incluir `provincia` en la consulta `select` de Supabase
+3. Agregar `p.provincia?.toLowerCase().includes(q)` al filtro de búsqueda
+4. Mostrar la provincia en los resultados de búsqueda (ciudad, provincia, país) en lugar de solo ciudad y país
+5. Actualizar el popup del marcador para incluir provincia cuando exista
+
+**`src/components/live-map/map-search.tsx`**:
+- Actualizar el placeholder a `"Buscar artista, ciudad, provincia o país..."`
 

@@ -118,7 +118,7 @@ const UploadContent = () => {
   const [promoters, setPromoters] = useState<ProfileOption[]>([]);
    
 
-  const contentTypes = useMemo(() => [
+  const onDemandContentTypes = useMemo(() => [
     { value: "video_musical_vivo", label: t('upload.contentTypes.video_musical_vivo'), defaultPrice: "9.99" },
     { value: "video_clip", label: t('upload.contentTypes.video_clip'), defaultPrice: "4.99" },
     { value: "podcast", label: t('upload.contentTypes.podcast'), defaultPrice: "2.99" },
@@ -126,6 +126,18 @@ const UploadContent = () => {
     { value: "corto", label: t('upload.contentTypes.corto'), defaultPrice: "3.99" },
     { value: "pelicula", label: t('upload.contentTypes.pelicula'), defaultPrice: "12.99" }
   ], [t]);
+
+  const artistContentTypes = useMemo(() => [
+    { value: "musico", label: "Músicos", defaultPrice: "0" },
+    { value: "percusion", label: "Percusión", defaultPrice: "0" },
+    { value: "agrupacion_musical", label: "Agrupación Musical", defaultPrice: "0" },
+    { value: "dj", label: "DJs", defaultPrice: "0" },
+    { value: "vj", label: "VJs", defaultPrice: "0" },
+    { value: "danza", label: "Danza", defaultPrice: "0" },
+    { value: "arte_digital", label: "Fotografía Digital", defaultPrice: "0" },
+  ], []);
+
+  const contentTypes = formData.destination === 'artists' ? artistContentTypes : onDemandContentTypes;
 
   const podcastCategories = useMemo(() => [
     { value: "produccion", label: t('upload.podcastCategories.produccion') },
@@ -476,7 +488,7 @@ const UploadContent = () => {
                     <Label className="text-base font-semibold">¿Dónde publicar este contenido? *</Label>
                     <RadioGroup
                       value={formData.destination}
-                      onValueChange={(value) => updateFormData('destination', value)}
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, destination: value, content_type: '' }))}
                       className="grid grid-cols-1 sm:grid-cols-2 gap-3"
                     >
                       <Label

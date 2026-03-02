@@ -1,0 +1,1 @@
+ALTER TABLE public.content_uploads ADD COLUMN destination text NOT NULL DEFAULT 'on_demand';

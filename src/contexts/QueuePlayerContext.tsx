@@ -132,6 +132,8 @@ export const QueuePlayerProvider = ({ children }: { children: ReactNode }) => {
     const url = currentItem.video_url || currentItem.audio_url;
     if (url) {
       videoRef.current.src = url;
+      videoRef.current.volume = 1;
+      videoRef.current.muted = false;
       if (isPlaying) {
         videoRef.current.play().catch(console.error);
       }

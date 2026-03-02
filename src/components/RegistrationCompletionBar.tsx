@@ -14,7 +14,7 @@ export const RegistrationCompletionBar = ({ profileType, formData }: Registratio
     [profileType, formData]
   );
 
-  const progressColor = result.percentage >= 60
+  const progressColor = result.percentage >= 70
     ? "bg-emerald-500"
     : result.percentage >= 40
     ? "bg-amber-500"
@@ -43,21 +43,21 @@ export const RegistrationCompletionBar = ({ profileType, formData }: Registratio
         {/* Threshold marker at 60% */}
         <div
           className="absolute top-0 h-3 w-0.5 bg-foreground/60"
-          style={{ left: "60%" }}
-          title="Mínimo requerido: 60%"
+          style={{ left: "70%" }}
+          title="Mínimo requerido: 70%"
         />
         <div
           className="absolute -top-5 text-[10px] text-muted-foreground font-medium"
-          style={{ left: "60%", transform: "translateX(-50%)" }}
+          style={{ left: "70%", transform: "translateX(-50%)" }}
         >
-          60% mín.
+          70% mín.
         </div>
       </div>
 
       <p className="text-xs text-muted-foreground">
         {result.meetsMinimum
           ? "✅ Tu perfil cumple con el mínimo requerido para enviar la solicitud."
-          : "Para enviar tu solicitud necesitás alcanzar al menos el 60% de completitud."}
+          : "Para enviar tu solicitud necesitás alcanzar al menos el 70% de completitud."}
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

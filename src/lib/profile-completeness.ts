@@ -203,7 +203,7 @@ export function calculateProfileCompleteness(
     earnedPoints,
     totalPoints,
     items,
-    meetsMinimum: percentage >= 60,
+    meetsMinimum: percentage >= 70,
     missingItems,
   };
 }

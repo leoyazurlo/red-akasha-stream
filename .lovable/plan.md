@@ -1,35 +1,24 @@
 
 
-## Plan: Subir el umbral mínimo a 70% y verificar el formulario
+## Plan: Corregir buscador del mapa para buscar por ciudad, país y tipo de perfil
 
-### Cambios necesarios
+### Problema
 
-**1. Cambiar el umbral de 60% a 70%** en `src/lib/profile-completeness.ts`:
-- Línea que dice `meetsMinimum: percentage >= 60` → cambiar a `percentage >= 70`
+El buscador del mapa solo busca por nombre del artista (`display_name`). Si escribís "MORON" o "ARGENTINA", no encuentra nada porque no busca en los campos `ciudad`, `pais` ni `profile_type`.
 
-**2. Actualizar las referencias visuales al 60%** en `src/components/RegistrationCompletionBar.tsx`:
-- El marcador visual que dice "60% mín." → "70% mín."
-- La posición del marcador de `left: 60%` → `left: 70%`
-- El texto que menciona "alcanzar al menos el 60%" → "70%"
+### Solución
 
-**3. Actualizar la validación en `src/pages/Asociate.tsx`**:
-- El mensaje de toast que dice "60%" → "70%"
+Modificar el filtro de búsqueda en `src/components/live-map/artist-live-map.tsx` para que busque en múltiples campos:
 
-### Impacto por tipo de perfil
+- **display_name** (nombre del artista)
+- **ciudad** (ciudad)
+- **pais** (país)
+- **profile_type** (tipo de perfil, usando la etiqueta legible)
 
-Con el nuevo umbral del 70%:
-
-```text
-Perfil              Total pts   Necesita (70%)
-─────────────────── ─────────── ──────────────
-Músico/DJ/Banda     100 pts     70 pts
-Fan (amante música)  60 pts     42 pts
-Perfil sin campos    90 pts     63 pts
-  específicos
-```
+También actualizar el placeholder del input en `src/components/live-map/map-search.tsx` para indicar que se puede buscar por ciudad o país: "Buscar artista, ciudad o país..."
 
 ### Archivos a modificar
-- `src/lib/profile-completeness.ts` — umbral lógico
-- `src/components/RegistrationCompletionBar.tsx` — indicadores visuales
-- `src/pages/Asociate.tsx` — mensaje de validación
+
+- `src/components/live-map/artist-live-map.tsx` — Expandir el filtro `searchResults` para incluir ciudad, país y tipo
+- `src/components/live-map/map-search.tsx` — Actualizar placeholder del input
 

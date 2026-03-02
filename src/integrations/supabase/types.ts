@@ -2518,6 +2518,7 @@ export type Database = {
           first_name: string | null
           formation_date: string | null
           genre: Database["public"]["Enums"]["music_genre"] | null
+          genres: string[] | null
           id: string
           instagram: string | null
           last_name: string | null
@@ -2553,6 +2554,7 @@ export type Database = {
           first_name?: string | null
           formation_date?: string | null
           genre?: Database["public"]["Enums"]["music_genre"] | null
+          genres?: string[] | null
           id?: string
           instagram?: string | null
           last_name?: string | null
@@ -2588,6 +2590,7 @@ export type Database = {
           first_name?: string | null
           formation_date?: string | null
           genre?: Database["public"]["Enums"]["music_genre"] | null
+          genres?: string[] | null
           id?: string
           instagram?: string | null
           last_name?: string | null

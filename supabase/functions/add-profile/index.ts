@@ -108,7 +108,9 @@ serve(async (req) => {
       profileData.venue_type = requestData.venue_type ? sanitizeString(requestData.venue_type, 100) : null;
       profileData.capacity = requestData.capacity ? parseInt(String(requestData.capacity)) : null;
     } else if (requestData.profile_type === "agrupacion_musical") {
-      profileData.genre = requestData.genre ? sanitizeString(requestData.genre, 100) : null;
+      const genres = Array.isArray(requestData.genres) ? requestData.genres.map((g: string) => sanitizeString(g, 100)) : [];
+      profileData.genre = genres[0] || (requestData.genre ? sanitizeString(requestData.genre, 100) : null);
+      profileData.genres = genres;
       profileData.formation_date = requestData.formation_date || null;
       profileData.producer_instagram = requestData.producer_instagram ? sanitizeString(requestData.producer_instagram, 500) : null;
       profileData.recorded_at = requestData.recorded_at ? sanitizeString(requestData.recorded_at, 200) : null;

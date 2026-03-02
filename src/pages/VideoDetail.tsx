@@ -611,7 +611,6 @@ const VideoDetail = () => {
                       ref={videoPlayerRef}
                       src={video.video_url}
                       controls={!isPreviewMode}
-                      autoPlay
                       playsInline
                       loop={loopMode === 'one' && !isPreviewMode}
                       className="w-full h-full"
@@ -628,9 +627,14 @@ const VideoDetail = () => {
                         }
                       }}
                       onLoadedMetadata={() => {
-                        const tParam = searchParams.get('t') || searchParams.get('start');
-                        if (tParam && videoPlayerRef.current) {
-                          videoPlayerRef.current.currentTime = Number(tParam);
+                        if (videoPlayerRef.current) {
+                          videoPlayerRef.current.volume = 1;
+                          videoPlayerRef.current.muted = false;
+                          const tParam = searchParams.get('t') || searchParams.get('start');
+                          if (tParam) {
+                            videoPlayerRef.current.currentTime = Number(tParam);
+                          }
+                          videoPlayerRef.current.play().catch(console.error);
                         }
                       }}
                       onEnded={() => {

@@ -13,13 +13,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { notifyError } from "@/lib/notifications";
 import { useFavorites } from "@/hooks/useFavorites";
-import { Play, Search, Loader2, Video, ListMusic, ArrowUpDown, Clock, TrendingUp, SortAsc, PlayCircle } from "lucide-react";
+import { Play, Search, Loader2, Video, ListMusic, Clock, TrendingUp, SortAsc, PlayCircle } from "lucide-react";
 import { AddToPlaylistDialog } from "@/components/AddToPlaylistDialog";
 import { useQueuePlayer, QueueItem } from "@/contexts/QueuePlayerContext";
 import { cn } from "@/lib/utils";
 import { CategoryFilter } from "@/components/ondemand/CategoryFilter";
 import { ContentGrid } from "@/components/ondemand/ContentGrid";
 import { FloatingQueuePlayer } from "@/components/ondemand/FloatingQueuePlayer";
+import { CountrySelector, latinAmericanCountries, countryNameToCode } from "@/components/CountrySelector";
+import { useCountryDetection } from "@/hooks/useCountryDetection";
 
 interface Content {
   id: string;
@@ -72,7 +74,10 @@ const OnDemand = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { country: detectedCountry, isLoading: countryLoading } = useCountryDetection();
+  const [selectedCountry, setSelectedCountry] = useState<string>("");
   const [contents, setContents] = useState<Content[]>([]);
+  const [uploaderCountries, setUploaderCountries] = useState<Record<string, string>>({});
   const [continueWatching, setContinueWatching] = useState<PlaybackHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [checkingProfile, setCheckingProfile] = useState(true);
@@ -84,6 +89,13 @@ const OnDemand = () => {
   const [selectedContentId, setSelectedContentId] = useState<string | null>(null);
   const { toggleFavorite, isFavorite, loading: favLoading } = useFavorites();
   const { setQueue, isOpen: queueOpen } = useQueuePlayer();
+
+  // Set country from detection
+  useEffect(() => {
+    if (!countryLoading && detectedCountry.detected && !selectedCountry) {
+      setSelectedCountry(detectedCountry.countryCode);
+    }
+  }, [countryLoading, detectedCountry, selectedCountry]);
 
   useEffect(() => {
     checkUserProfile();
@@ -121,7 +133,27 @@ const OnDemand = () => {
         .eq('status', 'approved')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      setContents(data || []);
+      const contentData = data || [];
+      setContents(contentData);
+
+      // Fetch uploader countries
+      const uploaderIds = [...new Set(contentData.map(c => c.uploader_id))];
+      if (uploaderIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profile_details')
+          .select('user_id, pais')
+          .in('user_id', uploaderIds);
+        if (profiles) {
+          const countryMap: Record<string, string> = {};
+          profiles.forEach(p => {
+            if (p.pais) {
+              const code = countryNameToCode[p.pais.toLowerCase()] || '';
+              if (code) countryMap[p.user_id] = code;
+            }
+          });
+          setUploaderCountries(countryMap);
+        }
+      }
     } catch (error) {
       console.error('Error fetching content:', error);
       notifyError('Error al cargar contenido', error instanceof Error ? error : undefined);
@@ -153,6 +185,11 @@ const OnDemand = () => {
   const filteredContents = useMemo(() => {
     let filtered = [...contents];
 
+    // Country filter
+    if (selectedCountry) {
+      filtered = filtered.filter(content => uploaderCountries[content.uploader_id] === selectedCountry);
+    }
+
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(content =>
@@ -182,7 +219,7 @@ const OnDemand = () => {
     }
 
     return filtered;
-  }, [contents, searchTerm, filterType, sortBy]);
+  }, [contents, searchTerm, filterType, sortBy, selectedCountry, uploaderCountries]);
 
   const freeContents = useMemo(() => filteredContents.filter(c => c.is_free), [filteredContents]);
   const paidContents = useMemo(() => filteredContents.filter(c => !c.is_free), [filteredContents]);
@@ -303,9 +340,15 @@ const OnDemand = () => {
             </div>
           </div>
 
-          {/* Barra unificada: Search + Filters + Sort */}
+          {/* Barra unificada: Country + Search + Filters + Sort */}
           <div className="mb-8 space-y-3 rounded-xl border border-border/50 bg-card/30 backdrop-blur-sm p-4">
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+              {/* Country Selector */}
+              <CountrySelector
+                value={selectedCountry}
+                onValueChange={setSelectedCountry}
+                isLoading={countryLoading}
+              />
               {/* Search */}
               <div className="relative flex-1 max-w-sm">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -367,17 +410,17 @@ const OnDemand = () => {
                 <p className="text-muted-foreground font-medium">
                   {searchTerm
                     ? `No se encontró contenido para "${searchTerm}"`
-                    : 'No hay contenido en esta categoría'}
+                    : 'No hay contenido en esta categoría para este país'}
                 </p>
                 <p className="text-sm text-muted-foreground/70 mt-1">
-                  Intenta con otra búsqueda o explora todas las categorías
+                  Intenta con otra búsqueda, país o categoría
                 </p>
               </div>
-              {filterType !== "all" && (
+              {(filterType !== "all" || selectedCountry) && (
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => { setFilterType("all"); setSearchTerm(""); }}
+                  onClick={() => { setFilterType("all"); setSearchTerm(""); setSelectedCountry(""); }}
                   className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
                 >
                   Ver todo el contenido
@@ -385,7 +428,7 @@ const OnDemand = () => {
               )}
             </div>
           ) : (
-            <div className="space-y-10 animate-fade-in" key={`${filterType}-${sortBy}-${searchTerm}`}>
+            <div className="space-y-10 animate-fade-in" key={`${filterType}-${sortBy}-${searchTerm}-${selectedCountry}`}>
               {/* Continue Watching */}
               {user && continueWatching.length > 0 && (
                 <section>

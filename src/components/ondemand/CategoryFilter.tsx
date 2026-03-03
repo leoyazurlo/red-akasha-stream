@@ -17,6 +17,7 @@ interface CategoryFilterProps {
 }
 
 const categories = [
+  { value: "all", icon: PlayCircle, label: "Todos" },
   { value: "video_musical_vivo", icon: Music2, label: "Video Musical en Vivo" },
   { value: "video_clip", icon: Video, label: "Video Clip" },
   { value: "podcast", icon: Mic2, label: "Podcast" },
@@ -29,39 +30,37 @@ export const CategoryFilter = ({ selectedType, onTypeChange, counts }: CategoryF
   const { t } = useTranslation();
 
   return (
-    <div className="mb-8">
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
-        {categories.map((category) => {
-          const Icon = category.icon;
-          const count = counts[category.value as keyof typeof counts] || 0;
-          const isSelected = selectedType === category.value;
-          
-          return (
-            <button
-              key={category.value}
-              onClick={() => onTypeChange(category.value)}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap transition-all duration-300",
-                "border text-sm font-medium",
-                isSelected 
-                  ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/25" 
-                  : "bg-card/50 text-muted-foreground border-border hover:border-primary/50 hover:text-foreground hover:bg-card"
-              )}
-            >
-              <Icon className="w-4 h-4" />
-              <span>{category.label}</span>
-              <span className={cn(
-                "text-xs px-1.5 py-0.5 rounded-full",
-                isSelected 
-                  ? "bg-primary-foreground/20" 
-                  : "bg-muted"
-              )}>
-                {count}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
+      {categories.map((category) => {
+        const Icon = category.icon;
+        const count = counts[category.value as keyof typeof counts] || 0;
+        const isSelected = selectedType === category.value;
+        
+        return (
+          <button
+            key={category.value}
+            onClick={() => onTypeChange(category.value)}
+            className={cn(
+              "flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all duration-300",
+              "border text-sm font-medium",
+              isSelected 
+                ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/60 shadow-[0_0_12px_hsl(180_100%_50%/0.3)]" 
+                : "bg-card/50 text-muted-foreground border-border hover:border-cyan-500/30 hover:text-foreground hover:bg-card"
+            )}
+          >
+            <Icon className="w-4 h-4" />
+            <span>{category.label}</span>
+            <span className={cn(
+              "text-xs px-1.5 py-0.5 rounded-full min-w-[1.5rem] text-center",
+              isSelected 
+                ? "bg-cyan-500/30 text-cyan-300" 
+                : "bg-muted text-muted-foreground"
+            )}>
+              {count}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 };

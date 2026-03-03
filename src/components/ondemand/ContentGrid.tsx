@@ -1,9 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Play, Video, Music, Heart, ListPlus, Info, ChevronDown, ChevronUp, Loader2, DollarSign } from "lucide-react";
+import { Play, Video, Music, Heart, ListPlus, Loader2, DollarSign, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 
@@ -27,8 +26,8 @@ interface ContentGridProps {
   subtitle: string;
   contents: Content[];
   variant: 'free' | 'premium';
-  expandedCards: Set<string>;
-  onToggleCard: (cardId: string) => void;
+  expandedCards?: Set<string>;
+  onToggleCard?: (cardId: string) => void;
   onContentClick: (content: Content) => void;
   onFavoriteClick: (contentId: string) => void;
   onPlaylistClick: (contentId: string) => void;
@@ -45,16 +44,10 @@ const formatDuration = (seconds: number | null) => {
 
 const getContentIcon = (type: string) => {
   switch (type) {
-    case 'video_musical_vivo':
-    case 'video_clip':
-    case 'corto':
-    case 'documental':
-    case 'pelicula':
-      return <Video className="w-5 h-5" />;
     case 'podcast':
       return <Music className="w-5 h-5" />;
     default:
-      return <Play className="w-5 h-5" />;
+      return <Video className="w-5 h-5" />;
   }
 };
 
@@ -63,8 +56,6 @@ export const ContentGrid = ({
   subtitle,
   contents,
   variant,
-  expandedCards,
-  onToggleCard,
   onContentClick,
   onFavoriteClick,
   onPlaylistClick,
@@ -76,211 +67,125 @@ export const ContentGrid = ({
   if (contents.length === 0) return null;
 
   const isFree = variant === 'free';
-  const accentColor = isFree ? 'cyan' : 'amber';
 
   return (
-    <section className="mb-12">
-      <div className="mb-6">
-        <div className="flex items-center gap-2 mb-2">
-          <h2 className="text-2xl font-bold">
-            <span className={cn(
-              "bg-clip-text text-transparent",
-              isFree 
-                ? "bg-gradient-to-r from-cyan-400 to-cyan-500" 
-                : "bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500"
-            )}>
-              Contenido
-            </span>
-            <span className={cn(
-              "ml-2 text-base font-medium bg-clip-text text-transparent",
-              isFree 
-                ? "bg-gradient-to-r from-cyan-400 to-cyan-500" 
-                : "bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500"
-            )}>
-              {isFree ? "gratuito" : "premium"}
-            </span>
-          </h2>
-        </div>
-        <p className="text-muted-foreground">{subtitle}</p>
+    <section>
+      <div className="mb-4">
+        <h2 className="text-lg font-semibold">
+          <span className={cn(
+            "bg-clip-text text-transparent",
+            isFree 
+              ? "bg-gradient-to-r from-cyan-400 to-cyan-500" 
+              : "bg-gradient-to-r from-amber-500 via-yellow-500 to-orange-500"
+          )}>
+            {isFree ? "Contenido gratuito" : "Contenido premium"}
+          </span>
+        </h2>
+        <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {contents.map((content, index) => {
-          const cardId = `${variant}-${content.id}`;
-          const isExpanded = expandedCards.has(cardId);
-          
-          return (
-            <Card 
-              key={content.id} 
-              className={cn(
-                "group overflow-hidden transition-all duration-300 animate-fade-in",
-                isFree 
-                  ? "border-2 border-cyan-500/40 bg-gradient-to-br from-cyan-500/5 to-cyan-600/5 backdrop-blur-sm hover:from-cyan-500/10 hover:to-cyan-600/10 hover:border-cyan-500/60"
-                  : "border-2 border-amber-500/40 bg-gradient-to-br from-amber-500/10 via-yellow-500/5 to-orange-500/10 backdrop-blur-sm hover:from-amber-500/15 hover:via-yellow-500/10 hover:to-orange-500/15 hover:border-amber-500/60"
-              )}
-              style={{
-                boxShadow: isFree 
-                  ? '0 0 15px rgba(6, 182, 212, 0.25)' 
-                  : '0 0 15px rgba(245, 158, 11, 0.25)',
-                animationDelay: `${index * 0.05}s`
-              }}
-            >
-              {/* Premium Shine Effect */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        {contents.map((content) => (
+          <div
+            key={content.id}
+            className={cn(
+              "group rounded-lg overflow-hidden transition-all duration-300 cursor-pointer",
+              "border bg-card/40 backdrop-blur-sm",
+              isFree 
+                ? "border-cyan-500/20 hover:border-cyan-500/50 hover:shadow-[0_0_20px_hsl(180_100%_50%/0.15)]" 
+                : "border-amber-500/20 hover:border-amber-500/50 hover:shadow-[0_0_20px_hsl(40_100%_50%/0.15)]",
+              "hover:scale-[1.03]"
+            )}
+            onClick={() => onContentClick(content)}
+          >
+            {/* Thumbnail */}
+            <div className="relative overflow-hidden">
+              <AspectRatio ratio={16 / 9}>
+                {content.thumbnail_url ? (
+                  <img
+                    src={content.thumbnail_url}
+                    alt={content.title}
+                    className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-muted/20">
+                    {getContentIcon(content.content_type)}
+                  </div>
+                )}
+              </AspectRatio>
+
+              {/* Premium Badge */}
               {!isFree && (
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
+                <Badge className="absolute top-1.5 left-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white border-none flex items-center gap-1 text-[10px] px-1.5 py-0.5">
+                  <DollarSign className="w-3 h-3" />
+                  {content.price} {content.currency}
+                </Badge>
               )}
-              
-              {/* Thumbnail */}
-              <div 
-                className="relative overflow-hidden bg-secondary/20 cursor-pointer m-1 rounded-md"
-                onClick={() => onContentClick(content)}
+
+              {/* Favorite Button */}
+              <Button
+                size="icon"
+                variant="secondary"
+                className={cn(
+                  "absolute top-1.5 right-1.5 w-8 h-8 transition-opacity bg-background/80 hover:bg-background z-20",
+                  isFavorite(content.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                )}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onFavoriteClick(content.id);
+                }}
+                disabled={favLoading}
               >
-                <AspectRatio ratio={16 / 9}>
-                  {content.thumbnail_url ? (
-                    <img
-                      src={content.thumbnail_url}
-                      alt={content.title}
-                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-secondary/30">
-                      {getContentIcon(content.content_type)}
-                    </div>
-                  )}
-                </AspectRatio>
-
-                {/* Premium Badge */}
-                {!isFree && (
-                  <Badge className="absolute top-2 left-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white border-none flex items-center gap-1 shadow-lg shadow-amber-500/50">
-                    <DollarSign className="w-3 h-3" />
-                    {content.price} {content.currency}
-                  </Badge>
+                {favLoading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Heart className={cn("h-3.5 w-3.5", isFavorite(content.id) && "fill-red-500 text-red-500")} />
                 )}
+              </Button>
 
-                {/* Favorite Button */}
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className={cn(
-                    "absolute top-2 right-2 transition-opacity bg-background/80 hover:bg-background z-20",
-                    isFavorite(content.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                  )}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onFavoriteClick(content.id);
-                  }}
-                  disabled={favLoading}
-                >
-                  {favLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Heart 
-                      className={cn(
-                        "h-4 w-4",
-                        isFavorite(content.id) && "fill-red-500 text-red-500"
-                      )}
-                    />
-                  )}
-                </Button>
+              {/* Add to Playlist Button */}
+              <Button
+                size="icon"
+                variant="secondary"
+                className="absolute top-1.5 right-10 w-8 h-8 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background z-20"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPlaylistClick(content.id);
+                }}
+              >
+                <ListPlus className="h-3.5 w-3.5" />
+              </Button>
 
-                {/* Add to Playlist Button */}
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="absolute top-2 right-12 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background z-20"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onPlaylistClick(content.id);
-                  }}
-                >
-                  <ListPlus className="h-4 w-4" />
-                </Button>
+              {/* Duration Badge */}
+              {content.duration && (
+                <Badge className="absolute bottom-1.5 right-1.5 bg-black/70 text-white border-none text-[10px] px-1.5 py-0.5">
+                  {formatDuration(content.duration)}
+                </Badge>
+              )}
 
-                {/* Duration Badge */}
-                {content.duration && (
-                  <Badge className="absolute bottom-2 right-2 bg-black/70 text-white border-none">
-                    {formatDuration(content.duration)}
-                  </Badge>
-                )}
-
-                {/* Play Overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100 z-10 pointer-events-none">
-                  <Play className="w-12 h-12 text-white" fill="white" />
+              {/* Play Overlay */}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100 z-10 pointer-events-none">
+                <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
+                  <Play className="w-4 h-4 text-background ml-0.5" fill="currentColor" />
                 </div>
               </div>
+            </div>
 
-              {/* Artist/Band + Title */}
-              <CardHeader className="p-4 pb-2">
-                {content.band_name && (
-                  <p className="text-sm font-medium text-foreground mb-1">{content.band_name}</p>
-                )}
-                {content.producer_name && !content.band_name && (
-                  <p className="text-sm font-medium text-foreground mb-1">{content.producer_name}</p>
-                )}
-                <CardTitle className="text-sm text-muted-foreground font-normal line-clamp-2">{content.title}</CardTitle>
-              </CardHeader>
-
-              {/* Collapsible Content */}
-              <CardContent className="p-4 pt-0">
-                <Collapsible 
-                  open={isExpanded}
-                  onOpenChange={() => onToggleCard(cardId)}
-                >
-                  <CollapsibleTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className={cn(
-                        "w-full flex items-center justify-center gap-2 text-xs",
-                        isFree 
-                          ? "text-cyan-500 hover:text-cyan-400 hover:bg-cyan-500/10" 
-                          : "text-amber-500 hover:text-amber-400 hover:bg-amber-500/10"
-                      )}
-                    >
-                      <Info className="w-3 h-3" />
-                      {isExpanded ? "Ver menos" : "Ver más información"}
-                      {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                    </Button>
-                  </CollapsibleTrigger>
-                  
-                  <CollapsibleContent className="mt-3 space-y-3 animate-accordion-down">
-                    <Badge 
-                      variant="outline" 
-                      className={cn(
-                        "w-fit",
-                        isFree ? "border-cyan-500 text-cyan-500" : "border-amber-500 text-amber-500"
-                      )}
-                    >
-                      {t(`onDemand.types.${content.content_type}`, content.content_type)}
-                    </Badge>
-                    
-                    {content.description && (
-                      <CardDescription className="text-sm">
-                        {content.description}
-                      </CardDescription>
-                    )}
-
-                    <div className={cn(
-                      "space-y-1 text-xs text-muted-foreground pt-2 border-t",
-                      isFree ? "border-cyan-500/20" : "border-amber-500/20"
-                    )}>
-                      {content.band_name && (
-                        <p>Banda: {content.band_name}</p>
-                      )}
-                      {content.producer_name && (
-                        <p>Productor: {content.producer_name}</p>
-                      )}
-                      <p className="flex items-center gap-1">
-                        <Play className="w-3 h-3" />
-                        {content.views_count} reproducciones
-                      </p>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              </CardContent>
-            </Card>
-          );
-        })}
+            {/* Info */}
+            <div className="p-3 space-y-1">
+              {(content.band_name || content.producer_name) && (
+                <p className="text-xs font-medium text-foreground truncate">
+                  {content.band_name || content.producer_name}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{content.title}</p>
+              <div className="flex items-center gap-1 text-[10px] text-muted-foreground/70 pt-0.5">
+                <Eye className="w-3 h-3" />
+                <span>{content.views_count} reproducciones</span>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </section>
   );

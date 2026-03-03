@@ -36,6 +36,8 @@ export default defineConfig(({ mode }) => ({
       clientsClaim: true,
       skipWaiting: true,
       globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
+      navigateFallback: "/index.html",
+      navigateFallbackAllowlist: [/^\/(?!api|supabase|~oauth)/],
       navigateFallbackDenylist: [/^\/~oauth/],
       runtimeCaching: [
           {

@@ -10,42 +10,33 @@ import { installWebVitalsReporter } from "./lib/performance-reporter";
 installGlobalErrorHandlers();
 installWebVitalsReporter();
 
-// One-time purge of legacy Service Worker & caches to prevent black screen
+// One-time purge of ALL Service Workers & caches to prevent black screen
 (async () => {
-  const PURGE_KEY = 'akasha_legacy_purged_v3';
+  const PURGE_KEY = 'akasha_legacy_purged_v4';
   if (!('serviceWorker' in navigator) || localStorage.getItem(PURGE_KEY)) return;
 
   try {
+    // Delete ALL caches (workbox-precache-*, google-fonts, supabase-*, akasha-*, etc.)
     const cacheNames = await caches.keys();
-    const hasLegacyCaches = cacheNames.some((n) => n.startsWith('akasha-'));
-
     const registrations = await navigator.serviceWorker.getRegistrations();
-    const legacySW = registrations.find((r) =>
-      r.active?.scriptURL?.endsWith('/sw.js')
-    );
 
-    if (!hasLegacyCaches && !legacySW) {
-      // No legacy footprint – mark done, no reload needed
+    if (cacheNames.length === 0 && registrations.length === 0) {
       localStorage.setItem(PURGE_KEY, Date.now().toString());
       return;
     }
 
-    // Purge legacy caches
-    await Promise.all(
-      cacheNames
-        .filter((n) => n.startsWith('akasha-'))
-        .map((n) => caches.delete(n))
-    );
+    await Promise.all(cacheNames.map((n) => caches.delete(n)));
 
-    // Unregister only the legacy /sw.js worker
-    if (legacySW) await legacySW.unregister();
+    // Unregister ALL Service Workers
+    for (const reg of registrations) {
+      await reg.unregister();
+    }
 
     localStorage.setItem(PURGE_KEY, Date.now().toString());
-    console.log('[App] Legacy SW & caches purged, reloading once…');
+    console.log('[App] All SW & caches purged, reloading once…');
     window.location.reload();
   } catch (e) {
-    console.warn('[App] Legacy purge failed:', e);
-    // Mark as done anyway to avoid retry loops
+    console.warn('[App] Purge failed:', e);
     localStorage.setItem(PURGE_KEY, 'error');
   }
 })();

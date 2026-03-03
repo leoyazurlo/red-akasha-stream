@@ -385,7 +385,7 @@ const OnDemand = () => {
               )}
             </div>
           ) : (
-            <div className="space-y-10">
+            <div className="space-y-10 animate-fade-in" key={`${filterType}-${sortBy}-${searchTerm}`}>
               {/* Continue Watching */}
               {user && continueWatching.length > 0 && (
                 <section>

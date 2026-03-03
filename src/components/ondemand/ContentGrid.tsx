@@ -85,17 +85,18 @@ export const ContentGrid = ({
       </div>
       
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {contents.map((content) => (
+        {contents.map((content, index) => (
           <div
             key={content.id}
             className={cn(
-              "group rounded-lg overflow-hidden transition-all duration-300 cursor-pointer",
+              "group rounded-lg overflow-hidden transition-all duration-300 cursor-pointer animate-scale-in",
               "border bg-card/40 backdrop-blur-sm",
               isFree 
                 ? "border-cyan-500/20 hover:border-cyan-500/50 hover:shadow-[0_0_20px_hsl(180_100%_50%/0.15)]" 
                 : "border-amber-500/20 hover:border-amber-500/50 hover:shadow-[0_0_20px_hsl(40_100%_50%/0.15)]",
               "hover:scale-[1.03]"
             )}
+            style={{ animationDelay: `${Math.min(index * 40, 400)}ms`, animationFillMode: 'both' }}
             onClick={() => onContentClick(content)}
           >
             {/* Thumbnail */}

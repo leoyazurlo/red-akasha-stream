@@ -62,6 +62,7 @@ const Artists = lazy(() => import("./pages/Artists"));
 const ArtistProfile = lazy(() => import("./pages/ArtistProfile"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
 const OnDemand = lazy(() => import("./pages/OnDemand"));
+const OnDemandAudio = lazy(() => import("./pages/OnDemandAudio"));
 const Favorites = lazy(() => import("./pages/Favorites"));
 const Playlists = lazy(() => import("./pages/Playlists"));
 const PlaylistDetail = lazy(() => import("./pages/PlaylistDetail"));

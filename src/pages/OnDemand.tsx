@@ -322,7 +322,7 @@ const OnDemand = () => {
                   <PlayCircle className="w-6 h-6 text-cyan-400" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-foreground">On Demand</h1>
+                  <h1 className="text-2xl font-bold text-foreground">Video On Demand</h1>
                   <p className="text-sm text-muted-foreground">
                     {contents.length > 0 
                       ? `${contents.length} contenidos disponibles`

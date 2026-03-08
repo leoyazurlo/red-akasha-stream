@@ -385,9 +385,15 @@ const UploadContent = () => {
 
       setFormData(initialFormData);
        
-       // Redirect to on-demand page after successful upload
+       // Redirect based on destination
        setTimeout(() => {
-         navigate('/on-demand');
+         if (formData.destination === 'on_demand_audio') {
+           navigate('/on-demand/audio');
+         } else if (formData.destination === 'on_demand') {
+           navigate('/on-demand/video');
+         } else {
+           navigate('/artistas');
+         }
        }, 1500);
     } catch (error: unknown) {
       console.error('Error al subir contenido:', error);

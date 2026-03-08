@@ -1,4 +1,4 @@
-import { LogOut, User, Library, Settings, Menu, X, ChevronDown, MapPin, Users } from "lucide-react";
+import { LogOut, User, Library, Settings, Menu, X, ChevronDown, MapPin, Users, Music, Video } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation, useNavigate } from "react-router-dom";

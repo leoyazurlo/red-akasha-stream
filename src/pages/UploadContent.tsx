@@ -499,21 +499,36 @@ const UploadContent = () => {
                     <RadioGroup
                       value={formData.destination}
                       onValueChange={(value) => setFormData(prev => ({ ...prev, destination: value, content_type: '' }))}
-                      className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+                      className="grid grid-cols-1 sm:grid-cols-3 gap-3"
                     >
                       <Label
-                        htmlFor="dest-ondemand"
+                        htmlFor="dest-video"
                         className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
                           formData.destination === 'on_demand'
                             ? 'border-primary bg-primary/10 shadow-[0_0_15px_hsl(var(--primary)/0.3)]'
                             : 'border-border hover:border-primary/50'
                         }`}
                       >
-                        <RadioGroupItem value="on_demand" id="dest-ondemand" />
-                        <Tv className="h-5 w-5 text-primary" />
+                        <RadioGroupItem value="on_demand" id="dest-video" />
+                        <Video className="h-5 w-5 text-primary" />
                         <div>
-                          <p className="font-medium">On Demand</p>
-                          <p className="text-xs text-muted-foreground">Catálogo de contenido bajo demanda</p>
+                          <p className="font-medium">Video On Demand</p>
+                          <p className="text-xs text-muted-foreground">Videos, clips, documentales</p>
+                        </div>
+                      </Label>
+                      <Label
+                        htmlFor="dest-audio"
+                        className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                          formData.destination === 'on_demand_audio'
+                            ? 'border-primary bg-primary/10 shadow-[0_0_15px_hsl(var(--primary)/0.3)]'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <RadioGroupItem value="on_demand_audio" id="dest-audio" />
+                        <Music className="h-5 w-5 text-primary" />
+                        <div>
+                          <p className="font-medium">Audio On Demand</p>
+                          <p className="text-xs text-muted-foreground">Música, podcasts, audio en vivo</p>
                         </div>
                       </Label>
                       <Label

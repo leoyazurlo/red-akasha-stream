@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, AlertCircle, Eye, FileText, ChevronDown, Tv, Users } from "lucide-react";
+import { Loader2, AlertCircle, Eye, FileText, ChevronDown, Tv, Users, Music, Video } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import {

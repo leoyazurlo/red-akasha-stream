@@ -159,6 +159,7 @@ const UploadContent = () => {
 
   const isVideoMusicalVivo = formData.content_type === 'video_musical_vivo';
   const isPodcast = formData.content_type === 'podcast';
+  const isAudioDestination = formData.destination === 'on_demand_audio';
 
    // Handle content type change - set default price based on type
    const handleContentTypeChange = (value: string) => {

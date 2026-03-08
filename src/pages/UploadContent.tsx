@@ -118,13 +118,19 @@ const UploadContent = () => {
   const [promoters, setPromoters] = useState<ProfileOption[]>([]);
    
 
-  const onDemandContentTypes = useMemo(() => [
+  const videoOnDemandContentTypes = useMemo(() => [
     { value: "video_musical_vivo", label: t('upload.contentTypes.video_musical_vivo'), defaultPrice: "9.99" },
     { value: "video_clip", label: t('upload.contentTypes.video_clip'), defaultPrice: "4.99" },
-    { value: "podcast", label: t('upload.contentTypes.podcast'), defaultPrice: "2.99" },
     { value: "documental", label: t('upload.contentTypes.documental'), defaultPrice: "7.99" },
     { value: "corto", label: t('upload.contentTypes.corto'), defaultPrice: "3.99" },
     { value: "pelicula", label: t('upload.contentTypes.pelicula'), defaultPrice: "12.99" }
+  ], [t]);
+
+  const audioOnDemandContentTypes = useMemo(() => [
+    { value: "podcast", label: t('upload.contentTypes.podcast'), defaultPrice: "2.99" },
+    { value: "musica", label: "Música", defaultPrice: "1.99" },
+    { value: "audio_en_vivo", label: "Audio en Vivo", defaultPrice: "4.99" },
+    { value: "remix", label: "Remix / DJ Set", defaultPrice: "2.99" },
   ], [t]);
 
   const artistContentTypes = useMemo(() => [
@@ -137,7 +143,11 @@ const UploadContent = () => {
     { value: "arte_digital", label: "Fotografía Digital", defaultPrice: "0" },
   ], []);
 
-  const contentTypes = formData.destination === 'artists' ? artistContentTypes : onDemandContentTypes;
+  const contentTypes = formData.destination === 'artists' 
+    ? artistContentTypes 
+    : formData.destination === 'on_demand_audio' 
+      ? audioOnDemandContentTypes 
+      : videoOnDemandContentTypes;
 
   const podcastCategories = useMemo(() => [
     { value: "produccion", label: t('upload.podcastCategories.produccion') },

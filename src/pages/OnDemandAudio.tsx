@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Header } from "@/components/Header";
 import { AudioSidebar } from "@/components/audio/AudioSidebar";
 import { AudioTrackList } from "@/components/audio/AudioTrackList";
 import { AudioBottomPlayer } from "@/components/audio/AudioBottomPlayer";

@@ -46,8 +46,7 @@ const FILE_TYPE_MAP: Record<string, "document" | "image" | "audio" | "code"> = {
   "image/gif": "image",
   "image/webp": "image",
   // Audio
-  "audio/mpeg": "audio",
-  "audio/mp3": "audio",
+  "audio/wav": "audio_alt",
   "audio/wav": "audio",
   "audio/ogg": "audio",
   "audio/flac": "audio",

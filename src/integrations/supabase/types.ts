@@ -2348,6 +2348,38 @@ export type Database = {
           },
         ]
       }
+      playlist_collaborators: {
+        Row: {
+          added_by: string
+          created_at: string | null
+          id: string
+          playlist_id: string
+          user_id: string
+        }
+        Insert: {
+          added_by: string
+          created_at?: string | null
+          id?: string
+          playlist_id: string
+          user_id: string
+        }
+        Update: {
+          added_by?: string
+          created_at?: string | null
+          id?: string
+          playlist_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playlist_collaborators_playlist_id_fkey"
+            columns: ["playlist_id"]
+            isOneToOne: false
+            referencedRelation: "playlists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       playlist_items: {
         Row: {
           added_at: string
@@ -2392,6 +2424,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_collaborative: boolean | null
           is_public: boolean
           name: string
           thumbnail_url: string | null
@@ -2402,6 +2435,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_collaborative?: boolean | null
           is_public?: boolean
           name: string
           thumbnail_url?: string | null
@@ -2412,6 +2446,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_collaborative?: boolean | null
           is_public?: boolean
           name?: string
           thumbnail_url?: string | null

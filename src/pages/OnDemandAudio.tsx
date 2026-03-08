@@ -113,7 +113,8 @@ const OnDemandAudio = () => {
 
   return (
     <div className="h-screen bg-background text-foreground flex flex-col overflow-hidden">
-      <div className="flex-1 flex min-h-0">
+      <Header />
+      <div className="flex-1 flex min-h-0 pt-16">
         {/* Sidebar */}
         <AudioSidebar
           activeView={activeView}

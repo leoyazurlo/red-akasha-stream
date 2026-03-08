@@ -637,8 +637,8 @@ const UploadContent = () => {
                     />
                   </div>
 
-                  {/* Video Upload Section */}
-                  {!isPodcast && (
+                  {/* Video Upload Section - only for video destinations */}
+                  {!isPodcast && !isAudioDestination && (
                     <div className="border-t pt-6 space-y-4">
                       <div>
                         <h3 className="text-lg font-semibold mb-2 text-cyan-400">{t('upload.video')}</h3>
@@ -662,7 +662,7 @@ const UploadContent = () => {
                   )}
 
                   {/* Thumbnail Selector */}
-                  {!isPodcast && formData.video_url && (
+                  {!isPodcast && !isAudioDestination && formData.video_url && (
                     <ThumbnailSelector
                       videoThumbnail={formData.thumbnail_url}
                       customThumbnail={formData.custom_thumbnail_url}
@@ -671,8 +671,8 @@ const UploadContent = () => {
                     />
                   )}
 
-                  {/* Photo Upload Section */}
-                  {!isPodcast && (
+                  {/* Photo Upload Section - for video and artist destinations */}
+                  {!isPodcast && !isAudioDestination && (
                     <div className="border-t pt-6 space-y-4">
                       <div>
                         <h3 className="text-lg font-semibold mb-2 text-cyan-400">{t('upload.photography')}</h3>
@@ -687,8 +687,8 @@ const UploadContent = () => {
                     </div>
                   )}
 
-                  {/* Audio Upload Section */}
-                  {isPodcast && (
+                  {/* Audio Upload Section - for audio destination or podcast */}
+                  {(isPodcast || isAudioDestination) && (
                     <div className="border-t pt-6 space-y-4">
                       <div>
                         <h3 className="text-lg font-semibold mb-2 text-cyan-400">{t('upload.audio')}</h3>
@@ -706,6 +706,16 @@ const UploadContent = () => {
                         required
                         description={t('upload.audioUploadDesc')}
                       />
+
+                      {/* Cover art for audio content */}
+                      {isAudioDestination && (
+                        <ImageUpload
+                          label="Portada / Cover Art"
+                          value={formData.thumbnail_url}
+                          onChange={(url) => updateFormData('thumbnail_url', url)}
+                          description="Imagen de portada para tu contenido de audio (recomendado: 500x500px)"
+                        />
+                      )}
                     </div>
                   )}
 

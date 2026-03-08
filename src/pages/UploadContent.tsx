@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CosmicBackground } from "@/components/CosmicBackground";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, AlertCircle, Eye, FileText, ChevronDown, Tv, Users } from "lucide-react";
+import { Loader2, AlertCircle, Eye, FileText, ChevronDown, Tv, Users, Music, Video } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -118,13 +118,19 @@ const UploadContent = () => {
   const [promoters, setPromoters] = useState<ProfileOption[]>([]);
    
 
-  const onDemandContentTypes = useMemo(() => [
+  const videoOnDemandContentTypes = useMemo(() => [
     { value: "video_musical_vivo", label: t('upload.contentTypes.video_musical_vivo'), defaultPrice: "9.99" },
     { value: "video_clip", label: t('upload.contentTypes.video_clip'), defaultPrice: "4.99" },
-    { value: "podcast", label: t('upload.contentTypes.podcast'), defaultPrice: "2.99" },
     { value: "documental", label: t('upload.contentTypes.documental'), defaultPrice: "7.99" },
     { value: "corto", label: t('upload.contentTypes.corto'), defaultPrice: "3.99" },
     { value: "pelicula", label: t('upload.contentTypes.pelicula'), defaultPrice: "12.99" }
+  ], [t]);
+
+  const audioOnDemandContentTypes = useMemo(() => [
+    { value: "podcast", label: t('upload.contentTypes.podcast'), defaultPrice: "2.99" },
+    { value: "musica", label: "Música", defaultPrice: "1.99" },
+    { value: "audio_en_vivo", label: "Audio en Vivo", defaultPrice: "4.99" },
+    { value: "remix", label: "Remix / DJ Set", defaultPrice: "2.99" },
   ], [t]);
 
   const artistContentTypes = useMemo(() => [
@@ -137,7 +143,11 @@ const UploadContent = () => {
     { value: "arte_digital", label: "Fotografía Digital", defaultPrice: "0" },
   ], []);
 
-  const contentTypes = formData.destination === 'artists' ? artistContentTypes : onDemandContentTypes;
+  const contentTypes = formData.destination === 'artists' 
+    ? artistContentTypes 
+    : formData.destination === 'on_demand_audio' 
+      ? audioOnDemandContentTypes 
+      : videoOnDemandContentTypes;
 
   const podcastCategories = useMemo(() => [
     { value: "produccion", label: t('upload.podcastCategories.produccion') },
@@ -149,6 +159,7 @@ const UploadContent = () => {
 
   const isVideoMusicalVivo = formData.content_type === 'video_musical_vivo';
   const isPodcast = formData.content_type === 'podcast';
+  const isAudioDestination = formData.destination === 'on_demand_audio';
 
    // Handle content type change - set default price based on type
    const handleContentTypeChange = (value: string) => {
@@ -254,7 +265,7 @@ const UploadContent = () => {
       return false;
     }
 
-    if (isPodcast) {
+    if (isAudioDestination || isPodcast) {
       if (!formData.audio_url) {
         toast({
           title: t('upload.validationError'),
@@ -263,7 +274,7 @@ const UploadContent = () => {
         });
         return false;
       }
-      if (!formData.podcast_category) {
+      if (isPodcast && !formData.podcast_category) {
         toast({
           title: t('upload.validationError'),
           description: t('upload.selectCategoryError'),
@@ -375,9 +386,15 @@ const UploadContent = () => {
 
       setFormData(initialFormData);
        
-       // Redirect to on-demand page after successful upload
+       // Redirect based on destination
        setTimeout(() => {
-         navigate('/on-demand');
+         if (formData.destination === 'on_demand_audio') {
+           navigate('/on-demand/audio');
+         } else if (formData.destination === 'on_demand') {
+           navigate('/on-demand/video');
+         } else {
+           navigate('/artistas');
+         }
        }, 1500);
     } catch (error: unknown) {
       console.error('Error al subir contenido:', error);
@@ -489,21 +506,36 @@ const UploadContent = () => {
                     <RadioGroup
                       value={formData.destination}
                       onValueChange={(value) => setFormData(prev => ({ ...prev, destination: value, content_type: '' }))}
-                      className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+                      className="grid grid-cols-1 sm:grid-cols-3 gap-3"
                     >
                       <Label
-                        htmlFor="dest-ondemand"
+                        htmlFor="dest-video"
                         className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
                           formData.destination === 'on_demand'
                             ? 'border-primary bg-primary/10 shadow-[0_0_15px_hsl(var(--primary)/0.3)]'
                             : 'border-border hover:border-primary/50'
                         }`}
                       >
-                        <RadioGroupItem value="on_demand" id="dest-ondemand" />
-                        <Tv className="h-5 w-5 text-primary" />
+                        <RadioGroupItem value="on_demand" id="dest-video" />
+                        <Video className="h-5 w-5 text-primary" />
                         <div>
-                          <p className="font-medium">On Demand</p>
-                          <p className="text-xs text-muted-foreground">Catálogo de contenido bajo demanda</p>
+                          <p className="font-medium">Video On Demand</p>
+                          <p className="text-xs text-muted-foreground">Videos, clips, documentales</p>
+                        </div>
+                      </Label>
+                      <Label
+                        htmlFor="dest-audio"
+                        className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                          formData.destination === 'on_demand_audio'
+                            ? 'border-primary bg-primary/10 shadow-[0_0_15px_hsl(var(--primary)/0.3)]'
+                            : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        <RadioGroupItem value="on_demand_audio" id="dest-audio" />
+                        <Music className="h-5 w-5 text-primary" />
+                        <div>
+                          <p className="font-medium">Audio On Demand</p>
+                          <p className="text-xs text-muted-foreground">Música, podcasts, audio en vivo</p>
                         </div>
                       </Label>
                       <Label
@@ -605,8 +637,8 @@ const UploadContent = () => {
                     />
                   </div>
 
-                  {/* Video Upload Section */}
-                  {!isPodcast && (
+                  {/* Video Upload Section - only for video destinations */}
+                  {!isPodcast && !isAudioDestination && (
                     <div className="border-t pt-6 space-y-4">
                       <div>
                         <h3 className="text-lg font-semibold mb-2 text-cyan-400">{t('upload.video')}</h3>
@@ -630,7 +662,7 @@ const UploadContent = () => {
                   )}
 
                   {/* Thumbnail Selector */}
-                  {!isPodcast && formData.video_url && (
+                  {!isPodcast && !isAudioDestination && formData.video_url && (
                     <ThumbnailSelector
                       videoThumbnail={formData.thumbnail_url}
                       customThumbnail={formData.custom_thumbnail_url}
@@ -639,8 +671,8 @@ const UploadContent = () => {
                     />
                   )}
 
-                  {/* Photo Upload Section */}
-                  {!isPodcast && (
+                  {/* Photo Upload Section - for video and artist destinations */}
+                  {!isPodcast && !isAudioDestination && (
                     <div className="border-t pt-6 space-y-4">
                       <div>
                         <h3 className="text-lg font-semibold mb-2 text-cyan-400">{t('upload.photography')}</h3>
@@ -655,8 +687,8 @@ const UploadContent = () => {
                     </div>
                   )}
 
-                  {/* Audio Upload Section */}
-                  {isPodcast && (
+                  {/* Audio Upload Section - for audio destination or podcast */}
+                  {(isPodcast || isAudioDestination) && (
                     <div className="border-t pt-6 space-y-4">
                       <div>
                         <h3 className="text-lg font-semibold mb-2 text-cyan-400">{t('upload.audio')}</h3>
@@ -674,6 +706,16 @@ const UploadContent = () => {
                         required
                         description={t('upload.audioUploadDesc')}
                       />
+
+                      {/* Cover art for audio content */}
+                      {isAudioDestination && (
+                        <ImageUpload
+                          label="Portada / Cover Art"
+                          value={formData.thumbnail_url}
+                          onChange={(url) => updateFormData('thumbnail_url', url)}
+                          description="Imagen de portada para tu contenido de audio (recomendado: 500x500px)"
+                        />
+                      )}
                     </div>
                   )}
 

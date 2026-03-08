@@ -85,7 +85,7 @@ export function FileUploadPanel({ conversationId, onFileAnalyzed }: FileUploadPa
     if (["ts", "tsx", "js", "jsx", "py", "rb", "go", "rs", "java", "cpp", "c", "h"].includes(ext || "")) {
       return "code";
     }
-    if (["mp3", "wav", "ogg", "flac", "aac", "m4a"].includes(ext || "")) {
+    if (["wav", "ogg", "flac", "aac", "m4a"].includes(ext || "")) {
       return "audio";
     }
     if (["jpg", "jpeg", "png", "gif", "webp", "svg", "bmp"].includes(ext || "")) {

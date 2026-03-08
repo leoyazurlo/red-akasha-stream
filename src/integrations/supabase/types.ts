@@ -2431,7 +2431,7 @@ export type Database = {
           creator_id: string
           description: string | null
           download_count: number | null
-          duration: unknown
+          duration: string | null
           episode_number: number | null
           explicit_content: boolean | null
           google_podcasts_url: string | null
@@ -2459,7 +2459,7 @@ export type Database = {
           creator_id: string
           description?: string | null
           download_count?: number | null
-          duration?: unknown
+          duration?: string | null
           episode_number?: number | null
           explicit_content?: boolean | null
           google_podcasts_url?: string | null
@@ -2487,7 +2487,7 @@ export type Database = {
           creator_id?: string
           description?: string | null
           download_count?: number | null
-          duration?: unknown
+          duration?: string | null
           episode_number?: number | null
           explicit_content?: boolean | null
           google_podcasts_url?: string | null
@@ -3147,7 +3147,7 @@ export type Database = {
         Row: {
           created_at: string | null
           description: string | null
-          estimated_duration: unknown
+          estimated_duration: string | null
           id: string
           is_recurring: boolean | null
           notification_sent: boolean | null
@@ -3164,7 +3164,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           description?: string | null
-          estimated_duration?: unknown
+          estimated_duration?: string | null
           id?: string
           is_recurring?: boolean | null
           notification_sent?: boolean | null
@@ -3181,7 +3181,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           description?: string | null
-          estimated_duration?: unknown
+          estimated_duration?: string | null
           id?: string
           is_recurring?: boolean | null
           notification_sent?: boolean | null
@@ -3254,7 +3254,7 @@ export type Database = {
         Row: {
           actual_start_time: string | null
           auto_post_to_social: boolean | null
-          average_watch_time: unknown
+          average_watch_time: string | null
           category: string | null
           created_at: string | null
           description: string | null
@@ -3284,7 +3284,7 @@ export type Database = {
         Insert: {
           actual_start_time?: string | null
           auto_post_to_social?: boolean | null
-          average_watch_time?: unknown
+          average_watch_time?: string | null
           category?: string | null
           created_at?: string | null
           description?: string | null
@@ -3314,7 +3314,7 @@ export type Database = {
         Update: {
           actual_start_time?: string | null
           auto_post_to_social?: boolean | null
-          average_watch_time?: unknown
+          average_watch_time?: string | null
           category?: string | null
           created_at?: string | null
           description?: string | null
@@ -3779,7 +3779,7 @@ export type Database = {
           stream_id: string | null
           viewer_id: string | null
           vod_id: string | null
-          watch_duration: unknown
+          watch_duration: string | null
         }
         Insert: {
           average_bitrate?: number | null
@@ -3799,7 +3799,7 @@ export type Database = {
           stream_id?: string | null
           viewer_id?: string | null
           vod_id?: string | null
-          watch_duration?: unknown
+          watch_duration?: string | null
         }
         Update: {
           average_bitrate?: number | null
@@ -3819,7 +3819,7 @@ export type Database = {
           stream_id?: string | null
           viewer_id?: string | null
           vod_id?: string | null
-          watch_duration?: unknown
+          watch_duration?: string | null
         }
         Relationships: [
           {
@@ -3846,7 +3846,7 @@ export type Database = {
           created_at: string | null
           dash_manifest_url: string | null
           description: string | null
-          duration: unknown
+          duration: string | null
           episode_number: number | null
           hls_manifest_url: string | null
           id: string
@@ -3878,7 +3878,7 @@ export type Database = {
           created_at?: string | null
           dash_manifest_url?: string | null
           description?: string | null
-          duration?: unknown
+          duration?: string | null
           episode_number?: number | null
           hls_manifest_url?: string | null
           id?: string
@@ -3910,7 +3910,7 @@ export type Database = {
           created_at?: string | null
           dash_manifest_url?: string | null
           description?: string | null
-          duration?: unknown
+          duration?: string | null
           episode_number?: number | null
           hls_manifest_url?: string | null
           id?: string

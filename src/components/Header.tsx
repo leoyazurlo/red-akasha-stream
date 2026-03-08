@@ -33,7 +33,10 @@ export const Header = () => {
 
   const navItems = [
     { name: t('nav.home'), href: "/" },
-    { name: t('nav.onDemand'), href: "/on-demand" },
+    { name: t('nav.onDemand'), href: "/on-demand", children: [
+      { name: "Audio", href: "/on-demand/audio", icon: Music },
+      { name: "Video", href: "/on-demand/video", icon: Video },
+    ]},
     { name: t('nav.circuit'), href: "/circuito", children: [
       { name: "Mapa", href: "/live", icon: MapPin },
     ]},

@@ -119,6 +119,8 @@ const AppShell = () => {
               <Routes>
               <Route path="/" element={withEB(<Index />)} />
               <Route path="/on-demand" element={withEB(<OnDemand />, "stream")} />
+              <Route path="/on-demand/video" element={withEB(<OnDemand />, "stream")} />
+              <Route path="/on-demand/audio" element={withEB(<OnDemandAudio />, "stream")} />
               <Route path="/mi-coleccion" element={authRoute(<MiColeccion />)} />
               <Route path="/mi-perfil" element={authRoute(<MiPerfil />)} />
               <Route path="/editar-perfil" element={authRoute(<EditarPerfil />)} />

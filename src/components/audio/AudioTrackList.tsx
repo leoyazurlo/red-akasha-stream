@@ -1,9 +1,13 @@
 import { useQueuePlayer, QueueItem } from "@/contexts/QueuePlayerContext";
 import { useFavorites } from "@/hooks/useFavorites";
 import { Button } from "@/components/ui/button";
-import { Heart, Play, Pause, Clock, MoreHorizontal, Music } from "lucide-react";
+import { Heart, Play, Pause, Clock, Music, Radio } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { AudioSearchFilters } from "./AudioSearchFilters";
+import { AudioShareButton } from "./AudioShareButton";
+import { AudioEqualizer } from "./AudioEqualizer";
+import { useState, useMemo } from "react";
 
 interface AudioContent {
   id: string;
@@ -51,6 +55,50 @@ export const AudioTrackList = ({
     useQueuePlayer();
   const { isFavorite, toggleFavorite } = useFavorites();
 
+  // Search & filter state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [sortBy, setSortBy] = useState("recent");
+
+  // Filter and sort tracks
+  const filteredTracks = useMemo(() => {
+    let result = tracks;
+
+    // Search
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (t) =>
+          t.title.toLowerCase().includes(q) ||
+          (t.band_name && t.band_name.toLowerCase().includes(q))
+      );
+    }
+
+    // Category filter
+    if (activeCategory !== "all") {
+      result = result.filter((t) => t.content_type === activeCategory);
+    }
+
+    // Sort
+    result = [...result].sort((a, b) => {
+      switch (sortBy) {
+        case "popular":
+          return (b.views_count || 0) - (a.views_count || 0);
+        case "alphabetical":
+          return a.title.localeCompare(b.title);
+        case "duration":
+          return (
+            (b.audio_duration_seconds || b.duration || 0) -
+            (a.audio_duration_seconds || a.duration || 0)
+          );
+        default:
+          return 0; // already ordered by created_at desc
+      }
+    });
+
+    return result;
+  }, [tracks, searchQuery, activeCategory, sortBy]);
+
   const toQueueItem = (t: AudioContent): QueueItem => ({
     id: t.id,
     title: t.title,
@@ -63,19 +111,24 @@ export const AudioTrackList = ({
   });
 
   const handlePlayAll = () => {
-    if (tracks.length === 0) return;
-    setQueue(tracks.map(toQueueItem), 0);
+    if (filteredTracks.length === 0) return;
+    setQueue(filteredTracks.map(toQueueItem), 0);
+  };
+
+  // Radio mode: shuffle similar tracks into queue
+  const handleRadioMode = () => {
+    if (filteredTracks.length === 0) return;
+    const shuffled = [...filteredTracks].sort(() => Math.random() - 0.5);
+    setQueue(shuffled.map(toQueueItem), 0);
   };
 
   const handlePlayTrack = (track: AudioContent, index: number) => {
-    // If queue matches this list, just jump to index
     const currentItem = queue[currentIndex];
     if (currentItem?.id === track.id) {
       togglePlay();
       return;
     }
-    // Set entire list as queue starting at this track
-    setQueue(tracks.map(toQueueItem), index);
+    setQueue(filteredTracks.map(toQueueItem), index);
   };
 
   const isCurrentTrack = (id: string) => {
@@ -111,7 +164,7 @@ export const AudioTrackList = ({
             <p className="text-sm text-muted-foreground">{subtitle}</p>
           )}
           <p className="text-sm text-muted-foreground mt-1">
-            {tracks.length} canciones
+            {filteredTracks.length} canciones
           </p>
         </div>
       </div>
@@ -122,14 +175,34 @@ export const AudioTrackList = ({
           size="icon"
           onClick={handlePlayAll}
           className="h-14 w-14 rounded-full bg-primary hover:bg-primary/90 hover:scale-105 transition-transform shadow-lg"
-          disabled={tracks.length === 0}
+          disabled={filteredTracks.length === 0}
         >
           <Play className="h-7 w-7 ml-0.5" fill="currentColor" />
         </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRadioMode}
+          className="gap-2 rounded-full"
+          disabled={filteredTracks.length === 0}
+        >
+          <Radio className="h-4 w-4" />
+          Radio
+        </Button>
       </div>
 
+      {/* Search & Filters */}
+      <AudioSearchFilters
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        activeCategory={activeCategory}
+        onCategoryChange={setActiveCategory}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+      />
+
       {/* Track list header */}
-      <div className="px-6 grid grid-cols-[40px_1fr_minmax(100px,1fr)_80px_60px] gap-4 items-center py-2 border-b border-border/50 text-xs text-muted-foreground uppercase tracking-wider">
+      <div className="px-6 grid grid-cols-[40px_1fr_minmax(100px,1fr)_80px_80px] gap-4 items-center py-2 border-b border-border/50 text-xs text-muted-foreground uppercase tracking-wider">
         <span className="text-center">#</span>
         <span>Título</span>
         <span className="hidden md:block">Reproducciones</span>
@@ -142,15 +215,17 @@ export const AudioTrackList = ({
       {/* Tracks */}
       <ScrollArea className="flex-1">
         <div className="px-6 pb-32">
-          {tracks.length === 0 ? (
+          {filteredTracks.length === 0 ? (
             <div className="py-16 text-center">
               <Music className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
               <p className="text-muted-foreground">
-                No hay contenido de audio disponible
+                {searchQuery
+                  ? "No se encontraron resultados"
+                  : "No hay contenido de audio disponible"}
               </p>
             </div>
           ) : (
-            tracks.map((track, index) => {
+            filteredTracks.map((track, index) => {
               const playing = isCurrentTrack(track.id);
               const isTrackPlaying = playing && isPlaying;
               return (
@@ -158,7 +233,7 @@ export const AudioTrackList = ({
                   key={track.id}
                   onClick={() => handlePlayTrack(track, index)}
                   className={cn(
-                    "w-full grid grid-cols-[40px_1fr_minmax(100px,1fr)_80px_60px] gap-4 items-center py-2.5 px-0 rounded-md text-left transition-colors group",
+                    "w-full grid grid-cols-[40px_1fr_minmax(100px,1fr)_80px_80px] gap-4 items-center py-2.5 px-0 rounded-md text-left transition-colors group",
                     playing
                       ? "bg-secondary/50"
                       : "hover:bg-secondary/30"
@@ -167,17 +242,7 @@ export const AudioTrackList = ({
                   {/* Number / playing indicator */}
                   <span className="text-center text-sm">
                     {isTrackPlaying ? (
-                      <div className="flex items-center justify-center gap-0.5">
-                        <span className="w-0.5 h-3 bg-primary animate-pulse rounded-full" />
-                        <span
-                          className="w-0.5 h-3 bg-primary animate-pulse rounded-full"
-                          style={{ animationDelay: "150ms" }}
-                        />
-                        <span
-                          className="w-0.5 h-3 bg-primary animate-pulse rounded-full"
-                          style={{ animationDelay: "300ms" }}
-                        />
-                      </div>
+                      <AudioEqualizer isPlaying={true} size="sm" barCount={4} className="justify-center" />
                     ) : playing ? (
                       <Pause className="h-4 w-4 text-primary mx-auto" />
                     ) : (
@@ -236,21 +301,27 @@ export const AudioTrackList = ({
                     )}
                   </span>
 
-                  {/* Favorite */}
-                  <span
-                    className="flex justify-center"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleFavorite(track.id);
-                    }}
-                  >
-                    <Heart
-                      className={cn(
-                        "h-4 w-4 transition-colors",
-                        isFavorite(track.id)
-                          ? "text-primary fill-primary"
-                          : "text-muted-foreground/50 opacity-0 group-hover:opacity-100"
-                      )}
+                  {/* Actions: Favorite + Share */}
+                  <span className="flex items-center justify-center gap-1">
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(track.id);
+                      }}
+                    >
+                      <Heart
+                        className={cn(
+                          "h-4 w-4 transition-colors cursor-pointer",
+                          isFavorite(track.id)
+                            ? "text-primary fill-primary"
+                            : "text-muted-foreground/50 opacity-0 group-hover:opacity-100"
+                        )}
+                      />
+                    </span>
+                    <AudioShareButton
+                      trackId={track.id}
+                      title={track.title}
+                      artist={track.band_name}
                     />
                   </span>
                 </button>

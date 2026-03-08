@@ -62,6 +62,7 @@ const Artists = lazy(() => import("./pages/Artists"));
 const ArtistProfile = lazy(() => import("./pages/ArtistProfile"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
 const OnDemand = lazy(() => import("./pages/OnDemand"));
+const OnDemandAudio = lazy(() => import("./pages/OnDemandAudio"));
 const Favorites = lazy(() => import("./pages/Favorites"));
 const Playlists = lazy(() => import("./pages/Playlists"));
 const PlaylistDetail = lazy(() => import("./pages/PlaylistDetail"));
@@ -118,6 +119,8 @@ const AppShell = () => {
               <Routes>
               <Route path="/" element={withEB(<Index />)} />
               <Route path="/on-demand" element={withEB(<OnDemand />, "stream")} />
+              <Route path="/on-demand/video" element={withEB(<OnDemand />, "stream")} />
+              <Route path="/on-demand/audio" element={withEB(<OnDemandAudio />, "stream")} />
               <Route path="/mi-coleccion" element={authRoute(<MiColeccion />)} />
               <Route path="/mi-perfil" element={authRoute(<MiPerfil />)} />
               <Route path="/editar-perfil" element={authRoute(<EditarPerfil />)} />

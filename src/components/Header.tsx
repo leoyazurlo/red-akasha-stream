@@ -1,4 +1,4 @@
-import { LogOut, User, Library, Settings, Menu, X, ChevronDown, MapPin, Users } from "lucide-react";
+import { LogOut, User, Library, Settings, Menu, X, ChevronDown, MapPin, Users, Music, Video } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -33,7 +33,10 @@ export const Header = () => {
 
   const navItems = [
     { name: t('nav.home'), href: "/" },
-    { name: t('nav.onDemand'), href: "/on-demand" },
+    { name: t('nav.onDemand'), href: "/on-demand", children: [
+      { name: "Audio", href: "/on-demand/audio", icon: Music },
+      { name: "Video", href: "/on-demand/video", icon: Video },
+    ]},
     { name: t('nav.circuit'), href: "/circuito", children: [
       { name: "Mapa", href: "/live", icon: MapPin },
     ]},

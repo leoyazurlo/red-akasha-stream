@@ -46,8 +46,6 @@ const FILE_TYPE_MAP: Record<string, "document" | "image" | "audio" | "code"> = {
   "image/gif": "image",
   "image/webp": "image",
   // Audio
-  "audio/mpeg": "audio",
-  "audio/mp3": "audio",
   "audio/wav": "audio",
   "audio/ogg": "audio",
   "audio/flac": "audio",
@@ -86,7 +84,7 @@ export function FileUploadPanel({ conversationId, onFileAnalyzed }: FileUploadPa
     if (["ts", "tsx", "js", "jsx", "py", "rb", "go", "rs", "java", "cpp", "c", "h"].includes(ext || "")) {
       return "code";
     }
-    if (["mp3", "wav", "ogg", "flac", "aac", "m4a"].includes(ext || "")) {
+    if (["wav", "ogg", "flac", "aac", "m4a"].includes(ext || "")) {
       return "audio";
     }
     if (["jpg", "jpeg", "png", "gif", "webp", "svg", "bmp"].includes(ext || "")) {
@@ -307,7 +305,7 @@ export function FileUploadPanel({ conversationId, onFileAnalyzed }: FileUploadPa
           multiple
           className="hidden"
           onChange={handleFileSelect}
-          accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.jpg,.jpeg,.png,.gif,.webp,.mp3,.wav,.ogg,.flac,.js,.ts,.tsx,.jsx,.py,.json,.html,.css"
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.jpg,.jpeg,.png,.gif,.webp,.wav,.ogg,.flac,.aac,.m4a,.js,.ts,.tsx,.jsx,.py,.json,.html,.css"
         />
         <p className="text-xs text-muted-foreground mt-2">
           Documentos, imágenes, audio, código (máx 50MB)

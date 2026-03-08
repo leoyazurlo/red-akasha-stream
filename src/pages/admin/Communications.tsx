@@ -329,7 +329,7 @@ export default function Communications() {
                           onChange={handleFileSelect}
                           multiple
                           className="hidden"
-                          accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.mp3,.wav"
+                          accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.wav,.ogg,.aac,.m4a,.flac"
                         />
                         <Button
                           type="button"

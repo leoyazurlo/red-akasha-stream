@@ -265,7 +265,7 @@ const UploadContent = () => {
       return false;
     }
 
-    if (isPodcast) {
+    if (isAudioDestination || isPodcast) {
       if (!formData.audio_url) {
         toast({
           title: t('upload.validationError'),
@@ -274,7 +274,7 @@ const UploadContent = () => {
         });
         return false;
       }
-      if (!formData.podcast_category) {
+      if (isPodcast && !formData.podcast_category) {
         toast({
           title: t('upload.validationError'),
           description: t('upload.selectCategoryError'),

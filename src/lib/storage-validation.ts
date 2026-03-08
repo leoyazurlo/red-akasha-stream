@@ -24,7 +24,7 @@ export const ALLOWED_FILE_TYPES = {
 export const FILE_EXTENSIONS = {
   IMAGE: ['JPG', 'JPEG', 'PNG', 'WEBP', 'GIF'],
   VIDEO: ['MP4', 'WEBM', 'OGG', 'MOV', 'MKV'],
-  AUDIO: ['MP3', 'WAV', 'OGG', 'AAC', 'M4A', 'FLAC'],
+  AUDIO: ['WAV', 'OGG', 'AAC', 'M4A', 'FLAC'],
 } as const;
 
 export type MediaType = 'image' | 'video' | 'audio';

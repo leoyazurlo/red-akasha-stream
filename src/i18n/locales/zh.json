@@ -259,7 +259,7 @@
     "photoUploadDesc": "上传活动、后台、专辑封面等图片（最大10MB）",
     "audio": "音频",
     "audioDesc": "分享您关于制作、营销、版权等的播客",
-    "audioUploadDesc": "上传MP3、WAV或AAC格式的音频文件（最大100MB）",
+    "audioUploadDesc": "上传WAV、OGG、AAC、M4A或FLAC格式的音频文件（最大50MB）",
     "monetization": "变现",
     "monetizationDesc": "设置您的内容是免费还是付费",
     "freeContent": "免费内容",

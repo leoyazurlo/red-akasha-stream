@@ -914,7 +914,7 @@ const MiPerfil = () => {
                     <Input
                       id="new-audios"
                       type="file"
-                      accept=".mp3,.wav,.ogg,.aac,.m4a,.flac,audio/*"
+                      accept=".wav,.ogg,.aac,.m4a,.flac,audio/wav,audio/ogg,audio/aac,audio/m4a,audio/flac"
                       multiple
                       className="hidden"
                       onChange={handleAudioUpload}

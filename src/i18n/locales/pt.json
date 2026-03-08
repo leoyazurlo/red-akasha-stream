@@ -269,7 +269,7 @@
     "photoUploadDesc": "Envie imagens de eventos, bastidores, capas de álbuns, etc. (máx. 10MB)",
     "audio": "Áudio",
     "audioDesc": "Compartilhe seu podcast sobre produção, marketing, direitos autorais e mais",
-    "audioUploadDesc": "Envie seu arquivo de áudio em formato MP3, WAV ou AAC (máx. 100MB)",
+    "audioUploadDesc": "Envie seu arquivo de áudio em formato WAV, OGG, AAC, M4A ou FLAC (máx. 50MB)",
     "monetization": "Monetização",
     "monetizationDesc": "Configure se seu conteúdo será gratuito ou pago",
     "freeContent": "Conteúdo Gratuito",

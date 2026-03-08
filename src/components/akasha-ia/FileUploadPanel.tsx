@@ -306,7 +306,7 @@ export function FileUploadPanel({ conversationId, onFileAnalyzed }: FileUploadPa
           multiple
           className="hidden"
           onChange={handleFileSelect}
-          accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.jpg,.jpeg,.png,.gif,.webp,.mp3,.wav,.ogg,.flac,.js,.ts,.tsx,.jsx,.py,.json,.html,.css"
+          accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.jpg,.jpeg,.png,.gif,.webp,.wav,.ogg,.flac,.aac,.m4a,.js,.ts,.tsx,.jsx,.py,.json,.html,.css"
         />
         <p className="text-xs text-muted-foreground mt-2">
           Documentos, imágenes, audio, código (máx 50MB)

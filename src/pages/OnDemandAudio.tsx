@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Header } from "@/components/Header";
 import { AudioSidebar } from "@/components/audio/AudioSidebar";
 import { AudioTrackList } from "@/components/audio/AudioTrackList";
 import { AudioBottomPlayer } from "@/components/audio/AudioBottomPlayer";
@@ -112,7 +113,8 @@ const OnDemandAudio = () => {
 
   return (
     <div className="h-screen bg-background text-foreground flex flex-col overflow-hidden">
-      <div className="flex-1 flex min-h-0">
+      <Header />
+      <div className="flex-1 flex min-h-0 pt-16">
         {/* Sidebar */}
         <AudioSidebar
           activeView={activeView}
